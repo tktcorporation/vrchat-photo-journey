@@ -1,0 +1,13 @@
+version: '3.8'
+services:
+  # for electron
+  electron:
+    image: electronuserland/builder:wine
+    container_name: electron
+    volumes:
+      - ./vite-reactts-electron-starter:/project
+      - ~/.cache/electron:/root/.cache/electron
+      - ~/.cache/electron-builder:/root/.cache/electron-builder
+    working_dir: /project
+    # for dev
+    command: bash -c "npm install && npm run dev"
