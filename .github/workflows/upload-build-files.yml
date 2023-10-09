@@ -14,7 +14,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest, macOS-latest]
+        os: [windows-latest, ubuntu-latest]
     
     steps:
       - name: Install Snapcraft
@@ -32,7 +32,7 @@ jobs:
           node-version-file: '.node-version'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm i
 
       - name: Build Electron app
         run: npm run dist
@@ -55,7 +55,6 @@ jobs:
         run: |
           zip -r app-windows-latest.zip app-windows-latest
           zip -r app-ubuntu-latest.zip app-ubuntu-latest
-          zip -r app-macOS-latest.zip app-macOS-latest
 
       - name: Release
         uses: softprops/action-gh-release@v1
@@ -63,7 +62,6 @@ jobs:
           files: |
             app-windows-latest.zip
             app-ubuntu-latest.zip
-            app-macOS-latest.zip
           tag_name: ${{ github.ref }}
           body: |
             Release for ${{ github.ref }}
