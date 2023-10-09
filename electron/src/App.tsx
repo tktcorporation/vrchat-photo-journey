@@ -39,7 +39,6 @@ function App() {
   const [logFileNames, setlogFileNames] = useState<string[] | null>(null);
   useEffect(() => {
     if (window.Main) {
-      window.Main.getLogFilesDir();
       window.Main.on('log-files-dir', (dir: string) => {
         console.log(dir);
         setlogFilesDir(dir);
@@ -118,12 +117,19 @@ function App() {
               )}
             </div>
           )}
-          <button className='open-dialog-and-set-log-files-dir-button' onClick={() => {
+          <button className='open-dialog-and-set-log-files-dir-button py-2 px-4 bg-white rounded focus:outline-none shadow hover:bg-yellow-200' onClick={() => {
             if (window.Main) {
               window.Main.openDialogAndSetLogFilesDir();
             }
           }}>
             openDialogAndSetLogFilesDir
+          </button>
+          <button className='get-log-files-dir-button py-2 px-4 bg-white rounded focus:outline-none shadow hover:bg-yellow-200' onClick={() => {
+            if (window.Main) {
+              window.Main.getLogFilesDir();
+            }
+          }}>
+            getLogFilesDir
           </button>
           <label className='log-files-dir-label'>
             log-files-dir: {logFilesDir}
