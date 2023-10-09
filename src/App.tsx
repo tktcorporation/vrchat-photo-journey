@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import AppBar from './AppBar';
 
@@ -46,10 +46,9 @@ function App() {
       window.Main.on('log-file-names', (names: string[]) => {
         console.log(names);
         setlogFileNames(names);
-      })
+      });
     }
   }, []);
-
 
   useEffect(() => {
     if (window.Main)
@@ -117,32 +116,34 @@ function App() {
               )}
             </div>
           )}
-          <button className='open-dialog-and-set-log-files-dir-button py-2 px-4 bg-white rounded focus:outline-none shadow hover:bg-yellow-200' onClick={() => {
-            if (window.Main) {
-              window.Main.openDialogAndSetLogFilesDir();
-            }
-          }}>
+          <button
+            className="open-dialog-and-set-log-files-dir-button py-2 px-4 bg-white rounded focus:outline-none shadow hover:bg-yellow-200"
+            onClick={() => {
+              if (window.Main) {
+                window.Main.openDialogAndSetLogFilesDir();
+              }
+            }}
+          >
             openDialogAndSetLogFilesDir
           </button>
-          <button className='get-log-files-dir-button py-2 px-4 bg-white rounded focus:outline-none shadow hover:bg-yellow-200' onClick={() => {
-            if (window.Main) {
-              window.Main.getLogFilesDir();
-            }
-          }}>
+          <button
+            className="get-log-files-dir-button py-2 px-4 bg-white rounded focus:outline-none shadow hover:bg-yellow-200"
+            onClick={() => {
+              if (window.Main) {
+                window.Main.getLogFilesDir();
+              }
+            }}
+          >
             getLogFilesDir
           </button>
-          <label className='log-files-dir-label'>
-            log-files-dir: {logFilesDir}
-          </label>
-          <label className='log-file-names-label'>
-            log-file-names: {logFileNames?.join(',')}
-          </label>
-          <label className='join-world-log-lines-label'>
+          <div className="log-files-dir-label">log-files-dir: {logFilesDir}</div>
+          <div className="log-file-names-label">log-file-names: {logFileNames?.join(',')}</div>
+          <div className="join-world-log-lines-label">
             join-world-log-lines:
-            {joinWorldLogLines.map((line, index) => {
-              return <div key={index}>{line}</div>
+            {joinWorldLogLines.map((line) => {
+              return <div key={line}>{line}</div>;
             })}
-          </label>
+          </div>
         </div>
       </div>
     </div>
