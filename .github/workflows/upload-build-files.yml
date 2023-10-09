@@ -17,51 +17,55 @@ jobs:
         os: [windows-latest, ubuntu-latest, macOS-latest]
     
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - name: Install Snapcraft
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo snap install snapcraft --classic
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version-file: '.node-version'
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: Install dependencies
-      run: npm ci
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: '.node-version'
 
-    - name: Build Electron app
-      run: npm run dist
+      - name: Install dependencies
+        run: npm ci
 
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: app-${{ matrix.os }}
-        path: dist/*
+      - name: Build Electron app
+        run: npm run dist
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-${{ matrix.os }}
+          path: dist/*
   
   release:
     needs: build
     runs-on: ubuntu-latest
 
     steps:
-    - name: Download artifacts
-      uses: actions/download-artifact@v2
+      - name: Download artifacts
+        uses: actions/download-artifact@v2
 
-    - name: Zip artifacts
-      run: |
-        zip -r app-windows-latest.zip app-windows-latest
-        zip -r app-ubuntu-latest.zip app-ubuntu-latest
-        zip -r app-macOS-latest.zip app-macOS-latest
+      - name: Zip artifacts
+        run: |
+          zip -r app-windows-latest.zip app-windows-latest
+          zip -r app-ubuntu-latest.zip app-ubuntu-latest
+          zip -r app-macOS-latest.zip app-macOS-latest
 
-    - name: Release
-      uses: softprops/action-gh-release@v1
-      with:
-        files: |
-          app-windows-latest.zip
-          app-ubuntu-latest.zip
-          app-macOS-latest.zip
-        tag_name: ${{ github.ref }}
-        body: |
-          Release for ${{ github.ref }}
-        draft: false
-        prerelease: false
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            app-windows-latest.zip
+            app-ubuntu-latest.zip
+            app-macOS-latest.zip
+          tag_name: ${{ github.ref }}
+          body: |
+            Release for ${{ github.ref }}
+          draft: false
+          prerelease: false
