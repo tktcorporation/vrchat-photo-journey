@@ -43,5 +43,5 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git tag "build-$(git log -1 --format=%cd --date=format:%Y%m%d%H%M%S)-${GITHUB_SHA::8}"
+          git tag "build-$(date -u +%Y%m%d%H%M%S)-${GITHUB_SHA::8}"
           git push origin "build-${GITHUB_SHA::8}"
