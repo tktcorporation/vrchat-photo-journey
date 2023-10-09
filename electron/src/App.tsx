@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import toast, { Toaster } from 'react-hot-toast';
 import AppBar from './AppBar';
 
 function App() {
@@ -33,6 +34,49 @@ function App() {
       });
   }, [fromMain, isSent]);
 
+  // 初期表示時に log-files-dir を取得する
+  const [logFilesDir, setlogFilesDir] = useState<string | null>(null);
+  const [logFileNames, setlogFileNames] = useState<string[] | null>(null);
+  useEffect(() => {
+    if (window.Main) {
+      window.Main.getLogFilesDir();
+      window.Main.on('log-files-dir', (dir: string) => {
+        console.log(dir);
+        setlogFilesDir(dir);
+      });
+      window.Main.on('log-file-names', (names: string[]) => {
+        console.log(names);
+        setlogFileNames(names);
+      })
+    }
+  }, []);
+
+
+  useEffect(() => {
+    if (window.Main)
+      window.Main.on('file-content', (content: string) => {
+        console.log(content);
+      });
+  });
+
+  const [joinWorldLogLines, setJoinWorldLogLines] = useState<string[]>([]);
+  useEffect(() => {
+    if (window.Main) {
+      window.Main.on('join-world-log-lines', (lines: string[]) => {
+        console.log(lines);
+        setJoinWorldLogLines(lines);
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (window.Main)
+      window.Main.on('toast', (content: string) => {
+        console.log(content);
+        toast(content);
+      });
+  });
+
   return (
     <div className="flex flex-col h-screen">
       {window.Main && (
@@ -41,6 +85,7 @@ function App() {
         </div>
       )}
       <div className="flex-auto">
+        <Toaster />
         <div className=" flex flex-col justify-center items-center h-full bg-gray-800 space-y-4">
           <h1 className="text-2xl text-gray-200">Vite + React + Typescript + Electron + Tailwind</h1>
           <button
@@ -73,6 +118,25 @@ function App() {
               )}
             </div>
           )}
+          <button className='open-dialog-and-set-log-files-dir-button' onClick={() => {
+            if (window.Main) {
+              window.Main.openDialogAndSetLogFilesDir();
+            }
+          }}>
+            openDialogAndSetLogFilesDir
+          </button>
+          <label className='log-files-dir-label'>
+            log-files-dir: {logFilesDir}
+          </label>
+          <label className='log-file-names-label'>
+            log-file-names: {logFileNames?.join(',')}
+          </label>
+          <label className='join-world-log-lines-label'>
+            join-world-log-lines:
+            {joinWorldLogLines.map((line, index) => {
+              return <div key={index}>{line}</div>
+            })}
+          </label>
         </div>
       </div>
     </div>

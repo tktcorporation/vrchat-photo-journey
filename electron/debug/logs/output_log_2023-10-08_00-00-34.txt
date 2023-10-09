@@ -1,0 +1,646 @@
+2023.10.08 00:00:34 Log        -  [VRCInputManager] Safety level set to: None
+
+
+2023.10.08 00:00:34 Log        -  Launching with args: 1
+
+
+2023.10.08 00:00:34 Log        -  Arg: C:\Program Files\Oculus\Software\Software\vrchat-vrchat\VRChat.exe
+
+
+2023.10.08 00:00:34 Log        -  InitVRSDK: Oculus
+
+
+2023.10.08 00:00:34 Warning    -  OvrLipSync Awake: Queried SampleRate: 48000 BufferSize: 1024
+
+
+2023.10.08 00:00:34 Log        -  VRC Analytics Initialized
+
+
+2023.10.08 00:00:34 Log        -  [Always] UdonManager.OnSceneLoaded took '0.001'
+
+
+2023.10.08 00:00:36 Log        -  [Behaviour] RPCManager initialized with '234' in 13ms.
+
+
+2023.10.08 00:00:36 Warning    -  DontDestroyOnLoad only works for root GameObjects or components on root GameObjects.
+ÍÎÍÌÍÏÌÏÍÌÍÍÌÏÍÌÌÏÎÎÍÏÏ:Start()
+
+
+
+2023.10.08 00:00:36 Log        -  [Always] Advertising Service VRChat-Client-D3EBF3 of type OSCQuery on 58567
+
+
+2023.10.08 00:00:36 Log        -  [Always] Advertising Service VRChat-Client-D3EBF3 of type OSC on 9000
+
+
+2023.10.08 00:00:36 Log        -  [AssetBundleDownloadManager] Using default cache directory.
+
+
+2023.10.08 00:00:36 Log        -  [AssetBundleDownloadManager] Using default cache size: 20.00GB
+
+
+2023.10.08 00:00:36 Log        -  [AssetBundleDownloadManager] Using default cache expiry delay: 30.00 days
+
+
+2023.10.08 00:00:36 Log        -  [Always] [LOADER] Watching directory C:\Users\tktco\AppData\LocalLow\VRChat\VRChat\Avatars
+
+
+2023.10.08 00:00:36 Log        -  [Behaviour] Registering Avatar Interaction
+
+
+2023.10.08 00:00:36 Error      -  InitVRSDK failed: failed to load 'Oculus'!
+
+
+2023.10.08 00:00:36 Log        -  VR Disabled
+
+
+2023.10.08 00:00:36 Log        -  [GC] Memory Usage: Before Allocation
+- System.GC.GetTotalMemory: 92.79 MB
+- Profiler.GetMonoUsed/HeapSizeLong: 92.79 MB / 114.39 MB
+- Profiler.GetTotalAllocated/Reserved/UnusedMemoryLong: 690.14 MB / 933.32 MB / 243.17 MB
+- SystemInfo.graphicsMemorySize: 8031
+- SystemInfo.systemMemorySize:32601
+
+
+
+2023.10.08 00:00:36 Log        -  [GC] Ensuring the heap is at least 512MB.
+
+
+2023.10.08 00:00:36 Log        -  [GC] Memory Usage: After Allocation
+- System.GC.GetTotalMemory: 657.70 MB
+- Profiler.GetMonoUsed/HeapSizeLong: 657.70 MB / 658.39 MB
+- Profiler.GetTotalAllocated/Reserved/UnusedMemoryLong: 690.18 MB / 933.32 MB / 243.14 MB
+- SystemInfo.graphicsMemorySize: 8031
+- SystemInfo.systemMemorySize:32601
+
+
+
+2023.10.08 00:00:36 Log        -  [GC] Memory Usage: After Collection
+- System.GC.GetTotalMemory: 92.78 MB
+- Profiler.GetMonoUsed/HeapSizeLong: 92.78 MB / 658.39 MB
+- Profiler.GetTotalAllocated/Reserved/UnusedMemoryLong: 690.18 MB / 933.32 MB / 243.13 MB
+- SystemInfo.graphicsMemorySize: 8031
+- SystemInfo.systemMemorySize:32601
+
+
+
+2023.10.08 00:00:36 Error      -  Attempted to access IsInVRMode before tracking was initialized!
+
+
+2023.10.08 00:00:36 Error      -  Attempted to access IsInVRMode before tracking was initialized!
+
+
+2023.10.08 00:00:36 Error      -  Attempted to access IsInVRMode before tracking was initialized!
+
+
+2023.10.08 00:00:36 Warning    -  DontDestroyOnLoad only works for root GameObjects or components on root GameObjects.
+ÌÎÎÌÍÏÏÏÎÏÏÌÏÏÎÏÎÌÎÍÏÍÎ:Start()
+
+
+
+2023.10.08 00:00:36 Log        -  Unity v2019.4.40f1, Oculus Utilities v1.71.0, OVRPlugin v1.71.0, SDK v0.0.0.
+
+
+2023.10.08 00:00:36 Log        -  SystemHeadset None, API CAPI
+
+
+2023.10.08 00:00:36 Log        -  Current display frequency 0, available frequencies []
+
+
+2023.10.08 00:00:36 Log        -  Overlay Awake
+
+
+2023.10.08 00:00:36 Log        -  Overlay Awake
+
+
+2023.10.08 00:00:36 Log        -  Overlay Awake
+
+
+2023.10.08 00:00:36 Log        -  Overlay Awake
+
+
+2023.10.08 00:00:36 Log        -  Overlay Awake
+
+
+2023.10.08 00:00:36 Exception  -  Object reference not set to an instance of an object.
+  at ÏÍÌÎÎÎÍÎÍÌÎÌÌÏÎÏÎÏÌÌÌÌÏ.Start () [0x00000] in <00000000000000000000000000000000>:0 
+
+
+2023.10.08 00:00:36 Log        -  [Behaviour] Microphone device changing to 'Line (5- Steinberg UR22C)'
+
+
+2023.10.08 00:00:36 Log        -  [Always] uSpeak: SetInputDevice 2 (6 total) 'Line (5- Steinberg UR22C)'
+
+
+2023.10.08 00:00:36 Log        -  [Always] Comfort mode set to: Standard
+
+
+2023.10.08 00:00:36 Log        -  [VRC Stacked Camera System] Created Stacked Camera : Cam_InternalUI
+
+
+2023.10.08 00:00:36 Log        -  [VRC Stacked Camera System] Camera Stack has been initialized.
+
+
+2023.10.08 00:00:36 Log        -  [Behaviour] waiting for UI Manager
+
+
+2023.10.08 00:00:36 Log        -  [Always] Comfort mode set to: Standard
+
+
+2023.10.08 00:00:36 Log        -  [UserInfoLogger] Environment Info: 
+    VRChat Build: 2023.3.2p2-1355-40f72cede1-Release
+    Store: Oculus
+    Platform: standalonewindows
+    Device Model: FRONTIER (Inversenet Inc.)
+    Processor Type: 13th Gen Intel(R) Core(TM) i7-13700KF
+    System Memory Size: 32601MB
+    Operating System: Windows 11  (10.0.22621) 64bit
+    Graphics Device Name: NVIDIA GeForce RTX 3070 Ti
+    Graphics Device Version: Direct3D 11.0 [level 11.1]
+    Graphics Memory Size: 8031MB
+    Supports Audio: True
+    XR Device: None
+    API Status: Available: ("pong")
+    CloudFront Status: Available: (pong)
+    Connected controller: (Controller (Xbox One For Windows))
+
+
+
+2023.10.08 00:00:36 Log        -  [UserInfoLogger] User Settings Info:
+General Settings:
+    Clear cache on start: False
+    Skip go button on load: True
+    Show community labs: True
+    Show community worlds in search: False
+    Hide notification photos: False
+    Selected network region: Japan
+    OSC enabled: True
+    AFK enabled: False
+Graphics Settings:
+    Quality: High
+    Antialiasing: x1
+Input Settings:
+    Mouse sensitivity: 1
+    Inverted mouse: False
+    UI Haptics enabled: True
+Audio Settings:
+    Legacy Talk toggle: True
+    Legacy Talk default on: True
+    Legacy Disable mic button: False
+    Mic Mode: Toggle
+    Mic Behavior On Join: DefaultOff
+    Mic level (VR): 1
+    Mic level (Desktop): 1
+    Noise suppression: True
+    Noise gate: 0.0001
+UI Settings:
+    Show tooltips: True
+    Desktop reticle: False
+    Show social rank: False
+    Main Menu free placement: True
+    Nameplate display: Standard
+    QM Info: on
+    Fallback Icon: visible
+    Status mode: ShowOnMenu
+    Nameplate scale: 100%
+    Nameplate opacity: 80%
+Avatar Settings:
+    Fallback hidden: False
+    Maximum download size: 200 MB
+    Performance rating minimum to display: VeryPoor
+    Allow avatar copying: True
+    Disable avatar cloning on enter world: False
+    Limit dynamic bone usage: True
+    Convert all dynamic bones: True
+    Avatar interaction level: All
+    Avatar self-interaction: True
+Accessibility Settings:
+    Gesture bar enabled: False
+    Earmuff mode: False
+    Earmuff mode (avatars): True
+    Earmuff mode, Always show visual aid: False
+    Earmuff mode radius: 1.5
+    Earmuff mode falloff: 1.75
+    Earmuff mode reduced volume: 0.05
+    Chat bubble visibility: Friends
+    Chat bubble scale: 1.5
+    Chat bubble opacity: 1
+    Chat bubble timeout: 60
+Comfort & Safety Settings:
+    Personal space: False
+    Voice prioritization: True
+    Third person rotation: False
+    Comfort turning: False
+    Head look walking: True
+    Locomotion method: Gamelike
+    Vive advanced: False
+    Streamer mode enabled: False
+    Limit particle systems: False
+    Safety level: None
+    Allow untrusted URLs: True
+    Ask to portal: True
+    Mirror resolution: Full
+    Portal Mode: PlaceManually
+
+
+
+2023.10.08 00:00:37 Warning    -  The referenced script on this Behaviour (Game Object 'Header') is missing!
+
+
+
+2023.10.08 00:00:37 Warning    -  The referenced script on this Behaviour (Game Object 'YearLabel') is missing!
+
+
+
+2023.10.08 00:00:37 Warning    -  The referenced script on this Behaviour (Game Object 'MonthLabel') is missing!
+
+
+
+2023.10.08 00:00:37 Warning    -  The referenced script on this Behaviour (Game Object 'Text') is missing!
+
+
+
+2023.10.08 00:00:37 Warning    -  The referenced script on this Behaviour (Game Object 'Text') is missing!
+
+
+
+2023.10.08 00:00:37 Warning    -  The referenced script on this Behaviour (Game Object 'EarlyAccessText') is missing!
+
+
+
+2023.10.08 00:00:37 Warning    -  The referenced script on this Behaviour (Game Object 'Text') is missing!
+
+
+
+2023.10.08 00:00:37 Warning    -  The referenced script on this Behaviour (Game Object 'TitleText') is missing!
+
+
+
+2023.10.08 00:00:37 Warning    -  The referenced script on this Behaviour (Game Object 'Text') is missing!
+
+
+
+2023.10.08 00:00:37 Warning    -  The referenced script on this Behaviour (Game Object 'Text') is missing!
+
+
+
+2023.10.08 00:00:37 Warning    -  The referenced script on this Behaviour (Game Object 'Text') is missing!
+
+
+
+2023.10.08 00:00:37 Warning    -  The referenced script on this Behaviour (Game Object 'Placeholder') is missing!
+
+
+
+2023.10.08 00:00:37 Warning    -  The referenced script on this Behaviour (Game Object 'Text') is missing!
+
+
+
+2023.10.08 00:00:37 Warning    -  The referenced script on this Behaviour (Game Object 'Text') is missing!
+
+
+
+2023.10.08 00:00:37 Warning    -  The referenced script on this Behaviour (Game Object 'Placeholder') is missing!
+
+
+
+2023.10.08 00:00:37 Warning    -  The referenced script on this Behaviour (Game Object 'Text') is missing!
+
+
+
+2023.10.08 00:00:37 Warning    -  The referenced script on this Behaviour (Game Object 'Placeholder') is missing!
+
+
+
+2023.10.08 00:00:37 Warning    -  The referenced script on this Behaviour (Game Object 'Placeholder') is missing!
+
+
+
+2023.10.08 00:00:37 Warning    -  The referenced script on this Behaviour (Game Object 'Text') is missing!
+
+
+
+2023.10.08 00:00:37 Warning    -  The referenced script on this Behaviour (Game Object 'Text') is missing!
+
+
+
+2023.10.08 00:00:37 Warning    -  The referenced script on this Behaviour (Game Object 'Text') is missing!
+
+
+
+2023.10.08 00:00:37 Warning    -  The referenced script on this Behaviour (Game Object 'Text') is missing!
+
+
+
+2023.10.08 00:00:37 Warning    -  The referenced script on this Behaviour (Game Object 'Placeholder') is missing!
+
+
+
+2023.10.08 00:00:37 Warning    -  The referenced script on this Behaviour (Game Object 'Placeholder') is missing!
+
+
+
+2023.10.08 00:00:37 Warning    -  The referenced script on this Behaviour (Game Object 'BodyTextMouse') is missing!
+
+
+
+2023.10.08 00:00:37 Warning    -  The referenced script on this Behaviour (Game Object 'Text') is missing!
+
+
+
+2023.10.08 00:00:37 Warning    -  The referenced script on this Behaviour (Game Object 'TitleText') is missing!
+
+
+
+2023.10.08 00:00:37 Warning    -  The referenced script on this Behaviour (Game Object 'Text') is missing!
+
+
+
+2023.10.08 00:00:37 Warning    -  The referenced script on this Behaviour (Game Object 'TitleText') is missing!
+
+
+
+2023.10.08 00:00:37 Log        -  [Always] UdonManager.OnSceneLoaded took '0.000'
+
+
+2023.10.08 00:00:37 Log        -  [Behaviour] showing disconnect reason
+
+
+2023.10.08 00:00:37 Log        -  Loading Preset TypeA
+
+
+2023.10.08 00:00:37 Log        -  VRCInputProcessorTouch: can use Oculus Touch controller = True
+
+
+2023.10.08 00:00:37 Log        -  Loading Preset TypeA
+
+
+2023.10.08 00:00:37 Log        -  Loaded Input Binding[_OCULUS_TOUCH]: Custom
+
+
+2023.10.08 00:00:37 Log        -  [VRCInputManager] Master volume set to: 100.00%
+
+
+2023.10.08 00:00:37 Log        -  [VRCInputManager] UI volume set to: 100.00%
+
+
+2023.10.08 00:00:37 Log        -  [VRCInputManager] World volume set to: 90.00%
+
+
+2023.10.08 00:00:37 Log        -  [VRCInputManager] Avatar volume set to: 100.00%
+
+
+2023.10.08 00:00:37 Log        -  [VRCInputManager] Voice volume set to: 100.00%
+
+
+2023.10.08 00:00:37 Log        -  [VRCInputManager] Mic activation threshold set to: 0.01%
+
+
+2023.10.08 00:00:37 Log        -  [VRCInputManager] Mic volume set to: 100.00%
+
+
+2023.10.08 00:00:38 Log        -  [Behaviour] get remote config and default blueprints
+
+
+2023.10.08 00:00:38 Log        -  [Behaviour] waiting for remote config
+
+
+2023.10.08 00:00:38 Log        -  [Behaviour] RemoteConfig load succeeded
+
+
+2023.10.08 00:00:38 Log        -  [Behaviour] Platform initialization complete!
+
+
+2023.10.08 00:00:38 Log        -  [Behaviour] showing alert
+
+
+2023.10.08 00:00:39 Log        -  [Behaviour] Oculus Entitlement Check: You are entitled to use this app.
+
+
+2023.10.08 00:00:39 Log        -  [Behaviour] Logged in user id: 2474661409213123 oculus id: tktcorporation
+
+
+2023.10.08 00:00:40 Log        -  [Behaviour] Received user nonce: qIlX3FR49J4XO2rPAjogXtUG7Z38hKY9XF47EZ5DgpHhOadnnpMkyaaJfDrksqED
+
+
+2023.10.08 00:00:40 Log        -  [Behaviour] authenticating
+
+
+2023.10.08 00:00:40 Log        -  [Behaviour] Trying to login with vrchat...
+
+
+2023.10.08 00:00:40 Log        -  User Authenticated: tkt_ (usr_3ba2a992-724c-4463-bc75-7e9f6674e8e0)
+- hasEmail: True
+- hasBirthday: True
+- tos: 8
+- avatar: avtr_1f79878b-7c85-4a95-86a7-040245f299a8
+
+
+
+2023.10.08 00:00:40 Log        -  [Always] Checking For Active VRChatPlus Subscription
+
+
+2023.10.08 00:00:40 Log        -  [Behaviour] Ok
+
+
+2023.10.08 00:00:40 Log        -  [Behaviour] checking for ban
+
+
+2023.10.08 00:00:40 Log        -  [Behaviour] Authenticated via vrchat
+
+
+2023.10.08 00:00:40 Log        -  [Behaviour] checking for Verified account
+
+
+2023.10.08 00:00:41 Log        -  [Behaviour] Using network server version: Release_1343
+
+
+2023.10.08 00:00:41 Log        -  [Behaviour] Sending token from provider vrchat
+
+
+2023.10.08 00:00:41 Log        -  [EOSManager] EOS Initialized Successfully
+
+
+2023.10.08 00:00:41 Log        -  [EOSManager] [Info][LogEOS] [Boot] EOSSDK Version 1.15.5-24099393 booting at 2023-10-07T15:00:41.583Z using CSharp
+
+
+2023.10.08 00:00:41 Log        -  [EOSManager] [Info][LogEOS] [Boot] EOSSDK Platform Properties [OS=Windows/10.0.22621.2275.64bit, ClientId=xyza78910ITit2HAPSDOzpe9gf8y9lAY, ProductId=a4a57ff548934dbeba0cc7c62cdf9f34, SandboxId=198988a88fe34e3e91ed15f7c91a15b1, DeploymentId=76151011566a4757ae955b380b05c378, ProductName=VRChat, ProductVersion=w_2023.3.2p2-40f72cede1, IsServer=false, Flags=DisableOverlay]
+
+
+2023.10.08 00:00:41 Log        -  [EOSManager] [Info][LogEOSAnalytics] Start Session (User: ...)
+
+
+2023.10.08 00:00:41 Log        -  [EOSManager] [Info][LogEOSOverlay] Overlay will not load, because it was explicitly disabled when creating the platform
+
+
+2023.10.08 00:00:41 Warning    -  [EOSManager] [Warning][LogEOSAuth] FAccountPortalBrowserManager::Init: Failed to register overlay: EOS_NotConfigured
+
+
+2023.10.08 00:00:41 Log        -  [EOSManager] [Info][LogEOSAntiCheat] [AntiCheatClient] AddNotifyMessageToServer bound with NotificationId=[19]
+
+
+2023.10.08 00:00:41 Log        -  [EOSManager] [Info][LogEOSAntiCheat] [AntiCheatClient] EOS_AntiCheatClient_AddNotifyClientIntegrityViolated bound with NotificationId=[20]
+
+
+2023.10.08 00:00:41 Log        -  [EOSManager] Attempting to login to EOS.
+
+
+2023.10.08 00:00:41 Log        -  [EOSManager] [Info][LogEOS] Updating Platform SDK Config, Time: 0.003417
+
+
+2023.10.08 00:00:41 Log        -  [EOSManager] Fetched the UserInfo token successfully.
+
+
+2023.10.08 00:00:42 Log        -  [VRCInputManager] Personal space set to: False
+
+
+2023.10.08 00:00:42 Log        -  [VRCInputManager] Skip go button on load set to: True
+
+
+2023.10.08 00:00:42 Log        -  [VRCInputManager] Earmuff mode set to: False
+
+
+2023.10.08 00:00:42 Log        -  [Always] Get VRChat Subscription Details! Subscription Id:None active:False desc:
+
+
+2023.10.08 00:00:42 Log        -  [Behaviour] No Active Subscription detected
+
+
+2023.10.08 00:00:42 Log        -  [EOSManager] [Info][LogEOS] SDK Config Platform Update Request Successful, Time: 1.109585
+
+
+2023.10.08 00:00:42 Warning    -  [EOSManager] [Warning][LogEOSAnalytics] EOS SDK Analytics disabled for route [1].
+
+
+2023.10.08 00:00:42 Log        -  [EOSManager] [Info][LogEOS] Updating Product SDK Config, Time: 1.142861
+
+
+2023.10.08 00:00:43 Log        -  [EOSManager] [Info][LogEOSAnalytics] Start Session (User: ...)
+
+
+2023.10.08 00:00:43 Log        -  [EOSManager] [Info][LogEOS] SDK Config Product Update Request Successful, Time: 1.644178
+
+
+2023.10.08 00:00:43 Log        -  [EOSManager] [Info][LogEOS] SDK Config Data - Watermark: 146386513
+
+
+2023.10.08 00:00:43 Log        -  [EOSManager] [Info][LogEOS] ScheduleNextSDKConfigDataUpdate - Time: 1.644178, Update Interval: 332.917877
+
+
+2023.10.08 00:00:43 Log        -  [EOSManager] [Info][LogEOSMessaging] Attempting connection to Stomp. LocalUserId=[000...c88] Url=[<Redacted>]
+
+
+2023.10.08 00:00:43 Log        -  [EOSManager] User Login Status changed to Logged In: 0002bfa1ff3345b398b6cbad0e602c88
+
+
+2023.10.08 00:00:43 Log        -  [EOSManager] EOS Login Succeeded. UserId: 0002bfa1ff3345b398b6cbad0e602c88
+
+
+2023.10.08 00:00:43 Log        -  [EOSManager] EOS LoginUser took '1.96'.
+
+
+2023.10.08 00:00:43 Log        -  [Behaviour] checking for account info update
+
+
+2023.10.08 00:00:43 Log        -  [Behaviour] checking terms of service
+
+
+2023.10.08 00:00:43 Log        -  [Behaviour] TOS current version: 8, accepted: 8
+
+
+2023.10.08 00:00:43 Log        -  [Behaviour] checking privacy policy
+
+
+2023.10.08 00:00:43 Log        -  [Behaviour] Privacy Policy current version: 0, accepted: 0
+
+
+2023.10.08 00:00:43 Log        -  [Behaviour] set connect error state
+
+
+2023.10.08 00:00:43 Log        -  [Behaviour] checking for youtube-dl updates
+
+
+2023.10.08 00:00:43 Log        -  [Behaviour] upgrade settings data
+
+
+2023.10.08 00:00:43 Log        -  [Behaviour] wait for auth token
+
+
+2023.10.08 00:00:43 Log        -  [VRCInputManager] Personal space set to: False
+
+
+2023.10.08 00:00:43 Log        -  [VRCInputManager] Skip go button on load set to: True
+
+
+2023.10.08 00:00:43 Log        -  [VRCInputManager] Earmuff mode set to: False
+
+
+2023.10.08 00:00:43 Log        -  [Behaviour] Locating best region
+
+
+2023.10.08 00:00:43 Log        -  [Behaviour] Using nameserver host: ns.photonengine.io
+
+
+2023.10.08 00:00:43 Log        -  [Behaviour] OnRegionListReceived
+
+
+2023.10.08 00:00:43 Log        -  [Behaviour] OnRegionListReceived
+
+
+2023.10.08 00:00:44 Log        -  [EOSManager] [Info][LogEOSMessaging] Succesfully connected to Stomp. LocalUserId=[000...c88]
+
+
+2023.10.08 00:00:45 Log        -  [Behaviour] Got best network region: Japan
+
+
+2023.10.08 00:00:46 Log        -  [Behaviour] check for tutorial display
+
+
+2023.10.08 00:00:47 Log        -  HTTPFormUseage:UrlEncoded
+
+
+2023.10.08 00:00:49 Log        -  [Always] Fetched local user permissions
+
+
+2023.10.08 00:00:49 Log        -  [Behaviour] Tutorial check done. completedTutorial:False completedAnyTutorial:True
+
+
+2023.10.08 00:01:29 Log        -  NativeProcess.Start: started process id [11888]: C:/Program Files/Oculus/Software/Software/vrchat-vrchat/VRChat_Data/../install.exe 
+
+
+2023.10.08 00:01:29 Log        -  VRCApplication: OnApplicationQuit at 56.94472
+
+
+2023.10.08 00:01:29 Log        -  [OVRManager] OnApplicationQuit
+
+
+2023.10.08 00:01:29 Log        -  [Behaviour] OnDisconnected: DisconnectByClientLogic
+
+
+2023.10.08 00:01:29 Log        -  [Behaviour] Client invoked disconnect.
+
+
+2023.10.08 00:01:29 Log        -  [OVRManager] OnApplicationFocus(false)
+
+
+2023.10.08 00:01:29 Log        -  HTTPFormUseage:UrlEncoded
+
+
+2023.10.08 00:01:31 Log        -  VRCApplication: OnApplicationQuit at 58.88039
+
+
+2023.10.08 00:01:31 Log        -  [OVRManager] OnApplicationQuit
+
+
+2023.10.08 00:01:31 Log        -  [EOSManager] [Info][LogEOSAntiCheat] [AntiCheatClient] RemoveNotifyMessageToServer with NotificationId=[19]
+
+
+2023.10.08 00:01:31 Error      -  [EOSManager] [Error][LogEOSAntiCheat] [AntiCheatClient] Attempted to remove a handler that was not bound. NotificationId=[20]
+
+
+2023.10.08 00:01:32 Log        -  [EOSManager] PlatformInterface.ShutDown: Success
+
+
+2023.10.08 00:01:32 Log        -  [OVRManager] OnDestroy
+
+

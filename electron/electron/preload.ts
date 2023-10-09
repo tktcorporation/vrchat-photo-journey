@@ -18,6 +18,18 @@ const api = {
   sendMessage: (message: string) => {
     ipcRenderer.send('message', message);
   },
+  setLogFilePath: (path: string) => {
+    ipcRenderer.send('set-log-file-path', path);
+  },
+  openDialogAndSetLogFilesDir: () => {
+    ipcRenderer.send('open-dialog-and-set-log-files-dir');
+  },
+  getLogFilesDir: () => {
+    ipcRenderer.send('get-log-files-dir');
+  },
+  getJoinWorldLogLines: () => {
+    ipcRenderer.send('get-join-world-log-lines');
+  },
   /**
     Here function for AppBar
    */
@@ -35,6 +47,9 @@ const api = {
    */
   on: (channel: string, callback: (data: any) => void) => {
     ipcRenderer.on(channel, (_, data) => callback(data));
+  },
+  removeAllListeners: (channel: string) => {
+    ipcRenderer.removeAllListeners(channel);
   }
 };
 contextBridge.exposeInMainWorld('Main', api);
