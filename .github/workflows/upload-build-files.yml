@@ -39,29 +39,29 @@ jobs:
         name: app-${{ matrix.os }}
         path: dist/*
   
-release:
-  needs: build
-  runs-on: ubuntu-latest
+  release:
+    needs: build
+    runs-on: ubuntu-latest
 
-  steps:
-  - name: Download artifacts
-    uses: actions/download-artifact@v2
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v2
 
-  - name: Zip artifacts
-    run: |
-      zip -r app-windows-latest.zip app-windows-latest
-      zip -r app-ubuntu-latest.zip app-ubuntu-latest
-      zip -r app-macOS-latest.zip app-macOS-latest
+    - name: Zip artifacts
+      run: |
+        zip -r app-windows-latest.zip app-windows-latest
+        zip -r app-ubuntu-latest.zip app-ubuntu-latest
+        zip -r app-macOS-latest.zip app-macOS-latest
 
-  - name: Release
-    uses: softprops/action-gh-release@v1
-    with:
-      files: |
-        app-windows-latest.zip
-        app-ubuntu-latest.zip
-        app-macOS-latest.zip
-      tag_name: ${{ github.ref }}
-      body: |
-        Release for ${{ github.ref }}
-      draft: false
-      prerelease: false
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          app-windows-latest.zip
+          app-ubuntu-latest.zip
+          app-macOS-latest.zip
+        tag_name: ${{ github.ref }}
+        body: |
+          Release for ${{ github.ref }}
+        draft: false
+        prerelease: false
