@@ -45,15 +45,14 @@ jobs:
       uses: actions/download-artifact@v2
 
     - name: Release
-      uses: gh-actions/gh-release@master
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@v1
       with:
-        name: Release ${{ github.ref }}
+        files: |
+          app-windows-latest.zip
+          app-ubuntu-latest.zip
+          app-macOS-latest.zip
         tag_name: ${{ github.ref }}
+        body: |
+          Release for ${{ github.ref }}
         draft: false
         prerelease: false
-        files: |
-          app-windows-latest/*
-          app-ubuntu-latest/*
-          app-macOS-latest/*
