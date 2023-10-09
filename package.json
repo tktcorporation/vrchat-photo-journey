@@ -65,6 +65,14 @@
   },
   "build": {
     "asar": true,
+    "linux": {
+      "target": [
+        "AppImage"
+      ]
+    },
+    "win": {
+      "target": ["nsis", "zip"]
+    },
     "files": [
       "main",
       "src/out"
