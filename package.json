@@ -24,7 +24,7 @@
     "build": "npm run build:vite && npm run build:electron",
     "build:vite": "vite build",
     "build:electron": "tsc -p electron",
-    "dist": "npm run build && electron-builder",
+    "dist": "npm run build && electron-builder --publish never",
     "pack": "npm run build && electron-builder --dir",
     "clean": "rimraf dist main src/out",
     "type-check": "tsc",
@@ -65,14 +65,6 @@
   },
   "build": {
     "asar": true,
-    "linux": {
-      "target": [
-        "AppImage"
-      ]
-    },
-    "win": {
-      "target": ["nsis", "zip"]
-    },
     "files": [
       "main",
       "src/out"
