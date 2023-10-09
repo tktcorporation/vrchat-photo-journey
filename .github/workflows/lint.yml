@@ -1,0 +1,24 @@
+name: Lint
+
+on:
+  push:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    working-directory: ./electron
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: '.node-version'
+      
+      - name: install dependencies
+        run: npm ci
+
+      - name: lint
+        run: npm run type-check && npm run lint

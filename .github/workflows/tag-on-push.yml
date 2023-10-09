@@ -1,0 +1,21 @@
+name: Tag on Push to Main
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  create_tag:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Create Tag
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git tag "build-${GITHUB_SHA::8}"
+        git push origin "build-${GITHUB_SHA::8}"

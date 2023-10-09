@@ -1,10 +1,10 @@
 {
-  "name": "vite-reactts-electron-starter",
-  "version": "0.5.0",
+  "name": "add-metadata-to-vrc-photo",
+  "version": "0.0.1",
   "license": "MIT",
   "main": "main/index.js",
   "author": {
-    "name": "Maximilian Stümpfl"
+    "name": "tktcorporation"
   },
   "description": "Starter using Vite 2+ React +Typescript + Electron for fast prototyping.",
   "keywords": [
@@ -14,9 +14,9 @@
     "typescript"
   ],
   "repository": {
-    "url": "https://github.com/lTimeless/vite-reactts-electron-starter"
+    "url": "https://github.com/tktcorporation/add-world-name-to-vrc-photo"
   },
-  "productName": "vite-reactts-electron-starter",
+  "productName": "add-metadata-to-vrc-photo",
   "scripts": {
     "dev": "concurrently \"yarn dev:vite\" \" yarn dev:electron\"",
     "dev:vite": "vite",
