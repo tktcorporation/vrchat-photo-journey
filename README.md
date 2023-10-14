@@ -1,6 +1,6 @@
 # 作業計画
 ## α
-* log file の取得
+* [x] log file の取得
     * log file dir を指定できる
     * log file dir から files を読み取って world id と timestamp を取り出す
 * ボタンクリックで指定したフォルダ内に固定のファイルを生成できるように
