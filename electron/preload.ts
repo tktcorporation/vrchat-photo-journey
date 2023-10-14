@@ -30,6 +30,15 @@ const api = {
   getJoinWorldLogLines: () => {
     ipcRenderer.send('get-join-world-log-lines');
   },
+  openDialogAndSetVRChatPhotoDir: () => {
+    ipcRenderer.send('open-dialog-and-set-vrchat-photo-dir');
+  },
+  getVRChatPhotoDir: () => {
+    ipcRenderer.send('get-vrchat-photo-dir');
+  },
+  createFiles: () => {
+    ipcRenderer.send('create-files');
+  },
   /**
     Here function for AppBar
    */

@@ -67,6 +67,17 @@ function App() {
     }
   }, []);
 
+  const [vrchatPhotoDir, setVrchatPhotoDir] = useState<string | null>(null);
+  useEffect(() => {
+    if (window.Main) {
+      window.Main.on('vrchat-photo-dir', (dir: string) => {
+        console.log(dir);
+        setVrchatPhotoDir(dir);
+      });
+    }
+  }, []);
+
+  // toast 表示用
   useEffect(() => {
     if (window.Main)
       window.Main.on('toast', (content: string) => {
@@ -144,6 +155,29 @@ function App() {
               return <div key={line}>{line}</div>;
             })}
           </div>
+          {/* VRChat Photo の Dir を指定する */}
+          <button
+            className="open-dialog-and-set-vrchat-photo-dir-button py-2 px-4 bg-white rounded focus:outline-none shadow hover:bg-yellow-200"
+            onClick={() => {
+              if (window.Main) {
+                window.Main.openDialogAndSetVRChatPhotoDir();
+              }
+            }}
+          >
+            openDialogAndSetVRChatPhotoDir
+          </button>
+          <div className="vrchat-photo-dir-label">vrchat-photo-dir: {vrchatPhotoDir}</div>
+          {/* ファイル生成ボタン */}
+          <button
+            className="create-file-button py-2 px-4 bg-white rounded focus:outline-none shadow hover:bg-yellow-200"
+            onClick={() => {
+              if (window.Main) {
+                window.Main.createFiles();
+              }
+            }}
+          >
+            createFile
+          </button>
         </div>
       </div>
     </div>

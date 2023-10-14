@@ -1,8 +1,6 @@
 // Native
 import { join } from 'path';
 
-import Store from 'electron-store';
-
 // Packages
 import { BrowserWindow, app, ipcMain, IpcMainEvent, dialog } from 'electron';
 import isDev from 'electron-is-dev';
@@ -12,12 +10,11 @@ import isDev from 'electron-is-dev';
 
 // listen the channel `message` and resend the received message to the renderer process
 
-import { getJoinWorldLogLines } from './service';
+import * as settingStore from './settingStore';
+import { getJoinWorldLogLines, createFiles } from './service';
 
 const height = 600;
 const width = 800;
-
-const settingsStore = new Store({ name: 'v0-settings' });
 
 function createWindow() {
   // Create the browser window.
@@ -108,7 +105,7 @@ ipcMain.on('open-dialog-and-set-log-files-dir', (event: IpcMainEvent) => {
       console.log(result);
       if (!result.canceled) {
         const dirPath = result.filePaths[0];
-        settingsStore.set('logFilesDir', dirPath);
+        settingStore.set('logFilesDir', dirPath);
         event.sender.send('toast', `Log file path set to ${dirPath}`);
       }
     })
@@ -118,7 +115,7 @@ ipcMain.on('open-dialog-and-set-log-files-dir', (event: IpcMainEvent) => {
 });
 
 ipcMain.on('get-log-files-dir', (event: IpcMainEvent) => {
-  const logFilesDir = settingsStore.get('logFilesDir');
+  const logFilesDir = settingStore.get('logFilesDir');
   if (typeof logFilesDir !== 'string') {
     event.sender.send('toast', `Log file path is not set`);
     return;
@@ -131,7 +128,7 @@ ipcMain.on('get-log-files-dir', (event: IpcMainEvent) => {
 
 ipcMain.on('get-join-world-log-lines', (event: IpcMainEvent) => {
   console.log('get-join-world-log-lines');
-  const logFilesDir = settingsStore.get('logFilesDir');
+  const logFilesDir = settingStore.get('logFilesDir');
   if (typeof logFilesDir !== 'string') {
     event.sender.send('toast', `Log file path is not set`);
     return;
@@ -140,13 +137,57 @@ ipcMain.on('get-join-world-log-lines', (event: IpcMainEvent) => {
   event.sender.send('join-world-log-lines', logLines);
 });
 
-// ipcMain.on('create-world-join-log-to-photo-dir', (event: IpcMainEvent) => {
-//   console.log('create-world-join-log-to-photo-dir');
-//   const logFilesDir = settingsStore.get('logFilesDir');
-//   if (typeof logFilesDir !== 'string') {
-//     event.sender.send('toast', `Log file path is not set`);
-//     return;
-//   }
-//   const logLines = getJoinWorldLogLines(logFilesDir);
+ipcMain.on('open-dialog-and-set-vrchat-photo-dir', (event: IpcMainEvent) => {
+  console.log('open-dialog-and-set-vrchat-photo-dir');
+  dialog
+    .showOpenDialog({
+      properties: ['openDirectory']
+    })
+    .then((result) => {
+      console.log(result);
+      if (!result.canceled) {
+        const dirPath = result.filePaths[0];
+        settingStore.set('vrchatPhotoDir', dirPath);
+        event.sender.send('vrc-photo-dir', dirPath);
+        event.sender.send('toast', `VRChat photo path set to ${dirPath}`);
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+});
 
-// }
+ipcMain.on('get-vrchat-photo-dir', (event: IpcMainEvent) => {
+  console.log('get-vrchat-photo-dir');
+  const vrchatPhotoDir = settingStore.get('vrchatPhotoDir');
+  if (typeof vrchatPhotoDir !== 'string') {
+    event.sender.send('toast', `VRChat photo path is not set`);
+    return;
+  }
+  event.sender.send('vrchat-photo-dir', vrchatPhotoDir);
+});
+
+ipcMain.on('create-files', (event: IpcMainEvent) => {
+  console.log('create-files');  
+  // get log lines
+  const logFilesDir = settingStore.get('logFilesDir');
+  if (typeof logFilesDir !== 'string') {
+    event.sender.send('toast', `Log file path is not set`);
+    return;
+  }
+  const logLines = getJoinWorldLogLines(logFilesDir);
+  
+  // create files
+  const worldVisitLogFileDir = settingStore.get('vrchatPhotoDir');
+  if (typeof worldVisitLogFileDir !== 'string') {
+    event.sender.send('toast', `World visit log file path is not set`);
+    return;
+  }
+  try {
+    createFiles(worldVisitLogFileDir, logLines);
+    event.sender.send('toast', `Files created`);
+  } catch (error) {
+    console.log(error);
+    event.sender.send('toast', `Error: ${error}`);
+  }
+})

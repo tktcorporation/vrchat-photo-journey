@@ -45,3 +45,19 @@ export const getJoinWorldLogLines = (logFilesDir: string): string[] => {
   });
   return formattedLogLines;
 };
+
+export const createFiles = (logFilesDir: string, logLines: string[]) => {
+  // ファイル名を作成
+  const fileNames = logLines.map((logLine) => `${logLine}.txt`);
+  // ファイルを作成
+  const filePaths = fileNames.map((fileName) => path.join(logFilesDir, fileName));
+  const contents = fileNames.map((fileName) => `https://vrchat.com/home/world/${fileName}`);
+  const files = filePaths.map((filePath, index) => {
+    const content = contents[index];
+    return { filePath, content };
+  }
+  );
+  files.forEach((file) => {
+    fs.writeFileSync(file.filePath, file.content);
+  });
+};
