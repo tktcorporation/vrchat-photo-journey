@@ -1,16 +1,18 @@
-# Vite + React + Typescript + Electron - Starter
+# 作業計画
+## α
+* log file の取得
+    * log file dir を指定できる
+    * log file dir から files を読み取って world id と timestamp を取り出す
+* ボタンクリックで指定したフォルダ内に固定のファイルを生成できるように
+* VRChat の写真 dir を取得できるように
+* 指定した dir にファイル生成
+* 月ごとに仕分けしてファイル生成できるように
+* UI と導線整備
 
-![Vite + React + Typescript + Tailwind + Electron Starter](Screenshot.jpg)
+# 動作確認済み開発環境
+* GitHub Codespaces
 
-> It is a simple starter template without unnecessary packages.
-
-This very simple Starter template, utilizes [Vite](https://github.com/vitejs/vite), [Tailwind](https://tailwindcss.com/), [React](https://reactjs.org/), [Typescript](https://www.typescriptlang.org/) and [Electron](https://electronjs.org/).
-
-By default, the React framework is used for the interface, but you can easily use any other framework such as Vue, Preact, Angular, Svelte or anything else.
-
-> Vite is framework agnostic
-
-## Installation
+# Installation
 
 Clone this repo and install all dependencies  
 `yarn` or `npm install`
@@ -19,6 +21,8 @@ Clone this repo and install all dependencies
 
 `yarn dev` or `npm run dev`
 
+* `port 6080` をブラウザで開き、password `vscode` を入力することで仮想ウィンドウが立ち上がる
+
 ## Build
 
 `yarn build` or `npm run build`
@@ -26,12 +30,3 @@ Clone this repo and install all dependencies
 ## Publish
 
 `yarn dist` or `npm run dist`
-
-## More advanced templates  
-
-If you are looking for more advanced templates than this, please go to one of the following links (these are some other links out of the **[awesome-vite](https://github.com/vitejs/awesome-vite)** repo) or you can help me make this template better 🙂  
-
-Links: 
-- [vite-react-electron](https://github.com/caoxiemeihao/vite-react-electron)
-- [electron-vite-react](https://github.com/twstyled/electron-vite-react)
-- [vite-electron-esbuild-starter](https://github.com/jctaoo/vite-electron-esbuild-starter)
