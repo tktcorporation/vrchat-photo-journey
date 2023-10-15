@@ -55,8 +55,7 @@ export const createFiles = (logFilesDir: string, logLines: string[]) => {
   const files = filePaths.map((filePath, index) => {
     const content = contents[index];
     return { filePath, content };
-  }
-  );
+  });
   files.forEach((file) => {
     fs.writeFileSync(file.filePath, file.content);
   });

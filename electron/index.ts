@@ -168,7 +168,7 @@ ipcMain.on('get-vrchat-photo-dir', (event: IpcMainEvent) => {
 });
 
 ipcMain.on('create-files', (event: IpcMainEvent) => {
-  console.log('create-files');  
+  console.log('create-files');
   // get log lines
   const logFilesDir = settingStore.get('logFilesDir');
   if (typeof logFilesDir !== 'string') {
@@ -176,7 +176,7 @@ ipcMain.on('create-files', (event: IpcMainEvent) => {
     return;
   }
   const logLines = getJoinWorldLogLines(logFilesDir);
-  
+
   // create files
   const worldVisitLogFileDir = settingStore.get('vrchatPhotoDir');
   if (typeof worldVisitLogFileDir !== 'string') {
@@ -190,4 +190,4 @@ ipcMain.on('create-files', (event: IpcMainEvent) => {
     console.log(error);
     event.sender.send('toast', `Error: ${error}`);
   }
-})
+});
