@@ -35,6 +35,7 @@ const handleOpenDialogAndSetLogFilesDir = (event: IpcMainEvent) => {
     .then((result) => {
       if (!result.canceled) {
         const dirPath = result.filePaths[0];
+        settingStore.set('logFilesDir', dirPath);
         event.sender.send(CHANNELS.TOAST, messages.LOG_PATH_SET(dirPath));
         event.sender.send(CHANNELS.LOG_FILES_DIR, dirPath);
       }
@@ -151,7 +152,7 @@ function createWindow(): BrowserWindow {
     mainWindow.loadFile(url);
   }
   // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
 
   // For AppBar
   ipcMain.on('minimize', () => {
@@ -172,9 +173,8 @@ function createWindow(): BrowserWindow {
 }
 
 app.whenReady().then(() => {
-  const win = createWindow();
-  console.log('win', win);
   registerIpcMainListeners();
+  createWindow();
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();

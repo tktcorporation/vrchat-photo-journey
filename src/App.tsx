@@ -176,27 +176,11 @@ function MainContainer() {
 function App() {
   console.log(window.ipcRenderer);
 
-  const [isOpen, setOpen] = useState(false);
-
-  const [showAppBar, setShowAppBar] = useState(false);
-  // window.Main を監視する
-  // useEffect(() => {
-  //   if (window.Main) {
-  //     setShowAppBar(true);
-  //   }
-  // }, []);
-
   return (
     <div className="flex flex-col h-screen">
-      {showAppBar && <AppBar />}
-      <button
-        className="bg-red-400 py-2 px-4 rounded focus:outline-none shadow hover:bg-red-200"
-        onClick={() => setOpen(!isOpen)}
-      >
-        Toggle
-      </button>
+      {window.Main && <AppBar />}
 
-      {isOpen && <MainContainer />}
+      {window.Main && <MainContainer />}
     </div>
   );
 }
