@@ -20,9 +20,9 @@
   "scripts": {
     "preinstall": "npx only-allow yarn",
     "postinstall": "simple-git-hooks",
-    "dev": "concurrently \"yarn dev:vite\" \" yarn dev:electron\"",
+    "dev": "eval `dbus-launch --sh-syntax` && concurrently \"yarn dev:vite\" \" yarn dev:electron\"",
     "dev:vite": "vite",
-    "dev:electron": "npm run build:electron && electron .",
+    "dev:electron": "npm run build:electron && electron . --disable-gpu",
     "build": "npm run build:vite && npm run build:electron",
     "build:vite": "vite build",
     "build:electron": "tsc -p electron",
