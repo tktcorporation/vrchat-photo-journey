@@ -6,7 +6,8 @@ import { BrowserWindow, app, ipcMain, IpcMainEvent, dialog } from 'electron';
 import isDev from 'electron-is-dev';
 
 import * as settingStore from './settingStore';
-import { getJoinWorldLogLines, createFiles } from './service';
+// 呼び出し元は service に集約したい
+import { createFiles, getLogLinesFromDir, convertLogLinesToWorldJoinLogInfos } from './service';
 
 const CHANNELS = {
   OPEN_DIALOG_AND_SET_LOG_FILES_DIR: 'open-dialog-and-set-log-files-dir',
@@ -60,7 +61,7 @@ const handleGetJoinWorldLogLines = (event: IpcMainEvent) => {
     event.sender.send(CHANNELS.TOAST, messages.PATH_NOT_SET);
     return;
   }
-  const logLines = getJoinWorldLogLines(logFilesDir);
+  const logLines = getLogLinesFromDir(logFilesDir);
   event.sender.send(CHANNELS.JOIN_WORLD_LOG_LINES, logLines);
 };
 
@@ -98,16 +99,17 @@ const handleCreateFiles = (event: IpcMainEvent) => {
     event.sender.send('toast', `Log file path is not set`);
     return;
   }
-  const logLines = getJoinWorldLogLines(logFilesDir);
+  const logLines = getLogLinesFromDir(logFilesDir);
+  const convertWorldJoinLogInfoList = convertLogLinesToWorldJoinLogInfos(logLines);
 
   // create files
-  const worldVisitLogFileDir = settingStore.get('vrchatPhotoDir');
-  if (typeof worldVisitLogFileDir !== 'string') {
+  const vrchatPhotoDir = settingStore.get('vrchatPhotoDir');
+  if (typeof vrchatPhotoDir !== 'string') {
     event.sender.send('toast', `World visit log file path is not set`);
     return;
   }
   try {
-    createFiles(worldVisitLogFileDir, logLines);
+    createFiles(vrchatPhotoDir, convertWorldJoinLogInfoList);
     event.sender.send('toast', `Files created`);
   } catch (error) {
     console.log(error);
