@@ -24,13 +24,25 @@ const createFiles = (vrchatPhotoDir: string, worldJoinLogInfoList: worldLogInfo.
     path.join(
       vrchatPhotoDir,
       `${info.year}-${info.month}`,
-      `${worldLogInfo.convertWorldJoinLogInfoToOneLine(info)}.txt`
+      `${worldLogInfo.convertWorldJoinLogInfoToOneLine(info)}.html`
     )
   );
   // https://vrchat.com/home/world/wrld_4eeb98e0-2c89-4677-8b33-af1ec22e7a69
+  // url にリダイレクトを行うhtmlファイルを作成
   const contents = worldJoinLogInfoList
     .map((info) => info.worldId)
-    .map((worldId) => `https://vrchat.com/home/world/${worldId}`);
+    .map((worldId) => {
+      return `
+      <html>
+        <head>
+          <meta http-equiv="refresh" content="0;URL=https://vrchat.com/home/world/${worldId}" />
+        </head>
+        <body>
+          <p>Redirecting to <a href="https://vrchat.com/home/world/${worldId}">https://vrchat.com/home/world/${worldId}</a></p>
+        </body>
+      </html>
+      `;
+    });
   const files = filePaths.map((filePath, index) => {
     const content = contents[index];
     return { filePath, content };
