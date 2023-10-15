@@ -21,10 +21,10 @@ jobs:
           node-version-file: '.node-version'
       
       - name: install dependencies
-        run: npm ci
+        run: yarn install --frozen-lockfile
 
       - name: lint
-        run: npm run type-check && npm run lint
+        run: yarn type-check && yarn lint
 
   create_tag:
     runs-on: ubuntu-latest
