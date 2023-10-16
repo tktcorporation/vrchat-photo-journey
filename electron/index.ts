@@ -124,6 +124,9 @@ function registerIpcMainListeners() {
   ipcMain.on(CHANNELS.OPEN_DIALOG_AND_SET_VRCHAT_PHOTO_DIR, handleOpenDialogAndSetVRChatPhotoDir);
   ipcMain.on(CHANNELS.GET_VRCHAT_PHOTO_DIR, handleGetVRChatPhotoDir);
   ipcMain.on(CHANNELS.CREATE_FILES, handleCreateFiles);
+  ipcMain.on(CHANNELS.MESSAGE, (_, message) => {
+    console.log(message);
+  });
 }
 
 const height = 600;
