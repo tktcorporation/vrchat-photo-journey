@@ -7,6 +7,7 @@ interface WorldJoinLogInfo {
   minute: string;
   second: string;
   worldId: WorldId;
+  worldName: string;
 }
 
 const validateWorldId = (value: string): value is WorldId => {
@@ -14,29 +15,35 @@ const validateWorldId = (value: string): value is WorldId => {
   return regex.test(value);
 };
 
-const converLogEntryToWorldJoinLogInfo = (logEntry: string): WorldJoinLogInfo => {
-  // input: 2023.10.08 00:03:00 Log        -  [Behaviour] Joining wrld_6fecf18a-ab96-43f2-82dc-ccf79f17c34f:92664~region(jp)
-
-  // Regular expression to extract the relevant information from the log entry
+const extractWorldJoinInfoFromLogs = (logLines: string[], index: number): WorldJoinLogInfo | null => {
+  const logEntry = logLines[index];
   const regex = /(\d{4}\.\d{2}\.\d{2}) (\d{2}:\d{2}:\d{2}) .* \[Behaviour\] Joining (wrld_[a-f0-9-]+):.*/;
   const matches = logEntry.match(regex);
 
-  // Check if the regular expression matched the log entry
-  if (matches && matches.length >= 4) {
-    // Extracting the relevant parts of the log entry
-    const date = matches[1];
-    const time = matches[2];
-    const worldId = matches[3];
+  if (!matches || matches.length < 4) {
+    return null;
+  }
+  const date = matches[1].replace(/\./g, '-');
+  const time = matches[2].replace(/:/g, '-');
+  const worldId = matches[3];
 
-    // Formatting the extracted information into the desired output format
-    const formattedDate = date.replace(/\./g, '-');
-    const formattedTime = time.replace(/:/g, '-');
-    // return `VRChat_${formattedDate}_${formattedTime}_${worldId}`;
-    const [year, month, day] = formattedDate.split('-');
-    const [hour, minute, second] = formattedTime.split('-');
-    if (!validateWorldId(worldId)) {
-      throw new Error('WorldId did not match the expected format');
+  if (!validateWorldId(worldId)) {
+    throw new Error('WorldId did not match the expected format');
+  }
+
+  const [year, month, day] = date.split('-');
+  const [hour, minute, second] = time.split('-');
+  let foundWorldName: string | null = null;
+  // Extracting world name from the subsequent lines
+  logLines.slice(index + 1).forEach((log) => {
+    const worldNameRegex = /\[Behaviour\] Joining or Creating Room: (.+)/;
+    const [, worldName] = log.match(worldNameRegex) || [];
+    if (worldName && !foundWorldName) {
+      foundWorldName = worldName;
     }
+  });
+
+  if (foundWorldName) {
     return {
       year,
       month,
@@ -44,17 +51,26 @@ const converLogEntryToWorldJoinLogInfo = (logEntry: string): WorldJoinLogInfo =>
       hour,
       minute,
       second,
-      worldId
+      worldId,
+      worldName: foundWorldName
     };
   }
-  // Return an error message if the log entry did not match the expected format
-  throw new Error('Log entry did not match the expected format');
+
+  throw new Error('Failed to extract world name from the subsequent log entries');
 };
 
-// output: VRChat_2023-10-08_00-03-00_wrld_6fecf18a-ab96-43f2-82dc-ccf79f17c34f
 const convertLogLinesToWorldJoinLogInfos = (logLines: string[]): WorldJoinLogInfo[] => {
-  const linesFiltered = logLines.filter((line) => line.includes('Joining wrld'));
-  const worldJoinLogInfos = linesFiltered.map((logLine) => converLogEntryToWorldJoinLogInfo(logLine));
+  const worldJoinLogInfos: WorldJoinLogInfo[] = [];
+
+  logLines.forEach((log, index) => {
+    if (log.includes('Joining wrld')) {
+      const info = extractWorldJoinInfoFromLogs(logLines, index);
+      if (info) {
+        worldJoinLogInfos.push(info);
+      }
+    }
+  });
+
   return worldJoinLogInfos;
 };
 
@@ -69,7 +85,7 @@ const convertWorldJoinLogInfoToOneLine = (worldJoinLogInfo: WorldJoinLogInfo): W
 // 一括 export
 export {
   validateWorldId,
-  converLogEntryToWorldJoinLogInfo,
+  extractWorldJoinInfoFromLogs,
   convertLogLinesToWorldJoinLogInfos,
   convertWorldJoinLogInfoToOneLine
 };
