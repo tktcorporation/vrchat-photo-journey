@@ -1,36 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { ArrowPathIcon } from '@heroicons/react/24/outline';
 
 function MainContainer() {
-  const [isOpen, setOpen] = useState(false);
-  const [isSent, setSent] = useState(false);
-  const [fromMain, setFromMain] = useState<string | null>(null);
-
-  const handleToggle = () => {
-    if (isOpen) {
-      setOpen(false);
-      setSent(false);
-    } else {
-      setOpen(true);
-      setFromMain(null);
-    }
-  };
-  const sendMessageToElectron = () => {
-    if (window.Main) {
-      window.Main.sendMessage("Hello I'm from React World");
-    } else {
-      setFromMain('You are in a Browser, so no Electron functions are available');
-    }
-    setSent(true);
-  };
-
-  useEffect(() => {
-    if (isSent && window.Main)
-      window.Main.on('message', (message: string) => {
-        setFromMain(message);
-      });
-  }, [fromMain, isSent]);
-
   // 初期表示時に log-files-dir を取得する
   const [logFilesDir, setlogFilesDir] = useState<string | null>(null);
   const [logFileNames, setlogFileNames] = useState<string[] | null>(null);
@@ -83,38 +55,8 @@ function MainContainer() {
   });
   return (
     <div className="flex-auto">
-      <div className=" flex flex-col justify-center items-center h-full bg-gray-800 space-y-4">
-        <h1 className="text-2xl text-gray-200">Vite + React + Typescript + Electron + Tailwind</h1>
-        <button
-          className="bg-yellow-400 py-2 px-4 rounded focus:outline-none shadow hover:bg-yellow-200"
-          onClick={handleToggle}
-        >
-          Click Me
-        </button>
-        {isOpen && (
-          <div className="flex flex-col space-y-4 items-center">
-            <div className="flex space-x-3">
-              <h1 className="text-xl text-gray-50">💝 Welcome 💝, now send a message to the Main 📩📩</h1>
-              <button
-                onClick={sendMessageToElectron}
-                className=" bg-green-400 rounded px-4 py-0 focus:outline-none hover:bg-green-300"
-              >
-                Send
-              </button>
-            </div>
-            {isSent && (
-              <div>
-                <h4 className=" text-green-500">Message sent!!</h4>
-              </div>
-            )}
-            {fromMain && (
-              <div>
-                {' '}
-                <h4 className=" text-yellow-200">{fromMain}</h4>
-              </div>
-            )}
-          </div>
-        )}
+      <div className=" flex flex-col justify-center items-center h-full space-y-4 bg-blue-50">
+        <h1 className="text-2xl text-gray-900">VRChatの写真どこで取ったかわかるようにするアプリ</h1>
         <button
           className="open-dialog-and-set-log-files-dir-button py-2 px-4 bg-white rounded focus:outline-none shadow hover:bg-yellow-200"
           onClick={() => {
@@ -123,26 +65,9 @@ function MainContainer() {
             }
           }}
         >
-          openDialogAndSetLogFilesDir
-        </button>
-        <button
-          className="get-log-files-dir-button py-2 px-4 bg-white rounded focus:outline-none shadow hover:bg-yellow-200"
-          onClick={() => {
-            if (window.Main) {
-              window.Main.getLogFilesDir();
-            }
-          }}
-        >
-          getLogFilesDir
+          ログファイルの場所を指定する
         </button>
         <div className="log-files-dir-label">log-files-dir: {logFilesDir}</div>
-        <div className="log-file-names-label">log-file-names: {logFileNames?.join(',')}</div>
-        <div className="join-world-log-lines-label">
-          join-world-log-lines:
-          {joinWorldLogLines.map((line) => {
-            return <div key={line}>{line}</div>;
-          })}
-        </div>
         {/* VRChat Photo の Dir を指定する */}
         <button
           className="open-dialog-and-set-vrchat-photo-dir-button py-2 px-4 bg-white rounded focus:outline-none shadow hover:bg-yellow-200"
@@ -152,9 +77,21 @@ function MainContainer() {
             }
           }}
         >
-          openDialogAndSetVRChatPhotoDir
+          VRChat Photo の場所を指定する
         </button>
         <div className="vrchat-photo-dir-label">vrchat-photo-dir: {vrchatPhotoDir}</div>
+        {/* 設定の再取得 */}
+        <button
+          className="get-vrchat-photo-dir-button py-2 px-4 bg-white rounded focus:outline-none shadow hover:bg-yellow-200"
+          onClick={() => {
+            if (window.Main) {
+              window.Main.getVRChatPhotoDir();
+              window.Main.getLogFilesDir();
+            }
+          }}
+        >
+          <ArrowPathIcon className="h-5 w-5" />
+        </button>
         {/* ファイル生成ボタン */}
         <button
           className="create-file-button py-2 px-4 bg-white rounded focus:outline-none shadow hover:bg-yellow-200"
@@ -164,8 +101,16 @@ function MainContainer() {
             }
           }}
         >
-          createFile
+          どこで撮ったか調べる
         </button>
+      </div>
+      {/* デバッグ用領域 */}
+      <div className="log-file-names-label">log-file-names: {logFileNames?.join(',')}</div>
+      <div className="join-world-log-lines-label">
+        join-world-log-lines:
+        {joinWorldLogLines.map((line) => {
+          return <div key={line}>{line}</div>;
+        })}
       </div>
     </div>
   );
