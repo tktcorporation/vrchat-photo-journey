@@ -56,7 +56,7 @@ function MainContainer() {
   return (
     <div className="flex-auto">
       <div className=" flex flex-col justify-center items-center h-full space-y-4 bg-blue-50">
-        <h1 className="text-2xl text-gray-900">VRChatの写真どこで取ったかわかるようにするアプリ</h1>
+        <h1 className="text-2xl text-gray-900">VRChatの写真どこで撮ったかわかるようにするアプリ</h1>
         <button
           className="open-dialog-and-set-log-files-dir-button py-2 px-4 bg-white rounded focus:outline-none shadow hover:bg-yellow-200"
           onClick={() => {
