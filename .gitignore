@@ -15,6 +15,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # dev debug
+debug/photos/**/*.html
 debug/photos/**/*.txt
 
 # local env files

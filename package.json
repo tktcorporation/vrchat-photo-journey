@@ -34,6 +34,7 @@
     "lint:fix": "eslint . --ext js,jsx,ts,tsx --fix"
   },
   "dependencies": {
+    "@heroicons/react": "^2.0.18",
     "@vitejs/plugin-react": "^1.2.0",
     "electron-is-dev": "^2.0.0",
     "electron-store": "^8.1.0",
