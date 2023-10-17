@@ -36,4 +36,4 @@ Clone this repo and install all dependencies
 
 ## Publish
 
-`yarn dist` or `npm run dist`
+PullRequest を作成して main に merge されると、GitHubActions が動いて Releases にファイルがアップロードされる
