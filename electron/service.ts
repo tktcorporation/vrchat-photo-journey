@@ -2,18 +2,18 @@ import fs from 'fs';
 import path from 'path';
 
 import * as worldLogInfo from './service/worldLogInfo';
+import * as settingStore from './settingStore';
 
-const getLogLinesFromDir = (logFilesDir: string): string[] => {
-  const logFileNames = fs.readdirSync(logFilesDir);
-  // output_log から始まるファイル名のみを取得
-  const logFileNamesFiltered = logFileNames.filter((fileName) => fileName.startsWith('output_log'));
-  const logLines = logFileNamesFiltered.map((fileName) => {
-    const filePath = path.join(logFilesDir, fileName);
-    console.log(filePath);
-    const content = fs.readFileSync(filePath);
-    return content.toString().split('\n');
-  });
-  return logLines.flat();
+const getStatusToUseVRChatLogFilesDir = (): 'ready' | 'logFilesDirNotSet' | 'logFilesNotFound' => {
+  const vrchatLogFilesDir = settingStore.get('logFilesDir');
+  if (typeof vrchatLogFilesDir !== 'string') {
+    return 'logFilesDirNotSet';
+  }
+  const logFileNames = worldLogInfo.getVRChatLogFileNamesByDir(vrchatLogFilesDir);
+  if (logFileNames.length === 0) {
+    return 'logFilesNotFound';
+  }
+  return 'ready';
 };
 
 const createFiles = (vrchatPhotoDir: string, worldJoinLogInfoList: worldLogInfo.WorldJoinLogInfo[]) => {
@@ -50,8 +50,9 @@ const createFiles = (vrchatPhotoDir: string, worldJoinLogInfoList: worldLogInfo.
   });
 };
 
-const convertLogLinesToWorldJoinLogInfos = (logLines: string[]): worldLogInfo.WorldJoinLogInfo[] => {
+const convertLogLinesToWorldJoinLogInfosByVRChatLogDir = (logDir: string): worldLogInfo.WorldJoinLogInfo[] => {
+  const logLines = worldLogInfo.getLogLinesFromDir(logDir);
   return worldLogInfo.convertLogLinesToWorldJoinLogInfos(logLines);
 };
 
-export { getLogLinesFromDir, createFiles, convertLogLinesToWorldJoinLogInfos };
+export { createFiles, convertLogLinesToWorldJoinLogInfosByVRChatLogDir, getStatusToUseVRChatLogFilesDir };

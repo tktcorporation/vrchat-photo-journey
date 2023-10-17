@@ -7,7 +7,11 @@ import isDev from 'electron-is-dev';
 
 import * as settingStore from './settingStore';
 // 呼び出し元は service に集約したい
-import { createFiles, getLogLinesFromDir, convertLogLinesToWorldJoinLogInfos } from './service';
+import {
+  createFiles,
+  getStatusToUseVRChatLogFilesDir,
+  convertLogLinesToWorldJoinLogInfosByVRChatLogDir
+} from './service';
 
 const CHANNELS = {
   OPEN_DIALOG_AND_SET_LOG_FILES_DIR: 'open-dialog-and-set-log-files-dir',
@@ -20,7 +24,12 @@ const CHANNELS = {
   TOAST: 'toast',
   LOG_FILES_DIR: 'log-files-dir',
   JOIN_WORLD_LOG_LINES: 'join-world-log-lines',
-  VRCHAT_PHOTO_DIR: 'vrchat-photo-dir'
+  VRCHAT_PHOTO_DIR: 'vrchat-photo-dir',
+  GET_STATUS_TO_USE_VRCHAT_LOG_FILES_DIR: 'get-status-to-use-vrchat-log-files-dir'
+};
+
+const MESSAGE = {
+  STATUS_TO_USE_VRCHAT_LOG_FILES_DIR: 'status-to-use-vrchat-log-files-dir'
 };
 
 const messages = {
@@ -55,14 +64,9 @@ const handleGetLogFilesDir = (event: IpcMainEvent) => {
   event.sender.send(CHANNELS.LOG_FILES_DIR, logFilesDir);
 };
 
-const handleGetJoinWorldLogLines = (event: IpcMainEvent) => {
-  const logFilesDir = settingStore.get('logFilesDir');
-  if (typeof logFilesDir !== 'string') {
-    event.sender.send(CHANNELS.TOAST, messages.PATH_NOT_SET);
-    return;
-  }
-  const logLines = getLogLinesFromDir(logFilesDir);
-  event.sender.send(CHANNELS.JOIN_WORLD_LOG_LINES, logLines);
+const handlegetStatusToUseVRChatLogFilesDir = (event: IpcMainEvent) => {
+  const status = getStatusToUseVRChatLogFilesDir();
+  event.sender.send(MESSAGE.STATUS_TO_USE_VRCHAT_LOG_FILES_DIR, status);
 };
 
 const handleOpenDialogAndSetVRChatPhotoDir = (event: IpcMainEvent) => {
@@ -99,8 +103,7 @@ const handleCreateFiles = (event: IpcMainEvent) => {
     event.sender.send('toast', `Log file path is not set`);
     return;
   }
-  const logLines = getLogLinesFromDir(logFilesDir);
-  const convertWorldJoinLogInfoList = convertLogLinesToWorldJoinLogInfos(logLines);
+  const convertWorldJoinLogInfoList = convertLogLinesToWorldJoinLogInfosByVRChatLogDir(logFilesDir);
 
   // create files
   const vrchatPhotoDir = settingStore.get('vrchatPhotoDir');
@@ -120,10 +123,10 @@ const handleCreateFiles = (event: IpcMainEvent) => {
 function registerIpcMainListeners() {
   ipcMain.on(CHANNELS.OPEN_DIALOG_AND_SET_LOG_FILES_DIR, handleOpenDialogAndSetLogFilesDir);
   ipcMain.on(CHANNELS.GET_LOG_FILES_DIR, handleGetLogFilesDir);
-  ipcMain.on(CHANNELS.GET_JOIN_WORLD_LOG_LINES, handleGetJoinWorldLogLines);
   ipcMain.on(CHANNELS.OPEN_DIALOG_AND_SET_VRCHAT_PHOTO_DIR, handleOpenDialogAndSetVRChatPhotoDir);
   ipcMain.on(CHANNELS.GET_VRCHAT_PHOTO_DIR, handleGetVRChatPhotoDir);
   ipcMain.on(CHANNELS.CREATE_FILES, handleCreateFiles);
+  ipcMain.on(CHANNELS.GET_STATUS_TO_USE_VRCHAT_LOG_FILES_DIR, handlegetStatusToUseVRChatLogFilesDir);
   ipcMain.on(CHANNELS.MESSAGE, (_, message) => {
     console.log(message);
   });
