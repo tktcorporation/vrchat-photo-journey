@@ -1,20 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
+import { Link } from 'react-router-dom';
 
 function MainContainer() {
   // 初期表示時に log-files-dir を取得する
   const [logFilesDir, setlogFilesDir] = useState<string | null>(null);
-  const [logFileNames, setlogFileNames] = useState<string[] | null>(null);
   useEffect(() => {
     if (window.Main) {
       window.Main.on('log-files-dir', (dir: string) => {
         console.log(dir);
         setlogFilesDir(dir);
-      });
-      window.Main.on('log-file-names', (names: string[]) => {
-        console.log(names);
-        setlogFileNames(names);
       });
     }
   }, []);
@@ -25,16 +21,6 @@ function MainContainer() {
         console.log(content);
       });
   });
-
-  const [joinWorldLogLines, setJoinWorldLogLines] = useState<string[]>([]);
-  useEffect(() => {
-    if (window.Main) {
-      window.Main.on('join-world-log-lines', (lines: string[]) => {
-        console.log(lines);
-        setJoinWorldLogLines(lines);
-      });
-    }
-  }, []);
 
   const [vrchatPhotoDir, setVrchatPhotoDir] = useState<string | null>(null);
   useEffect(() => {
@@ -92,25 +78,10 @@ function MainContainer() {
         >
           <ArrowPathIcon className="h-5 w-5" />
         </button>
-        {/* ファイル生成ボタン */}
-        <button
-          className="create-file-button py-2 px-4 bg-white rounded focus:outline-none shadow hover:bg-yellow-200"
-          onClick={() => {
-            if (window.Main) {
-              window.Main.createFiles();
-            }
-          }}
-        >
-          どこで撮ったか調べる
-        </button>
-      </div>
-      {/* デバッグ用領域 */}
-      <div className="log-file-names-label">log-file-names: {logFileNames?.join(',')}</div>
-      <div className="join-world-log-lines-label">
-        join-world-log-lines:
-        {joinWorldLogLines.map((line) => {
-          return <div key={line}>{line}</div>;
-        })}
+        {/* ファイル生成画面に移動するボタン */}
+        <Link to="/create-join-info">
+          <button className="py-2 px-4 bg-white rounded focus:outline-none shadow hover:bg-yellow-200">設定完了</button>
+        </Link>
       </div>
     </div>
   );

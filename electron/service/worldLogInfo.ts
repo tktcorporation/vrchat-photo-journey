@@ -1,3 +1,7 @@
+import fs from 'fs';
+import path from 'path';
+import { VRChatLogFileReadError } from './error';
+
 type WorldId = `wrld_${string}`;
 interface WorldJoinLogInfo {
   year: string;
@@ -13,6 +17,27 @@ interface WorldJoinLogInfo {
 const validateWorldId = (value: string): value is WorldId => {
   const regex = /^wrld_[a-f0-9-]+$/;
   return regex.test(value);
+};
+
+const getVRChatLogFileNamesByDir = (logFilesDir: string): string[] => {
+  const logFileNames = fs.readdirSync(logFilesDir);
+  // output_log から始まるファイル名のみを取得
+  const logFileNamesFiltered = logFileNames.filter((fileName) => fileName.startsWith('output_log'));
+  return logFileNamesFiltered;
+};
+
+const getLogLinesFromDir = (logFilesDir: string): string[] => {
+  // output_log から始まるファイル名のみを取得
+  const logFileNamesFiltered = getVRChatLogFileNamesByDir(logFilesDir);
+  if (logFileNamesFiltered.length === 0) {
+    throw new VRChatLogFileReadError(logFilesDir);
+  }
+  const logLines = logFileNamesFiltered.map((fileName) => {
+    const filePath = path.join(logFilesDir, fileName);
+    const content = fs.readFileSync(filePath);
+    return content.toString().split('\n');
+  });
+  return logLines.flat();
 };
 
 const extractWorldJoinInfoFromLogs = (logLines: string[], index: number): WorldJoinLogInfo | null => {
@@ -85,6 +110,8 @@ const convertWorldJoinLogInfoToOneLine = (worldJoinLogInfo: WorldJoinLogInfo): W
 // 一括 export
 export {
   validateWorldId,
+  getVRChatLogFileNamesByDir,
+  getLogLinesFromDir,
   extractWorldJoinInfoFromLogs,
   convertLogLinesToWorldJoinLogInfos,
   convertWorldJoinLogInfoToOneLine
