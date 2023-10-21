@@ -31,7 +31,7 @@ jobs:
         with:
           script: |
             const page = await browser.newPage();
-            await page.goto('http://localhost:3000');  # Adjust this to your web app's URL
+            await page.goto('http://localhost:3000');  // Adjust this to your web app's URL
             try {
               await page.waitForSelector('button', { timeout: 60000 });
             } catch (error) {
