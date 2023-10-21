@@ -33,22 +33,38 @@ jobs:
       - name: Build Electron app
         run: yarn dist
 
+      - name: Start Vite app (in background for screenshot)
+        run: |
+          yarn start & 
+          sleep 10 # give some time for the app to start
+
+      - name: Take screenshot using Puppeteer with Playwright Action
+        uses: mxschmitt/action-puppeteer-playwright@v1
+        with:
+          script: "const puppeteer = require('puppeteer'); (async () => { const browser = await puppeteer.launch(); const page = await browser.newPage(); await page.goto('http://localhost:3000'); await page.screenshot({ path: 'screenshot.png' }); await browser.close(); })();"
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
           name: app-${{ matrix.os }}
-          path: dist/*
+          path: |
+            dist/*
+            screenshot.png
   
-      - name: Get screenshot URL
-        id: get-url
-        run: |
-          # Use GitHub API to get the asset's URL
-          URL=$(curl -sH "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-              https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ github.ref }} \
-              | jq '.assets[] | select(.name == "screenshot.png") | .browser_download_url')
-          echo "::set-output name=screenshot_url::$URL"
+  release:
+    needs: build
+    runs-on: ubuntu-latest
 
-      - name: Release with screenshot in body
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v2
+
+      - name: Zip artifacts
+        run: |
+          zip -r app-windows-latest.zip app-windows-latest
+          zip -r app-ubuntu-latest.zip app-ubuntu-latest
+
+      - name: Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
