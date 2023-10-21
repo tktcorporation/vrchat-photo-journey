@@ -1,19 +1,40 @@
 import fs from 'fs';
 import path from 'path';
 
-import * as worldLogInfo from './service/worldLogInfo';
+import * as worldLogInfo from './service/vrchatLog';
 import * as settingStore from './settingStore';
 
-const getStatusToUseVRChatLogFilesDir = (): 'ready' | 'logFilesDirNotSet' | 'logFilesNotFound' => {
-  const vrchatLogFilesDir = settingStore.get('logFilesDir');
-  if (typeof vrchatLogFilesDir !== 'string') {
-    return 'logFilesDirNotSet';
+const getVRChatLogFilesDir = (): {
+  storedPath: string | null;
+  error: null | 'logFilesNotFound';
+} => {
+  const storedPath = settingStore.getLogFilesDir();
+  if (storedPath === null) {
+    return { storedPath, error: null };
   }
-  const logFileNames = worldLogInfo.getVRChatLogFileNamesByDir(vrchatLogFilesDir);
+  const logFileNames = worldLogInfo.getVRChatLogFileNamesByDir(storedPath);
   if (logFileNames.length === 0) {
-    return 'logFilesNotFound';
+    return { storedPath, error: 'logFilesNotFound' };
   }
-  return 'ready';
+  return { storedPath, error: null };
+};
+
+const getVRChatPhotoDir = (): {
+  storedPath: string | null;
+  error: null | 'photoYearMonthDirsNotFound';
+} => {
+  const storedPath = settingStore.getVRChatPhotoDir();
+  if (storedPath === null) {
+    return { storedPath, error: null };
+  }
+  // 指定されたdir になにがあるか調べる
+  const dirNames = fs.readdirSync(storedPath);
+  // 写真が保存されていれば作成されているはずの year-month ディレクトリを取得
+  const yearMonthDirNames = dirNames.filter((dirName) => /^\d{4}-\d{2}$/.test(dirName));
+  if (yearMonthDirNames.length === 0) {
+    return { storedPath, error: 'photoYearMonthDirsNotFound' };
+  }
+  return { storedPath, error: null };
 };
 
 const createFiles = (vrchatPhotoDir: string, worldJoinLogInfoList: worldLogInfo.WorldJoinLogInfo[]) => {
@@ -55,4 +76,4 @@ const convertLogLinesToWorldJoinLogInfosByVRChatLogDir = (logDir: string): world
   return worldLogInfo.convertLogLinesToWorldJoinLogInfos(logLines);
 };
 
-export { createFiles, convertLogLinesToWorldJoinLogInfosByVRChatLogDir, getStatusToUseVRChatLogFilesDir };
+export { createFiles, convertLogLinesToWorldJoinLogInfosByVRChatLogDir, getVRChatLogFilesDir, getVRChatPhotoDir };

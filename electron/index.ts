@@ -7,11 +7,7 @@ import isDev from 'electron-is-dev';
 
 import * as settingStore from './settingStore';
 // 呼び出し元は service に集約したい
-import {
-  createFiles,
-  getStatusToUseVRChatLogFilesDir,
-  convertLogLinesToWorldJoinLogInfosByVRChatLogDir
-} from './service';
+import * as service from './service';
 
 const CHANNELS = {
   OPEN_DIALOG_AND_SET_LOG_FILES_DIR: 'open-dialog-and-set-log-files-dir',
@@ -23,13 +19,17 @@ const CHANNELS = {
   MESSAGE: 'message',
   TOAST: 'toast',
   LOG_FILES_DIR: 'log-files-dir',
+  LOG_FILES_DIR_WITH_ERROR: 'log-files-dir-with-error',
   JOIN_WORLD_LOG_LINES: 'join-world-log-lines',
-  VRCHAT_PHOTO_DIR: 'vrchat-photo-dir',
-  GET_STATUS_TO_USE_VRCHAT_LOG_FILES_DIR: 'get-status-to-use-vrchat-log-files-dir'
+  GET_STATUS_TO_USE_VRCHAT_LOG_FILES_DIR: 'get-status-to-use-vrchat-log-files-dir',
+  GET_STATUS_TO_USE_VRCHAT_PHOTO_DIR: 'get-status-to-use-vrchat-photo-dir'
 };
 
 const MESSAGE = {
-  STATUS_TO_USE_VRCHAT_LOG_FILES_DIR: 'status-to-use-vrchat-log-files-dir'
+  STATUS_TO_USE_VRCHAT_LOG_FILES_DIR: 'status-to-use-vrchat-log-files-dir',
+  STATUS_TO_USE_VRCHAT_PHOTO_DIR: 'status-to-use-vrchat-photo-dir',
+  VRCHAT_PHOTO_DIR: 'vrchat-photo-dir',
+  VRCHAT_PHOTO_DIR_WITH_ERROR: 'vrchat-photo-dir-with-error'
 };
 
 const messages = {
@@ -45,27 +45,42 @@ const handleOpenDialogAndSetLogFilesDir = (event: IpcMainEvent) => {
     .then((result) => {
       if (!result.canceled) {
         const dirPath = result.filePaths[0];
-        settingStore.set('logFilesDir', dirPath);
+        settingStore.setLogFilesDir(dirPath);
         event.sender.send(CHANNELS.TOAST, messages.LOG_PATH_SET(dirPath));
         event.sender.send(CHANNELS.LOG_FILES_DIR, dirPath);
       }
     })
     .catch((err) => {
       console.log(err);
+      event.sender.send(CHANNELS.TOAST, err.message);
     });
 };
 
 const handleGetLogFilesDir = (event: IpcMainEvent) => {
-  const logFilesDir = settingStore.get('logFilesDir');
-  if (typeof logFilesDir !== 'string') {
-    event.sender.send(CHANNELS.TOAST, messages.PATH_NOT_SET);
-    return;
-  }
-  event.sender.send(CHANNELS.LOG_FILES_DIR, logFilesDir);
+  const logFilesDir = service.getVRChatLogFilesDir();
+  event.sender.send(CHANNELS.LOG_FILES_DIR, logFilesDir.storedPath);
+  event.sender.send(CHANNELS.LOG_FILES_DIR_WITH_ERROR, {
+    storedPath: logFilesDir.storedPath,
+    error: logFilesDir.error
+  });
 };
 
 const handlegetStatusToUseVRChatLogFilesDir = (event: IpcMainEvent) => {
-  const status = getStatusToUseVRChatLogFilesDir();
+  const vrchatLogFilesDir = service.getVRChatLogFilesDir();
+  let status: 'ready' | 'logFilesDirNotSet' | 'logFilesNotFound' = 'ready';
+  if (vrchatLogFilesDir.storedPath === null) {
+    status = 'logFilesDirNotSet';
+  }
+  if (vrchatLogFilesDir.error !== null) {
+    switch (vrchatLogFilesDir.error) {
+      case 'logFilesNotFound':
+        status = 'logFilesNotFound';
+        break;
+      default:
+        event.sender.send(CHANNELS.TOAST, `Unknown error: ${vrchatLogFilesDir.error}`);
+        throw new Error(`Unknown error: ${vrchatLogFilesDir.error}`);
+    }
+  }
   event.sender.send(MESSAGE.STATUS_TO_USE_VRCHAT_LOG_FILES_DIR, status);
 };
 
@@ -77,8 +92,8 @@ const handleOpenDialogAndSetVRChatPhotoDir = (event: IpcMainEvent) => {
     .then((result) => {
       if (!result.canceled) {
         const dirPath = result.filePaths[0];
-        settingStore.set('vrchatPhotoDir', dirPath);
-        event.sender.send(CHANNELS.VRCHAT_PHOTO_DIR, dirPath);
+        settingStore.setVRChatPhotoDir(dirPath);
+        event.sender.send(MESSAGE.VRCHAT_PHOTO_DIR, dirPath);
         event.sender.send(CHANNELS.TOAST, `VRChat photo path set to ${dirPath}`);
       }
     })
@@ -88,31 +103,53 @@ const handleOpenDialogAndSetVRChatPhotoDir = (event: IpcMainEvent) => {
 };
 
 const handleGetVRChatPhotoDir = (event: IpcMainEvent) => {
-  const vrchatPhotoDir = settingStore.get('vrchatPhotoDir');
-  if (typeof vrchatPhotoDir !== 'string') {
-    event.sender.send(CHANNELS.TOAST, messages.PATH_NOT_SET);
-    return;
-  }
-  event.sender.send(CHANNELS.VRCHAT_PHOTO_DIR, vrchatPhotoDir);
+  const vrchatPhotoDir = service.getVRChatPhotoDir();
+  event.sender.send(MESSAGE.VRCHAT_PHOTO_DIR, vrchatPhotoDir.storedPath);
+  event.sender.send(MESSAGE.VRCHAT_PHOTO_DIR_WITH_ERROR, {
+    storedPath: vrchatPhotoDir.storedPath,
+    error: vrchatPhotoDir.error
+  });
 };
 
 const handleCreateFiles = (event: IpcMainEvent) => {
   // get log lines
-  const logFilesDir = settingStore.get('logFilesDir');
-  if (typeof logFilesDir !== 'string') {
+  const logFilesDir = service.getVRChatLogFilesDir();
+  if (typeof logFilesDir.storedPath !== 'string') {
     event.sender.send('toast', `Log file path is not set`);
     return;
   }
-  const convertWorldJoinLogInfoList = convertLogLinesToWorldJoinLogInfosByVRChatLogDir(logFilesDir);
+  if (logFilesDir.error !== null) {
+    switch (logFilesDir.error) {
+      case 'logFilesNotFound':
+        event.sender.send('toast', `Log files not found`);
+        break;
+      default:
+        event.sender.send('toast', `Unknown error: ${logFilesDir.error}`);
+        break;
+    }
+    return;
+  }
+  const convertWorldJoinLogInfoList = service.convertLogLinesToWorldJoinLogInfosByVRChatLogDir(logFilesDir.storedPath);
 
   // create files
-  const vrchatPhotoDir = settingStore.get('vrchatPhotoDir');
-  if (typeof vrchatPhotoDir !== 'string') {
-    event.sender.send('toast', `World visit log file path is not set`);
+  const vrchatPhotoDir = service.getVRChatPhotoDir();
+  if (typeof vrchatPhotoDir.storedPath !== 'string') {
+    event.sender.send('toast', `VRChat photo path is not set`);
+    return;
+  }
+  if (vrchatPhotoDir.error !== null) {
+    switch (vrchatPhotoDir.error) {
+      case 'photoYearMonthDirsNotFound':
+        event.sender.send('toast', `Photo year-month dirs not found`);
+        break;
+      default:
+        event.sender.send('toast', `Unknown error: ${vrchatPhotoDir.error}`);
+        break;
+    }
     return;
   }
   try {
-    createFiles(vrchatPhotoDir, convertWorldJoinLogInfoList);
+    service.createFiles(vrchatPhotoDir.storedPath, convertWorldJoinLogInfoList);
     event.sender.send('toast', `Files created`);
   } catch (error) {
     console.log(error);
