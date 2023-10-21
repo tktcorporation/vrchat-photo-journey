@@ -39,27 +39,26 @@ jobs:
           name: app-${{ matrix.os }}
           path: dist/*
   
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v2
-
-      - name: Zip artifacts
+      - name: Get screenshot URL
+        id: get-url
         run: |
-          zip -r app-windows-latest.zip app-windows-latest
-          zip -r app-ubuntu-latest.zip app-ubuntu-latest
+          # Use GitHub API to get the asset's URL (you might need to adjust this script)
+          URL=$(curl -sH "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ github.ref }} \
+              | jq '.assets[] | select(.name == "screenshot.png") | .browser_download_url')
+          echo "::set-output name=screenshot_url::$URL"
 
-      - name: Release
+      - name: Release with screenshot in body
         uses: softprops/action-gh-release@v1
         with:
           files: |
             app-windows-latest.zip
             app-ubuntu-latest.zip
+            screenshot.png
           tag_name: ${{ github.ref }}
           body: |
             Release for ${{ github.ref }}
+            
+            ![Screenshot](${{ steps.get-url.outputs.screenshot_url }})
           draft: false
           prerelease: false
