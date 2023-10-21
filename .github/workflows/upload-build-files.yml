@@ -42,7 +42,7 @@ jobs:
       - name: Get screenshot URL
         id: get-url
         run: |
-          # Use GitHub API to get the asset's URL (you might need to adjust this script)
+          # Use GitHub API to get the asset's URL
           URL=$(curl -sH "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
               https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ github.ref }} \
               | jq '.assets[] | select(.name == "screenshot.png") | .browser_download_url')
@@ -58,7 +58,5 @@ jobs:
           tag_name: ${{ github.ref }}
           body: |
             Release for ${{ github.ref }}
-            
-            ![Screenshot](${{ steps.get-url.outputs.screenshot_url }})
           draft: false
           prerelease: false
