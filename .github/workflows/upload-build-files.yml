@@ -33,23 +33,12 @@ jobs:
       - name: Build Electron app
         run: yarn dist
 
-      - name: Start Vite app (in background for screenshot)
-        run: |
-          yarn start & 
-          sleep 10 # give some time for the app to start
-
-      - name: Take screenshot using Puppeteer with Playwright Action
-        uses: mxschmitt/action-puppeteer-playwright@v1
-        with:
-          script: "const puppeteer = require('puppeteer'); (async () => { const browser = await puppeteer.launch(); const page = await browser.newPage(); await page.goto('http://localhost:3000'); await page.screenshot({ path: 'screenshot.png' }); await browser.close(); })();"
-
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
           name: app-${{ matrix.os }}
           path: |
             dist/*
-            screenshot.png
   
   release:
     needs: build
@@ -70,7 +59,6 @@ jobs:
           files: |
             app-windows-latest.zip
             app-ubuntu-latest.zip
-            screenshot.png
           tag_name: ${{ github.ref }}
           body: |
             Release for ${{ github.ref }}
