@@ -18,6 +18,7 @@
         "pflannery.vscode-versionlens",
         "editorconfig.editorconfig",
         "WakaTime.vscode-wakatime",
-        "bradlc.vscode-tailwindcss"
+        "bradlc.vscode-tailwindcss",
+        "GitHub.vscode-github-actions"
     ]
 }
