@@ -16,15 +16,25 @@ export const readFileSyncSafe = (
   }
 };
 
-export const readDirSyncSafe = (dirPath: string): Result<string[], Error> => {
+export type FSError = 'ENOENT';
+const toFSError = (error: Error & { code?: string }): FSError => {
+  switch (error.code) {
+    case 'ENOENT':
+      return 'ENOENT';
+    default:
+      throw error;
+  }
+};
+
+export const readDirSyncSafe = (dirPath: string): Result<string[], FSError> => {
   try {
     const dirNames = fs.readdirSync(dirPath);
     return ok(dirNames);
-  } catch (e) {
-    if (e instanceof Error) {
-      return err(e);
+  } catch (error) {
+    if (error instanceof Error) {
+      return err(toFSError(error));
     }
-    throw e;
+    throw error;
   }
 };
 

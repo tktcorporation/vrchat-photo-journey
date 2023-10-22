@@ -6,14 +6,12 @@ import * as vrchatLogService from './service/vrchatLog/vrchatLog';
 import * as vrchatPhotoService from './service/vrchatPhoto/service';
 import VRChatLogFileError from './service/vrchatLog/error';
 
-const getVRChatLogFilesDir = (
-  isDev: boolean
-): {
+const getVRChatLogFilesDir = (): {
   storedPath: string | null;
   path: string;
-  error: null | 'logFilesNotFound';
+  error: null | 'logFilesNotFound' | 'logFileDirNotFound';
 } => {
-  return vrchatLogService.getVRChatLogFileDir(isDev);
+  return vrchatLogService.getVRChatLogFileDir();
 };
 
 const getVRChatPhotoDir = () => {

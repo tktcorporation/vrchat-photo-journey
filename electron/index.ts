@@ -62,29 +62,22 @@ const handleOpenDialogAndSetLogFilesDir = (event: IpcMainEvent) => {
 };
 
 const handleGetLogFilesDir = (event: IpcMainEvent) => {
-  const logFilesDir = service.getVRChatLogFilesDir(isDev);
+  const logFilesDir = service.getVRChatLogFilesDir();
   event.sender.send(CHANNELS.LOG_FILES_DIR, logFilesDir.storedPath);
   event.sender.send(CHANNELS.LOG_FILES_DIR_WITH_ERROR, {
     storedPath: logFilesDir.storedPath,
+    path: logFilesDir.path,
     error: logFilesDir.error
   });
 };
 
 const handlegetStatusToUseVRChatLogFilesDir = (event: IpcMainEvent) => {
-  const vrchatLogFilesDir = service.getVRChatLogFilesDir(isDev);
-  let status: 'ready' | 'logFilesDirNotSet' | 'logFilesNotFound' = 'ready';
-  if (vrchatLogFilesDir.storedPath === null) {
+  const vrchatLogFilesDir = service.getVRChatLogFilesDir();
+  let status: 'ready' | 'logFilesDirNotSet' | 'logFilesNotFound' | 'logFileDirNotFound' = 'ready';
+  if (vrchatLogFilesDir.path === null) {
     status = 'logFilesDirNotSet';
-  }
-  if (vrchatLogFilesDir.error !== null) {
-    switch (vrchatLogFilesDir.error) {
-      case 'logFilesNotFound':
-        status = 'logFilesNotFound';
-        break;
-      default:
-        event.sender.send(CHANNELS.TOAST, `Unknown error: ${vrchatLogFilesDir.error}`);
-        throw new Error(`Unknown error: ${vrchatLogFilesDir.error}`);
-    }
+  } else if (vrchatLogFilesDir.error !== null) {
+    status = vrchatLogFilesDir.error;
   }
   event.sender.send(MESSAGE.STATUS_TO_USE_VRCHAT_LOG_FILES_DIR, status);
 };
@@ -118,8 +111,8 @@ const handleGetVRChatPhotoDir = (event: IpcMainEvent) => {
 
 const handleCreateFiles = (event: IpcMainEvent) => {
   // get log lines
-  const logFilesDir = service.getVRChatLogFilesDir(isDev);
-  if (typeof logFilesDir.storedPath !== 'string') {
+  const logFilesDir = service.getVRChatLogFilesDir();
+  if (typeof logFilesDir.path !== 'string') {
     event.sender.send('toast', `Log file path is not set`);
     return;
   }
@@ -134,9 +127,7 @@ const handleCreateFiles = (event: IpcMainEvent) => {
     }
     return;
   }
-  const convertWorldJoinLogInfoListResult = service.convertLogLinesToWorldJoinLogInfosByVRChatLogDir(
-    logFilesDir.storedPath
-  );
+  const convertWorldJoinLogInfoListResult = service.convertLogLinesToWorldJoinLogInfosByVRChatLogDir(logFilesDir.path);
   if (convertWorldJoinLogInfoListResult.isErr()) {
     switch (convertWorldJoinLogInfoListResult.error.code) {
       case 'LOG_FILE_NOT_FOUND':

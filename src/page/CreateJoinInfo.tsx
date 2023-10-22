@@ -4,15 +4,15 @@ import { Link } from 'react-router-dom';
 
 function CreateJoinInfo() {
   const [statusToUseVRChatLogFilesDir, setStatusToUseVRChatLogFilesDir] = React.useState<
-    'ready' | 'logFilesDirNotSet' | 'logFilesNotFound' | null
+    'ready' | 'logFilesDirNotSet' | 'logFilesNotFound' | 'logFileDirNotFound' | null
   >(null);
   const [statusToUseVRChatPhotoDir, setStatusToUseVRChatPhotoDir] = React.useState<
-    'ready' | 'logFilesDirNotSet' | 'logFilesNotFound' | null
+    'ready' | 'logFilesDirNotSet' | 'logFilesNotFound' | 'logFileDirNotFound' | null
   >(null);
   useEffect(() => {
     window.Main.on(
       'status-to-use-vrchat-log-files-dir',
-      (status: 'ready' | 'logFilesDirNotSet' | 'logFilesNotFound') => {
+      (status: 'ready' | 'logFilesDirNotSet' | 'logFilesNotFound' | 'logFileDirNotFound') => {
         setStatusToUseVRChatLogFilesDir(status);
       }
     );
