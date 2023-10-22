@@ -31,4 +31,11 @@ const setVRChatPhotoDir = (dirPath: string) => {
   set('vrchatPhotoDir', dirPath);
 };
 
-export { getLogFilesDir, setLogFilesDir, getVRChatPhotoDir, setVRChatPhotoDir };
+/**
+ * Clear all settings
+ */
+const clearAllStoredSettings = () => {
+  settingsStore.clear();
+};
+
+export { clearAllStoredSettings, getLogFilesDir, setLogFilesDir, getVRChatPhotoDir, setVRChatPhotoDir };

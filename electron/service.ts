@@ -1,50 +1,36 @@
-import fs from 'fs';
 import path from 'path';
+import * as neverthrow from 'neverthrow';
+import * as fs from './lib/wrappedFs';
 
-import * as worldLogInfo from './service/vrchatLog';
-import * as settingStore from './settingStore';
+import * as vrchatLogService from './service/vrchatLog/vrchatLog';
+import * as vrchatPhotoService from './service/vrchatPhoto/service';
+import VRChatLogFileError from './service/vrchatLog/error';
 
-const getVRChatLogFilesDir = (): {
+const getVRChatLogFilesDir = (
+  isDev: boolean
+): {
   storedPath: string | null;
+  path: string;
   error: null | 'logFilesNotFound';
 } => {
-  const storedPath = settingStore.getLogFilesDir();
-  if (storedPath === null) {
-    return { storedPath, error: null };
-  }
-  const logFileNames = worldLogInfo.getVRChatLogFileNamesByDir(storedPath);
-  if (logFileNames.length === 0) {
-    return { storedPath, error: 'logFilesNotFound' };
-  }
-  return { storedPath, error: null };
+  return vrchatLogService.getVRChatLogFileDir(isDev);
 };
 
-const getVRChatPhotoDir = (): {
-  storedPath: string | null;
-  error: null | 'photoYearMonthDirsNotFound';
-} => {
-  const storedPath = settingStore.getVRChatPhotoDir();
-  if (storedPath === null) {
-    return { storedPath, error: null };
-  }
-  // 指定されたdir になにがあるか調べる
-  const dirNames = fs.readdirSync(storedPath);
-  // 写真が保存されていれば作成されているはずの year-month ディレクトリを取得
-  const yearMonthDirNames = dirNames.filter((dirName) => /^\d{4}-\d{2}$/.test(dirName));
-  if (yearMonthDirNames.length === 0) {
-    return { storedPath, error: 'photoYearMonthDirsNotFound' };
-  }
-  return { storedPath, error: null };
+const getVRChatPhotoDir = () => {
+  return vrchatPhotoService.getVRChatPhotoDir();
 };
 
-const createFiles = (vrchatPhotoDir: string, worldJoinLogInfoList: worldLogInfo.WorldJoinLogInfo[]) => {
+const createFiles = (
+  vrchatPhotoDir: string,
+  worldJoinLogInfoList: vrchatLogService.WorldJoinLogInfo[]
+): neverthrow.Result<void, Error> => {
   // ファイルを作成
   // vrchatPhotoDir/year-month/oneline.txt
   const filePaths = worldJoinLogInfoList.map((info) =>
     path.join(
       vrchatPhotoDir,
       `${info.year}-${info.month}`,
-      `${worldLogInfo.convertWorldJoinLogInfoToOneLine(info)}.html`
+      `${vrchatLogService.convertWorldJoinLogInfoToOneLine(info)}.html`
     )
   );
   // https://vrchat.com/home/world/wrld_4eeb98e0-2c89-4677-8b33-af1ec22e7a69
@@ -64,16 +50,23 @@ const createFiles = (vrchatPhotoDir: string, worldJoinLogInfoList: worldLogInfo.
     const content = contents[index];
     return { filePath, content };
   });
-  files.forEach((file) => {
-    // q: 同名のファイルがある場合は上書きされますか？
-    // a: 上書きされます
-    fs.writeFileSync(file.filePath, file.content);
-  });
+
+  // ファイルを作成
+  for (const file of files) {
+    const result = fs.writeFileSyncSafe(file.filePath, file.content);
+    if (result.isErr()) {
+      return neverthrow.err(result.error);
+    }
+  }
+
+  return neverthrow.ok(undefined);
 };
 
-const convertLogLinesToWorldJoinLogInfosByVRChatLogDir = (logDir: string): worldLogInfo.WorldJoinLogInfo[] => {
-  const logLines = worldLogInfo.getLogLinesFromDir(logDir);
-  return worldLogInfo.convertLogLinesToWorldJoinLogInfos(logLines);
+const convertLogLinesToWorldJoinLogInfosByVRChatLogDir = (
+  logDir: string
+): neverthrow.Result<vrchatLogService.WorldJoinLogInfo[], VRChatLogFileError> => {
+  const result = vrchatLogService.getLogLinesFromDir(logDir);
+  return result.map((logLines) => vrchatLogService.convertLogLinesToWorldJoinLogInfos(logLines));
 };
 
 export { createFiles, convertLogLinesToWorldJoinLogInfosByVRChatLogDir, getVRChatLogFilesDir, getVRChatPhotoDir };

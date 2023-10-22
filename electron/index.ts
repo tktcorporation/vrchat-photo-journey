@@ -10,6 +10,7 @@ import * as settingStore from './settingStore';
 import * as service from './service';
 
 const CHANNELS = {
+  CLEAR_ALL_STORED_SETTINGS: 'clear-all-stored-settings',
   OPEN_DIALOG_AND_SET_LOG_FILES_DIR: 'open-dialog-and-set-log-files-dir',
   GET_LOG_FILES_DIR: 'get-log-files-dir',
   GET_JOIN_WORLD_LOG_LINES: 'get-join-world-log-lines',
@@ -37,6 +38,10 @@ const messages = {
   LOG_PATH_SET: (path: string) => `Log file path set to ${path}`
 };
 
+const handleClearAllStoredSettings = () => {
+  settingStore.clearAllStoredSettings();
+};
+
 const handleOpenDialogAndSetLogFilesDir = (event: IpcMainEvent) => {
   dialog
     .showOpenDialog({
@@ -57,7 +62,7 @@ const handleOpenDialogAndSetLogFilesDir = (event: IpcMainEvent) => {
 };
 
 const handleGetLogFilesDir = (event: IpcMainEvent) => {
-  const logFilesDir = service.getVRChatLogFilesDir();
+  const logFilesDir = service.getVRChatLogFilesDir(isDev);
   event.sender.send(CHANNELS.LOG_FILES_DIR, logFilesDir.storedPath);
   event.sender.send(CHANNELS.LOG_FILES_DIR_WITH_ERROR, {
     storedPath: logFilesDir.storedPath,
@@ -66,7 +71,7 @@ const handleGetLogFilesDir = (event: IpcMainEvent) => {
 };
 
 const handlegetStatusToUseVRChatLogFilesDir = (event: IpcMainEvent) => {
-  const vrchatLogFilesDir = service.getVRChatLogFilesDir();
+  const vrchatLogFilesDir = service.getVRChatLogFilesDir(isDev);
   let status: 'ready' | 'logFilesDirNotSet' | 'logFilesNotFound' = 'ready';
   if (vrchatLogFilesDir.storedPath === null) {
     status = 'logFilesDirNotSet';
@@ -113,7 +118,7 @@ const handleGetVRChatPhotoDir = (event: IpcMainEvent) => {
 
 const handleCreateFiles = (event: IpcMainEvent) => {
   // get log lines
-  const logFilesDir = service.getVRChatLogFilesDir();
+  const logFilesDir = service.getVRChatLogFilesDir(isDev);
   if (typeof logFilesDir.storedPath !== 'string') {
     event.sender.send('toast', `Log file path is not set`);
     return;
@@ -129,7 +134,27 @@ const handleCreateFiles = (event: IpcMainEvent) => {
     }
     return;
   }
-  const convertWorldJoinLogInfoList = service.convertLogLinesToWorldJoinLogInfosByVRChatLogDir(logFilesDir.storedPath);
+  const convertWorldJoinLogInfoListResult = service.convertLogLinesToWorldJoinLogInfosByVRChatLogDir(
+    logFilesDir.storedPath
+  );
+  if (convertWorldJoinLogInfoListResult.isErr()) {
+    switch (convertWorldJoinLogInfoListResult.error.code) {
+      case 'LOG_FILE_NOT_FOUND':
+        event.sender.send('toast', `Log file not found`);
+        break;
+      case 'LOG_FILE_DIR_NOT_FOUND':
+        event.sender.send('toast', `Log file dir not found`);
+        break;
+      case 'LOG_FILES_NOT_FOUND':
+        event.sender.send('toast', `Log files not found`);
+        break;
+      default:
+        event.sender.send('toast', `Unknown error: ${convertWorldJoinLogInfoListResult.error.code}`);
+        break;
+    }
+    return;
+  }
+  const convertWorldJoinLogInfoList = convertWorldJoinLogInfoListResult.value;
 
   // create files
   const vrchatPhotoDir = service.getVRChatPhotoDir();
@@ -148,6 +173,7 @@ const handleCreateFiles = (event: IpcMainEvent) => {
     }
     return;
   }
+
   try {
     service.createFiles(vrchatPhotoDir.storedPath, convertWorldJoinLogInfoList);
     event.sender.send('toast', `Files created`);
@@ -164,6 +190,7 @@ function registerIpcMainListeners() {
   ipcMain.on(CHANNELS.GET_VRCHAT_PHOTO_DIR, handleGetVRChatPhotoDir);
   ipcMain.on(CHANNELS.CREATE_FILES, handleCreateFiles);
   ipcMain.on(CHANNELS.GET_STATUS_TO_USE_VRCHAT_LOG_FILES_DIR, handlegetStatusToUseVRChatLogFilesDir);
+  ipcMain.on(CHANNELS.CLEAR_ALL_STORED_SETTINGS, handleClearAllStoredSettings);
   ipcMain.on(CHANNELS.MESSAGE, (_, message) => {
     console.log(message);
   });

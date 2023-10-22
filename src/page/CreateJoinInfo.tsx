@@ -62,7 +62,7 @@ function CreateJoinInfo() {
           onClick={() => window.Main.createFiles()}
           disabled={statusToUseVRChatLogFilesDir !== 'ready' || statusToUseVRChatPhotoDir !== 'ready'}
         >
-          ファイルを生成する
+          どこで撮ったか調べる
         </button>
       </div>
     </div>
