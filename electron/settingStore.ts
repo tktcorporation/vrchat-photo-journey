@@ -5,14 +5,37 @@ const settingsStore = new Store({ name: 'v0-settings' });
 const settingStoreKey = ['logFilesDir', 'vrchatPhotoDir'] as const;
 export type SettingStoreKey = typeof settingStoreKey[number];
 
-export const get = (key: SettingStoreKey) => {
+const get = (key: SettingStoreKey): string | null => {
   const value = settingsStore.get(key);
   if (typeof value !== 'string') {
-    return '';
+    return null;
   }
   return value;
 };
 
-export const set = (key: SettingStoreKey, value: string) => {
+const set = (key: SettingStoreKey, value: string) => {
   settingsStore.set(key, value);
 };
+
+const getLogFilesDir = (): string | null => {
+  return get('logFilesDir');
+};
+const setLogFilesDir = (dirPath: string) => {
+  set('logFilesDir', dirPath);
+};
+
+const getVRChatPhotoDir = (): string | null => {
+  return get('vrchatPhotoDir');
+};
+const setVRChatPhotoDir = (dirPath: string) => {
+  set('vrchatPhotoDir', dirPath);
+};
+
+/**
+ * Clear all settings
+ */
+const clearAllStoredSettings = () => {
+  settingsStore.clear();
+};
+
+export { clearAllStoredSettings, getLogFilesDir, setLogFilesDir, getVRChatPhotoDir, setVRChatPhotoDir };

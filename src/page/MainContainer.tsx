@@ -78,6 +78,12 @@ function MainContainer() {
         >
           <ArrowPathIcon className="h-5 w-5" />
         </button>
+        {/* すべての設定をリセットする */}
+        <Link to="/clear-settings">
+          <button className="reset-button py-2 px-4 bg-white rounded focus:outline-none shadow hover:bg-yellow-200">
+            設定をリセットする
+          </button>
+        </Link>
         {/* ファイル生成画面に移動するボタン */}
         <Link to="/create-join-info">
           <button className="py-2 px-4 bg-white rounded focus:outline-none shadow hover:bg-yellow-200">設定完了</button>

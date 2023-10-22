@@ -4,6 +4,7 @@ import { Toaster } from 'react-hot-toast';
 import AppBar from './component/AppBar';
 import MainContainer from './page/MainContainer';
 import CreateJoinInfo from './page/CreateJoinInfo';
+import ClearSettings from './page/ClearSettings';
 
 function Router() {
   return (
@@ -11,6 +12,7 @@ function Router() {
       <Routes>
         <Route path="/" element={<MainContainer />} />
         <Route path="/create-join-info" element={<CreateJoinInfo />} />
+        <Route path="/clear-settings" element={<ClearSettings />} />
       </Routes>
     </HashRouter>
   );

@@ -1,29 +1,34 @@
-import fs from 'fs';
 import path from 'path';
+import * as neverthrow from 'neverthrow';
+import * as fs from './lib/wrappedFs';
 
-import * as worldLogInfo from './service/worldLogInfo';
-import * as settingStore from './settingStore';
+import * as vrchatLogService from './service/vrchatLog/vrchatLog';
+import * as vrchatPhotoService from './service/vrchatPhoto/service';
+import VRChatLogFileError from './service/vrchatLog/error';
 
-const getStatusToUseVRChatLogFilesDir = (): 'ready' | 'logFilesDirNotSet' | 'logFilesNotFound' => {
-  const vrchatLogFilesDir = settingStore.get('logFilesDir');
-  if (typeof vrchatLogFilesDir !== 'string') {
-    return 'logFilesDirNotSet';
-  }
-  const logFileNames = worldLogInfo.getVRChatLogFileNamesByDir(vrchatLogFilesDir);
-  if (logFileNames.length === 0) {
-    return 'logFilesNotFound';
-  }
-  return 'ready';
+const getVRChatLogFilesDir = (): {
+  storedPath: string | null;
+  path: string;
+  error: null | 'logFilesNotFound' | 'logFileDirNotFound';
+} => {
+  return vrchatLogService.getVRChatLogFileDir();
 };
 
-const createFiles = (vrchatPhotoDir: string, worldJoinLogInfoList: worldLogInfo.WorldJoinLogInfo[]) => {
+const getVRChatPhotoDir = () => {
+  return vrchatPhotoService.getVRChatPhotoDir();
+};
+
+const createFiles = (
+  vrchatPhotoDir: string,
+  worldJoinLogInfoList: vrchatLogService.WorldJoinLogInfo[]
+): neverthrow.Result<void, Error> => {
   // ファイルを作成
   // vrchatPhotoDir/year-month/oneline.txt
   const filePaths = worldJoinLogInfoList.map((info) =>
     path.join(
       vrchatPhotoDir,
       `${info.year}-${info.month}`,
-      `${worldLogInfo.convertWorldJoinLogInfoToOneLine(info)}.html`
+      `${vrchatLogService.convertWorldJoinLogInfoToOneLine(info)}.html`
     )
   );
   // https://vrchat.com/home/world/wrld_4eeb98e0-2c89-4677-8b33-af1ec22e7a69
@@ -43,16 +48,23 @@ const createFiles = (vrchatPhotoDir: string, worldJoinLogInfoList: worldLogInfo.
     const content = contents[index];
     return { filePath, content };
   });
-  files.forEach((file) => {
-    // q: 同名のファイルがある場合は上書きされますか？
-    // a: 上書きされます
-    fs.writeFileSync(file.filePath, file.content);
-  });
+
+  // ファイルを作成
+  for (const file of files) {
+    const result = fs.writeFileSyncSafe(file.filePath, file.content);
+    if (result.isErr()) {
+      return neverthrow.err(result.error);
+    }
+  }
+
+  return neverthrow.ok(undefined);
 };
 
-const convertLogLinesToWorldJoinLogInfosByVRChatLogDir = (logDir: string): worldLogInfo.WorldJoinLogInfo[] => {
-  const logLines = worldLogInfo.getLogLinesFromDir(logDir);
-  return worldLogInfo.convertLogLinesToWorldJoinLogInfos(logLines);
+const convertLogLinesToWorldJoinLogInfosByVRChatLogDir = (
+  logDir: string
+): neverthrow.Result<vrchatLogService.WorldJoinLogInfo[], VRChatLogFileError> => {
+  const result = vrchatLogService.getLogLinesFromDir(logDir);
+  return result.map((logLines) => vrchatLogService.convertLogLinesToWorldJoinLogInfos(logLines));
 };
 
-export { createFiles, convertLogLinesToWorldJoinLogInfosByVRChatLogDir, getStatusToUseVRChatLogFilesDir };
+export { createFiles, convertLogLinesToWorldJoinLogInfosByVRChatLogDir, getVRChatLogFilesDir, getVRChatPhotoDir };
