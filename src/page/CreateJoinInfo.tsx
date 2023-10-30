@@ -7,20 +7,14 @@ function CreateJoinInfo() {
     'ready' | 'logFilesDirNotSet' | 'logFilesNotFound' | 'logFileDirNotFound' | null
   >(null);
   const [statusToUseVRChatPhotoDir, setStatusToUseVRChatPhotoDir] = React.useState<
-    'ready' | 'logFilesDirNotSet' | 'logFilesNotFound' | 'logFileDirNotFound' | null
+    'ready' | 'photoYearMonthDirsNotFound' | 'photoDirReadError' | null
   >(null);
   useEffect(() => {
     window.MyOn.receiveStatusToUseVRChatLogFilesDir((status) => {
       setStatusToUseVRChatLogFilesDir(status);
     });
-    window.Main.on('vrchat-photo-dir-with-error', ({ storedPath, error }) => {
-      let status: 'ready' | 'logFilesDirNotSet' | 'logFilesNotFound' = 'ready';
-      if (storedPath === null) {
-        status = 'logFilesDirNotSet';
-      } else if (error) {
-        status = 'logFilesNotFound';
-      }
-      setStatusToUseVRChatPhotoDir(status);
+    window.MyOn.receiveVRChatPhotoDirWithError((data) => {
+      setStatusToUseVRChatPhotoDir(data.error || 'ready');
     });
   }, []);
 
