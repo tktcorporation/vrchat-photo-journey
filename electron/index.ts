@@ -105,6 +105,7 @@ const handleGetVRChatPhotoDir = (event: IpcMainEvent) => {
   event.sender.send(MESSAGE.VRCHAT_PHOTO_DIR, vrchatPhotoDir.storedPath);
   event.sender.send(MESSAGE.VRCHAT_PHOTO_DIR_WITH_ERROR, {
     storedPath: vrchatPhotoDir.storedPath,
+    path: vrchatPhotoDir.path,
     error: vrchatPhotoDir.error
   });
 };

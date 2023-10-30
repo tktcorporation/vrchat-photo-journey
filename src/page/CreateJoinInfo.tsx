@@ -10,12 +10,9 @@ function CreateJoinInfo() {
     'ready' | 'logFilesDirNotSet' | 'logFilesNotFound' | 'logFileDirNotFound' | null
   >(null);
   useEffect(() => {
-    window.Main.on(
-      'status-to-use-vrchat-log-files-dir',
-      (status: 'ready' | 'logFilesDirNotSet' | 'logFilesNotFound' | 'logFileDirNotFound') => {
-        setStatusToUseVRChatLogFilesDir(status);
-      }
-    );
+    window.MyOn.receiveStatusToUseVRChatLogFilesDir((status) => {
+      setStatusToUseVRChatLogFilesDir(status);
+    });
     window.Main.on('vrchat-photo-dir-with-error', ({ storedPath, error }) => {
       let status: 'ready' | 'logFilesDirNotSet' | 'logFilesNotFound' = 'ready';
       if (storedPath === null) {
