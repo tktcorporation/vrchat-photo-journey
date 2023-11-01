@@ -81,7 +81,8 @@ module.exports = {
     'import/resolver': {
       node: {
         extensions: ['.js', '.jsx', '.ts', '.tsx']
-      }
+      },
+      typescript: {}
     },
     'import/core-modules': ['electron', 'electron-is-dev']
   },
