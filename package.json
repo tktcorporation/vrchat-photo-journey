@@ -77,9 +77,6 @@
     "tailwindcss": "^3.3.5",
     "typescript": "^5.2.2"
   },
-  "exports": {
-    "./main": "./dist/main/index.js"
-  },
   "simple-git-hooks": {
     "pre-commit": "yarn type-check && yarn lint:fix"
   },
