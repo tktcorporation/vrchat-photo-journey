@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import { Link } from 'react-router-dom';
+import { trpcReact } from '../trpc';
 
 function MainContainer() {
   // 初期表示時に log-files-dir を取得する
@@ -39,6 +40,9 @@ function MainContainer() {
         toast(content);
       });
   });
+
+  const result = trpcReact.getTodos.useQuery();
+
   return (
     <div className="flex-auto">
       <div className=" flex flex-col justify-center items-center h-full space-y-4 bg-blue-50">
@@ -51,7 +55,7 @@ function MainContainer() {
             }
           }}
         >
-          ログファイルの場所を指定する
+          ログファイルの場所を指定する {result.data?.todos}
         </button>
         <div className="log-files-dir-label">log-files-dir: {logFilesDir}</div>
         {/* VRChat Photo の Dir を指定する */}

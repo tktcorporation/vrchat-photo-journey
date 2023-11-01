@@ -4,6 +4,8 @@ import { join } from 'path';
 // Packages
 import { BrowserWindow, app, ipcMain, IpcMainEvent, dialog } from 'electron';
 import isDev from 'electron-is-dev';
+import { createIPCHandler } from 'electron-trpc/main'; // ←追加
+import { router } from './api'; // ←追加
 
 import * as settingStore from './settingStore';
 // 呼び出し元は service に集約したい
@@ -207,6 +209,7 @@ function createWindow(): BrowserWindow {
     }
   });
 
+  createIPCHandler({ router, windows: [mainWindow] });
   const port = process.env.PORT || 3000;
   const url = isDev ? `http://localhost:${port}` : join(__dirname, '../src/out/index.html');
 

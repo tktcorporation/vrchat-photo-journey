@@ -4,6 +4,15 @@ import { join } from 'path';
 
 const srcRoot = join(__dirname, 'src');
 
+const resolve = {
+  alias: {
+    '/@': srcRoot
+    // 'electron-trpc/main': join(__dirname, 'node_modules/electron-trpc/src/main/index.ts')
+    // 'electron-trpc/main': join(__dirname, 'node_modules/electron-trpc/dist/main')
+    // 'electron-trpc/main': require.resolve('node_modules/electron-trpc/dist/main')
+  }
+};
+
 export default ({ command }: ConfigEnv): UserConfig => {
   // DEV
   if (command === 'serve') {
@@ -11,11 +20,7 @@ export default ({ command }: ConfigEnv): UserConfig => {
       root: srcRoot,
       base: '/',
       plugins: [react()],
-      resolve: {
-        alias: {
-          '/@': srcRoot
-        }
-      },
+      resolve,
       build: {
         outDir: join(srcRoot, '/out'),
         emptyOutDir: true,
@@ -34,11 +39,7 @@ export default ({ command }: ConfigEnv): UserConfig => {
     root: srcRoot,
     base: './',
     plugins: [react()],
-    resolve: {
-      alias: {
-        '/@': srcRoot
-      }
-    },
+    resolve,
     build: {
       outDir: join(srcRoot, '/out'),
       emptyOutDir: true,

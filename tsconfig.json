@@ -16,6 +16,10 @@
     "noEmit": true,
     "jsx": "react"
   },
+  "paths": {
+    "electron-trpc/main": ["../node_modules/electron-trpc/dist/main"],
+    "electron-trpc/renderer": ["../node_modules/electron-trpc/dist/renderer"],
+  },
   "exclude": ["node_modules"],
   "include": ["**/*.ts", "**/*.tsx", "**/*.js"]
 }
