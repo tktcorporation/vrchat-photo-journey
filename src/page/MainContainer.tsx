@@ -1,19 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import { Link } from 'react-router-dom';
+import { trpcReact } from '../trpc';
 
 function MainContainer() {
   // 初期表示時に log-files-dir を取得する
-  const [logFilesDir, setlogFilesDir] = useState<string | null>(null);
-  useEffect(() => {
-    if (window.Main) {
-      window.Main.on('log-files-dir', (dir: string) => {
-        console.log(dir);
-        setlogFilesDir(dir);
-      });
-    }
-  }, []);
+  const logFilesDir = trpcReact.getVRChatLogFilesDir.useQuery().data?.path;
+  const vrchatPhotoDir = trpcReact.getVRChatPhotoDir.useQuery().data?.path;
 
   useEffect(() => {
     if (window.Main)
@@ -22,16 +16,6 @@ function MainContainer() {
       });
   });
 
-  const [vrchatPhotoDir, setVrchatPhotoDir] = useState<string | null>(null);
-  useEffect(() => {
-    if (window.Main) {
-      window.Main.on('vrchat-photo-dir', (dir: string) => {
-        console.log(dir);
-        setVrchatPhotoDir(dir);
-      });
-    }
-  }, []);
-
   useEffect(() => {
     if (window.Main)
       window.Main.on('toast', (content: string) => {
@@ -39,6 +23,7 @@ function MainContainer() {
         toast(content);
       });
   });
+
   return (
     <div className="flex-auto">
       <div className=" flex flex-col justify-center items-center h-full space-y-4 bg-blue-50">

@@ -3,7 +3,7 @@ import Store from 'electron-store';
 const settingsStore = new Store({ name: 'v0-settings' });
 
 const settingStoreKey = ['logFilesDir', 'vrchatPhotoDir'] as const;
-export type SettingStoreKey = typeof settingStoreKey[number];
+export type SettingStoreKey = (typeof settingStoreKey)[number];
 
 const get = (key: SettingStoreKey): string | null => {
   const value = settingsStore.get(key);

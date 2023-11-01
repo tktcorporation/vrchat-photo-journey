@@ -1,8 +1,43 @@
-import { ipcRenderer, contextBridge } from 'electron';
+import { contextBridge, ipcRenderer } from 'electron';
+import { ProcedureType } from '@trpc/server';
 
+import type { Operation } from '@trpc/client';
+import type { TRPCResponseMessage } from '@trpc/server/rpc';
+
+export type ETRPCRequest = { method: 'request'; operation: Operation } | { method: 'subscription.stop'; id: number };
+
+export interface RendererGlobalElectronTRPC {
+  sendMessage: (args: ETRPCRequest) => void;
+  onMessage: (callback: (args: TRPCResponseMessage) => void) => void;
+}
+
+export interface TRPCHandlerArgs {
+  path: string;
+  type: ProcedureType;
+  input?: unknown;
+}
+
+const ELECTRON_TRPC_CHANNEL = 'electron-trpc';
+
+const exposeElectronTRPC = () => {
+  const electronTRPC: RendererGlobalElectronTRPC = {
+    sendMessage: (operation) => ipcRenderer.send(ELECTRON_TRPC_CHANNEL, operation),
+    onMessage: (callback) => ipcRenderer.on(ELECTRON_TRPC_CHANNEL, (_event, args) => callback(args))
+  };
+  contextBridge.exposeInMainWorld('electronTRPC', electronTRPC);
+};
+process.once('loaded', () => {
+  exposeElectronTRPC();
+  // If you expose something here, you get window.something in the React app
+  // type it in types/exposedInMainWorld.d.ts to add it to the window type
+  // contextBridge.exposeInMainWorld("something", {
+  //   exposedThing: "this value was exposed via the preload file",
+  // });
+});
 declare global {
   interface Window {
     Main: typeof api;
+    MyOn: typeof myOn;
     ipcRenderer: typeof ipcRenderer;
   }
 }
@@ -65,6 +100,36 @@ const api = {
   }
 };
 contextBridge.exposeInMainWorld('Main', api);
+
+/**
+ * 型安全な ipcRenderer.on
+ */
+const myOn = {
+  receiveStatusToUseVRChatLogFilesDir: (
+    callback: (data: 'ready' | 'logFilesDirNotSet' | 'logFilesNotFound' | 'logFileDirNotFound') => void
+  ) => {
+    const key = 'status-to-use-vrchat-log-files-dir';
+    ipcRenderer.on(key, (_, data) => callback(data));
+    return () => {
+      ipcRenderer.removeAllListeners(key);
+    };
+  },
+  receiveVRChatPhotoDirWithError: (
+    callback: (data: {
+      storedPath: string | null;
+      path: string;
+      error: null | 'photoYearMonthDirsNotFound' | 'photoDirReadError';
+    }) => void
+  ) => {
+    const key = 'vrchat-photo-dir-with-error';
+    ipcRenderer.on(key, (_, data) => callback(data));
+    return () => {
+      ipcRenderer.removeAllListeners(key);
+    };
+  }
+};
+contextBridge.exposeInMainWorld('MyOn', myOn);
+
 /**
  * Using the ipcRenderer directly in the browser through the contextBridge ist not really secure.
  * I advise using the Main/api way !!
