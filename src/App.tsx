@@ -7,6 +7,7 @@ import AppBar from './component/AppBar';
 import MainContainer from './page/MainContainer';
 import CreateJoinInfo from './page/CreateJoinInfo';
 import ClearSettings from './page/ClearSettings';
+import Template from './Template';
 
 import { trpcReact } from './trpc';
 
@@ -19,13 +20,15 @@ function Router() {
   return (
     <trpcReact.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
-        <HashRouter>
-          <Routes>
-            <Route path="/" element={<MainContainer />} />
-            <Route path="/create-join-info" element={<CreateJoinInfo />} />
-            <Route path="/clear-settings" element={<ClearSettings />} />
-          </Routes>
-        </HashRouter>
+        <Template>
+          <HashRouter>
+            <Routes>
+              <Route path="/" element={<MainContainer />} />
+              <Route path="/create-join-info" element={<CreateJoinInfo />} />
+              <Route path="/clear-settings" element={<ClearSettings />} />
+            </Routes>
+          </HashRouter>
+        </Template>
       </QueryClientProvider>
     </trpcReact.Provider>
   );

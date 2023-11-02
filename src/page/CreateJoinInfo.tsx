@@ -1,22 +1,19 @@
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { trpcReact } from '../trpc';
 
 function CreateJoinInfo() {
-  const [statusToUseVRChatLogFilesDir, setStatusToUseVRChatLogFilesDir] = React.useState<
-    'ready' | 'logFilesDirNotSet' | 'logFilesNotFound' | 'logFileDirNotFound' | null
-  >(null);
   const [statusToUseVRChatPhotoDir, setStatusToUseVRChatPhotoDir] = React.useState<
     'ready' | 'photoYearMonthDirsNotFound' | 'photoDirReadError' | null
   >(null);
   useEffect(() => {
-    window.MyOn.receiveStatusToUseVRChatLogFilesDir((status) => {
-      setStatusToUseVRChatLogFilesDir(status);
-    });
     window.MyOn.receiveVRChatPhotoDirWithError((data) => {
       setStatusToUseVRChatPhotoDir(data.error || 'ready');
     });
   }, []);
+
+  const statusToUseVRChatLogFilesDir = trpcReact.getStatusToUseVRChatLogFilesDir.useQuery().data;
 
   return (
     <div className="flex-auto">
