@@ -1,5 +1,5 @@
 import React from 'react';
-import toast from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 import { trpcReact } from './trpc';
 
 type Props = {
@@ -14,7 +14,12 @@ function Template({ children }: Props) {
   });
 
   // Return children directly instead of wrapping them in a fragment
-  return children;
+  return (
+    <>
+      <Toaster />
+      {children}
+    </>
+  );
 }
 
 export default Template;

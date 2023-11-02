@@ -19,7 +19,7 @@ export const router = t.router({
   subscribeToast: t.procedure.subscription(() => {
     return observable((emit) => {
       function onToast(text: string) {
-        emit.next({ text });
+        emit.next(text);
       }
 
       ee.on('toast', onToast);
@@ -46,6 +46,21 @@ export const router = t.router({
       status = vrchatLogFilesDir.error;
     }
     return status;
+  }),
+  createFiles: procedure.mutation(async () => {
+    console.log('createFiles');
+    const result = service.createFiles2();
+    console.log(result.isOk(), result.isErr());
+    return result.match(
+      (value) => {
+        ee.emit('toast', 'ファイルの作成に成功しました');
+        return value;
+      },
+      (error) => {
+        ee.emit('toast', error);
+        return error;
+      }
+    );
   })
 });
 

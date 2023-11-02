@@ -2,8 +2,9 @@ import React from 'react';
 // import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import { Link } from 'react-router-dom';
 import { trpcReact } from '../trpc';
+import { ROUTER_PATHS } from '../constants';
 
-function MainContainer() {
+function Setting() {
   // 初期表示時に log-files-dir を取得する
   const logFilesDir = trpcReact.getVRChatLogFilesDir.useQuery().data?.path;
   const vrchatPhotoDir = trpcReact.getVRChatPhotoDir.useQuery().data?.path;
@@ -48,13 +49,13 @@ function MainContainer() {
           <ArrowPathIcon className="h-5 w-5" />
         </button> */}
         {/* すべての設定をリセットする */}
-        <Link to="/clear-settings">
+        <Link to={ROUTER_PATHS.CLEAR_SETTINGS}>
           <button className="reset-button py-2 px-4 bg-white rounded focus:outline-none shadow hover:bg-yellow-200">
             設定をリセットする
           </button>
         </Link>
         {/* ファイル生成画面に移動するボタン */}
-        <Link to="/create-join-info">
+        <Link to={ROUTER_PATHS.HOME}>
           <button className="py-2 px-4 bg-white rounded focus:outline-none shadow hover:bg-yellow-200">設定完了</button>
         </Link>
       </div>
@@ -62,4 +63,4 @@ function MainContainer() {
   );
 }
 
-export default MainContainer;
+export default Setting;
