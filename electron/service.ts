@@ -67,4 +67,71 @@ const convertLogLinesToWorldJoinLogInfosByVRChatLogDir = (
   return result.map((logLines) => vrchatLogService.convertLogLinesToWorldJoinLogInfos(logLines));
 };
 
-export { createFiles, convertLogLinesToWorldJoinLogInfosByVRChatLogDir, getVRChatLogFilesDir, getVRChatPhotoDir };
+const createFiles2 = (): neverthrow.Result<void, string> => {
+  // get log lines
+  const logFilesDir = getVRChatLogFilesDir();
+  if (typeof logFilesDir.path !== 'string') {
+    return neverthrow.err('Log file path is not set');
+  }
+  if (logFilesDir.error !== null) {
+    switch (logFilesDir.error) {
+      case 'logFilesNotFound':
+        return neverthrow.err('Log files not found');
+      default:
+        break;
+    }
+    return neverthrow.err(`Unknown error: ${logFilesDir.error}`);
+  }
+  const convertWorldJoinLogInfoListResult = convertLogLinesToWorldJoinLogInfosByVRChatLogDir(logFilesDir.path);
+  if (convertWorldJoinLogInfoListResult.isErr()) {
+    switch (convertWorldJoinLogInfoListResult.error.code) {
+      case 'LOG_FILE_NOT_FOUND':
+        // event.sender.send('toast', `Log file not found`);
+        return neverthrow.err('Log file not found');
+      case 'LOG_FILE_DIR_NOT_FOUND':
+        // event.sender.send('toast', `Log file dir not found`);
+        return neverthrow.err('Log file dir not found');
+      case 'LOG_FILES_NOT_FOUND':
+        // event.sender.send('toast', `Log files not found`);
+        return neverthrow.err('Log files not found');
+      default:
+        break;
+    }
+    return neverthrow.err(`Unknown error: ${convertWorldJoinLogInfoListResult.error.code}`);
+  }
+  const convertWorldJoinLogInfoList = convertWorldJoinLogInfoListResult.value;
+
+  // create files
+  const vrchatPhotoDir = getVRChatPhotoDir();
+  if (typeof vrchatPhotoDir.storedPath !== 'string') {
+    // event.sender.send('toast', `VRChat photo path is not set`);
+    return neverthrow.err('VRChat photo path is not set');
+  }
+  if (vrchatPhotoDir.error !== null) {
+    switch (vrchatPhotoDir.error) {
+      case 'photoYearMonthDirsNotFound':
+        // event.sender.send('toast', `Photo year-month dirs not found`);
+        return neverthrow.err('Photo year-month dirs not found');
+      default:
+        break;
+    }
+    return neverthrow.err(`Unknown error: ${vrchatPhotoDir.error}`);
+  }
+
+  const result = createFiles(vrchatPhotoDir.storedPath, convertWorldJoinLogInfoList);
+  return result
+    .map(() => {
+      return undefined;
+    })
+    .mapErr((error) => {
+      return error.message;
+    });
+};
+
+export {
+  createFiles,
+  createFiles2,
+  convertLogLinesToWorldJoinLogInfosByVRChatLogDir,
+  getVRChatLogFilesDir,
+  getVRChatPhotoDir
+};

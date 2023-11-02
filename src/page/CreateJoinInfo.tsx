@@ -11,6 +11,12 @@ function CreateJoinInfo() {
   const { data: statusToUseVRChatLogFilesDir, refetch: refetchStatusToUseVRChatLogFilesDir } =
     trpcReact.getStatusToUseVRChatLogFilesDir.useQuery();
 
+  const createFilesMutation = trpcReact.createFiles.useMutation();
+  const handleClickCreateFiles = () => {
+    createFilesMutation.mutate();
+  };
+  const disabledCreateFilesButton = statusToUseVRChatLogFilesDir !== 'ready' || statusToUseVRChatPhotoDir !== 'ready';
+
   return (
     <div className="flex-auto">
       <div className=" flex flex-col justify-center items-center h-full space-y-4 bg-blue-50">
@@ -44,10 +50,11 @@ function CreateJoinInfo() {
         </Link>
         {/* ファイル生成ボタン */}
         <button
-          // disabled のときの sty
-          className="create-file-button py-2 px-4 bg-white rounded focus:outline-none shadow hover:bg-yellow-200"
-          onClick={() => window.Main.createFiles()}
-          disabled={statusToUseVRChatLogFilesDir !== 'ready' || statusToUseVRChatPhotoDir !== 'ready'}
+          className={`create-file-button py-2 px-4 bg-white rounded focus:outline-none shadow ${
+            disabledCreateFilesButton ? 'opacity-50 cursor-not-allowed' : 'hover:bg-yellow-200'
+          }`}
+          onClick={handleClickCreateFiles}
+          disabled={disabledCreateFilesButton}
         >
           どこで撮ったか調べる
         </button>
