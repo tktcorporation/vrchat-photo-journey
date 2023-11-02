@@ -2,6 +2,7 @@ import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { trpcReact } from '../trpc';
+import { ROUTER_PATHS } from '../constants';
 
 function CreateJoinInfo() {
   const { data: vrChatPhotoDir, refetch: refetchVRChatPhotoDir } = trpcReact.getVRChatPhotoDir.useQuery();
@@ -35,7 +36,10 @@ function CreateJoinInfo() {
           <ArrowPathIcon className="h-5 w-5" />
         </button>
         {/* 設定に戻る */}
-        <Link to="/" className="py-2 px-4 bg-white rounded focus:outline-none shadow hover:bg-yellow-200">
+        <Link
+          to={ROUTER_PATHS.SETTING}
+          className="py-2 px-4 bg-white rounded focus:outline-none shadow hover:bg-yellow-200"
+        >
           設定に戻る
         </Link>
         {/* ファイル生成ボタン */}

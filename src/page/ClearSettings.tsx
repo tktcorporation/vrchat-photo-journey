@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { ROUTER_PATHS } from '../constants';
 
-function MainContainer() {
+function ClearSettings() {
   return (
     <div className="flex-auto">
       <div className=" flex flex-col justify-center items-center h-full space-y-4 bg-blue-50">
@@ -17,7 +18,10 @@ function MainContainer() {
           設定をリセットする
         </button>
         {/* 設定に戻る */}
-        <Link to="/" className="py-2 px-4 bg-white rounded focus:outline-none shadow hover:bg-yellow-200">
+        <Link
+          to={ROUTER_PATHS.SETTING}
+          className="py-2 px-4 bg-white rounded focus:outline-none shadow hover:bg-yellow-200"
+        >
           戻る
         </Link>
       </div>
@@ -25,4 +29,4 @@ function MainContainer() {
   );
 }
 
-export default MainContainer;
+export default ClearSettings;
