@@ -1,19 +1,14 @@
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { trpcReact } from '../trpc';
 
 function CreateJoinInfo() {
-  const [statusToUseVRChatPhotoDir, setStatusToUseVRChatPhotoDir] = React.useState<
-    'ready' | 'photoYearMonthDirsNotFound' | 'photoDirReadError' | null
-  >(null);
-  useEffect(() => {
-    window.MyOn.receiveVRChatPhotoDirWithError((data) => {
-      setStatusToUseVRChatPhotoDir(data.error || 'ready');
-    });
-  }, []);
+  const { data: vrChatPhotoDir, refetch: refetchVRChatPhotoDir } = trpcReact.getVRChatPhotoDir.useQuery();
+  const statusToUseVRChatPhotoDir = vrChatPhotoDir?.error || 'ready';
 
-  const statusToUseVRChatLogFilesDir = trpcReact.getStatusToUseVRChatLogFilesDir.useQuery().data;
+  const { data: statusToUseVRChatLogFilesDir, refetch: refetchStatusToUseVRChatLogFilesDir } =
+    trpcReact.getStatusToUseVRChatLogFilesDir.useQuery();
 
   return (
     <div className="flex-auto">
@@ -33,8 +28,8 @@ function CreateJoinInfo() {
         <button
           className="py-2 px-4 bg-white rounded focus:outline-none shadow hover:bg-yellow-200"
           onClick={() => {
-            window.Main.getStatusToUseVRChatLogFilesDir();
-            window.Main.getVRChatPhotoDir();
+            refetchVRChatPhotoDir();
+            refetchStatusToUseVRChatLogFilesDir();
           }}
         >
           <ArrowPathIcon className="h-5 w-5" />
