@@ -7,7 +7,8 @@
 * [x] VRChat の写真 dir を取得できるように
 * [x] 指定した dir にファイル生成
 * [x] 月ごとに仕分けしてファイル生成できるように
-* package アップグレード
+* [x] package アップグレード
+* [ ] unused export を怒る lint
 * UI と導線整備
 * E2E テスト
 
