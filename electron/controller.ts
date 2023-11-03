@@ -1,10 +1,6 @@
 import { dialog } from 'electron';
 import * as settingStore from './settingStore';
 
-export const handleClearAllStoredSettings = () => {
-  settingStore.clearAllStoredSettings();
-};
-
 export const handleOpenDialogAndSetLogFilesDir = () => {
   dialog
     .showOpenDialog({

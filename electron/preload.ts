@@ -74,9 +74,6 @@ const api = {
   createFiles: () => {
     ipcRenderer.send('create-files');
   },
-  clearAllStoredSettings: () => {
-    ipcRenderer.send('clear-all-stored-settings');
-  },
   /**
     Here function for AppBar
    */

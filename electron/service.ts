@@ -5,6 +5,7 @@ import * as fs from './lib/wrappedFs';
 import * as vrchatLogService from './service/vrchatLog/vrchatLog';
 import * as vrchatPhotoService from './service/vrchatPhoto/service';
 import VRChatLogFileError from './service/vrchatLog/error';
+import * as settingStore from './settingStore';
 
 const getVRChatLogFilesDir = (): {
   storedPath: string | null;
@@ -100,4 +101,8 @@ const getConfigAndValidateAndCreateFiles = (): neverthrow.Result<void, string> =
     });
 };
 
-export { getConfigAndValidateAndCreateFiles, getVRChatLogFilesDir, getVRChatPhotoDir };
+const clearAllStoredSettings = () => {
+  settingStore.clearAllStoredSettings();
+};
+
+export { getConfigAndValidateAndCreateFiles, getVRChatLogFilesDir, getVRChatPhotoDir, clearAllStoredSettings };

@@ -59,6 +59,11 @@ export const router = t.router({
         return error;
       }
     );
+  }),
+  clearAllStoredSettings: procedure.mutation(async () => {
+    service.clearAllStoredSettings();
+    ee.emit('toast', '設定をすべて削除しました');
+    return undefined;
   })
 });
 

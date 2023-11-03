@@ -29,7 +29,6 @@ const CHANNELS = {
 function registerIpcMainListeners() {
   ipcMain.on(CHANNELS.OPEN_DIALOG_AND_SET_LOG_FILES_DIR, controller.handleOpenDialogAndSetLogFilesDir);
   ipcMain.on(CHANNELS.OPEN_DIALOG_AND_SET_VRCHAT_PHOTO_DIR, controller.handleOpenDialogAndSetVRChatPhotoDir);
-  ipcMain.on(CHANNELS.CLEAR_ALL_STORED_SETTINGS, controller.handleClearAllStoredSettings);
   ipcMain.on(CHANNELS.MESSAGE, (_, message) => {
     console.log(message);
   });

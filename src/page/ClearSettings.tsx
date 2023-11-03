@@ -1,19 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ROUTER_PATHS } from '../constants';
+import { trpcReact } from '../trpc';
 
 function ClearSettings() {
+  const mutation = trpcReact.clearAllStoredSettings.useMutation();
   return (
     <div className="flex-auto">
       <div className=" flex flex-col justify-center items-center h-full space-y-4 bg-blue-50">
         {/* すべての設定をリセットする */}
         <button
           className="reset-button py-2 px-4 bg-white rounded focus:outline-none shadow hover:bg-yellow-200"
-          onClick={() => {
-            if (window.Main) {
-              window.Main.clearAllStoredSettings();
-            }
-          }}
+          onClick={() => mutation.mutate()}
         >
           設定をリセットする
         </button>
