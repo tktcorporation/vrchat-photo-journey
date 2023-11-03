@@ -100,9 +100,4 @@ const getConfigAndValidateAndCreateFiles = (): neverthrow.Result<void, string> =
     });
 };
 
-export {
-  getConfigAndValidateAndCreateFiles,
-  convertLogLinesToWorldJoinLogInfosByVRChatLogDir,
-  getVRChatLogFilesDir,
-  getVRChatPhotoDir
-};
+export { getConfigAndValidateAndCreateFiles, getVRChatLogFilesDir, getVRChatPhotoDir };

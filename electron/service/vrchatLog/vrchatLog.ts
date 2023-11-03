@@ -193,7 +193,6 @@ const convertWorldJoinLogInfoToOneLine = (worldJoinLogInfo: WorldJoinLogInfo): W
 
 // 一括 export
 export {
-  validateWorldId,
   getVRChatLogFileDir,
   getVRChatLogFileNamesByDir,
   getLogLinesFromDir,
