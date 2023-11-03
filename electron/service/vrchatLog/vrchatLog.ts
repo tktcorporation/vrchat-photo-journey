@@ -43,23 +43,6 @@ const getDefaultVRChatLogFilesDir = (): string => {
     logFilesDir = path.join(process.env.HOME || '', 'Library', 'Application Support', 'com.vrchat.VRChat', 'VRChat');
   }
   return logFilesDir;
-
-  // const logFileNamesResult = getVRChatLogFileNamesByDir(logFilesDir);
-  // const result = logFileNamesResult.mapErr((e) => {
-  //   switch (e) {
-  //     case 'ENOENT':
-  //       return 'logFileDirNotFound' as const;
-  //     default:
-  //       throw e;
-  //   }
-  // });
-  // if (result.isErr()) {
-  //   return { storedPath: null, path: logFilesDir, error: result.error };
-  // }
-  // if (result.value.length === 0) {
-  //   return { storedPath: null, path: logFilesDir, error: 'logFilesNotFound' };
-  // }
-  // return { storedPath: null, path: logFilesDir, error: null };
 };
 
 const getVRChatLogFileDir = (): VRChatLogFilesDirWithErr => {
