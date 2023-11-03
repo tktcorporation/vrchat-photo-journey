@@ -31,7 +31,6 @@ function registerIpcMainListeners() {
   ipcMain.on(CHANNELS.GET_LOG_FILES_DIR, controller.handleGetLogFilesDir);
   ipcMain.on(CHANNELS.OPEN_DIALOG_AND_SET_VRCHAT_PHOTO_DIR, controller.handleOpenDialogAndSetVRChatPhotoDir);
   ipcMain.on(CHANNELS.GET_VRCHAT_PHOTO_DIR, controller.handleGetVRChatPhotoDir);
-  ipcMain.on(CHANNELS.CREATE_FILES, controller.handleCreateFiles);
   ipcMain.on(CHANNELS.GET_STATUS_TO_USE_VRCHAT_LOG_FILES_DIR, controller.handlegetStatusToUseVRChatLogFilesDir);
   ipcMain.on(CHANNELS.CLEAR_ALL_STORED_SETTINGS, controller.handleClearAllStoredSettings);
   ipcMain.on(CHANNELS.MESSAGE, (_, message) => {
