@@ -53,3 +53,27 @@ export const writeFileSyncSafe = (
     throw e;
   }
 };
+
+export const mkdirSyncSafe = (dirPath: string): Result<void, Error> => {
+  try {
+    fs.mkdirSync(dirPath);
+    return ok(undefined);
+  } catch (e) {
+    if (e instanceof Error) {
+      return err(e);
+    }
+    throw e;
+  }
+};
+
+export const existsSyncSafe = (path: string): Result<boolean, Error> => {
+  try {
+    const result = fs.existsSync(path);
+    return ok(result);
+  } catch (e) {
+    if (e instanceof Error) {
+      return err(e);
+    }
+    throw e;
+  }
+};

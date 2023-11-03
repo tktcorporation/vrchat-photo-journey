@@ -23,7 +23,6 @@ interface VRChatLogFilesDirWithErr {
 }
 
 const getVRChatLogFileNamesByDir = (logFilesDir: string): neverthrow.Result<string[], fs.FSError> => {
-  console.log('getVRChatLogFileNamesByDir', logFilesDir);
   const logFileNamesResult = fs.readDirSyncSafe(logFilesDir);
   // output_log から始まるファイル名のみを取得
   const logFileNamesFiltered = logFileNamesResult.map((logFileNames) =>
@@ -33,7 +32,6 @@ const getVRChatLogFileNamesByDir = (logFilesDir: string): neverthrow.Result<stri
 };
 
 const getDefaultVRChatLogFilesDir = (): string => {
-  console.log('getDefaultVRChatLogFilesDir', process.env.APPDATA);
   let logFilesDir = '';
   if (process.platform === 'win32' && process.env.APPDATA) {
     const DEFAULT_VRCHAT_LOG_FILES_DIR = path.join(process.env.APPDATA || '', '..', 'LocalLow', 'VRChat', 'VRChat');
