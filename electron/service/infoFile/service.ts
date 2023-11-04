@@ -28,14 +28,12 @@ const createFiles = (
     yearMonthPath: string;
     fileName: string;
     content: string;
-  }[] = [];
-
-const toCreateMap = worldJoinLogInfoList.map((info) => {
-  const yearMonthPath = path.join(vrchatPhotoDir, `${info.year}-${info.month}`);
-  const fileName = `${vrchatLogService.convertWorldJoinLogInfoToOneLine(info)}.html`;
-  const content = getHtmlContent(info);
-  return { yearMonthPath, fileName, content };
-});
+  }[] = worldJoinLogInfoList.map((info) => {
+    const yearMonthPath = path.join(vrchatPhotoDir, `${info.year}-${info.month}`);
+    const fileName = `${vrchatLogService.convertWorldJoinLogInfoToOneLine(info)}.html`;
+    const content = getHtmlContent(info);
+    return { yearMonthPath, fileName, content };
+  });
 
   // ディレクトリを作成(なければ)
   // yearMonthPath が重複している場合は一つにまとめる
