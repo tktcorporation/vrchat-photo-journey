@@ -1,0 +1,563 @@
+2023.11.08 15:11:32 Log        -  [Behaviour] Joining wrld_6fecf18a-ab96-43f2-82dc-ccf79f17c34f:86676~region(jp)
+
+
+2023.11.08 15:11:32 Log        -  [Behaviour] Joining or Creating Room: はじまりタウン ⁄ Dawnville
+
+
+2023.11.08 15:11:32 Log        -  [Behaviour] Successfully joined room
+
+
+2023.11.08 15:11:37 Log        -  [Behaviour] OnPlayerJoined tkt_
+
+
+2023.11.08 15:11:37 Log        -  [Behaviour] OnPlayerJoinComplete tkt_
+
+
+2023.11.08 15:12:05 Log        -  [Behaviour] Joining wrld_5c091e61-0f53-4409-ab0a-0fa8a3114806:01038~group(grp_76a5edfd-542c-4d37-ab8f-39ee052ab883)~groupAccessType(plus)~region(jp)
+
+
+2023.11.08 15:12:05 Log        -  [Behaviour] Joining or Creating Room: Cinque Terre - Marina di Riomaggiore（Night）
+
+
+2023.11.08 15:12:06 Log        -  [Behaviour] Successfully joined room
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoined tkt_
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoinComplete tkt_
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoined FUSU［フス］
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoinComplete FUSU［フス］
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoined きいろ（Kiiro）
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoinComplete きいろ（Kiiro）
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoined KAZUYUME
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoinComplete KAZUYUME
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoined Yoriko_よりこ
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoinComplete Yoriko_よりこ
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoined ta-ga
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoinComplete ta-ga
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoined ∗tobira∗むりえら
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoinComplete ∗tobira∗むりえら
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoined sumireneko
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoinComplete sumireneko
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoined 仮空人（そら）
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoinComplete 仮空人（そら）
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoined SanJuan2020
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoinComplete SanJuan2020
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoined naget1229
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoinComplete naget1229
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoined konadd
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoinComplete konadd
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoined HawaYue
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoinComplete HawaYue
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoined naskadesu
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoinComplete naskadesu
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoined sinkope
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoinComplete sinkope
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoined Dokiiin
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoinComplete Dokiiin
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoined ハルカさん
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoinComplete ハルカさん
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoined いいなおちか
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoinComplete いいなおちか
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoined ぷぷpupu
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoinComplete ぷぷpupu
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoined Mosco_あしもす
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoinComplete Mosco_あしもす
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoined たいさ（文鳥）
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoinComplete たいさ（文鳥）
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoined あまやかん
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoinComplete あまやかん
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoined かるまいん
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoinComplete かるまいん
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoined pom1996
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoinComplete pom1996
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoined masumaro
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoinComplete masumaro
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoined dumez
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoinComplete dumez
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoined ルーク-- Luke
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoinComplete ルーク-- Luke
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoined KI_KA⁄TL
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoinComplete KI_KA⁄TL
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoined らいらい（rairai）
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoinComplete らいらい（rairai）
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoined かいぴっぴ
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoinComplete かいぴっぴ
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoined midokan
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoinComplete midokan
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoined はせちーな公爵
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoinComplete はせちーな公爵
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoined やもめの手袋
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoinComplete やもめの手袋
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoined 【さわらないで】月夜野 晶
+
+
+2023.11.08 15:12:14 Log        -  [Behaviour] OnPlayerJoinComplete 【さわらないで】月夜野 晶
+
+
+2023.11.08 15:17:51 Log        -  [Behaviour] OnPlayerJoined SakuraRiko
+
+
+2023.11.08 15:17:53 Log        -  [Behaviour] OnPlayerJoinComplete SakuraRiko
+
+
+2023.11.08 15:18:20 Log        -  [Behaviour] OnPlayerJoined ワリペン
+
+
+2023.11.08 15:18:22 Log        -  [Behaviour] OnPlayerJoinComplete ワリペン
+
+
+2023.11.08 15:19:36 Log        -  [Behaviour] OnPlayerJoined hatasayamana25
+
+
+2023.11.08 15:19:37 Log        -  [Behaviour] OnPlayerJoinComplete hatasayamana25
+
+
+2023.11.08 15:22:40 Log        -  [Behaviour] OnPlayerJoined LOOΠZ
+
+
+2023.11.08 15:22:41 Log        -  [Behaviour] OnPlayerJoined 【さわらないで】月夜野 晶
+
+
+2023.11.08 15:22:41 Log        -  [Behaviour] OnPlayerJoinComplete LOOΠZ
+
+
+2023.11.08 15:22:42 Log        -  [Behaviour] OnPlayerJoinComplete 【さわらないで】月夜野 晶
+
+
+2023.11.08 15:23:40 Log        -  [Behaviour] OnPlayerJoined SakuraRiko
+
+
+2023.11.08 15:23:42 Log        -  [Behaviour] OnPlayerJoinComplete SakuraRiko
+
+
+2023.11.08 15:23:44 Log        -  [Behaviour] OnPlayerJoined d4ffycon
+
+
+2023.11.08 15:23:46 Log        -  [Behaviour] OnPlayerJoinComplete d4ffycon
+
+
+2023.11.08 15:24:27 Log        -  [Behaviour] OnPlayerJoined -りんたろう-
+
+
+2023.11.08 15:24:27 Log        -  [Behaviour] OnPlayerJoinComplete -りんたろう-
+
+
+2023.11.08 15:24:28 Log        -  [Behaviour] OnPlayerJoined まよねーず
+
+
+2023.11.08 15:24:28 Log        -  [Behaviour] OnPlayerJoinComplete まよねーず
+
+
+2023.11.08 15:24:42 Log        -  [Behaviour] OnPlayerJoined あの子゜
+
+
+2023.11.08 15:24:44 Log        -  [Behaviour] OnPlayerJoinComplete あの子゜
+
+
+2023.11.08 15:24:57 Log        -  [Behaviour] OnPlayerJoined B3astManiac 587b
+
+
+2023.11.08 15:24:58 Log        -  [Behaviour] OnPlayerJoinComplete B3astManiac 587b
+
+
+2023.11.08 15:25:17 Log        -  [Behaviour] OnPlayerJoined SIO3700
+
+
+2023.11.08 15:25:17 Log        -  [Behaviour] OnPlayerJoinComplete SIO3700
+
+
+2023.11.08 15:26:16 Log        -  [Behaviour] OnPlayerJoined SakuraRiko
+
+
+2023.11.08 15:26:18 Log        -  [Behaviour] OnPlayerJoinComplete SakuraRiko
+
+
+2023.11.08 15:26:52 Log        -  [Behaviour] OnPlayerJoined nasaw_124c41
+
+
+2023.11.08 15:26:53 Log        -  [Behaviour] OnPlayerJoinComplete nasaw_124c41
+
+
+2023.11.08 15:29:22 Log        -  [Behaviour] OnPlayerJoined Rai_chu
+
+
+2023.11.08 15:29:24 Log        -  [Behaviour] OnPlayerJoinComplete Rai_chu
+
+
+2023.11.08 15:31:12 Log        -  [Behaviour] OnPlayerJoined MochiChoco15
+
+
+2023.11.08 15:31:13 Log        -  [Behaviour] OnPlayerJoinComplete MochiChoco15
+
+
+2023.11.08 15:31:54 Log        -  [Behaviour] OnPlayerJoined ありっこ
+
+
+2023.11.08 15:31:56 Log        -  [Behaviour] OnPlayerJoinComplete ありっこ
+
+
+2023.11.08 15:34:50 Log        -  [Behaviour] OnPlayerJoined nashino
+
+
+2023.11.08 15:34:52 Log        -  [Behaviour] OnPlayerJoinComplete nashino
+
+
+2023.11.08 15:35:55 Log        -  [Behaviour] OnPlayerJoined Somel utane
+
+
+2023.11.08 15:35:57 Log        -  [Behaviour] OnPlayerJoinComplete Somel utane
+
+
+2023.11.08 15:36:18 Log        -  [Behaviour] OnPlayerJoined -りんたろう-
+
+
+2023.11.08 15:36:19 Log        -  [Behaviour] OnPlayerJoinComplete -りんたろう-
+
+
+2023.11.08 15:40:49 Log        -  [Behaviour] OnPlayerJoined -りんたろう-
+
+
+2023.11.08 15:40:49 Log        -  [Behaviour] OnPlayerJoinComplete -りんたろう-
+
+
+2023.11.08 15:41:40 Log        -  [Behaviour] OnPlayerJoined ゆう-yuu98
+
+
+2023.11.08 15:41:42 Log        -  [Behaviour] OnPlayerJoinComplete ゆう-yuu98
+
+
+2023.11.08 15:42:00 Log        -  [Behaviour] OnPlayerJoined Bleepy~
+
+
+2023.11.08 15:42:02 Log        -  [Behaviour] OnPlayerJoinComplete Bleepy~
+
+
+2023.11.08 15:43:45 Log        -  [Behaviour] OnPlayerJoined naskadesu
+
+
+2023.11.08 15:43:47 Log        -  [Behaviour] OnPlayerJoinComplete naskadesu
+
+
+2023.11.08 15:44:10 Log        -  [Behaviour] OnPlayerJoined Uyusawara Odaga
+
+
+2023.11.08 15:44:12 Log        -  [Behaviour] OnPlayerJoinComplete Uyusawara Odaga
+
+
+2023.11.08 15:48:15 Log        -  [Behaviour] OnPlayerJoined UMIUSiO
+
+
+2023.11.08 15:48:16 Log        -  [Behaviour] OnPlayerJoinComplete UMIUSiO
+
+
+2023.11.08 15:48:33 Log        -  [Behaviour] OnPlayerJoined Teine_Maeda
+
+
+2023.11.08 15:48:35 Log        -  [Behaviour] OnPlayerJoinComplete Teine_Maeda
+
+
+2023.11.08 15:52:01 Log        -  [Behaviour] OnPlayerJoined Maikk
+
+
+2023.11.08 15:52:03 Log        -  [Behaviour] OnPlayerJoinComplete Maikk
+
+
+2023.11.08 15:53:19 Log        -  [Behaviour] OnPlayerJoined Jam Transfusion
+
+
+2023.11.08 15:53:21 Log        -  [Behaviour] OnPlayerJoinComplete Jam Transfusion
+
+
+2023.11.08 15:54:16 Log        -  [Behaviour] OnPlayerJoined あの子゜
+
+
+2023.11.08 15:54:18 Log        -  [Behaviour] OnPlayerJoinComplete あの子゜
+
+
+2023.11.08 15:55:26 Log        -  [Behaviour] OnPlayerJoined Mosco_あしもす
+
+
+2023.11.08 15:55:28 Log        -  [Behaviour] OnPlayerJoinComplete Mosco_あしもす
+
+
+2023.11.08 15:56:57 Log        -  [Behaviour] OnPlayerJoined suzukiriri
+
+
+2023.11.08 15:56:59 Log        -  [Behaviour] OnPlayerJoinComplete suzukiriri
+
+
+2023.11.08 15:57:47 Log        -  [Behaviour] OnPlayerJoined ありっこ
+
+
+2023.11.08 15:57:48 Log        -  [Behaviour] OnPlayerJoinComplete ありっこ
+
+
+2023.11.08 16:00:56 Log        -  [Behaviour] OnPlayerJoined sinkope
+
+
+2023.11.08 16:00:58 Log        -  [Behaviour] OnPlayerJoinComplete sinkope
+
+
+2023.11.08 16:01:12 Log        -  [Behaviour] OnPlayerJoined さわでぃ
+
+
+2023.11.08 16:01:14 Log        -  [Behaviour] OnPlayerJoinComplete さわでぃ
+
+
+2023.11.08 16:01:30 Log        -  [Behaviour] OnPlayerJoined ∗そに∗
+
+
+2023.11.08 16:01:32 Log        -  [Behaviour] OnPlayerJoinComplete ∗そに∗
+
+
+2023.11.08 16:01:32 Log        -  [Behaviour] OnPlayerJoined carrot_carrot96
+
+
+2023.11.08 16:01:34 Log        -  [Behaviour] OnPlayerJoinComplete carrot_carrot96
+
+
+2023.11.08 16:01:55 Log        -  [Behaviour] OnPlayerJoined ワリペン
+
+
+2023.11.08 16:01:56 Log        -  [Behaviour] OnPlayerJoinComplete ワリペン
+
+
+2023.11.08 16:02:05 Log        -  [Behaviour] OnPlayerJoined hatasayamana25
+
+
+2023.11.08 16:02:06 Log        -  [Behaviour] OnPlayerJoinComplete hatasayamana25
+
+
+2023.11.08 16:02:24 Log        -  [Behaviour] OnPlayerJoined 【さわらないで】月夜野 晶
+
+
+2023.11.08 16:02:26 Log        -  [Behaviour] OnPlayerJoinComplete 【さわらないで】月夜野 晶
+
+
+2023.11.08 16:03:07 Log        -  [Behaviour] OnPlayerJoined nasaw_124c41
+
+
+2023.11.08 16:03:09 Log        -  [Behaviour] OnPlayerJoinComplete nasaw_124c41
+
+
+2023.11.08 16:04:31 Log        -  [Behaviour] OnPlayerJoined とかげ／khtokage
+
+
+2023.11.08 16:04:33 Log        -  [Behaviour] OnPlayerJoinComplete とかげ／khtokage
+
+
+2023.11.08 16:04:38 Log        -  [Behaviour] OnPlayerJoined さらみせんべい⁄Sarami
+
+
+2023.11.08 16:04:40 Log        -  [Behaviour] OnPlayerJoinComplete さらみせんべい⁄Sarami
+
+
+2023.11.08 16:04:47 Log        -  [Behaviour] OnPlayerJoined Richuko
+
+
+2023.11.08 16:04:49 Log        -  [Behaviour] OnPlayerJoinComplete Richuko
+
+
+2023.11.08 16:05:46 Log        -  [Behaviour] OnPlayerJoined Usagi_channel
+
+
+2023.11.08 16:05:48 Log        -  [Behaviour] OnPlayerJoinComplete Usagi_channel
+
+
+2023.11.08 16:06:00 Log        -  [Behaviour] OnPlayerJoined yuzuzu
+
+
+2023.11.08 16:06:02 Log        -  [Behaviour] OnPlayerJoinComplete yuzuzu
+
+
+2023.11.08 16:07:43 Log        -  [Behaviour] OnPlayerJoined surahige
+
+
+2023.11.08 16:07:45 Log        -  [Behaviour] OnPlayerJoinComplete surahige
+
+
+2023.11.08 16:10:02 Log        -  [Behaviour] OnPlayerJoined つばめ！
+
+
+2023.11.08 16:10:04 Log        -  [Behaviour] OnPlayerJoinComplete つばめ！
+
+
+2023.11.08 16:10:38 Log        -  [Behaviour] OnPlayerJoined れっさー_lesser
+
+
+2023.11.08 16:10:40 Log        -  [Behaviour] OnPlayerJoinComplete れっさー_lesser
+
+
+2023.11.08 16:11:30 Log        -  [Behaviour] OnPlayerJoined Dokiiin
+
+
+2023.11.08 16:11:32 Log        -  [Behaviour] OnPlayerJoinComplete Dokiiin
+
+
+2023.11.08 16:15:18 Log        -  [Behaviour] OnPlayerJoined az_jaz
+
+
+2023.11.08 16:15:20 Log        -  [Behaviour] OnPlayerJoinComplete az_jaz
+
+
+2023.11.08 16:20:33 Log        -  [Behaviour] OnPlayerJoined enugoni
+
+
+2023.11.08 16:20:34 Log        -  [Behaviour] OnPlayerJoinComplete enugoni
+
+
+2023.11.08 16:22:04 Log        -  [Behaviour] OnPlayerJoined Rai_chu
+
+
+2023.11.08 16:22:06 Log        -  [Behaviour] OnPlayerJoinComplete Rai_chu
+
+
+2023.11.08 16:25:04 Log        -  [Behaviour] OnPlayerJoined りんご飴
+
+
+2023.11.08 16:25:06 Log        -  [Behaviour] OnPlayerJoinComplete りんご飴
+
+
+2023.11.08 16:28:27 Log        -  [Behaviour] OnPlayerJoined matakiti
+
+
+2023.11.08 16:28:29 Log        -  [Behaviour] OnPlayerJoinComplete matakiti
+
+
+2023.11.08 16:32:01 Log        -  [Behaviour] OnPlayerJoined ゆう-yuu98
+
+
+2023.11.08 16:32:03 Log        -  [Behaviour] OnPlayerJoinComplete ゆう-yuu98
+

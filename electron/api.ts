@@ -48,9 +48,7 @@ export const router = t.router({
     return status;
   }),
   createFiles: procedure.mutation(async () => {
-    console.log('createFiles');
-    const result = service.createFiles2();
-    console.log(result.isOk(), result.isErr());
+    const result = service.getConfigAndValidateAndCreateFiles();
     return result.match(
       (value) => {
         ee.emit('toast', 'ファイルの作成に成功しました');
@@ -61,6 +59,11 @@ export const router = t.router({
         return error;
       }
     );
+  }),
+  clearAllStoredSettings: procedure.mutation(async () => {
+    service.clearAllStoredSettings();
+    ee.emit('toast', '設定をすべて削除しました');
+    return undefined;
   })
 });
 

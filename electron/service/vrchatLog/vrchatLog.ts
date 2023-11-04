@@ -23,7 +23,6 @@ interface VRChatLogFilesDirWithErr {
 }
 
 const getVRChatLogFileNamesByDir = (logFilesDir: string): neverthrow.Result<string[], fs.FSError> => {
-  console.log('getVRChatLogFileNamesByDir', logFilesDir);
   const logFileNamesResult = fs.readDirSyncSafe(logFilesDir);
   // output_log から始まるファイル名のみを取得
   const logFileNamesFiltered = logFileNamesResult.map((logFileNames) =>
@@ -33,7 +32,6 @@ const getVRChatLogFileNamesByDir = (logFilesDir: string): neverthrow.Result<stri
 };
 
 const getDefaultVRChatLogFilesDir = (): string => {
-  console.log('getDefaultVRChatLogFilesDir', process.env.APPDATA);
   let logFilesDir = '';
   if (process.platform === 'win32' && process.env.APPDATA) {
     const DEFAULT_VRCHAT_LOG_FILES_DIR = path.join(process.env.APPDATA || '', '..', 'LocalLow', 'VRChat', 'VRChat');
@@ -43,23 +41,6 @@ const getDefaultVRChatLogFilesDir = (): string => {
     logFilesDir = path.join(process.env.HOME || '', 'Library', 'Application Support', 'com.vrchat.VRChat', 'VRChat');
   }
   return logFilesDir;
-
-  // const logFileNamesResult = getVRChatLogFileNamesByDir(logFilesDir);
-  // const result = logFileNamesResult.mapErr((e) => {
-  //   switch (e) {
-  //     case 'ENOENT':
-  //       return 'logFileDirNotFound' as const;
-  //     default:
-  //       throw e;
-  //   }
-  // });
-  // if (result.isErr()) {
-  //   return { storedPath: null, path: logFilesDir, error: result.error };
-  // }
-  // if (result.value.length === 0) {
-  //   return { storedPath: null, path: logFilesDir, error: 'logFilesNotFound' };
-  // }
-  // return { storedPath: null, path: logFilesDir, error: null };
 };
 
 const getVRChatLogFileDir = (): VRChatLogFilesDirWithErr => {
@@ -193,7 +174,6 @@ const convertWorldJoinLogInfoToOneLine = (worldJoinLogInfo: WorldJoinLogInfo): W
 
 // 一括 export
 export {
-  validateWorldId,
   getVRChatLogFileDir,
   getVRChatLogFileNamesByDir,
   getLogLinesFromDir,
