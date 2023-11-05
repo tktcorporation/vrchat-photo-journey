@@ -60,15 +60,35 @@ const getConfigAndValidateAndCreateFiles = (): neverthrow.Result<void, string> =
 const clearAllStoredSettings = () => {
   settingStore.clearAllStoredSettings();
 };
+const clearStoredSetting = (key: Parameters<typeof settingStore.clearStoredSetting>[0]) => {
+  return settingStore.clearStoredSetting(key);
+};
 
 const openPathOnExplorer = (path: string) => {
   return utilsService.openPathInExplorer(path);
 };
 
+const setVRChatPhotoDirByDialog = async (): Promise<neverthrow.Result<void, Error | 'canceled'>> => {
+  return (await utilsService.openGetDirDialog()).map((dirPath) => {
+    settingStore.setVRChatPhotoDir(dirPath);
+    return undefined;
+  });
+};
+
+const setVRChatLogFilesDirByDialog = async (): Promise<neverthrow.Result<void, Error | 'canceled'>> => {
+  return (await utilsService.openGetDirDialog()).map((dirPath) => {
+    settingStore.setLogFilesDir(dirPath);
+    return undefined;
+  });
+};
+
 export {
+  setVRChatLogFilesDirByDialog,
+  setVRChatPhotoDirByDialog,
   getConfigAndValidateAndCreateFiles,
   getVRChatLogFilesDir,
   getVRChatPhotoDir,
   clearAllStoredSettings,
+  clearStoredSetting,
   openPathOnExplorer
 };

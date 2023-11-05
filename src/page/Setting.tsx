@@ -1,62 +1,63 @@
 import React from 'react';
-// import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import { Link } from 'react-router-dom';
-import { trpcReact } from '../trpc';
-import { ROUTER_PATHS } from '../constants';
+import { trpcReact } from '@/trpc';
+import { ROUTER_PATHS } from '@/constants';
+import { Button } from '@/component/ui/button';
+import { ChevronRight, AlertTriangle, Check } from 'lucide-react';
 
 function Setting() {
   // 初期表示時に log-files-dir を取得する
-  const logFilesDir = trpcReact.getVRChatLogFilesDir.useQuery().data?.path;
-  const vrchatPhotoDir = trpcReact.getVRChatPhotoDir.useQuery().data?.path;
+  const logFilesDirError = trpcReact.getVRChatLogFilesDir.useQuery().data?.error;
+  const vrchatPhotoDirError = trpcReact.getVRChatPhotoDir.useQuery().data?.error;
+
+  const statusIcon = (err: string | undefined | null) => {
+    if (err) {
+      return <AlertTriangle size={24} className="text-red-500" />;
+    }
+    return <Check size={24} className="text-green-500" />;
+  };
 
   return (
     <div className="flex-auto">
-      <div className=" flex flex-col justify-center items-center h-full space-y-4">
-        <h1 className="text-2xl text-gray-900">VRChatの写真どこで撮ったかわかるようにするアプリ</h1>
-        <button
-          className="open-dialog-and-set-log-files-dir-button py-2 px-4 bg-white rounded focus:outline-none shadow hover:bg-yellow-200"
-          onClick={() => {
-            if (window.Main) {
-              window.Main.openDialogAndSetLogFilesDir();
-            }
-          }}
-        >
-          ログファイルの場所を指定する
-        </button>
-        <div className="log-files-dir-label">log-files-dir: {logFilesDir}</div>
-        {/* VRChat Photo の Dir を指定する */}
-        <button
-          className="open-dialog-and-set-vrchat-photo-dir-button py-2 px-4 bg-white rounded focus:outline-none shadow hover:bg-yellow-200"
-          onClick={() => {
-            if (window.Main) {
-              window.Main.openDialogAndSetVRChatPhotoDir();
-            }
-          }}
-        >
-          VRChat Photo の場所を指定する
-        </button>
-        <div className="vrchat-photo-dir-label">vrchat-photo-dir: {vrchatPhotoDir}</div>
-        {/* 設定の再取得 */}
-        {/* <button
-          className="get-vrchat-photo-dir-button py-2 px-4 bg-white rounded focus:outline-none shadow hover:bg-yellow-200"
-          onClick={() => {
-            if (window.Main) {
-              window.Main.getVRChatPhotoDir();
-              window.Main.getLogFilesDir();
-            }
-          }}
-        >
-          <ArrowPathIcon className="h-5 w-5" />
-        </button> */}
-        {/* すべての設定をリセットする */}
-        <Link to={ROUTER_PATHS.CLEAR_SETTINGS}>
-          <button className="reset-button py-2 px-4 bg-white rounded focus:outline-none shadow hover:bg-yellow-200">
-            設定をリセットする
-          </button>
-        </Link>
+      <div className=" flex flex-col justify-center items-center h-full space-y-8">
+        <h3 className="text-lg font-medium">設定</h3>
+        <div className="space-y-4">
+          <div className="flex flex-row items-center justify-between rounded-lg border p-4 space-x-4">
+            <div>{statusIcon(logFilesDirError)}</div>
+            <div className="space-y-0.5">
+              <div className="text-base">ログファイルの場所</div>
+              <div className="text-sm text-muted-foreground">
+                VRChat が生成するシステムログ
+                {/* Joinした日時や、ワールドの情報を取得するために使います */}
+              </div>
+            </div>
+            <div>
+              <Link to={ROUTER_PATHS.SETTING_VRCHAT_LOG_PATH}>
+                <Button variant="ghost">
+                  <ChevronRight size={24} />
+                </Button>
+              </Link>
+            </div>
+          </div>
+          <div className="flex flex-row items-center justify-between rounded-lg border p-4 space-x-4">
+            <div>{statusIcon(vrchatPhotoDirError)}</div>
+            <div className="space-y-0.5">
+              <div className="text-base">写真ファイルの場所</div>
+              <div className="text-sm text-muted-foreground">カメラで取った写真が保存される</div>
+            </div>
+            <div>
+              <Link to={ROUTER_PATHS.SETTING_VRCHAT_PHOTO_PATH}>
+                <Button variant="ghost">
+                  <ChevronRight size={24} />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+
         {/* ファイル生成画面に移動するボタン */}
         <Link to={ROUTER_PATHS.HOME}>
-          <button className="py-2 px-4 bg-white rounded focus:outline-none shadow hover:bg-yellow-200">設定完了</button>
+          <Button variant="outline">完了</Button>
         </Link>
       </div>
     </div>

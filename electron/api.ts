@@ -65,10 +65,51 @@ export const router = t.router({
     ee.emit('toast', '設定をすべて削除しました');
     return undefined;
   }),
+  clearStoredSetting: procedure
+    .input(z.union([z.literal('logFilesDir'), z.literal('vrchatPhotoDir')]))
+    .mutation(async (ctx) => {
+      const result = service.clearStoredSetting(ctx.input);
+      result.match(
+        () => {
+          ee.emit('toast', '設定を削除しました');
+          return undefined;
+        },
+        (error) => {
+          ee.emit('toast', error);
+          return undefined;
+        }
+      );
+    }),
   openPathOnExplorer: procedure.input(z.string()).mutation(async (ctx) => {
     const result = await service.openPathOnExplorer(ctx.input);
     return result.match(
       () => {
+        return true;
+      },
+      (error) => {
+        ee.emit('toast', error);
+        return false;
+      }
+    );
+  }),
+  setVRChatPhotoDirByDialog: procedure.mutation(async () => {
+    const result = await service.setVRChatPhotoDirByDialog();
+    return result.match(
+      () => {
+        ee.emit('toast', 'VRChatの写真の保存先を設定しました');
+        return true;
+      },
+      (error) => {
+        ee.emit('toast', error);
+        return false;
+      }
+    );
+  }),
+  setVRChatLogFilesDirByDialog: procedure.mutation(async () => {
+    const result = await service.setVRChatLogFilesDirByDialog();
+    return result.match(
+      () => {
+        ee.emit('toast', 'VRChatのログファイルの保存先を設定しました');
         return true;
       },
       (error) => {

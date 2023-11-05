@@ -8,7 +8,7 @@ function CreatedResult() {
   const vrchatPhotoDir = trpcReact.getVRChatPhotoDir.useQuery().data?.path;
   const mutate = trpcReact.openPathOnExplorer.useMutation();
   const handleOpenFolder = () => {
-    mutate.mutate(vrchatPhotoDir!);
+    return mutate.mutate(vrchatPhotoDir!);
   };
 
   return (
@@ -19,7 +19,7 @@ function CreatedResult() {
 
         {/* 設定に戻る */}
         <Link to={ROUTER_PATHS.HOME}>
-          <Button>戻る</Button>
+          <Button>もう一度</Button>
         </Link>
       </div>
     </div>
