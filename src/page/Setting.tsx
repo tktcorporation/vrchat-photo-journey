@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { trpcReact } from '@/trpc';
 import { ROUTER_PATHS } from '@/constants';
-import { Button } from '@/component/ui/button';
+import { Button } from '@/components/ui/button';
 import { ChevronRight, AlertTriangle, Check } from 'lucide-react';
 
 function Setting() {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { trpcReact } from '@/trpc';
-import { Button } from '@/component/ui/button';
+import { Button } from '@/components/ui/button';
 import { FolderOpen } from 'lucide-react';
 import { match } from 'ts-pattern';
 import { sourceBadge } from './components';
