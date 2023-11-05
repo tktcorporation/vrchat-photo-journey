@@ -30,10 +30,10 @@ function CreateJoinInfo() {
     });
 
   const createFilesMutation = trpcReact.createFiles.useMutation();
+  const navigate = useNavigate();
   const handleClickCreateFiles = () => {
     createFilesMutation.mutateAsync().then((isSuccess) => {
       if (isSuccess) {
-        const navigate = useNavigate();
         navigate(ROUTER_PATHS.CREATED_RESULT);
       }
     });
@@ -42,8 +42,8 @@ function CreateJoinInfo() {
 
   return (
     <div className="flex-auto">
-      <div className=" flex flex-col justify-center items-center h-full space-y-4">
-        <ProgressCircle value={progressToReady} className="text-red-500" />
+      <div className=" flex flex-col justify-center items-center h-full space-y-8">
+        <ProgressCircle value={progressToReady} />
         {/* progressToReady が 100 だったら */}
         {progressToReady === 100 ? (
           <div className="text-2xl text-gray-900">

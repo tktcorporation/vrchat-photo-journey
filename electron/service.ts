@@ -68,7 +68,23 @@ const openPathOnExplorer = (path: string) => {
   return utilsService.openPathInExplorer(path);
 };
 
+const setVRChatPhotoDirByDialog = async (): Promise<neverthrow.Result<void, Error | 'canceled'>> => {
+  return (await utilsService.openGetDirDialog()).map((dirPath) => {
+    settingStore.setVRChatPhotoDir(dirPath);
+    return undefined;
+  });
+};
+
+const setVRChatLogFilesDirByDialog = async (): Promise<neverthrow.Result<void, Error | 'canceled'>> => {
+  return (await utilsService.openGetDirDialog()).map((dirPath) => {
+    settingStore.setLogFilesDir(dirPath);
+    return undefined;
+  });
+};
+
 export {
+  setVRChatLogFilesDirByDialog,
+  setVRChatPhotoDirByDialog,
   getConfigAndValidateAndCreateFiles,
   getVRChatLogFilesDir,
   getVRChatPhotoDir,

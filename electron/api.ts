@@ -91,6 +91,32 @@ export const router = t.router({
         return false;
       }
     );
+  }),
+  setVRChatPhotoDirByDialog: procedure.mutation(async () => {
+    const result = await service.setVRChatPhotoDirByDialog();
+    return result.match(
+      () => {
+        ee.emit('toast', 'VRChatの写真の保存先を設定しました');
+        return true;
+      },
+      (error) => {
+        ee.emit('toast', error);
+        return false;
+      }
+    );
+  }),
+  setVRChatLogFilesDirByDialog: procedure.mutation(async () => {
+    const result = await service.setVRChatLogFilesDirByDialog();
+    return result.match(
+      () => {
+        ee.emit('toast', 'VRChatのログファイルの保存先を設定しました');
+        return true;
+      },
+      (error) => {
+        ee.emit('toast', error);
+        return false;
+      }
+    );
   })
 });
 

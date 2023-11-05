@@ -7,7 +7,7 @@ import { match } from 'ts-pattern';
 import { sourceBadge } from './components';
 
 function Setting() {
-  const logFilesDir = trpcReact.getVRChatLogFilesDir.useQuery().data;
+  const { data: logFilesDir, refetch } = trpcReact.getVRChatLogFilesDir.useQuery();
   const errorMessage = match(logFilesDir?.error)
     .with('logFilesNotFound', () => 'ログファイルが見つかりませんでした')
     .with('logFileDirNotFound', () => 'フォルダの読み取りに失敗しました')
@@ -16,6 +16,7 @@ function Setting() {
     .exhaustive();
 
   const deleteStoredPathMutation = trpcReact.clearStoredSetting.useMutation();
+  const setByDialogMutation = trpcReact.setVRChatLogFilesDirByDialog.useMutation();
 
   const navigate = useNavigate();
 
@@ -37,9 +38,9 @@ function Setting() {
               <Button
                 variant="ghost"
                 onClick={() => {
-                  if (window.Main) {
-                    window.Main.openDialogAndSetLogFilesDir();
-                  }
+                  setByDialogMutation.mutateAsync().then(() => {
+                    refetch();
+                  });
                 }}
               >
                 <FolderOpen size={24} />
@@ -51,7 +52,9 @@ function Setting() {
         <Button
           variant="secondary"
           onClick={() => {
-            deleteStoredPathMutation.mutate('logFilesDir');
+            deleteStoredPathMutation.mutateAsync('logFilesDir').then(() => {
+              refetch();
+            });
           }}
         >
           設定をリセットする

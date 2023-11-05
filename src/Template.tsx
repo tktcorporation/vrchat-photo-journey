@@ -8,8 +8,12 @@ type Props = {
 
 function Template({ children }: Props) {
   trpcReact.subscribeToast.useSubscription(undefined, {
-    onData: (content: string) => {
-      toast(content);
+    onData: (content: unknown) => {
+      if (typeof content === 'string') {
+        toast(content);
+        return;
+      }
+      toast(JSON.stringify(content));
     }
   });
 

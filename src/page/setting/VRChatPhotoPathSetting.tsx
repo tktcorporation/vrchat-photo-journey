@@ -7,7 +7,7 @@ import { match } from 'ts-pattern';
 import { sourceBadge } from './components';
 
 function Setting() {
-  const photoFilesDir = trpcReact.getVRChatPhotoDir.useQuery().data;
+  const { data: photoFilesDir, refetch } = trpcReact.getVRChatPhotoDir.useQuery();
   const errorMessage = match(photoFilesDir?.error)
     .with('photoYearMonthDirsNotFound', () => '2099-01 のようなフォルダがある場所を指定してください')
     .with('photoDirReadError', () => 'フォルダの読み取りに失敗しました')
@@ -16,6 +16,7 @@ function Setting() {
     .exhaustive();
 
   const deleteStoredPathMutation = trpcReact.clearStoredSetting.useMutation();
+  const setByDialogMutation = trpcReact.setVRChatPhotoDirByDialog.useMutation();
 
   const navigate = useNavigate();
 
@@ -37,9 +38,9 @@ function Setting() {
               <Button
                 variant="ghost"
                 onClick={() => {
-                  if (window.Main) {
-                    window.Main.openDialogAndSetVRChatPhotoDir();
-                  }
+                  setByDialogMutation.mutateAsync().then(() => {
+                    refetch();
+                  });
                 }}
               >
                 <FolderOpen size={24} />
@@ -51,7 +52,9 @@ function Setting() {
         <Button
           variant="secondary"
           onClick={() => {
-            deleteStoredPathMutation.mutate('vrchatPhotoDir');
+            deleteStoredPathMutation.mutateAsync('vrchatPhotoDir').then(() => {
+              refetch();
+            });
           }}
         >
           設定をリセットする
