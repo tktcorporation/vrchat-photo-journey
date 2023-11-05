@@ -5,13 +5,34 @@ import * as fs from '../../lib/wrappedFs';
 import * as vrchatLogService from '../vrchatLog/vrchatLog';
 
 const getHtmlContent = (info: vrchatLogService.WorldJoinLogInfo): string => {
-  return `<html>
-    <head>
-      <meta http-equiv="refresh" content="0;URL=https://vrchat.com/home/world/${info.worldId}" />
-    </head>
-    <body>
-      <p>Redirecting to <a href="https://vrchat.com/home/world/${info.worldId}">${info.worldName}</a></p>
-    </body>
+  return `<!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="refresh" content="0;URL=https://vrchat.com/home/world/${info.worldId}" />
+    <title>Redirecting...</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;      background-color: #e0f7fa; /* Light blue background */
+        color: #37474f; /* Dark grey text */
+      }
+      a {
+        text-decoration: none;
+        color: #37474f; /* Dark grey text */
+        font-size: 48px; /* Larger text size */
+      }
+      p {
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <p><a href="https://vrchat.com/home/world/${info.worldId}">${info.worldName}</a></p>
+  </body>
   </html>`;
 };
 

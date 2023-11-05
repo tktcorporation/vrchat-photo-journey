@@ -5,7 +5,19 @@ import { trpcReact } from '@/trpc';
 import { ROUTER_PATHS } from '@/constants';
 import { ExclamationTriangleIcon, CheckIcon } from '@heroicons/react/24/outline';
 import ProgressCircle from '@/components/ui/ProgressCircle';
-import { Button } from '@/component/ui/button';
+import { Button } from '@/components/ui/button';
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger
+} from '@/components/ui/alert-dialog';
 
 function CreateJoinInfo() {
   const settingsToCreateList = [
@@ -71,9 +83,26 @@ function CreateJoinInfo() {
             <Button variant="outline">設定に戻る</Button>
           </Link>
           {/* ファイル生成ボタン */}
-          <Button onClick={handleClickCreateFiles} disabled={disabledCreateFilesButton}>
-            どこで撮ったか調べる
-          </Button>
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button disabled={disabledCreateFilesButton}>どこで撮ったか調べる</Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>実行しても良いですか？</AlertDialogTitle>
+                <AlertDialogDescription>
+                  ログファイルを参照して、VRChatの写真と同じ場所に訪れたワールドの記録を作成します
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>キャンセル</AlertDialogCancel>
+                <AlertDialogAction onClick={handleClickCreateFiles} disabled={disabledCreateFilesButton}>
+                  実行
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
     </div>
