@@ -5,6 +5,7 @@ import * as vrchatPhotoService from './service/vrchatPhoto/service';
 import * as infoFileService from './service/infoFile/service';
 import VRChatLogFileError from './service/vrchatLog/error';
 import * as settingStore from './settingStore';
+import * as utilsService from './service/utilsService';
 
 const getVRChatLogFilesDir = (): {
   storedPath: string | null;
@@ -60,4 +61,14 @@ const clearAllStoredSettings = () => {
   settingStore.clearAllStoredSettings();
 };
 
-export { getConfigAndValidateAndCreateFiles, getVRChatLogFilesDir, getVRChatPhotoDir, clearAllStoredSettings };
+const openPathOnExplorer = (path: string) => {
+  return utilsService.openPathInExplorer(path);
+};
+
+export {
+  getConfigAndValidateAndCreateFiles,
+  getVRChatLogFilesDir,
+  getVRChatPhotoDir,
+  clearAllStoredSettings,
+  openPathOnExplorer
+};

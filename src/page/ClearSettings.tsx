@@ -8,7 +8,7 @@ function ClearSettings() {
   const mutation = trpcReact.clearAllStoredSettings.useMutation();
   return (
     <div className="flex-auto">
-      <div className=" flex flex-col justify-center items-center h-full space-y-4 bg-blue-50">
+      <div className=" flex flex-col justify-center items-center h-full space-y-4">
         {/* すべての設定をリセットする */}
         <button
           className="reset-button py-2 px-4 bg-white rounded focus:outline-none shadow hover:bg-yellow-200"
