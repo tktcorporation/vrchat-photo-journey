@@ -11,6 +11,8 @@ import Template from './Template';
 import { trpcReact } from './trpc';
 import { ROUTER_PATHS } from './constants';
 import CreatedResult from './page/CreatedResult';
+import VRChatLogPathSetting from './page/setting/VRChatLogPathSetting';
+import VRChatPhotoPathSetting from './page/setting/VRChatPhotoPathSetting';
 
 const queryClient = new QueryClient();
 const trpcClient = trpcReact.createClient({
@@ -27,6 +29,8 @@ function Router() {
               <Route path={ROUTER_PATHS.HOME} element={<CreateJoinInfo />} />
               <Route path={ROUTER_PATHS.CREATED_RESULT} element={<CreatedResult />} />
               <Route path={ROUTER_PATHS.SETTING} element={<Setting />} />
+              <Route path={ROUTER_PATHS.SETTING_VRCHAT_LOG_PATH} element={<VRChatLogPathSetting />} />
+              <Route path={ROUTER_PATHS.SETTING_VRCHAT_PHOTO_PATH} element={<VRChatPhotoPathSetting />} />
               <Route path={ROUTER_PATHS.CLEAR_SETTINGS} element={<ClearSettings />} />
             </Routes>
           </HashRouter>

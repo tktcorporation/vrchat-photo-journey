@@ -1,4 +1,5 @@
 import Store from 'electron-store';
+import * as neverthrow from 'neverthrow';
 
 const settingsStore = new Store({ name: 'v0-settings' });
 
@@ -38,4 +39,25 @@ const clearAllStoredSettings = () => {
   settingsStore.clear();
 };
 
-export { clearAllStoredSettings, getLogFilesDir, setLogFilesDir, getVRChatPhotoDir, setVRChatPhotoDir };
+/**
+ * Clear stored setting by key
+ */
+const clearStoredSetting = (key: SettingStoreKey): neverthrow.Result<void, Error> => {
+  try {
+    return neverthrow.ok(settingsStore.delete(key));
+  } catch (error) {
+    if (error instanceof Error) {
+      return neverthrow.err(error);
+    }
+    throw error;
+  }
+};
+
+export {
+  clearAllStoredSettings,
+  getLogFilesDir,
+  setLogFilesDir,
+  getVRChatPhotoDir,
+  setVRChatPhotoDir,
+  clearStoredSetting
+};

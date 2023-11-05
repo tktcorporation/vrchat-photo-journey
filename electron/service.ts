@@ -60,6 +60,9 @@ const getConfigAndValidateAndCreateFiles = (): neverthrow.Result<void, string> =
 const clearAllStoredSettings = () => {
   settingStore.clearAllStoredSettings();
 };
+const clearStoredSetting = (key: Parameters<typeof settingStore.clearStoredSetting>[0]) => {
+  return settingStore.clearStoredSetting(key);
+};
 
 const openPathOnExplorer = (path: string) => {
   return utilsService.openPathInExplorer(path);
@@ -70,5 +73,6 @@ export {
   getVRChatLogFilesDir,
   getVRChatPhotoDir,
   clearAllStoredSettings,
+  clearStoredSetting,
   openPathOnExplorer
 };
