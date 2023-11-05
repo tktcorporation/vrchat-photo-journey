@@ -1,18 +1,15 @@
 import path from 'path';
+import { app } from 'electron';
 import * as neverthrow from 'neverthrow';
 import * as fs from '../../lib/wrappedFs';
 import * as settingStore from '../../settingStore';
 
 const getDefaultVRChatPhotoDir = (): string => {
-  let logFilesDir = '';
-  // C:\Users\[ユーザー名]\Pictures\VRChat
-  if (process.platform === 'win32' && process.env.USERPROFILE) {
-    const DEFAULT_VRCHAT_PHOTO_DIR = path.join(process.env.USERPROFILE || '', 'Pictures', 'VRChat');
-    logFilesDir = DEFAULT_VRCHAT_PHOTO_DIR;
-  } else {
-    // 仮置き
-    logFilesDir = path.join(process.env.HOME || '', 'Pictures', 'VRChat');
-  }
+  const logFilesDir =
+    process.platform === 'win32' && process.env.USERPROFILE
+      ? path.join(app.getPath('pictures') || '', 'VRChat')
+      : path.join(process.env.HOME || '', 'Pictures', 'VRChat');
+
   return logFilesDir;
 };
 
