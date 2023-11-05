@@ -17,13 +17,9 @@ function ClearSettings() {
           設定をリセットする
         </button>
         {/* 設定に戻る */}
-        <Link
-          to={ROUTER_PATHS.SETTING}
-          className="py-2 px-4 bg-white rounded focus:outline-none shadow hover:bg-yellow-200"
-        >
-          戻る
+        <Link to={ROUTER_PATHS.SETTING}>
+          <Button>戻る</Button>
         </Link>
-        <Button>click me</Button>
       </div>
     </div>
   );
