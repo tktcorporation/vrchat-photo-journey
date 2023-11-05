@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ROUTER_PATHS } from '../constants';
 import { trpcReact } from '../trpc';
+import { Button } from '../component/ui/button';
 
 function ClearSettings() {
   const mutation = trpcReact.clearAllStoredSettings.useMutation();
@@ -22,6 +23,7 @@ function ClearSettings() {
         >
           戻る
         </Link>
+        <Button>click me</Button>
       </div>
     </div>
   );
