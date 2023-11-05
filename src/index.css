@@ -3,11 +3,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Base Font */
-body {
-  font-family: "-apple-system","BlinkMacSystemFont","Hiragino Kaku Gothic ProN","Hiragino Sans","Meiryo",sans-serif,"Segoe UI Emoji","Segoe UI Symbol";
-}
-
 /* For AppBar */
 .draggable {
     -webkit-user-select: none;

@@ -10,6 +10,7 @@ import Template from './Template';
 
 import { trpcReact } from './trpc';
 import { ROUTER_PATHS } from './constants';
+import CreatedResult from './page/CreatedResult';
 
 const queryClient = new QueryClient();
 const trpcClient = trpcReact.createClient({
@@ -24,6 +25,7 @@ function Router() {
           <HashRouter>
             <Routes>
               <Route path={ROUTER_PATHS.HOME} element={<CreateJoinInfo />} />
+              <Route path={ROUTER_PATHS.CREATED_RESULT} element={<CreatedResult />} />
               <Route path={ROUTER_PATHS.SETTING} element={<Setting />} />
               <Route path={ROUTER_PATHS.CLEAR_SETTINGS} element={<ClearSettings />} />
             </Routes>

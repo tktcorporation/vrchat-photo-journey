@@ -50,13 +50,13 @@ export const router = t.router({
   createFiles: procedure.mutation(async () => {
     const result = service.getConfigAndValidateAndCreateFiles();
     return result.match(
-      (value) => {
+      () => {
         ee.emit('toast', 'ファイルの作成に成功しました');
-        return value;
+        return true;
       },
       (error) => {
         ee.emit('toast', error);
-        return error;
+        return false;
       }
     );
   }),
@@ -64,6 +64,18 @@ export const router = t.router({
     service.clearAllStoredSettings();
     ee.emit('toast', '設定をすべて削除しました');
     return undefined;
+  }),
+  openPathOnExplorer: procedure.input(z.string()).mutation(async (ctx) => {
+    const result = await service.openPathOnExplorer(ctx.input);
+    return result.match(
+      () => {
+        return true;
+      },
+      (error) => {
+        ee.emit('toast', error);
+        return false;
+      }
+    );
   })
 });
 
