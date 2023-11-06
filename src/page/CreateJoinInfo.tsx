@@ -78,6 +78,11 @@ function CreateJoinInfo() {
         )}
 
         <div className="flex space-x-4">
+          {/* 画像一覧 */}
+          <Link to={ROUTER_PATHS.PHOTO_LIST}>
+            <Button variant="outline">Photo</Button>
+          </Link>
+
           {/* 設定に戻る */}
           <Link to={ROUTER_PATHS.SETTING}>
             <Button variant="outline">設定に戻る</Button>

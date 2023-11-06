@@ -4,6 +4,7 @@ import { observable } from '@trpc/server/observable';
 import { EventEmitter } from 'events';
 
 // 呼び出し元は集約したい
+import path from 'path';
 import * as service from './service';
 
 const ee = new EventEmitter();
@@ -117,7 +118,24 @@ export const router = t.router({
         return false;
       }
     );
-  })
+  }),
+  getVRChatPhotoItemDataListByYearMonth: procedure
+    .input(z.object({ year: z.string(), month: z.string() }))
+    .query(async (ctx) => {
+      const result = await service.getVRChatPhotoItemDataListByYearMonth(ctx.input.year, ctx.input.month);
+      return result.match(
+        (r) => {
+          return r.map((obj) => ({
+            path: obj.path,
+            dataImage: `data:image/${path.extname(obj.path).replace('.', '')};base64,${obj.data.toString('base64')}`
+          }));
+        },
+        (error) => {
+          ee.emit('toast', error);
+          return [];
+        }
+      );
+    })
 });
 
 export type AppRouter = typeof router;
