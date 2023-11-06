@@ -1,3 +1,4 @@
+import { match } from 'ts-pattern';
 import path from 'path';
 import { app } from 'electron';
 import * as neverthrow from 'neverthrow';
@@ -42,4 +43,43 @@ const getVRChatPhotoDir = (): {
   return { storedPath, path: targetPath, error: validateResult.error };
 };
 
-export { getVRChatPhotoDir };
+const getVRChatPhotoItemPathList = (
+  year: string,
+  month: string
+): neverthrow.Result<string[], 'YEAR_MONTH_DIR_ENOENT' | 'PHOTO_DIR_READ_ERROR'> => {
+  const { path: photoDir, error } = getVRChatPhotoDir();
+  if (error !== null) {
+    return match(error)
+      .with('photoYearMonthDirsNotFound', () => neverthrow.err('YEAR_MONTH_DIR_ENOENT' as const))
+      .with('photoDirReadError', () => neverthrow.err('PHOTO_DIR_READ_ERROR' as const))
+      .exhaustive();
+  }
+  const yearMonthDir = path.join(photoDir, `${year}-${month.toString().padStart(2, '0')}`);
+  const photoItemNamesResult = fs.readDirSyncSafe(yearMonthDir);
+  if (photoItemNamesResult.isErr()) {
+    return match(photoItemNamesResult.error)
+      .with('ENOENT', () => neverthrow.err('YEAR_MONTH_DIR_ENOENT' as const))
+      .exhaustive();
+  }
+  const photoItemPaths = photoItemNamesResult.value.map((photoItemName) => path.join(yearMonthDir, photoItemName));
+  const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.bmp'];
+  const photoItemPathList = photoItemPaths.filter((photoItemPath) => {
+    const ext = path.extname(photoItemPath);
+    return imageExtensions.includes(ext);
+  });
+  return neverthrow.ok(photoItemPathList);
+};
+
+const getVRChatPhotoItemDataList = (pathList: string[]): neverthrow.Result<{ path: string; data: Buffer }[], Error> => {
+  const photoItemDataList = [];
+  for (const photoItemPath of pathList) {
+    const photoItemDataResult = fs.readFileSafe(photoItemPath);
+    if (photoItemDataResult.isErr()) {
+      return neverthrow.err(photoItemDataResult.error);
+    }
+    photoItemDataList.push({ path: photoItemPath, data: photoItemDataResult.value });
+  }
+  return neverthrow.ok(photoItemDataList);
+};
+
+export { getVRChatPhotoDir, getVRChatPhotoItemPathList, getVRChatPhotoItemDataList };

@@ -6,6 +6,7 @@ import AppBar from './components/AppBar';
 import Setting from './page/Setting';
 import CreateJoinInfo from './page/CreateJoinInfo';
 import ClearSettings from './page/ClearSettings';
+import PhotoList from './page/PhotoList';
 import Template from './Template';
 
 import { trpcReact } from './trpc';
@@ -27,6 +28,7 @@ function Router() {
           <HashRouter>
             <Routes>
               <Route path={ROUTER_PATHS.HOME} element={<CreateJoinInfo />} />
+              <Route path={ROUTER_PATHS.PHOTO_LIST} element={<PhotoList />} />
               <Route path={ROUTER_PATHS.CREATED_RESULT} element={<CreatedResult />} />
               <Route path={ROUTER_PATHS.SETTING} element={<Setting />} />
               <Route path={ROUTER_PATHS.SETTING_VRCHAT_LOG_PATH} element={<VRChatLogPathSetting />} />

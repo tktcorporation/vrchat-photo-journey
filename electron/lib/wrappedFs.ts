@@ -77,3 +77,18 @@ export const existsSyncSafe = (path: string): Result<boolean, Error> => {
     throw e;
   }
 };
+
+export const readFileSafe = (
+  filePath: string,
+  options?: { encoding?: null; flag?: string } | null
+): Result<Buffer, Error> => {
+  try {
+    const content = fs.readFileSync(filePath, options);
+    return ok(content);
+  } catch (e) {
+    if (e instanceof Error) {
+      return err(e);
+    }
+    throw e;
+  }
+};

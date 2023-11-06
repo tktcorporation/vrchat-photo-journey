@@ -82,6 +82,18 @@ const setVRChatLogFilesDirByDialog = async (): Promise<neverthrow.Result<void, E
   });
 };
 
+const getVRChatPhotoItemDataListByYearMonth = (
+  year: string,
+  month: string
+): neverthrow.Result<{ path: string; data: Buffer }[], Error | 'YEAR_MONTH_DIR_ENOENT' | 'PHOTO_DIR_READ_ERROR'> => {
+  const result = vrchatPhotoService.getVRChatPhotoItemPathList(year, month);
+  if (result.isErr()) {
+    return neverthrow.err(result.error);
+  }
+  const pathList = result.value;
+  return vrchatPhotoService.getVRChatPhotoItemDataList(pathList);
+};
+
 export {
   setVRChatLogFilesDirByDialog,
   setVRChatPhotoDirByDialog,
@@ -90,5 +102,6 @@ export {
   getVRChatPhotoDir,
   clearAllStoredSettings,
   clearStoredSetting,
-  openPathOnExplorer
+  openPathOnExplorer,
+  getVRChatPhotoItemDataListByYearMonth
 };
