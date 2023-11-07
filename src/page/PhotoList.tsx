@@ -1,17 +1,16 @@
 import React, { useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { trpcReact } from '@/trpc';
-import { ROUTER_PATHS } from '@/constants';
 import { Button } from '@/components/ui/button';
-import { RecycleIcon } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import Sidebar from '@/components/SideBar';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 type YearMonth = {
   year: string;
   month: string;
 };
 
-function Setting() {
+function PhotoList() {
   const { data: yearMonthList, refetch: refetchYearMonthList } = trpcReact.getVRChatPhotoFolderYearMonthList.useQuery();
   const [selectedFolderYearMonth, setSelectedFolderYearMonth] = React.useState<YearMonth | undefined>(undefined);
   const [photoItemDataList, setPhotoItemDataList] = React.useState<{ path: string; dataImage: string }[] | undefined>(
@@ -53,46 +52,46 @@ function Setting() {
   };
 
   return (
-    <div className="flex-auto">
-      <div className="border-t">
-        <div className="bg-background">
-          <div className="grid grid-cols-5">
-            <Sidebar
-              className=""
-              clickCallback={handleSideBarClick}
-              itemList={
-                yearMonthList?.map((folder) => ({
-                  key: `${folder.year}-${folder.month}`,
-                  label: `${folder.year}年${folder.month}月`
-                })) || []
-              }
-            />
-            <div className="col-span-4 p-4">
-              <h1 className="text-2xl font-bold">Photo</h1>
-              <div className="grid grid-cols-3 gap-4">
-                {photoItemDataList &&
-                  photoItemDataList.map((data) => (
-                    <div key={data.path} className="bg-gray-100 grid-span-1">
-                      <img src={data.dataImage} alt={`VRChatの写真: file:/${data.path}`} />
-                    </div>
-                  ))}
-              </div>
-              {photoItemDataList?.length}
+    <div className="h-screen grid grid-cols-5 overflow-hidden">
+      <Sidebar
+        className="col-span-1 overflow-auto"
+        clickCallback={handleSideBarClick}
+        itemList={
+          yearMonthList?.map((folder) => ({
+            key: `${folder.year}-${folder.month}`,
+            label: `${folder.year}年${folder.month}月`
+          })) || []
+        }
+      />
+      <div className="flex flex-col col-span-4 p-4 overflow-hidden">
+        <div className="flex-none shrink-0">
+          <h1 className="text-2xl font-bold">Photo</h1>
+          {photoItemDataList?.length}
 
-              <Button variant="outline" onClick={() => refetchPhotoItemDataList?.() && refetchYearMonthList()}>
-                <RecycleIcon className="w-6 h-6 inline-block" />
-                再読み込み
-              </Button>
-
-              <Link to={ROUTER_PATHS.HOME}>
-                <Button variant="outline">HOME</Button>
-              </Link>
+          <Button variant="outline" onClick={() => refetchPhotoItemDataList?.() && refetchYearMonthList()}>
+            <RefreshCw className="w-6 h-6 inline-block" />
+            再読み込み
+          </Button>
+        </div>
+        {/* 画面サイズからはみ出さないようにする */}
+        <ScrollArea className="grow">
+          <div className="col-span-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-4">
+              {photoItemDataList &&
+                photoItemDataList.map((data) => (
+                  <div key={data.path}>
+                    {' '}
+                    {/* margin-bottomは各アイテムの間隔を調整するために使用 */}
+                    <img src={data.dataImage} alt={`VRChatの写真: file:/${data.path}`} className="w-full h-auto" />{' '}
+                    {/* 画像の横幅はコンテナに合わせ、縦横比を保つ */}
+                  </div>
+                ))}
             </div>
           </div>
-        </div>
+        </ScrollArea>
       </div>
     </div>
   );
 }
 
-export default Setting;
+export default PhotoList;
