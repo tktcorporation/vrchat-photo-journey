@@ -43,6 +43,34 @@ const getVRChatPhotoDir = (): {
   return { storedPath, path: targetPath, error: validateResult.error };
 };
 
+const getVRChatPhotoFolderYearMonthList = (): neverthrow.Result<
+  { year: string; month: string }[],
+  'PHOTO_DIR_READ_ERROR' | 'PHOTO_YEAR_MONTH_DIRS_NOT_FOUND'
+> => {
+  const { path: photoDir, error } = getVRChatPhotoDir();
+  if (error !== null) {
+    return match(error)
+      .with('photoDirReadError', () => neverthrow.err('PHOTO_DIR_READ_ERROR' as const))
+      .with('photoYearMonthDirsNotFound', () => neverthrow.err('PHOTO_YEAR_MONTH_DIRS_NOT_FOUND' as const))
+      .exhaustive();
+  }
+  const dirNames = fs.readDirSyncSafe(photoDir);
+  if (dirNames.isErr()) {
+    return match(dirNames.error)
+      .with('ENOENT', () => neverthrow.err('PHOTO_DIR_READ_ERROR' as const))
+      .exhaustive();
+  }
+  const yearMonthDirNames = dirNames.value.filter((dirName) => /^\d{4}-\d{2}$/.test(dirName));
+  if (yearMonthDirNames.length === 0) {
+    return neverthrow.err('PHOTO_YEAR_MONTH_DIRS_NOT_FOUND' as const);
+  }
+  const yearMonthList = yearMonthDirNames.map((yearMonthDirName) => {
+    const [year, month] = yearMonthDirName.split('-');
+    return { year, month };
+  });
+  return neverthrow.ok(yearMonthList);
+};
+
 const getVRChatPhotoItemPathList = (
   year: string,
   month: string
@@ -82,4 +110,4 @@ const getVRChatPhotoItemDataList = (pathList: string[]): neverthrow.Result<{ pat
   return neverthrow.ok(photoItemDataList);
 };
 
-export { getVRChatPhotoDir, getVRChatPhotoItemPathList, getVRChatPhotoItemDataList };
+export { getVRChatPhotoDir, getVRChatPhotoItemPathList, getVRChatPhotoItemDataList, getVRChatPhotoFolderYearMonthList };

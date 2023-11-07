@@ -94,7 +94,10 @@ const getVRChatPhotoItemDataListByYearMonth = (
   return vrchatPhotoService.getVRChatPhotoItemDataList(pathList);
 };
 
+const { getVRChatPhotoFolderYearMonthList } = vrchatPhotoService;
+
 export {
+  getVRChatPhotoFolderYearMonthList,
   setVRChatLogFilesDirByDialog,
   setVRChatPhotoDirByDialog,
   getConfigAndValidateAndCreateFiles,

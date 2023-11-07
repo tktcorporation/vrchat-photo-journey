@@ -1,42 +1,95 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { trpcReact } from '@/trpc';
 import { ROUTER_PATHS } from '@/constants';
 import { Button } from '@/components/ui/button';
 import { RecycleIcon } from 'lucide-react';
+import Sidebar from '@/components/SideBar';
+
+type YearMonth = {
+  year: string;
+  month: string;
+};
 
 function Setting() {
-  // 初期表示時に log-files-dir を取得する
-  const phototItemDataListQuery = trpcReact.getVRChatPhotoItemDataListByYearMonth.useQuery({
-    year: '2023',
-    month: '10'
+  const { data: yearMonthList, refetch: refetchYearMonthList } = trpcReact.getVRChatPhotoFolderYearMonthList.useQuery();
+  const [selectedFolderYearMonth, setSelectedFolderYearMonth] = React.useState<YearMonth | undefined>(undefined);
+  const [photoItemDataList, setPhotoItemDataList] = React.useState<{ path: string; dataImage: string }[] | undefined>(
+    undefined
+  );
+  const [refetchPhotoItemDataList, setRefetchPhotoItemDataList] = React.useState<
+    ReturnType<typeof trpcReact.getVRChatPhotoItemDataListByYearMonth.useQuery>['refetch'] | undefined
+  >(undefined);
+
+  // useEffectを使用して、yearMonthListが更新されたらselectedFolderYearMonthを更新します。
+  useEffect(() => {
+    if (yearMonthList) {
+      setSelectedFolderYearMonth(yearMonthList.sort((a, b) => (a.year > b.year ? -1 : 1))[0]);
+    }
+  }, [yearMonthList]);
+
+  // 写真データを取得するためのクエリを初期化します。
+  const photoItemDataListQuery = trpcReact.getVRChatPhotoItemDataListByYearMonth.useQuery(selectedFolderYearMonth!, {
+    // オプションを設定して、選択されたフォルダがundefinedの場合にはクエリを実行しないようにすることができます。
+    enabled: !!selectedFolderYearMonth
   });
-  const { data: photoItemDataList, refetch } = phototItemDataListQuery;
+
+  useEffect(() => {
+    if (photoItemDataListQuery.data) {
+      setPhotoItemDataList(photoItemDataListQuery.data);
+    }
+    // refetch関数を状態に保存します。
+    setRefetchPhotoItemDataList(() => photoItemDataListQuery.refetch);
+  }, [photoItemDataListQuery.data, photoItemDataListQuery.refetch]);
+
+  const handleSideBarClick = (key: string) => {
+    const [year, month] = key.split('-');
+    setSelectedFolderYearMonth({
+      year,
+      month
+    });
+    // データを更新するためにrefetch関数を呼び出すことができます。
+    refetchPhotoItemDataList?.();
+  };
 
   return (
     <div className="flex-auto">
-      <div className=" flex flex-col justify-center items-center h-full space-y-8">
-        <h3 className="text-lg font-medium">設定</h3>
-        <div className="space-y-4">
-          <div className="flex flex-row items-center justify-between rounded-lg border p-4 space-x-4">
-            {photoItemDataList &&
-              photoItemDataList.map((data) => (
-                <div className="w-64 bg-gray-100" key={data.path}>
-                  <img src={data.dataImage} alt={`VRChatの写真: file:/${data.path}`} />
-                </div>
-              ))}
+      <div className="border-t">
+        <div className="bg-background">
+          <div className="grid grid-cols-5">
+            <Sidebar
+              className=""
+              clickCallback={handleSideBarClick}
+              itemList={
+                yearMonthList?.map((folder) => ({
+                  key: `${folder.year}-${folder.month}`,
+                  label: `${folder.year}年${folder.month}月`
+                })) || []
+              }
+            />
+            <div className="col-span-4 p-4">
+              <h1 className="text-2xl font-bold">Photo</h1>
+              <div className="grid grid-cols-3 gap-4">
+                {photoItemDataList &&
+                  photoItemDataList.map((data) => (
+                    <div key={data.path} className="bg-gray-100 grid-span-1">
+                      <img src={data.dataImage} alt={`VRChatの写真: file:/${data.path}`} />
+                    </div>
+                  ))}
+              </div>
+              {photoItemDataList?.length}
+
+              <Button variant="outline" onClick={() => refetchPhotoItemDataList?.() && refetchYearMonthList()}>
+                <RecycleIcon className="w-6 h-6 inline-block" />
+                再読み込み
+              </Button>
+
+              <Link to={ROUTER_PATHS.HOME}>
+                <Button variant="outline">HOME</Button>
+              </Link>
+            </div>
           </div>
-          {photoItemDataList?.length}
         </div>
-
-        <Button variant="outline" onClick={() => refetch()}>
-          <RecycleIcon className="w-6 h-6 inline-block" />
-          再読み込み
-        </Button>
-
-        <Link to={ROUTER_PATHS.HOME}>
-          <Button variant="outline">HOME</Button>
-        </Link>
       </div>
     </div>
   );
