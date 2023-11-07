@@ -135,7 +135,19 @@ export const router = t.router({
           return [];
         }
       );
-    })
+    }),
+  getVRChatPhotoFolderYearMonthList: procedure.query(async () => {
+    const result = await service.getVRChatPhotoFolderYearMonthList();
+    return result.match(
+      (r) => {
+        return r;
+      },
+      (error) => {
+        ee.emit('toast', error);
+        return [];
+      }
+    );
+  })
 });
 
 export type AppRouter = typeof router;

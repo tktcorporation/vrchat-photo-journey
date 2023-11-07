@@ -30,6 +30,7 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': 'warn',
     '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/no-var-requires': 'warn',
+    'react/prop-types': 'off',
     // react
     'react/require-default-props': 0,
     'react/button-has-type': 0,
