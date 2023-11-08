@@ -161,7 +161,19 @@ export const router = t.router({
           return [];
         }
       );
-    })
+    }),
+  getVRChatPhotoItemData: procedure.input(z.string()).query(async (ctx) => {
+    const result = await service.getVRChatPhotoItemData(ctx.input);
+    return result.match(
+      (r) => {
+        return `data:image/${path.extname(ctx.input).replace('.', '')};base64,${r.toString('base64')}`;
+      },
+      (error) => {
+        ee.emit('toast', error);
+        return '';
+      }
+    );
+  })
 });
 
 export type AppRouter = typeof router;

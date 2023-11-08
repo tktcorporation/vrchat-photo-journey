@@ -7,6 +7,7 @@ import { RefreshCw } from 'lucide-react';
 import Sidebar from '@/components/SideBar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { AppRouter } from 'electron/api';
+import Photo from '@/components/ui/Photo';
 
 type YearMonth = {
   year: string;
@@ -97,7 +98,13 @@ function PhotoList() {
                     {/* 画像の横幅はコンテナに合わせ、縦横比を保つ */}
                   </div>
                 ))}
-              {photoItemList && photoItemList.map((item) => <div key={item.path}>{JSON.stringify(item)}</div>)}
+              {photoItemList &&
+                photoItemList.map((item) => {
+                  const content =
+                    item.type === 'PHOTO' ? <Photo photoPath={item.path} /> : <div>{JSON.stringify(item)}</div>;
+
+                  return <div key={item.path}>{content}</div>;
+                })}
             </div>
           </div>
         </ScrollArea>

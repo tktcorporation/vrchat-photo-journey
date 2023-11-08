@@ -109,4 +109,18 @@ const getVRChatPhotoItemDataList = (pathList: string[]): neverthrow.Result<{ pat
   return neverthrow.ok(photoItemDataList);
 };
 
-export { getVRChatPhotoDir, getVRChatPhotoItemPathList, getVRChatPhotoItemDataList, getVRChatPhotoFolderYearMonthList };
+const getVRChatPhotoItemData = (photoPath: string): neverthrow.Result<Buffer, Error> => {
+  const photoItemDataResult = fs.readFileSafe(photoPath);
+  if (photoItemDataResult.isErr()) {
+    return neverthrow.err(photoItemDataResult.error);
+  }
+  return neverthrow.ok(photoItemDataResult.value);
+};
+
+export {
+  getVRChatPhotoDir,
+  getVRChatPhotoItemPathList,
+  getVRChatPhotoItemDataList,
+  getVRChatPhotoFolderYearMonthList,
+  getVRChatPhotoItemData
+};
