@@ -4,6 +4,8 @@ import * as settingStore from '../../settingStore';
 import * as fs from '../../lib/wrappedFs';
 import VRChatLogFileError from './error';
 
+import type { JoinInfoFileName } from '../type';
+
 type WorldId = `wrld_${string}`;
 interface WorldJoinLogInfo {
   year: string;
@@ -165,11 +167,10 @@ const convertLogLinesToWorldJoinLogInfos = (logLines: string[]): WorldJoinLogInf
 };
 
 type WorldJoinLogInfoOneLine = string;
-
-const convertWorldJoinLogInfoToOneLine = (worldJoinLogInfo: WorldJoinLogInfo): WorldJoinLogInfoOneLine => {
+const convertWorldJoinLogInfoToOneLine = (worldJoinLogInfo: WorldJoinLogInfo): JoinInfoFileName => {
   const { year, month, day, hour, minute, second, worldId } = worldJoinLogInfo;
-  // output: VRChat_2023-10-08_00-03-00_wrld_6fecf18a-ab96-43f2-82dc-ccf79f17c34f
-  return `VRChat_${year}-${month}-${day}_${hour}-${minute}-${second}_${worldId}`;
+  // output: VRChat_2023-10-08_00-03-00.000_wrld_6fecf18a-ab96-43f2-82dc-ccf79f17c34f
+  return `VRChat_${year}-${month}-${day}_${hour}-${minute}-${second}.000_${worldId}`;
 };
 
 // 一括 export

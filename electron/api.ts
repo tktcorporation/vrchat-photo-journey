@@ -147,7 +147,21 @@ export const router = t.router({
         return [];
       }
     );
-  })
+  }),
+  getVRChatPhotoWithWorldIdAndDate: procedure
+    .input(z.object({ year: z.string(), month: z.string() }))
+    .query(async (ctx) => {
+      const result = await service.getVRChatPhotoWithWorldIdAndDate(ctx.input);
+      return result.match(
+        (r) => {
+          return r;
+        },
+        (error) => {
+          ee.emit('toast', error);
+          return [];
+        }
+      );
+    })
 });
 
 export type AppRouter = typeof router;

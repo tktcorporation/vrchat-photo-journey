@@ -1,11 +1,13 @@
 import * as neverthrow from 'neverthrow';
 
+import path from 'path';
 import * as vrchatLogService from './service/vrchatLog/vrchatLog';
 import * as vrchatPhotoService from './service/vrchatPhoto/service';
 import * as infoFileService from './service/infoFile/service';
 import VRChatLogFileError from './service/vrchatLog/error';
 import * as settingStore from './settingStore';
 import * as utilsService from './service/utilsService';
+import { JoinInfoFileNameSchema, PhotoFileNameSchema, parseJoinInfoFileName, parsePhotoFileName } from './service/type';
 
 const getVRChatLogFilesDir = (): {
   storedPath: string | null;
@@ -64,8 +66,8 @@ const clearStoredSetting = (key: Parameters<typeof settingStore.clearStoredSetti
   return settingStore.clearStoredSetting(key);
 };
 
-const openPathOnExplorer = (path: string) => {
-  return utilsService.openPathInExplorer(path);
+const openPathOnExplorer = (filePath: string) => {
+  return utilsService.openPathInExplorer(filePath);
 };
 
 const setVRChatPhotoDirByDialog = async (): Promise<neverthrow.Result<void, Error | 'canceled'>> => {
@@ -82,6 +84,77 @@ const setVRChatLogFilesDirByDialog = async (): Promise<neverthrow.Result<void, E
   });
 };
 
+type DateTime = {
+  date: {
+    year: string;
+    month: string;
+    day: string;
+  };
+  time: {
+    hour: string;
+    minute: string;
+    second: string;
+    millisecond: string;
+  };
+};
+const getVRChatPhotoWithWorldIdAndDate = ({
+  year,
+  month
+}: {
+  year: string;
+  month: string;
+}): neverthrow.Result<
+  (
+    | {
+        type: 'PHOTO';
+        datetime: DateTime;
+        path: string;
+        worldId: null;
+      }
+    | {
+        type: 'JOIN';
+        datetime: DateTime;
+        path: string;
+        worldId: string;
+      }
+  )[],
+  'YEAR_MONTH_DIR_ENOENT' | 'PHOTO_DIR_READ_ERROR'
+> => {
+  const result = vrchatPhotoService.getVRChatPhotoItemPathList(year, month);
+  if (result.isErr()) {
+    return neverthrow.err(result.error);
+  }
+  const pathList = result.value;
+  const objList = pathList.map((item) => {
+    const ext = path.extname(item);
+    const fileName = path.basename(item, ext);
+    console.log(fileName);
+    const photoFileNameParseResult = PhotoFileNameSchema.safeParse(fileName);
+    const JoinInfoFileNameParseResult = JoinInfoFileNameSchema.safeParse(fileName);
+    if (photoFileNameParseResult.success) {
+      const photoFileName = photoFileNameParseResult.data;
+      const parseResult = parsePhotoFileName(photoFileName);
+      if (parseResult.isErr()) {
+        return null;
+      }
+      const { date, time } = parseResult.value;
+      return { type: 'PHOTO' as const, datetime: { date, time }, path: item, worldId: null };
+    }
+    if (JoinInfoFileNameParseResult.success) {
+      const joinInfoFileName = JoinInfoFileNameParseResult.data;
+      const parseResult = parseJoinInfoFileName(joinInfoFileName);
+      if (parseResult.isErr()) {
+        return null;
+      }
+      const { date, time, worldId } = parseResult.value;
+      return { type: 'JOIN' as const, datetime: { date, time }, path: item, worldId };
+    }
+    return null;
+  });
+  const filteredObjList = objList.filter((obj) => obj !== null) as Exclude<(typeof objList)[number], null>[];
+  return neverthrow.ok(filteredObjList);
+};
+
 const getVRChatPhotoItemDataListByYearMonth = (
   year: string,
   month: string
@@ -91,7 +164,12 @@ const getVRChatPhotoItemDataListByYearMonth = (
     return neverthrow.err(result.error);
   }
   const pathList = result.value;
-  return vrchatPhotoService.getVRChatPhotoItemDataList(pathList);
+  const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.bmp'];
+  const photoItemPathList = pathList.filter((p) => {
+    const ext = path.extname(p);
+    return imageExtensions.includes(ext);
+  });
+  return vrchatPhotoService.getVRChatPhotoItemDataList(photoItemPathList);
 };
 
 const { getVRChatPhotoFolderYearMonthList } = vrchatPhotoService;
@@ -106,5 +184,6 @@ export {
   clearAllStoredSettings,
   clearStoredSetting,
   openPathOnExplorer,
-  getVRChatPhotoItemDataListByYearMonth
+  getVRChatPhotoItemDataListByYearMonth,
+  getVRChatPhotoWithWorldIdAndDate
 };

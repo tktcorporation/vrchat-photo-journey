@@ -1,9 +1,12 @@
 import React, { useEffect } from 'react';
 import { trpcReact } from '@/trpc';
+import type { inferProcedureOutput } from '@trpc/server';
+
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
 import Sidebar from '@/components/SideBar';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { AppRouter } from 'electron/api';
 
 type YearMonth = {
   year: string;
@@ -16,6 +19,8 @@ function PhotoList() {
   const [photoItemDataList, setPhotoItemDataList] = React.useState<{ path: string; dataImage: string }[] | undefined>(
     undefined
   );
+  const [photoItemList, setPhotoItemList] =
+    React.useState<inferProcedureOutput<AppRouter['getVRChatPhotoWithWorldIdAndDate']>>();
   const [refetchPhotoItemDataList, setRefetchPhotoItemDataList] = React.useState<
     ReturnType<typeof trpcReact.getVRChatPhotoItemDataListByYearMonth.useQuery>['refetch'] | undefined
   >(undefined);
@@ -32,10 +37,16 @@ function PhotoList() {
     // オプションを設定して、選択されたフォルダがundefinedの場合にはクエリを実行しないようにすることができます。
     enabled: !!selectedFolderYearMonth
   });
+  const photoItemListQuery = trpcReact.getVRChatPhotoWithWorldIdAndDate.useQuery(selectedFolderYearMonth!, {
+    enabled: !!selectedFolderYearMonth
+  });
 
   useEffect(() => {
     if (photoItemDataListQuery.data) {
       setPhotoItemDataList(photoItemDataListQuery.data);
+    }
+    if (photoItemListQuery.data) {
+      setPhotoItemList(photoItemListQuery.data);
     }
     // refetch関数を状態に保存します。
     setRefetchPhotoItemDataList(() => photoItemDataListQuery.refetch);
@@ -86,6 +97,7 @@ function PhotoList() {
                     {/* 画像の横幅はコンテナに合わせ、縦横比を保つ */}
                   </div>
                 ))}
+              {photoItemList && photoItemList.map((item) => <div key={item.path}>{JSON.stringify(item)}</div>)}
             </div>
           </div>
         </ScrollArea>
