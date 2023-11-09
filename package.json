@@ -104,6 +104,12 @@
     ],
     "directories": {
       "buildResources": "resources"
-    }
+    },
+    "extraResources": [
+      {
+        "from": "./assets/",
+        "to": "assets"
+      }
+    ]
   }
 }
