@@ -1,60 +1,65 @@
 import path from 'path';
+// import nodeHtmlToImage from 'node-html-to-image';
 import * as neverthrow from 'neverthrow';
 import * as fs from '../../lib/wrappedFs';
 
 import * as vrchatLogService from '../vrchatLog/vrchatLog';
+import { createOGPImage } from './createWorldNameImage';
 
-const getHtmlContent = (info: vrchatLogService.WorldJoinLogInfo): string => {
-  return `<!DOCTYPE html>
-  <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="0;URL=https://vrchat.com/home/world/${info.worldId}" />
-    <title>Redirecting...</title>
-    <style>
-      body {
-        margin: 0;
-        padding: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;      background-color: #e0f7fa; /* Light blue background */
-        color: #37474f; /* Dark grey text */
-      }
-      a {
-        text-decoration: none;
-        color: #37474f; /* Dark grey text */
-        font-size: 48px; /* Larger text size */
-      }
-      p {
-        margin: 0;
-      }
-    </style>
-  </head>
-  <body>
-    <p><a href="https://vrchat.com/home/world/${info.worldId}">${info.worldName}</a></p>
-  </body>
-  </html>`;
-};
+// const getHtmlContent = (info: vrchatLogService.WorldJoinLogInfo): string => {
+//   return `<!DOCTYPE html>
+//   <html lang="en">
+//   <head>
+//     <meta charset="UTF-8">
+//     <meta http-equiv="refresh" content="0;URL=https://vrchat.com/home/world/${info.worldId}" />
+//     <title>Redirecting...</title>
+//     <style>
+//       body {
+//         margin: 0;
+//         padding: 0;
+//         display: flex;
+//         justify-content: center;
+//         align-items: center;      background-color: #e0f7fa; /* Light blue background */
+//         color: #37474f; /* Dark grey text */
+//       }
+//       a {
+//         text-decoration: none;
+//         color: #37474f; /* Dark grey text */
+//         font-size: 48px; /* Larger text size */
+//       }
+//       p {
+//         margin: 0;
+//       }
+//     </style>
+//   </head>
+//   <body>
+//     <p><a href="https://vrchat.com/home/world/${info.worldId}">${info.worldName}</a></p>
+//   </body>
+//   </html>`;
+// };
 
 const CreateFilesError = [
   'FAILED_TO_CREATE_YEAR_MONTH_DIR',
   'FAILED_TO_CREATE_FILE',
   'FAILED_TO_CHECK_YEAR_MONTH_DIR_EXISTS'
 ] as const;
-const createFiles = (
+const createFiles = async (
   vrchatPhotoDir: string,
   worldJoinLogInfoList: vrchatLogService.WorldJoinLogInfo[]
-): neverthrow.Result<void, { error: Error; type: (typeof CreateFilesError)[number] }> => {
+): Promise<neverthrow.Result<void, { error: Error; type: (typeof CreateFilesError)[number] }>> => {
   const toCreateMap: {
     yearMonthPath: string;
     fileName: string;
-    content: string;
-  }[] = worldJoinLogInfoList.map((info) => {
-    const yearMonthPath = path.join(vrchatPhotoDir, `${info.year}-${info.month}`);
-    const fileName = `${vrchatLogService.convertWorldJoinLogInfoToOneLine(info)}.html`;
-    const content = getHtmlContent(info);
-    return { yearMonthPath, fileName, content };
-  });
+    content: Buffer;
+  }[] = await Promise.all(
+    worldJoinLogInfoList.map(async (info) => {
+      const yearMonthPath = path.join(vrchatPhotoDir, `${info.year}-${info.month}`);
+      const fileName = `${vrchatLogService.convertWorldJoinLogInfoToOneLine(info)}.png`;
+      // const contentImage = await nodeHtmlToImage({ html: getHtmlContent(info) });
+      const contentImage = await createOGPImage(info.worldName);
+      return { yearMonthPath, fileName, content: contentImage };
+    })
+  );
 
   // ディレクトリを作成(なければ)
   // yearMonthPath が重複している場合は一つにまとめる

@@ -32,7 +32,7 @@ const createFiles = (vrchatPhotoDir: string, worldJoinLogInfoList: vrchatLogServ
   return infoFileService.createFiles(vrchatPhotoDir, worldJoinLogInfoList);
 };
 
-const getConfigAndValidateAndCreateFiles = (): neverthrow.Result<void, string> => {
+const getConfigAndValidateAndCreateFiles = async (): Promise<neverthrow.Result<void, string>> => {
   const logFilesDir = getVRChatLogFilesDir();
   if (logFilesDir.error !== null) {
     return neverthrow.err(`${logFilesDir.error}`);
@@ -49,7 +49,7 @@ const getConfigAndValidateAndCreateFiles = (): neverthrow.Result<void, string> =
     return neverthrow.err(vrchatPhotoDir.error);
   }
 
-  const result = createFiles(vrchatPhotoDir.path, convertWorldJoinLogInfoList);
+  const result = await createFiles(vrchatPhotoDir.path, convertWorldJoinLogInfoList);
   return result
     .map(() => {
       return undefined;

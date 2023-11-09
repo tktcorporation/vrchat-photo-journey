@@ -88,7 +88,7 @@ const parseJoinInfoFileName = (joinInfoFileName: JoinInfoFileName) => {
     worldId
   });
 };
-const convertToJoinInfoFileNameWithExt = ({
+const convertToJoinInfoFileName = ({
   year,
   month,
   day,
@@ -107,13 +107,13 @@ const convertToJoinInfoFileNameWithExt = ({
   millisecond: string;
   worldId: WorldId;
 }): JoinInfoFileName => {
-  return `VRChat_${year}-${month}-${day}_${hour}-${minute}-${second}.${millisecond}_wrld_${worldId}`;
+  return `VRChat_${year}-${month}-${day}_${hour}-${minute}-${second}.${millisecond}_${worldId}`;
 };
 
 export {
   isWorldId,
   parsePhotoFileName,
-  convertToJoinInfoFileNameWithExt,
+  convertToJoinInfoFileName,
   PhotoFileNameSchema,
   JoinInfoFileNameSchema,
   parseJoinInfoFileName

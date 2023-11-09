@@ -49,7 +49,7 @@ export const router = t.router({
     return status;
   }),
   createFiles: procedure.mutation(async () => {
-    const result = service.getConfigAndValidateAndCreateFiles();
+    const result = await service.getConfigAndValidateAndCreateFiles();
     return result.match(
       () => {
         ee.emit('toast', 'ファイルの作成に成功しました');
