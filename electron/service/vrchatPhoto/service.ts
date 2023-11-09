@@ -2,6 +2,7 @@ import { match } from 'ts-pattern';
 import path from 'path';
 import { app } from 'electron';
 import * as neverthrow from 'neverthrow';
+import sharp from 'sharp';
 import * as fs from '../../lib/wrappedFs';
 import * as settingStore from '../../settingStore';
 
@@ -109,12 +110,15 @@ const getVRChatPhotoItemDataList = (pathList: string[]): neverthrow.Result<{ pat
   return neverthrow.ok(photoItemDataList);
 };
 
-const getVRChatPhotoItemData = (photoPath: string): neverthrow.Result<Buffer, Error> => {
-  const photoItemDataResult = fs.readFileSafe(photoPath);
-  if (photoItemDataResult.isErr()) {
-    return neverthrow.err(photoItemDataResult.error);
+const getVRChatPhotoItemData = async (photoPath: string): Promise<neverthrow.Result<Buffer, Error>> => {
+  try {
+    return neverthrow.ok(await sharp(photoPath).resize(512).toBuffer());
+  } catch (e) {
+    if (e instanceof Error) {
+      return neverthrow.err(e);
+    }
+    throw e;
   }
-  return neverthrow.ok(photoItemDataResult.value);
 };
 
 export {
