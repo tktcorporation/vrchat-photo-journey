@@ -3,8 +3,9 @@ import { app } from 'electron';
 import * as opentype from 'opentype.js';
 import path from 'path';
 
-// 正しいフォントファイルのパスを指定する '../../assets/NotoSansCJKjp-Regular.ttf';
-const fontfile = path.join(app.getAppPath(), 'assets', 'NotoSansCJKjp-Regular.ttf');
+// 正しいフォントファイルのパスを指定する 'assets/NotoSansCJKjp-Regular.ttf';
+const appPath = app.isPackaged ? process.resourcesPath : app.getAppPath();
+const fontfile = path.join(appPath, 'assets', 'NotoSansCJKjp-Regular.ttf');
 
 // フォントの読み込み、ローカルのフォントを読み込む
 const font = opentype.loadSync(fontfile);

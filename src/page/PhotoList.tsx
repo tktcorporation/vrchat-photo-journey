@@ -89,19 +89,10 @@ function PhotoList() {
         <ScrollArea className="grow">
           <div className="col-span-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-4">
-              {photoItemDataList &&
-                photoItemDataList.map((data) => (
-                  <div key={data.path}>
-                    {' '}
-                    {/* margin-bottomは各アイテムの間隔を調整するために使用 */}
-                    <img src={data.dataImage} alt={`VRChatの写真: file:/${data.path}`} className="w-full h-auto" />{' '}
-                    {/* 画像の横幅はコンテナに合わせ、縦横比を保つ */}
-                  </div>
-                ))}
               {photoItemList &&
                 photoItemList.map((item) => {
                   const content =
-                    item.type === 'PHOTO' ? <Photo photoPath={item.path} /> : <div>{JSON.stringify(item)}</div>;
+                    item.type === 'PHOTO' ? <Photo photoPath={item.path} /> : <Photo photoPath={item.path} />;
 
                   return <div key={item.path}>{content}</div>;
                 })}
