@@ -16,15 +16,13 @@ type YearMonth = {
 
 function PhotoList() {
   const { data: yearMonthList, refetch: refetchYearMonthList } = trpcReact.getVRChatPhotoFolderYearMonthList.useQuery();
-  const [selectedFolderYearMonth, setSelectedFolderYearMonth] = React.useState<YearMonth | undefined>(undefined);
-  const [photoItemDataList, setPhotoItemDataList] = React.useState<{ path: string; dataImage: string }[] | undefined>(
-    undefined
+  const [selectedFolderYearMonth, setSelectedFolderYearMonth] = React.useState<YearMonth | undefined>(
+    yearMonthList?.[0]
   );
   const [photoItemList, setPhotoItemList] =
     React.useState<inferProcedureOutput<AppRouter['getVRChatPhotoWithWorldIdAndDate']>>();
-  const [refetchPhotoItemDataList, setRefetchPhotoItemDataList] = React.useState<
-    ReturnType<typeof trpcReact.getVRChatPhotoItemDataListByYearMonth.useQuery>['refetch'] | undefined
-  >(undefined);
+  const [refetchPhotoItemList, setRefetchPhotoItemList] =
+    React.useState<ReturnType<typeof trpcReact.getVRChatPhotoWithWorldIdAndDate.useQuery>['refetch']>();
 
   // useEffectを使用して、yearMonthListが更新されたらselectedFolderYearMonthを更新します。
   useEffect(() => {
@@ -33,25 +31,17 @@ function PhotoList() {
     }
   }, [yearMonthList]);
 
-  // 写真データを取得するためのクエリを初期化します。
-  const photoItemDataListQuery = trpcReact.getVRChatPhotoItemDataListByYearMonth.useQuery(selectedFolderYearMonth!, {
-    // オプションを設定して、選択されたフォルダがundefinedの場合にはクエリを実行しないようにすることができます。
-    enabled: !!selectedFolderYearMonth
-  });
   const photoItemListQuery = trpcReact.getVRChatPhotoWithWorldIdAndDate.useQuery(selectedFolderYearMonth!, {
     enabled: !!selectedFolderYearMonth
   });
 
   useEffect(() => {
-    if (photoItemDataListQuery.data) {
-      setPhotoItemDataList(photoItemDataListQuery.data);
-    }
     if (photoItemListQuery.data) {
       setPhotoItemList(photoItemListQuery.data);
     }
     // refetch関数を状態に保存します。
-    setRefetchPhotoItemDataList(() => photoItemDataListQuery.refetch);
-  }, [photoItemDataListQuery.data, photoItemDataListQuery.refetch]);
+    setRefetchPhotoItemList(() => () => photoItemListQuery.refetch());
+  }, [photoItemListQuery.data, photoItemListQuery.refetch]);
 
   const handleSideBarClick = (key: string) => {
     const [year, month] = key.split('-');
@@ -60,7 +50,7 @@ function PhotoList() {
       month
     });
     // データを更新するためにrefetch関数を呼び出すことができます。
-    refetchPhotoItemDataList?.();
+    refetchPhotoItemList?.();
   };
 
   return (
@@ -78,9 +68,9 @@ function PhotoList() {
       <div className="flex flex-col col-span-4 p-4 overflow-hidden">
         <div className="flex-none shrink-0">
           <h1 className="text-2xl font-bold">Photo</h1>
-          {photoItemDataList?.length}
+          {photoItemList?.length}
 
-          <Button variant="outline" onClick={() => refetchPhotoItemDataList?.() && refetchYearMonthList()}>
+          <Button variant="outline" onClick={() => refetchPhotoItemList?.() && refetchYearMonthList()}>
             <RefreshCw className="w-6 h-6 inline-block" />
             再読み込み
           </Button>
