@@ -56,7 +56,21 @@ const createFiles = async (
       const yearMonthPath = path.join(vrchatPhotoDir, `${info.year}-${info.month}`);
       const fileName = `${vrchatLogService.convertWorldJoinLogInfoToOneLine(info)}.png`;
       // const contentImage = await nodeHtmlToImage({ html: getHtmlContent(info) });
-      const contentImage = await createOGPImage(info.worldName);
+      const contentImage = await createOGPImage({
+        worldName: info.worldName,
+        user: null,
+        exif: {
+          dateTimeOriginal: new Date(
+            Number(info.year),
+            Number(info.month) - 1,
+            Number(info.day),
+            Number(info.hour),
+            Number(info.minute),
+            Number(info.second)
+          ),
+          description: info.worldId
+        }
+      });
       return { yearMonthPath, fileName, content: contentImage };
     })
   );

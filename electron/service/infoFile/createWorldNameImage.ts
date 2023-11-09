@@ -1,7 +1,17 @@
 import sharp from 'sharp';
 import { generateTextPath } from './lib';
 
-const createOGPImage = async (worldName: string, user: string | null = null) => {
+interface Props {
+  worldName: string;
+  user: string | null;
+  exif: {
+    // 撮影日
+    dateTimeOriginal: Date;
+    description: string;
+  };
+}
+
+const createOGPImage = async ({ worldName, user, exif }: Props) => {
   const title = worldName;
 
   // SVGを生成
@@ -49,7 +59,19 @@ const createOGPImage = async (worldName: string, user: string | null = null) => 
   </svg>`;
 
   // sharp: SVG画像をPNG画像に変換
-  return sharp(Buffer.from(svg)).png().toBuffer();
+  return sharp(Buffer.from(svg))
+    .png()
+    .withMetadata({
+      exif: {
+        IFD0: {
+          // タイトル
+          ImageDescription: exif.description,
+          // 撮影日
+          DateTimeOriginal: exif.dateTimeOriginal.toISOString().replace(/:/g, '-')
+        }
+      }
+    })
+    .toBuffer();
 };
 
 export { createOGPImage };
