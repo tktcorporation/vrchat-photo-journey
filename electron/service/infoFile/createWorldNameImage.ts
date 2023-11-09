@@ -1,9 +1,8 @@
 import sharp from 'sharp';
 import { generateTextPath } from './lib';
 
-const createOGPImage = async (worldName: string) => {
+const createOGPImage = async (worldName: string, user: string | null = null) => {
   const title = worldName;
-  const user = `by 作者`;
 
   // SVGを生成
   const svg = `
@@ -39,9 +38,14 @@ const createOGPImage = async (worldName: string) => {
     </g>
     
     <!-- ユーザー名をSVGパスに変換 -->
-    <g transform="translate(70, 470)">
-      ${generateTextPath(user, 1060, 64, { align: 'right', color: '#ccc', lines: 1 })}
-    </g>
+    ${
+      user &&
+      `<g transform="translate(70, 470)"> ${generateTextPath(user, 1060, 64, {
+        align: 'right',
+        color: '#ccc',
+        lines: 1
+      })} </g> `
+    }
   </svg>`;
 
   // sharp: SVG画像をPNG画像に変換
