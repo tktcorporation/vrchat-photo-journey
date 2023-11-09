@@ -71,6 +71,9 @@ const getVRChatPhotoFolderYearMonthList = (): neverthrow.Result<
   return neverthrow.ok(yearMonthList);
 };
 
+/**
+ * 写真もそれ以外も含む
+ */
 const getVRChatPhotoItemPathList = (
   year: string,
   month: string
@@ -89,12 +92,8 @@ const getVRChatPhotoItemPathList = (
       .with('ENOENT', () => neverthrow.err('YEAR_MONTH_DIR_ENOENT' as const))
       .exhaustive();
   }
-  const photoItemPaths = photoItemNamesResult.value.map((photoItemName) => path.join(yearMonthDir, photoItemName));
-  const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.bmp'];
-  const photoItemPathList = photoItemPaths.filter((photoItemPath) => {
-    const ext = path.extname(photoItemPath);
-    return imageExtensions.includes(ext);
-  });
+  const photoItemPathList = photoItemNamesResult.value.map((photoItemName) => path.join(yearMonthDir, photoItemName));
+
   return neverthrow.ok(photoItemPathList);
 };
 
@@ -110,4 +109,18 @@ const getVRChatPhotoItemDataList = (pathList: string[]): neverthrow.Result<{ pat
   return neverthrow.ok(photoItemDataList);
 };
 
-export { getVRChatPhotoDir, getVRChatPhotoItemPathList, getVRChatPhotoItemDataList, getVRChatPhotoFolderYearMonthList };
+const getVRChatPhotoItemData = (photoPath: string): neverthrow.Result<Buffer, Error> => {
+  const photoItemDataResult = fs.readFileSafe(photoPath);
+  if (photoItemDataResult.isErr()) {
+    return neverthrow.err(photoItemDataResult.error);
+  }
+  return neverthrow.ok(photoItemDataResult.value);
+};
+
+export {
+  getVRChatPhotoDir,
+  getVRChatPhotoItemPathList,
+  getVRChatPhotoItemDataList,
+  getVRChatPhotoFolderYearMonthList,
+  getVRChatPhotoItemData
+};

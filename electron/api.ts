@@ -49,7 +49,7 @@ export const router = t.router({
     return status;
   }),
   createFiles: procedure.mutation(async () => {
-    const result = service.getConfigAndValidateAndCreateFiles();
+    const result = await service.getConfigAndValidateAndCreateFiles();
     return result.match(
       () => {
         ee.emit('toast', 'ファイルの作成に成功しました');
@@ -145,6 +145,32 @@ export const router = t.router({
       (error) => {
         ee.emit('toast', error);
         return [];
+      }
+    );
+  }),
+  getVRChatPhotoWithWorldIdAndDate: procedure
+    .input(z.object({ year: z.string(), month: z.string() }))
+    .query(async (ctx) => {
+      const result = await service.getVRChatPhotoWithWorldIdAndDate(ctx.input);
+      return result.match(
+        (r) => {
+          return r;
+        },
+        (error) => {
+          ee.emit('toast', error);
+          return [];
+        }
+      );
+    }),
+  getVRChatPhotoItemData: procedure.input(z.string()).query(async (ctx) => {
+    const result = await service.getVRChatPhotoItemData(ctx.input);
+    return result.match(
+      (r) => {
+        return `data:image/${path.extname(ctx.input).replace('.', '')};base64,${r.toString('base64')}`;
+      },
+      (error) => {
+        ee.emit('toast', error);
+        return '';
       }
     );
   })
