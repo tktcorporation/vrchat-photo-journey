@@ -46,7 +46,7 @@ function CreateJoinInfo() {
   const handleClickCreateFiles = () => {
     createFilesMutation.mutateAsync().then((isSuccess) => {
       if (isSuccess) {
-        navigate(ROUTER_PATHS.CREATED_RESULT);
+        navigate(ROUTER_PATHS.PHOTO_LIST);
       }
     });
   };
