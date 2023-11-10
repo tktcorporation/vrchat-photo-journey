@@ -57,6 +57,12 @@ function PhotoList() {
     refetchPhotoItemList?.();
   };
 
+  const mutate = trpcReact.openPathOnExplorer.useMutation();
+  const handleOpenFolder = () => {
+    console.log(photoItemList?.[0].path);
+    return photoItemList && mutate.mutate(photoItemList[0].path);
+  };
+
   return (
     <div className="h-screen grid grid-cols-5 overflow-hidden">
       <Sidebar
@@ -73,13 +79,16 @@ function PhotoList() {
       <div className="flex flex-col col-span-4 p-4 overflow-hidden">
         <div className="flex-none shrink-0">
           <div className="flex items-center">
-            <h1 className="text-2xl font-bold">Photo</h1>
             <Button
               className="inline"
               variant="ghost"
               onClick={() => refetchPhotoItemList?.() && refetchYearMonthList()}
             >
               <RefreshCw className="inline-block" />
+            </Button>
+            <h1 className="text-2xl font-bold">Photo</h1>
+            <Button variant="ghost" className="ml-auto" onClick={handleOpenFolder}>
+              エクスプローラで開く
             </Button>
           </div>
         </div>
