@@ -1,6 +1,6 @@
 import React from 'react';
 import { match } from 'ts-pattern';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { trpcReact } from '@/trpc';
 import { ROUTER_PATHS } from '@/constants';
 import { ExclamationTriangleIcon, CheckIcon } from '@heroicons/react/24/outline';
@@ -46,7 +46,7 @@ function CreateJoinInfo() {
   const handleClickCreateFiles = () => {
     createFilesMutation.mutateAsync().then((isSuccess) => {
       if (isSuccess) {
-        navigate(ROUTER_PATHS.CREATED_RESULT);
+        navigate(ROUTER_PATHS.PHOTO_LIST);
       }
     });
   };
@@ -78,17 +78,6 @@ function CreateJoinInfo() {
         )}
 
         <div className="flex space-x-4">
-          {/* 画像一覧 */}
-          <Link to={ROUTER_PATHS.PHOTO_LIST}>
-            <Button variant="outline">Photo</Button>
-          </Link>
-
-          {/* 設定に戻る */}
-          <Link to={ROUTER_PATHS.SETTING}>
-            <Button variant="outline">設定に戻る</Button>
-          </Link>
-          {/* ファイル生成ボタン */}
-
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button disabled={disabledCreateFilesButton}>どこで撮ったか調べる</Button>

@@ -1,7 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ROUTER_PATHS } from '../constants';
 import { trpcReact } from '../trpc';
 
 function CreatedResult() {
@@ -16,11 +14,6 @@ function CreatedResult() {
       <div className=" flex flex-col justify-center items-center h-full space-y-4">
         <p>VRChatの写真フォルダにファイルを生成しました</p>
         <Button onClick={handleOpenFolder}>写真フォルダを開いて確認する</Button>
-
-        {/* 設定に戻る */}
-        <Link to={ROUTER_PATHS.HOME}>
-          <Button>もう一度</Button>
-        </Link>
       </div>
     </div>
   );

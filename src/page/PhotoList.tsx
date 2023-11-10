@@ -16,9 +16,13 @@ type YearMonth = {
 
 function PhotoList() {
   const { data: yearMonthList, refetch: refetchYearMonthList } = trpcReact.getVRChatPhotoFolderYearMonthList.useQuery();
-  const [selectedFolderYearMonth, setSelectedFolderYearMonth] = React.useState<YearMonth | undefined>(
-    yearMonthList?.[0]
-  );
+  const sortedYearMonthList = yearMonthList?.sort((a, b) => {
+    const yearMonthA = a.year + a.month;
+    const yearMonthB = b.year + b.month;
+    return yearMonthB.localeCompare(yearMonthA);
+  });
+  const firstYearMonth = sortedYearMonthList?.[0];
+  const [selectedFolderYearMonth, setSelectedFolderYearMonth] = React.useState<YearMonth | undefined>(firstYearMonth);
   const [photoItemList, setPhotoItemList] =
     React.useState<inferProcedureOutput<AppRouter['getVRChatPhotoWithWorldIdAndDate']>>();
   const [refetchPhotoItemList, setRefetchPhotoItemList] =
@@ -27,7 +31,7 @@ function PhotoList() {
   // useEffectを使用して、yearMonthListが更新されたらselectedFolderYearMonthを更新します。
   useEffect(() => {
     if (yearMonthList) {
-      setSelectedFolderYearMonth(yearMonthList.sort((a, b) => (a.year > b.year ? -1 : 1))[0]);
+      setSelectedFolderYearMonth(firstYearMonth);
     }
   }, [yearMonthList]);
 
@@ -53,27 +57,40 @@ function PhotoList() {
     refetchPhotoItemList?.();
   };
 
+  const mutate = trpcReact.openPathOnExplorer.useMutation();
+  const handleOpenFolder = () => {
+    console.log(photoItemList?.[0].path);
+    return photoItemList && mutate.mutate(photoItemList[0].path);
+  };
+
   return (
     <div className="h-screen grid grid-cols-5 overflow-hidden">
       <Sidebar
         className="col-span-1 overflow-auto"
         clickCallback={handleSideBarClick}
         itemList={
-          yearMonthList?.map((folder) => ({
+          sortedYearMonthList?.map((folder) => ({
             key: `${folder.year}-${folder.month}`,
             label: `${folder.year}年${folder.month}月`
           })) || []
         }
+        defaultKey={sortedYearMonthList?.[0] && `${sortedYearMonthList[0].year}-${sortedYearMonthList[0].month}`}
       />
       <div className="flex flex-col col-span-4 p-4 overflow-hidden">
         <div className="flex-none shrink-0">
-          <h1 className="text-2xl font-bold">Photo</h1>
-          {photoItemList?.length}
-
-          <Button variant="outline" onClick={() => refetchPhotoItemList?.() && refetchYearMonthList()}>
-            <RefreshCw className="w-6 h-6 inline-block" />
-            再読み込み
-          </Button>
+          <div className="flex items-center">
+            <Button
+              className="inline"
+              variant="ghost"
+              onClick={() => refetchPhotoItemList?.() && refetchYearMonthList()}
+            >
+              <RefreshCw className="inline-block" />
+            </Button>
+            <h1 className="text-2xl font-bold">Photo</h1>
+            <Button variant="ghost" className="ml-auto" onClick={handleOpenFolder}>
+              エクスプローラで開く
+            </Button>
+          </div>
         </div>
         {/* 画面サイズからはみ出さないようにする */}
         <ScrollArea className="grow">
