@@ -93,6 +93,18 @@ export const router = t.router({
       }
     );
   }),
+  openDirOnExplorer: procedure.input(z.string()).mutation(async (ctx) => {
+    const result = await service.openDirOnExplorer(ctx.input);
+    return result.match(
+      () => {
+        return true;
+      },
+      (error) => {
+        ee.emit('toast', error);
+        return false;
+      }
+    );
+  }),
   setVRChatPhotoDirByDialog: procedure.mutation(async () => {
     const result = await service.setVRChatPhotoDirByDialog();
     return result.match(

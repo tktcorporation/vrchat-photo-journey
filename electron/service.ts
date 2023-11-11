@@ -70,6 +70,11 @@ const openPathOnExplorer = (filePath: string) => {
   return utilsService.openPathInExplorer(filePath);
 };
 
+const openDirOnExplorer = (dirPath: string) => {
+  const dir = path.dirname(dirPath);
+  return utilsService.openPathInExplorer(dir);
+};
+
 const setVRChatPhotoDirByDialog = async (): Promise<neverthrow.Result<void, Error | 'canceled'>> => {
   return (await utilsService.openGetDirDialog()).map((dirPath) => {
     settingStore.setVRChatPhotoDir(dirPath);
@@ -128,7 +133,6 @@ const getVRChatPhotoWithWorldIdAndDate = ({
   const objList = pathList.map((item) => {
     const ext = path.extname(item);
     const fileName = path.basename(item, ext);
-    console.log(fileName);
     const photoFileNameParseResult = PhotoFileNameSchema.safeParse(fileName);
     const JoinInfoFileNameParseResult = JoinInfoFileNameSchema.safeParse(fileName);
     if (photoFileNameParseResult.success) {
@@ -184,6 +188,7 @@ export {
   clearAllStoredSettings,
   clearStoredSetting,
   openPathOnExplorer,
+  openDirOnExplorer,
   getVRChatPhotoItemDataListByYearMonth,
   getVRChatPhotoWithWorldIdAndDate,
   getVRChatPhotoItemData

@@ -21,10 +21,32 @@ function PhotoList() {
     const yearMonthB = b.year + b.month;
     return yearMonthB.localeCompare(yearMonthA);
   });
-  const firstYearMonth = sortedYearMonthList?.[0];
+  const firstYearMonth = React.useMemo(() => sortedYearMonthList?.[0], [sortedYearMonthList]);
   const [selectedFolderYearMonth, setSelectedFolderYearMonth] = React.useState<YearMonth | undefined>(firstYearMonth);
   const [photoItemList, setPhotoItemList] =
     React.useState<inferProcedureOutput<AppRouter['getVRChatPhotoWithWorldIdAndDate']>>();
+  const sortedPhotoItemList = photoItemList?.sort((a, b) => {
+    if (!a || !b) return 0;
+    const datetimeA =
+      a.datetime.date.year +
+      a.datetime.date.month +
+      a.datetime.date.day +
+      a.datetime.time.hour +
+      a.datetime.time.minute +
+      a.datetime.time.second +
+      a.datetime.time.millisecond;
+    const datetimeB =
+      b.datetime.date.year +
+      b.datetime.date.month +
+      b.datetime.date.day +
+      b.datetime.time.hour +
+      b.datetime.time.minute +
+      b.datetime.time.second +
+      b.datetime.time.millisecond;
+    // 降順に並び替える
+    return datetimeB.localeCompare(datetimeA);
+  });
+
   const [refetchPhotoItemList, setRefetchPhotoItemList] =
     React.useState<ReturnType<typeof trpcReact.getVRChatPhotoWithWorldIdAndDate.useQuery>['refetch']>();
 
@@ -57,11 +79,15 @@ function PhotoList() {
     refetchPhotoItemList?.();
   };
 
-  const mutate = trpcReact.openPathOnExplorer.useMutation();
+  const openDirOnExplorerMutatation = trpcReact.openDirOnExplorer.useMutation();
   const handleOpenFolder = () => {
-    console.log(photoItemList?.[0].path);
-    return photoItemList && mutate.mutate(photoItemList[0].path);
+    return photoItemList?.[0] && openDirOnExplorerMutatation.mutate(photoItemList[0].path);
   };
+
+  const defaultKey = React.useMemo(
+    () => sortedYearMonthList?.[0] && `${sortedYearMonthList[0].year}-${sortedYearMonthList[0].month}`,
+    [sortedYearMonthList]
+  );
 
   return (
     <div className="h-screen grid grid-cols-5 overflow-hidden">
@@ -74,7 +100,7 @@ function PhotoList() {
             label: `${folder.year}年${folder.month}月`
           })) || []
         }
-        defaultKey={sortedYearMonthList?.[0] && `${sortedYearMonthList[0].year}-${sortedYearMonthList[0].month}`}
+        defaultKey={defaultKey}
       />
       <div className="flex flex-col col-span-4 p-4 overflow-hidden">
         <div className="flex-none shrink-0">
@@ -96,8 +122,8 @@ function PhotoList() {
         <ScrollArea className="grow">
           <div className="col-span-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-4">
-              {photoItemList &&
-                photoItemList.map((item) => {
+              {sortedPhotoItemList &&
+                sortedPhotoItemList.map((item) => {
                   const content =
                     item.type === 'PHOTO' ? <Photo photoPath={item.path} /> : <Photo photoPath={item.path} />;
 
