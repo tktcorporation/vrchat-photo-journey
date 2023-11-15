@@ -3,7 +3,11 @@ import { generateTextPath } from './lib';
 
 interface Props {
   worldName: string;
-  user: string | null;
+  date: {
+    year: number;
+    month: number;
+    day: number;
+  };
   exif: {
     // 撮影日
     dateTimeOriginal: Date;
@@ -11,7 +15,7 @@ interface Props {
   };
 }
 
-const createOGPImage = async ({ worldName, user, exif }: Props) => {
+const createOGPImage = async ({ worldName, date, exif }: Props) => {
   const title = worldName;
 
   // SVGを生成
@@ -49,8 +53,8 @@ const createOGPImage = async ({ worldName, user, exif }: Props) => {
     
     <!-- ユーザー名をSVGパスに変換 -->
     ${
-      user &&
-      `<g transform="translate(70, 470)"> ${generateTextPath(user, 1060, 64, {
+      date &&
+      `<g transform="translate(70, 470)"> ${generateTextPath(`${date.year}-${date.month}-${date.day}`, 1060, 64, {
         align: 'right',
         color: '#ccc',
         lines: 1

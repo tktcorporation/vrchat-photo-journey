@@ -58,7 +58,11 @@ const createFiles = async (
       // const contentImage = await nodeHtmlToImage({ html: getHtmlContent(info) });
       const contentImage = await createOGPImage({
         worldName: info.worldName,
-        user: null,
+        date: {
+          year: Number(info.year),
+          month: Number(info.month),
+          day: Number(info.day)
+        },
         exif: {
           dateTimeOriginal: new Date(
             Number(info.year),
