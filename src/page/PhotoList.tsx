@@ -91,17 +91,19 @@ function PhotoList() {
 
   return (
     <div className="h-screen grid grid-cols-5 overflow-hidden">
-      <Sidebar
-        className="col-span-1 overflow-auto"
-        clickCallback={handleSideBarClick}
-        itemList={
-          sortedYearMonthList?.map((folder) => ({
-            key: `${folder.year}-${folder.month}`,
-            label: `${folder.year}年${folder.month}月`
-          })) || []
-        }
-        defaultKey={defaultKey}
-      />
+      <ScrollArea className="grow">
+        <Sidebar
+          className="col-span-1 overflow-auto"
+          clickCallback={handleSideBarClick}
+          itemList={
+            sortedYearMonthList?.map((folder) => ({
+              key: `${folder.year}-${folder.month}`,
+              label: `${folder.year}年${folder.month}月`
+            })) || []
+          }
+          defaultKey={defaultKey}
+        />
+      </ScrollArea>
       <div className="flex flex-col col-span-4 p-4 overflow-hidden">
         <div className="flex-none shrink-0">
           <div className="flex items-center">
