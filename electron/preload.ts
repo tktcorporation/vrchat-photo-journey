@@ -89,7 +89,7 @@ const api = {
   /**
    * Provide an easier way to listen to events
    */
-  on: (channel: string, callback: (data: any) => void) => {
+  on: (channel: string, callback: (data: unknown) => void) => {
     ipcRenderer.on(channel, (_, data) => callback(data));
   },
   removeAllListeners: (channel: string) => {

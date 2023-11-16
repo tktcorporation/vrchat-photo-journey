@@ -25,7 +25,7 @@ module.exports = {
     'prettier/prettier': 'error',
     // Typescript
     'no-use-before-define': 'off',
-    'import/prefer-default-export': 'warn',
+    'import/prefer-default-export': 'off',
     '@typescript-eslint/no-use-before-define': ['error'],
     '@typescript-eslint/no-unused-vars': 'warn',
     '@typescript-eslint/no-explicit-any': 'warn',
