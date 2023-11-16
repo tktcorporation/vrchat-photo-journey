@@ -5,6 +5,7 @@ import { join } from 'path';
 import { BrowserWindow, app, ipcMain } from 'electron';
 import isDev from 'electron-is-dev';
 import { createIPCHandler } from 'electron-trpc/main';
+import * as log from 'electron-log';
 import { router } from './api';
 
 import * as controller from './controller';
@@ -30,7 +31,7 @@ function registerIpcMainListeners() {
   ipcMain.on(CHANNELS.OPEN_DIALOG_AND_SET_LOG_FILES_DIR, controller.handleOpenDialogAndSetLogFilesDir);
   ipcMain.on(CHANNELS.OPEN_DIALOG_AND_SET_VRCHAT_PHOTO_DIR, controller.handleOpenDialogAndSetVRChatPhotoDir);
   ipcMain.on(CHANNELS.MESSAGE, (_, message) => {
-    console.log(message);
+    log.info(message);
   });
 }
 
@@ -83,6 +84,10 @@ function createWindow(): BrowserWindow {
 
   return mainWindow;
 }
+
+process.on('uncaughtException', (error) => {
+  log.error(error);
+});
 
 app.whenReady().then(() => {
   registerIpcMainListeners();
