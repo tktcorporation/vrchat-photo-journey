@@ -6,7 +6,7 @@ import { FolderOpen } from 'lucide-react';
 import { match } from 'ts-pattern';
 import { sourceBadge } from './components';
 
-function Setting() {
+function VRChatLogPathSetting() {
   const { data: logFilesDir, refetch } = trpcReact.getVRChatLogFilesDir.useQuery();
   const errorMessage = match(logFilesDir?.error)
     .with('logFilesNotFound', () => 'ログファイルが見つかりませんでした')
@@ -67,4 +67,4 @@ function Setting() {
   );
 }
 
-export default Setting;
+export default VRChatLogPathSetting;

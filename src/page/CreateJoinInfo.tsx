@@ -1,11 +1,12 @@
 import React from 'react';
 import { match } from 'ts-pattern';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { trpcReact } from '@/trpc';
 import { ROUTER_PATHS } from '@/constants';
 import { ExclamationTriangleIcon, CheckIcon } from '@heroicons/react/24/outline';
 import ProgressCircle from '@/components/ui/ProgressCircle';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 import {
   AlertDialog,
@@ -103,4 +104,49 @@ function CreateJoinInfo() {
   );
 }
 
-export default CreateJoinInfo;
+function Onboarding() {
+  const [tabValue, setTabValue] = React.useState('0');
+  const handleChangeTab = (value: string) => {
+    setTabValue(value);
+  };
+  return (
+    <div className="flex-auto">
+      <div className=" flex flex-col justify-center items-center h-full space-y-8">
+        <Tabs value={tabValue} onValueChange={handleChangeTab}>
+          <TabsList>
+            <TabsTrigger value="0">・</TabsTrigger>
+            <TabsTrigger value="1">・</TabsTrigger>
+            <TabsTrigger value="2">・</TabsTrigger>
+            <TabsTrigger value="3">・</TabsTrigger>
+            <TabsTrigger value="4">・</TabsTrigger>
+          </TabsList>
+          <TabsContent value="0">
+            <p>ようこそ</p>
+            <p>イメージ画像</p>
+            <Button onClick={() => setTabValue(`${Number(tabValue) + 1}`)}>次へ</Button>
+          </TabsContent>
+          <TabsContent value="1">
+            <p>写真が保存されているフォルダに画像ファイルを生成することで、訪れたワールドがひと目で分かり、</p>
+            <p>写真が撮影された場所がわかるようになります</p>
+            <Button onClick={() => setTabValue(`${Number(tabValue) + 1}`)}>次へ</Button>
+          </TabsContent>
+          <TabsContent value="2">
+            <p>アプリケーションを使う準備が整っているかを確認します</p>
+          </TabsContent>
+          <TabsContent value="3">
+            <CreateJoinInfo />
+            <Button onClick={() => setTabValue(`${Number(tabValue) + 1}`)}>次へ</Button>
+          </TabsContent>
+          <TabsContent value="4">
+            <p>バックグラウンドで写真の撮影場所を常に記録する</p>
+            <Link to={ROUTER_PATHS.PHOTO_LIST}>
+              <Button>次へ</Button>
+            </Link>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+}
+
+export default Onboarding;
