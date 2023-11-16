@@ -1,39 +1,45 @@
 import { dialog } from 'electron';
+import * as neverthrow from 'neverthrow';
 import * as settingStore from './settingStore';
 
-export const handleOpenDialogAndSetLogFilesDir = () => {
-  dialog
-    .showOpenDialog({
+export const handleOpenDialogAndSetLogFilesDir = async (): Promise<
+  neverthrow.Result<'canceled' | 'dir_path_saved', Error>
+> => {
+  try {
+    const result = await dialog.showOpenDialog({
       properties: ['openDirectory']
-    })
-    .then((result) => {
-      if (!result.canceled) {
-        const dirPath = result.filePaths[0];
-        settingStore.setLogFilesDir(dirPath);
-        // event.sender.send(MESSAGE.TOAST, messages.LOG_PATH_SET(dirPath));
-        // event.sender.send(MESSAGE.LOG_FILES_DIR, dirPath);
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-      // event.sender.send(MESSAGE.TOAST, err.message);
     });
+    if (result.canceled) {
+      return neverthrow.ok('canceled' as const);
+    }
+    const dirPath = result.filePaths[0];
+    settingStore.setLogFilesDir(dirPath);
+    return neverthrow.ok('dir_path_saved' as const);
+  } catch (err) {
+    if (err instanceof Error) {
+      return neverthrow.err(err);
+    }
+    throw err;
+  }
 };
 
-export const handleOpenDialogAndSetVRChatPhotoDir = () => {
-  dialog
-    .showOpenDialog({
+export const handleOpenDialogAndSetVRChatPhotoDir = async (): Promise<
+  neverthrow.Result<'canceled' | 'dir_path_saved', Error>
+> => {
+  try {
+    const result = await dialog.showOpenDialog({
       properties: ['openDirectory']
-    })
-    .then((result) => {
-      if (!result.canceled) {
-        const dirPath = result.filePaths[0];
-        settingStore.setVRChatPhotoDir(dirPath);
-        // event.sender.send(MESSAGE.VRCHAT_PHOTO_DIR, dirPath);
-        // event.sender.send(MESSAGE.TOAST, `VRChat photo path set to ${dirPath}`);
-      }
-    })
-    .catch((err) => {
-      console.log(err);
     });
+    if (result.canceled) {
+      return neverthrow.ok('canceled' as const);
+    }
+    const dirPath = result.filePaths[0];
+    settingStore.setVRChatPhotoDir(dirPath);
+    return neverthrow.ok('dir_path_saved' as const);
+  } catch (err) {
+    if (err instanceof Error) {
+      neverthrow.err(err);
+    }
+    throw err;
+  }
 };
