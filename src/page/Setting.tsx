@@ -56,7 +56,7 @@ function Setting() {
         </div>
 
         {/* ファイル生成画面に移動するボタン */}
-        <Link to={ROUTER_PATHS.HOME}>
+        <Link to={ROUTER_PATHS.CREATE_JOIN_INFO}>
           <Button variant="outline">完了</Button>
         </Link>
       </div>

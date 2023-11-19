@@ -2,6 +2,7 @@ import React from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import { ipcLink } from 'electron-trpc/renderer';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import Onboarding from '@/page/Onboarding';
 import AppBar from './components/AppBar';
 import Setting from './page/Setting';
 import CreateJoinInfo from './page/CreateJoinInfo';
@@ -29,7 +30,8 @@ function Router() {
           <HashRouter>
             <DefaultLayout>
               <Routes>
-                <Route path={ROUTER_PATHS.HOME} element={<CreateJoinInfo />} />
+                <Route path={ROUTER_PATHS.ONBORDING} element={<Onboarding />} />
+                <Route path={ROUTER_PATHS.CREATE_JOIN_INFO} element={<CreateJoinInfo />} />
                 <Route path={ROUTER_PATHS.PHOTO_LIST} element={<PhotoList />} />
                 <Route path={ROUTER_PATHS.CREATED_RESULT} element={<CreatedResult />} />
                 <Route path={ROUTER_PATHS.SETTING} element={<Setting />} />
