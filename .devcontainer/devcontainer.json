@@ -4,9 +4,9 @@
     },
     "forwardPorts": [6080],
     "portsAttributes": {
-      "6080": {
-        "label": "desktop"
-      }
+        "6080": {
+            "label": "desktop"
+        }
     },
     "runArgs": ["--shm-size=2g"]
 }
