@@ -1,19 +1,25 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.3.3/schema.json",
-  "organizeImports": {
-    "enabled": true
-  },
-  "linter": {
-    "enabled": true,
-    "rules": {
-      "recommended": true
+    "$schema": "https://biomejs.dev/schemas/1.3.3/schema.json",
+    "organizeImports": {
+        "enabled": true
+    },
+    "linter": {
+        "enabled": true,
+        "rules": {
+            "recommended": true
+        }
+    },
+    "formatter": {
+        "enabled": true,
+        "indentWidth": 4,
+        "indentStyle": "space"
+    },
+    "files": {
+        "ignore": [
+            "**/node_modules/**",
+            "**/dist/**",
+            "**/main/**",
+            "**/out/**"
+        ]
     }
-  },
-  "formatter": {
-    "enabled": true,
-    "indentStyle": "space"
-  },
-  "files": {
-    "ignore": ["**/node_modules/**", "**/dist/**", "**/main/**", "**/out/**"]
-  }
 }

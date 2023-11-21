@@ -2,24 +2,24 @@ import sharp from "sharp";
 import { generateTextPath } from "./lib";
 
 interface Props {
-  worldName: string;
-  date: {
-    year: number;
-    month: number;
-    day: number;
-  };
-  exif: {
-    // 撮影日
-    dateTimeOriginal: Date;
-    description: string;
-  };
+    worldName: string;
+    date: {
+        year: number;
+        month: number;
+        day: number;
+    };
+    exif: {
+        // 撮影日
+        dateTimeOriginal: Date;
+        description: string;
+    };
 }
 
 const createOGPImage = async ({ worldName, date, exif }: Props) => {
-  const title = worldName;
+    const title = worldName;
 
-  // SVGを生成
-  const svg = `
+    // SVGを生成
+    const svg = `
   <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${1200}" height="${630}">
     <!-- フィルター定義 -->
     <defs>
@@ -49,44 +49,44 @@ const createOGPImage = async ({ worldName, date, exif }: Props) => {
     <!-- 指定した文字列をSVGパスに変換 -->
     <g transform="translate(70, 70)">
       ${generateTextPath(title, 1060, 80, {
-        align: "center",
-        color: "#555",
-        lines: 4,
+          align: "center",
+          color: "#555",
+          lines: 4,
       })}
     </g>
     
     <!-- ユーザー名をSVGパスに変換 -->
     ${
-      date &&
-      `<g transform="translate(70, 470)"> ${generateTextPath(
-        `${date.year}-${date.month}-${date.day}`,
-        1060,
-        64,
-        {
-          align: "right",
-          color: "#ccc",
-          lines: 1,
-        },
-      )} </g> `
+        date &&
+        `<g transform="translate(70, 470)"> ${generateTextPath(
+            `${date.year}-${date.month}-${date.day}`,
+            1060,
+            64,
+            {
+                align: "right",
+                color: "#ccc",
+                lines: 1,
+            },
+        )} </g> `
     }
   </svg>`;
 
-  // sharp: SVG画像をPNG画像に変換
-  return sharp(Buffer.from(svg))
-    .png()
-    .withMetadata({
-      exif: {
-        IFD0: {
-          // タイトル
-          ImageDescription: exif.description,
-          // 撮影日
-          DateTimeOriginal: exif.dateTimeOriginal
-            .toISOString()
-            .replace(/:/g, "-"),
-        },
-      },
-    })
-    .toBuffer();
+    // sharp: SVG画像をPNG画像に変換
+    return sharp(Buffer.from(svg))
+        .png()
+        .withMetadata({
+            exif: {
+                IFD0: {
+                    // タイトル
+                    ImageDescription: exif.description,
+                    // 撮影日
+                    DateTimeOriginal: exif.dateTimeOriginal
+                        .toISOString()
+                        .replace(/:/g, "-"),
+                },
+            },
+        })
+        .toBuffer();
 };
 
 export { createOGPImage };

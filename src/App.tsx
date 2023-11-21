@@ -19,56 +19,67 @@ import { trpcReact } from "./trpc";
 
 const queryClient = new QueryClient();
 const trpcClient = trpcReact.createClient({
-  links: [ipcLink()],
+    links: [ipcLink()],
 });
 
 function Router() {
-  return (
-    <trpcReact.Provider client={trpcClient} queryClient={queryClient}>
-      <QueryClientProvider client={queryClient}>
-        <Template>
-          <HashRouter>
-            <DefaultLayout>
-              <Routes>
-                <Route path={ROUTER_PATHS.ONBORDING} element={<Onboarding />} />
-                <Route
-                  path={ROUTER_PATHS.CREATE_JOIN_INFO}
-                  element={<CreateJoinInfo />}
-                />
-                <Route path={ROUTER_PATHS.PHOTO_LIST} element={<PhotoList />} />
-                <Route
-                  path={ROUTER_PATHS.CREATED_RESULT}
-                  element={<CreatedResult />}
-                />
-                <Route path={ROUTER_PATHS.SETTING} element={<Setting />} />
-                <Route
-                  path={ROUTER_PATHS.SETTING_VRCHAT_LOG_PATH}
-                  element={<VRChatLogPathSetting />}
-                />
-                <Route
-                  path={ROUTER_PATHS.SETTING_VRCHAT_PHOTO_PATH}
-                  element={<VRChatPhotoPathSetting />}
-                />
-                <Route
-                  path={ROUTER_PATHS.CLEAR_SETTINGS}
-                  element={<ClearSettings />}
-                />
-              </Routes>
-            </DefaultLayout>
-          </HashRouter>
-        </Template>
-      </QueryClientProvider>
-    </trpcReact.Provider>
-  );
+    return (
+        <trpcReact.Provider client={trpcClient} queryClient={queryClient}>
+            <QueryClientProvider client={queryClient}>
+                <Template>
+                    <HashRouter>
+                        <DefaultLayout>
+                            <Routes>
+                                <Route
+                                    path={ROUTER_PATHS.ONBORDING}
+                                    element={<Onboarding />}
+                                />
+                                <Route
+                                    path={ROUTER_PATHS.CREATE_JOIN_INFO}
+                                    element={<CreateJoinInfo />}
+                                />
+                                <Route
+                                    path={ROUTER_PATHS.PHOTO_LIST}
+                                    element={<PhotoList />}
+                                />
+                                <Route
+                                    path={ROUTER_PATHS.CREATED_RESULT}
+                                    element={<CreatedResult />}
+                                />
+                                <Route
+                                    path={ROUTER_PATHS.SETTING}
+                                    element={<Setting />}
+                                />
+                                <Route
+                                    path={ROUTER_PATHS.SETTING_VRCHAT_LOG_PATH}
+                                    element={<VRChatLogPathSetting />}
+                                />
+                                <Route
+                                    path={
+                                        ROUTER_PATHS.SETTING_VRCHAT_PHOTO_PATH
+                                    }
+                                    element={<VRChatPhotoPathSetting />}
+                                />
+                                <Route
+                                    path={ROUTER_PATHS.CLEAR_SETTINGS}
+                                    element={<ClearSettings />}
+                                />
+                            </Routes>
+                        </DefaultLayout>
+                    </HashRouter>
+                </Template>
+            </QueryClientProvider>
+        </trpcReact.Provider>
+    );
 }
 
 function App() {
-  return (
-    <div className="flex flex-col h-screen">
-      {window.Main && <AppBar />}
-      {window.Main && <Router />}
-    </div>
-  );
+    return (
+        <div className="flex flex-col h-screen">
+            {window.Main && <AppBar />}
+            {window.Main && <Router />}
+        </div>
+    );
 }
 
 export default App;
