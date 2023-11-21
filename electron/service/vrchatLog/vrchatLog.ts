@@ -71,7 +71,11 @@ const getVRChatLogFileDir = (): VRChatLogFilesDirWithErr => {
   if (logFileNamesResult.isErr()) {
     switch (logFileNamesResult.error) {
       case "ENOENT":
-        return { storedPath, path: logFilesDir, error: "logFileDirNotFound" };
+        return {
+          storedPath,
+          path: logFilesDir,
+          error: "logFileDirNotFound",
+        };
       default:
         throw logFileNamesResult.error;
     }
