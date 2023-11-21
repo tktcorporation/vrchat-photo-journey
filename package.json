@@ -30,8 +30,8 @@
     "clean": "rimraf dist main src/out",
     "type-check": "tsc",
     "find-deadcode": "ts-prune",
-    "lint": "eslint . --ext js,jsx,ts,tsx",
-    "lint:fix": "eslint . --ext js,jsx,ts,tsx --fix"
+    "lint": "npx @biomejs/biome lint .",
+    "lint:fix": "npx @biomejs/biome check --apply ."
   },
   "dependencies": {
     "@heroicons/react": "^2.0.18",
@@ -69,6 +69,7 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@biomejs/biome": "1.3.3",
     "@types/babel__core": "^7.20.3",
     "@types/node": "^20.8.10",
     "@types/opentype.js": "^1.3.8",

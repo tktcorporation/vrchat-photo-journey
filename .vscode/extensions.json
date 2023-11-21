@@ -1,21 +1,21 @@
 {
-    "recommendations": [
-        "GitHub.copilot",
-        "donjayamanne.githistory",
-        "eamodio.gitlens",
-        "mhutchie.git-graph",
-        "steoates.autoimport",
-        "Atishay-Jain.All-Autocomplete",
-        "usernamehw.errorlens",
-        "dbaeumer.vscode-eslint",
-        "eamodio.gitlens",
-        "ofhumanbondage.react-proptypes-intellisense",
-        "mgmcdermott.vscode-language-babel",
-        "wix.vscode-import-cost",
-        "pflannery.vscode-versionlens",
-        "editorconfig.editorconfig",
-        "WakaTime.vscode-wakatime",
-        "bradlc.vscode-tailwindcss",
-        "GitHub.vscode-github-actions"
-    ]
+	"recommendations": [
+		"github.copilot",
+		"donjayamanne.githistory",
+		"eamodio.gitlens",
+		"mhutchie.git-graph",
+		"steoates.autoimport",
+		"atishay-jain.all-autocomplete",
+		"usernamehw.errorlens",
+		"dbaeumer.vscode-eslint",
+		"ofhumanbondage.react-proptypes-intellisense",
+		"mgmcdermott.vscode-language-babel",
+		"wix.vscode-import-cost",
+		"pflannery.vscode-versionlens",
+		"editorconfig.editorconfig",
+		"wakatime.vscode-wakatime",
+		"bradlc.vscode-tailwindcss",
+		"github.vscode-github-actions",
+		"biomejs.biome"
+	]
 }
