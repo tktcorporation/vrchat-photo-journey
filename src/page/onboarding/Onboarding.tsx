@@ -27,10 +27,13 @@ function Onboarding() {
             <p>イメージ画像</p>
           </TabsContent>
           <TabsContent value="1">
-            <p>写真が保存されているフォルダに画像ファイルを生成することで、訪れたワールドがひと目で分かり、</p>
-            <p>写真が撮影された場所がわかるようになります</p>
+            <p>訪れたワールドと写真が撮影された場所をひとめでわかるようにします</p>
+            <p>イメージ画像</p>
+            <p>写真と同じ場所にワールド名のサムネイル画像を生成</p>
           </TabsContent>
           <TabsContent value="2">
+            <p>初期設定を行いましょう</p>
+            <p>すべての設定をグリーンにしてください</p>
             <OnBordingSetting />
           </TabsContent>
           <TabsContent value="3">

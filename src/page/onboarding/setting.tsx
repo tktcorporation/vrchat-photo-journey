@@ -4,13 +4,11 @@ import { trpcReact } from '@/trpc';
 import { ROUTER_PATHS } from '@/constants';
 import { Button } from '@/components/ui/button';
 import { ChevronRight, AlertTriangle, Check } from 'lucide-react';
-import ProgressCircle from '@/components/ui/ProgressCircle';
+import { cn } from '@/lib/utils';
 
 export function OnBordingSetting() {
   const logFilesDirError = trpcReact.getVRChatLogFilesDir.useQuery().data?.error;
   const vrchatPhotoDirError = trpcReact.getVRChatPhotoDir.useQuery().data?.error;
-
-  const progressToReady = 100 * (logFilesDirError && vrchatPhotoDirError ? 0 : 1);
 
   const statusIcon = (err: string | undefined | null) => {
     if (err) {
@@ -21,8 +19,12 @@ export function OnBordingSetting() {
 
   return (
     <div className="space-y-4">
-      <ProgressCircle value={progressToReady} size="large" />
-      <div className="flex flex-row items-center justify-between rounded-lg border p-4 space-x-4">
+      <div
+        className={cn(
+          'flex flex-row items-center justify-between rounded-lg border p-4 space-x-4',
+          logFilesDirError ? 'border-red-500' : 'border-green-500'
+        )}
+      >
         <div>{statusIcon(logFilesDirError)}</div>
         <div className="space-y-0.5">
           <div className="text-base">ログファイルの場所</div>
@@ -39,7 +41,12 @@ export function OnBordingSetting() {
           </Link>
         </div>
       </div>
-      <div className="flex flex-row items-center justify-between rounded-lg border p-4 space-x-4">
+      <div
+        className={cn(
+          'flex flex-row items-center justify-between rounded-lg border p-4 space-x-4',
+          vrchatPhotoDirError ? 'border-red-500' : 'border-green-500'
+        )}
+      >
         <div>{statusIcon(vrchatPhotoDirError)}</div>
         <div className="space-y-0.5">
           <div className="text-base">写真ファイルの場所</div>

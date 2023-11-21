@@ -8,30 +8,35 @@ type ProgressCircleProps = Omit<React.ComponentPropsWithoutRef<typeof ProgressPr
   size: 'small' | 'medium' | 'large';
 };
 
-const getVariables = (size: 'small' | 'medium' | 'large'): { radius: number; textSize: string } => {
+const getVariables = (
+  size: 'small' | 'medium' | 'large'
+): { radius: number; textSize: string; strokeWidth: number } => {
   let radius: number;
   let textSize: string;
+  let strokeWidth: number;
   switch (size) {
     case 'small':
       radius = 20;
       textSize = 'text-sm'; // 小さいテキストサイズ
+      strokeWidth = 4;
       break;
     case 'medium':
       radius = 30;
       textSize = 'text-md'; // 中くらいのテキストサイズ
+      strokeWidth = 6;
       break;
     case 'large':
     default:
       radius = 40;
       textSize = 'text-lg'; // 大きいテキストサイズ
+      strokeWidth = 8;
   }
-  return { radius, textSize };
+  return { radius, textSize, strokeWidth };
 };
 
 const ProgressCircle = forwardRef<HTMLDivElement, ProgressCircleProps>(({ className, value, size, ...props }, ref) => {
-  const { radius, textSize } = getVariables(size);
+  const { radius, textSize, strokeWidth } = getVariables(size);
 
-  const strokeWidth = 8;
   const circumference = 2 * Math.PI * radius;
   const center = radius + strokeWidth / 2;
   const svgSize = radius * 2 + strokeWidth;
@@ -67,7 +72,7 @@ const ProgressCircle = forwardRef<HTMLDivElement, ProgressCircleProps>(({ classN
         <text
           x={center}
           y={center}
-          className={cn(textSize, 'text-xl')}
+          className={textSize}
           textAnchor="middle"
           dominantBaseline="central"
           fill="currentColor"
