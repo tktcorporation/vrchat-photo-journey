@@ -54,7 +54,7 @@ function CreateJoinInfo() {
 
   return (
     <div className=" flex flex-col justify-center items-center h-full space-y-8">
-      <ProgressCircle value={progressToReady} />
+      <ProgressCircle value={progressToReady} size="large" />
       {/* progressToReady が 100 だったら */}
       {progressToReady === 100 ? (
         <div className="text-2xl text-gray-900">

@@ -5,23 +5,43 @@ import { cn } from '@/lib/utils';
 type ProgressCircleProps = Omit<React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root>, 'value'> & {
   value: number;
   className?: string;
+  size: 'small' | 'medium' | 'large';
 };
 
-const ProgressCircle = forwardRef<HTMLDivElement, ProgressCircleProps>(({ className, value, ...props }, ref) => {
-  const radius = 40; // 円の半径 updated to 40
-  const strokeWidth = 8; // 線の太さ updated to 8
+const getVariables = (size: 'small' | 'medium' | 'large'): { radius: number; textSize: string } => {
+  let radius: number;
+  let textSize: string;
+  switch (size) {
+    case 'small':
+      radius = 20;
+      textSize = 'text-sm'; // 小さいテキストサイズ
+      break;
+    case 'medium':
+      radius = 30;
+      textSize = 'text-md'; // 中くらいのテキストサイズ
+      break;
+    case 'large':
+    default:
+      radius = 40;
+      textSize = 'text-lg'; // 大きいテキストサイズ
+  }
+  return { radius, textSize };
+};
+
+const ProgressCircle = forwardRef<HTMLDivElement, ProgressCircleProps>(({ className, value, size, ...props }, ref) => {
+  const { radius, textSize } = getVariables(size);
+
+  const strokeWidth = 8;
   const circumference = 2 * Math.PI * radius;
-  const center = radius + strokeWidth / 2; // SVG padding と線の太さを考慮した中心の座標
-  const svgSize = radius * 2 + strokeWidth; // SVG全体のサイズ
+  const center = radius + strokeWidth / 2;
+  const svgSize = radius * 2 + strokeWidth;
 
   const color = value < 100 ? 'text-red-500' : 'text-green-500';
+  const svgClassName = `w-${size} h-${size}`;
 
   return (
     <ProgressPrimitive.Root ref={ref} value={value} max={100} className={cn(color, className)} {...props}>
-      <svg
-        className="w-24 h-24" // SVGのサイズを調整してください
-        viewBox={`0 0 ${svgSize} ${svgSize}`} // viewBoxを調整
-      >
+      <svg className={svgClassName} viewBox={`0 0 ${svgSize} ${svgSize}`}>
         <circle
           className="text-gray-300"
           strokeWidth={strokeWidth}
@@ -47,9 +67,9 @@ const ProgressCircle = forwardRef<HTMLDivElement, ProgressCircleProps>(({ classN
         <text
           x={center}
           y={center}
-          className="text-xl"
-          textAnchor="middle" // 水平中央揃え
-          dominantBaseline="central" // 垂直中央揃え（"middle" ではなく "central" を使用）
+          className={cn(textSize, 'text-xl')}
+          textAnchor="middle"
+          dominantBaseline="central"
           fill="currentColor"
         >
           {`${value.toFixed(0)}%`}

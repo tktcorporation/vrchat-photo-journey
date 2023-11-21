@@ -2,7 +2,7 @@ import React from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import { ipcLink } from 'electron-trpc/renderer';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import Onboarding from '@/page/Onboarding';
+import Onboarding from '@/page/onboarding/Onboarding';
 import AppBar from './components/AppBar';
 import Setting from './page/Setting';
 import CreateJoinInfo from './page/CreateJoinInfo';
