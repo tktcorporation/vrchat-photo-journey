@@ -38,11 +38,41 @@ const convertLogLinesToWorldJoinLogInfosByVRChatLogDir = (
   );
 };
 
-const createFiles = (
-  vrchatPhotoDir: string,
-  worldJoinLogInfoList: vrchatLogService.WorldJoinLogInfo[],
-) => {
-  return infoFileService.createFiles(vrchatPhotoDir, worldJoinLogInfoList);
+const getConfigAndValidateAndGetToCreateInfoFileMap = async (): Promise<
+  neverthrow.Result<
+    {
+      info: vrchatLogService.WorldJoinLogInfo;
+      yearMonthPath: string;
+      fileName: string;
+      content: Buffer;
+    }[],
+    string
+  >
+> => {
+  const logFilesDir = getVRChatLogFilesDir();
+  if (logFilesDir.error !== null) {
+    return neverthrow.err(`${logFilesDir.error}`);
+  }
+  const convertWorldJoinLogInfoListResult =
+    convertLogLinesToWorldJoinLogInfosByVRChatLogDir(logFilesDir.path);
+  if (convertWorldJoinLogInfoListResult.isErr()) {
+    return neverthrow.err(`${convertWorldJoinLogInfoListResult.error.code}`);
+  }
+  const worldJoinLogInfoList = convertWorldJoinLogInfoListResult.value;
+
+  // create files
+  const vrchatPhotoDir = getVRChatPhotoDir();
+  if (vrchatPhotoDir.error !== null) {
+    return neverthrow.err(vrchatPhotoDir.error);
+  }
+
+  const result = await infoFileService.getToCreateMap(
+    vrchatPhotoDir.path,
+    worldJoinLogInfoList,
+  );
+  return result.mapErr((error) => {
+    return `${error}`;
+  });
 };
 
 const getConfigAndValidateAndCreateFiles = async (): Promise<
@@ -65,7 +95,7 @@ const getConfigAndValidateAndCreateFiles = async (): Promise<
     return neverthrow.err(vrchatPhotoDir.error);
   }
 
-  const result = await createFiles(
+  const result = await infoFileService.createFiles(
     vrchatPhotoDir.path,
     convertWorldJoinLogInfoList,
   );
@@ -226,6 +256,7 @@ export {
   setVRChatLogFilesDirByDialog,
   setVRChatPhotoDirByDialog,
   getConfigAndValidateAndCreateFiles,
+  getConfigAndValidateAndGetToCreateInfoFileMap,
   getVRChatLogFilesDir,
   getVRChatPhotoDir,
   clearAllStoredSettings,

@@ -67,6 +67,25 @@ export const router = t.router({
       },
     );
   }),
+  getToCreateInfoFileMap: procedure.query(async () => {
+    const result =
+      await service.getConfigAndValidateAndGetToCreateInfoFileMap();
+    return result.match(
+      (r) => {
+        return r.map((obj) => ({
+          ...obj,
+          // src に直接入れられるように buffer を base64 に変換
+          content: `data:image/${path
+            .extname(obj.fileName)
+            .replace(".", "")};base64,${obj.content.toString("base64")}`,
+        }));
+      },
+      (error) => {
+        ee.emit("toast", error);
+        return [];
+      },
+    );
+  }),
   clearAllStoredSettings: procedure.mutation(async () => {
     service.clearAllStoredSettings();
     ee.emit("toast", "設定をすべて削除しました");

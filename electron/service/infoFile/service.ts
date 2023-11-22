@@ -1,58 +1,26 @@
 import path from "path";
-// import nodeHtmlToImage from 'node-html-to-image';
 import * as neverthrow from "neverthrow";
 import * as fs from "../../lib/wrappedFs";
 
 import * as vrchatLogService from "../vrchatLog/vrchatLog";
 import { createOGPImage } from "./createWorldNameImage";
 
-// const getHtmlContent = (info: vrchatLogService.WorldJoinLogInfo): string => {
-//   return `<!DOCTYPE html>
-//   <html lang="en">
-//   <head>
-//     <meta charset="UTF-8">
-//     <meta http-equiv="refresh" content="0;URL=https://vrchat.com/home/world/${info.worldId}" />
-//     <title>Redirecting...</title>
-//     <style>
-//       body {
-//         margin: 0;
-//         padding: 0;
-//         display: flex;
-//         justify-content: center;
-//         align-items: center;      background-color: #e0f7fa; /* Light blue background */
-//         color: #37474f; /* Dark grey text */
-//       }
-//       a {
-//         text-decoration: none;
-//         color: #37474f; /* Dark grey text */
-//         font-size: 48px; /* Larger text size */
-//       }
-//       p {
-//         margin: 0;
-//       }
-//     </style>
-//   </head>
-//   <body>
-//     <p><a href="https://vrchat.com/home/world/${info.worldId}">${info.worldName}</a></p>
-//   </body>
-//   </html>`;
-// };
-
-const CreateFilesError = [
-  "FAILED_TO_CREATE_YEAR_MONTH_DIR",
-  "FAILED_TO_CREATE_FILE",
-  "FAILED_TO_CHECK_YEAR_MONTH_DIR_EXISTS",
-] as const;
-const createFiles = async (
+const getToCreateMap = async (
   vrchatPhotoDir: string,
   worldJoinLogInfoList: vrchatLogService.WorldJoinLogInfo[],
 ): Promise<
   neverthrow.Result<
-    void,
-    { error: Error; type: typeof CreateFilesError[number] }
+    {
+      info: vrchatLogService.WorldJoinLogInfo;
+      yearMonthPath: string;
+      fileName: string;
+      content: Buffer;
+    }[],
+    Error
   >
 > => {
   const toCreateMap: {
+    info: vrchatLogService.WorldJoinLogInfo;
     yearMonthPath: string;
     fileName: string;
     content: Buffer;
@@ -65,7 +33,6 @@ const createFiles = async (
       const fileName = `${vrchatLogService.convertWorldJoinLogInfoToOneLine(
         info,
       )}.png`;
-      // const contentImage = await nodeHtmlToImage({ html: getHtmlContent(info) });
       const contentImage = await createOGPImage({
         worldName: info.worldName,
         date: {
@@ -85,9 +52,38 @@ const createFiles = async (
           description: info.worldId,
         },
       });
-      return { yearMonthPath, fileName, content: contentImage };
+      return { info, yearMonthPath, fileName, content: contentImage };
     }),
   );
+  return neverthrow.ok(toCreateMap);
+};
+
+const CreateFilesError = [
+  "FAILED_TO_CREATE_YEAR_MONTH_DIR",
+  "FAILED_TO_CREATE_FILE",
+  "FAILED_TO_CHECK_YEAR_MONTH_DIR_EXISTS",
+  "FAILED_TO_GET_TO_CREATE_MAP",
+] as const;
+const createFiles = async (
+  vrchatPhotoDir: string,
+  worldJoinLogInfoList: vrchatLogService.WorldJoinLogInfo[],
+): Promise<
+  neverthrow.Result<
+    void,
+    { error: Error; type: typeof CreateFilesError[number] }
+  >
+> => {
+  const toCreateMapResult = await getToCreateMap(
+    vrchatPhotoDir,
+    worldJoinLogInfoList,
+  );
+  if (toCreateMapResult.isErr()) {
+    return neverthrow.err({
+      error: toCreateMapResult.error,
+      type: "FAILED_TO_GET_TO_CREATE_MAP",
+    });
+  }
+  const toCreateMap = toCreateMapResult.value;
 
   // ディレクトリを作成(なければ)
   // yearMonthPath が重複している場合は一つにまとめる
@@ -129,4 +125,4 @@ const createFiles = async (
   return neverthrow.ok(undefined);
 };
 
-export { createFiles };
+export { createFiles, getToCreateMap };

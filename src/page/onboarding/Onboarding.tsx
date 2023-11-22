@@ -1,9 +1,9 @@
-import CreateJoinInfoComponent from "@/components/CreateJoinInfo";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ROUTER_PATHS } from "@/constants";
 import React from "react";
 import { Link } from "react-router-dom";
+import { OnBordingPreview } from "./Preview";
 import { OnBordingSetting } from "./setting";
 
 function Onboarding() {
@@ -43,7 +43,7 @@ function Onboarding() {
             <OnBordingSetting />
           </TabsContent>
           <TabsContent value="3">
-            <CreateJoinInfoComponent />
+            <OnBordingPreview />
           </TabsContent>
           <TabsContent value="4">
             <p>バックグラウンドで写真の撮影場所を常に記録する</p>
