@@ -1,6 +1,7 @@
 import * as neverthrow from 'neverthrow';
 
 import path from 'path';
+import * as datefns from 'date-fns';
 import * as infoFileService from './service/infoFile/service';
 import {
   JoinInfoFileNameSchema,
@@ -108,6 +109,125 @@ const getConfigAndValidateAndCreateFiles = async (): Promise<
     });
 };
 
+/**
+ * どの写真がどこで撮られたのかのデータを返す
+ */
+const getWorldJoinInfoWithPhotoPath = async (): Promise<
+  neverthrow.Result<
+    {
+      world: {
+        worldId: string;
+        worldName: string;
+        joinDatetime: Date;
+      };
+      tookPhotoList: {
+        path: string;
+        tookDatetime: Date;
+      }[];
+    }[],
+    string
+  >
+> => {
+  const err = (error: string) => {
+    return neverthrow.err(`getWorldJoinInfoWithPhotoPath: ${error}`);
+  };
+
+  const logFilesDir = getVRChatLogFilesDir();
+  if (logFilesDir.error !== null) {
+    return err(`${logFilesDir.error}`);
+  }
+  const convertWorldJoinLogInfoListResult =
+    convertLogLinesToWorldJoinLogInfosByVRChatLogDir(logFilesDir.path);
+  if (convertWorldJoinLogInfoListResult.isErr()) {
+    return err(`${convertWorldJoinLogInfoListResult.error.code}`);
+  }
+  const convertWorldJoinLogInfoList = convertWorldJoinLogInfoListResult.value;
+
+  const worldJoinInfoList = convertWorldJoinLogInfoList.map((info) => {
+    return {
+      worldId: info.worldId,
+      worldName: info.worldName,
+      joinDatetime: datefns.parse(
+        `${info.year}-${info.month}-${info.day} ${info.hour}:${info.minute}:${info.second}`,
+        'yyyy-MM-dd HH:mm:ss',
+        new Date(),
+      ),
+    };
+  });
+  // sort by date asc
+  const sortedWorldJoinInfoList = worldJoinInfoList.sort((a, b) => {
+    return datefns.compareAsc(a.joinDatetime, b.joinDatetime);
+  });
+
+  // log上で一番最初のJoin日時を取得
+  const firstJoinDate = sortedWorldJoinInfoList[0].joinDatetime;
+
+  // 今月までのyear-monthディレクトリを取得
+  // firstJoinDate が 2022-12 で 現在が 2023-03 だった場合、
+  // 2022-12, 2023-01, 2023-02, 2023-03 のディレクトリを取得する
+  const eachMonth = datefns.eachMonthOfInterval({
+    start: firstJoinDate,
+    end: new Date(),
+  });
+
+  // 一番最初のJoin日時以降の写真を取得
+  const vrchatPhotoDir = getVRChatPhotoDir();
+  if (vrchatPhotoDir.error !== null) {
+    return err(vrchatPhotoDir.error);
+  }
+
+  // 月ごとに写真を取得
+  let photoPathList: {
+    path: string;
+    tookDatetime: Date;
+  }[] = [];
+  for (const d of eachMonth) {
+    const monthString = datefns.format(d, 'yyyy-MM');
+    const photoPathListResult =
+      vrchatPhotoService.getVRChatPhotoOnlyItemPathListByYearMonth(
+        monthString.split('-')[0],
+        monthString.split('-')[1],
+      );
+    if (photoPathListResult.isErr()) {
+      return err(photoPathListResult.error);
+    }
+    photoPathList = photoPathListResult.value.map((photo) => {
+      return {
+        path: photo.path,
+        tookDatetime: datefns.parse(
+          `${photo.info.date.year}-${photo.info.date.month}-${photo.info.date.day} ${photo.info.time.hour}:${photo.info.time.minute}:${photo.info.time.second}`,
+          'yyyy-MM-dd HH:mm:ss',
+          new Date(),
+        ),
+      };
+    });
+  }
+
+  // ワールドのJoin情報と写真の情報を結合
+  const result = sortedWorldJoinInfoList.map((world, index) => {
+    const nextWorldJoinDate =
+      index < sortedWorldJoinInfoList.length - 1
+        ? datefns.subSeconds(
+            new Date(sortedWorldJoinInfoList[index + 1].joinDatetime),
+            1,
+          )
+        : new Date();
+
+    const tookPhotoList = photoPathList.filter(
+      (photo) =>
+        datefns.isAfter(photo.tookDatetime, world.joinDatetime) &&
+        datefns.isBefore(photo.tookDatetime, nextWorldJoinDate),
+    );
+
+    return {
+      world,
+      tookPhotoList,
+    };
+  });
+
+  return neverthrow.ok(result);
+};
+
 const clearAllStoredSettings = () => {
   settingStore.clearAllStoredSettings();
 };
@@ -180,7 +300,10 @@ const getVRChatPhotoWithWorldIdAndDate = ({
   )[],
   'YEAR_MONTH_DIR_ENOENT' | 'PHOTO_DIR_READ_ERROR'
 > => {
-  const result = vrchatPhotoService.getVRChatPhotoItemPathList(year, month);
+  const result = vrchatPhotoService.getVRChatPhotoItemPathListByYearMonth(
+    year,
+    month,
+  );
   if (result.isErr()) {
     return neverthrow.err(result.error);
   }
@@ -235,7 +358,10 @@ const getVRChatPhotoItemDataListByYearMonth = (
   { path: string; data: Buffer }[],
   Error | 'YEAR_MONTH_DIR_ENOENT' | 'PHOTO_DIR_READ_ERROR'
 > => {
-  const result = vrchatPhotoService.getVRChatPhotoItemPathList(year, month);
+  const result = vrchatPhotoService.getVRChatPhotoItemPathListByYearMonth(
+    year,
+    month,
+  );
   if (result.isErr()) {
     return neverthrow.err(result.error);
   }
@@ -257,6 +383,7 @@ export {
   setVRChatPhotoDirByDialog,
   getConfigAndValidateAndCreateFiles,
   getConfigAndValidateAndGetToCreateInfoFileMap,
+  getWorldJoinInfoWithPhotoPath,
   getVRChatLogFilesDir,
   getVRChatPhotoDir,
   clearAllStoredSettings,

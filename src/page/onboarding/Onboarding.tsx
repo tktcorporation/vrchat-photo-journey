@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ROUTER_PATHS } from '@/constants';
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { JoinInfoPreview } from './JoinInfoPreview';
 import { OnBordingPreview } from './Preview';
 import { OnBordingSetting } from './setting';
 
@@ -45,13 +46,18 @@ function Onboarding() {
           <TabsContent value="3" className="overflow-auto">
             <OnBordingPreview />
           </TabsContent>
-          <TabsContent value="4">
+          <TabsContent value="4" className="overflow-auto">
+            <JoinInfoPreview />
+          </TabsContent>
+          <TabsContent value="5">
             <p>バックグラウンドで写真の撮影場所を常に記録する</p>
             <Link to={ROUTER_PATHS.PHOTO_LIST} />
           </TabsContent>
         </div>
         <Button
-          onClick={() => setTabValue(`${Number(tabValue) + 1}`)}
+          onClick={() =>
+            setTabValue((prevTabValue) => String(Number(prevTabValue) + 1))
+          }
           className="flex-none shrink-0"
         >
           次へ

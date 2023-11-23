@@ -11,9 +11,27 @@ const photoFileNameWithExtRegex =
   /^VRChat_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}.\d{3}_\d{3,4}x\d{3,4}\.\w+$/;
 const PhotoFileNameWithExtSchema = z.string().regex(photoFileNameWithExtRegex);
 type PhotoFileNameWithExt = z.infer<typeof PhotoFileNameWithExtSchema>;
+interface ParsedPhotoFileName {
+  date: {
+    year: string;
+    month: string;
+    day: string;
+  };
+  time: {
+    hour: string;
+    minute: string;
+    second: string;
+    millisecond: string;
+  };
+  resolution: {
+    width: string;
+    height: string;
+  };
+  ext: string | null;
+}
 const parsePhotoFileName = (
   photoFileName: PhotoFileName | PhotoFileNameWithExt,
-) => {
+): neverthrow.Result<ParsedPhotoFileName, string> => {
   const matches = photoFileName.match(
     /^VRChat_(\d{4}-\d{2}-\d{2})_(\d{2}-\d{2}-\d{2}).(\d{3})_(\d{3,4})x(\d{3,4})(?:\.(\w+))?$/,
   );
@@ -55,7 +73,8 @@ const isWorldId = (str: string): str is WorldId => {
 };
 
 // const isJoinInfoFileName = (str: string): str is JoinInfoFileName => {
-//   return /^VRChat_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}.\d{3}_wrld_\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$/.test(str);
+//   return /^VRChat_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}.\d{3}
+// _wrld_\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$/.test(str);
 // };
 const JoinInfoFileNameSchema = z
   .string()
@@ -125,4 +144,10 @@ export {
   parseJoinInfoFileName,
 };
 
-export type { PhotoFileName, PhotoFileNameWithExt, WorldId, JoinInfoFileName };
+export type {
+  PhotoFileName,
+  PhotoFileNameWithExt,
+  ParsedPhotoFileName,
+  WorldId,
+  JoinInfoFileName,
+};

@@ -5,6 +5,7 @@ import sharp from 'sharp';
 import { match } from 'ts-pattern';
 import * as fs from '../../lib/wrappedFs';
 import * as settingStore from '../../settingStore';
+import * as t from '../type';
 
 const getDefaultVRChatPhotoDir = (): string => {
   const logFilesDir =
@@ -86,9 +87,9 @@ const getVRChatPhotoFolderYearMonthList = (): neverthrow.Result<
 };
 
 /**
- * 写真もそれ以外も含む
+ * VRChatの写真もそれ以外も含む
  */
-const getVRChatPhotoItemPathList = (
+const getVRChatPhotoItemPathListByYearMonth = (
   year: string,
   month: string,
 ): neverthrow.Result<
@@ -123,6 +124,44 @@ const getVRChatPhotoItemPathList = (
   return neverthrow.ok(photoItemPathList);
 };
 
+/**
+ * VRChatの写真pathのみを返す
+ */
+const getVRChatPhotoOnlyItemPathListByYearMonth = (
+  year: string,
+  month: string,
+): neverthrow.Result<
+  { path: string; info: t.ParsedPhotoFileName }[],
+  'YEAR_MONTH_DIR_ENOENT' | 'PHOTO_DIR_READ_ERROR'
+> => {
+  const itemListResult = getVRChatPhotoItemPathListByYearMonth(year, month);
+  if (itemListResult.isErr()) {
+    return neverthrow.err(itemListResult.error);
+  }
+  const photoItemPathList = itemListResult.value.map((itemPath) => {
+    const itemExt = path.extname(itemPath);
+    const fileName = path.basename(itemPath, itemExt);
+    const photoFileNameParseResult = t.parsePhotoFileName(fileName);
+    if (photoFileNameParseResult.isErr()) {
+      return null;
+    }
+    const { date, time, resolution, ext } = photoFileNameParseResult.value;
+    return {
+      path: itemPath,
+      info: {
+        date,
+        time,
+        resolution,
+        ext,
+      },
+    };
+  });
+  const photoItemPathListExcludeNull = photoItemPathList.filter(
+    (photoItemPath) => photoItemPath !== null,
+  ) as Exclude<typeof photoItemPathList[number], null>[];
+  return neverthrow.ok(photoItemPathListExcludeNull);
+};
+
 const getVRChatPhotoItemDataList = (
   pathList: string[],
 ): neverthrow.Result<{ path: string; data: Buffer }[], Error> => {
@@ -155,7 +194,8 @@ const getVRChatPhotoItemData = async (
 
 export {
   getVRChatPhotoDir,
-  getVRChatPhotoItemPathList,
+  getVRChatPhotoItemPathListByYearMonth,
+  getVRChatPhotoOnlyItemPathListByYearMonth,
   getVRChatPhotoItemDataList,
   getVRChatPhotoFolderYearMonthList,
   getVRChatPhotoItemData,

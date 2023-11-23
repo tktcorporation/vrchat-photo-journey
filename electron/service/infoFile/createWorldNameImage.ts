@@ -72,16 +72,18 @@ const createOGPImage = async ({ worldName, date, exif }: Props) => {
   </svg>`;
 
   // sharp: SVG画像をJPEG画像に変換
-  return sharp(Buffer.from(svg))
-    .jpeg()
-    // exif に撮影日のデータを記録
-    .withMetadata({
-      exif: {
-        DateTimeOriginal: exif.dateTimeOriginal,
-        ImageDescription: exif.description,
-      },
-    })
-    .toBuffer();
+  return (
+    sharp(Buffer.from(svg))
+      .jpeg()
+      // exif に撮影日のデータを記録
+      .withMetadata({
+        exif: {
+          DateTimeOriginal: exif.dateTimeOriginal,
+          ImageDescription: exif.description,
+        },
+      })
+      .toBuffer()
+  );
 };
 
 export { createOGPImage };

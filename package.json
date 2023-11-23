@@ -47,6 +47,7 @@
     "@vitejs/plugin-react": "^4.1.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
+    "date-fns": "^2.30.0",
     "electron-is-dev": "^2.0.0",
     "electron-log": "^5.0.0",
     "electron-store": "^8.1.0",
