@@ -6,11 +6,11 @@ import React from 'react';
 
 type Props = React.HTMLAttributes<HTMLDivElement>;
 
-export function OnBordingPreview(props: Props) {
+export function OnBordingPreview({ className }: Props) {
   const infoMap = trpcReact.getToCreateInfoFileMap.useQuery().data;
 
   return (
-    <div className={cn('space-y-4', props.className)}>
+    <div className={cn('space-y-4', className)}>
       osyasinn
       <div className="col-span-4">
         <ScrollArea>
