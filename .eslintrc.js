@@ -19,6 +19,13 @@ module.exports = {
   },
   plugins: ['react', '@typescript-eslint'],
   rules: {
+    // override for biome
+    'operator-linebreak': 'off',
+    'arrow-body-style': 'off',
+    indent: 'off',
+    'object-curly-newline': 'off',
+    'implicit-arrow-linebreak': 'off',
+    'function-paren-newline': 'off',
     // Typescript
     'no-use-before-define': 'off',
     'import/prefer-default-export': 'off',
