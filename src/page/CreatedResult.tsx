@@ -1,6 +1,6 @@
-import { Button } from "@/components/ui/button";
-import React from "react";
-import { trpcReact } from "../trpc";
+import { Button } from '@/components/ui/button';
+import React from 'react';
+import { trpcReact } from '../trpc';
 
 function CreatedResult() {
   const vrchatPhotoDir = trpcReact.getVRChatPhotoDir.useQuery().data?.path;

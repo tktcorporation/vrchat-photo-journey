@@ -1,5 +1,5 @@
-import * as fs from "fs";
-import { Result, err, ok } from "neverthrow";
+import * as fs from 'fs';
+import { Result, err, ok } from 'neverthrow';
 
 export const readFileSyncSafe = (
   filePath: string,
@@ -16,11 +16,11 @@ export const readFileSyncSafe = (
   }
 };
 
-export type FSError = "ENOENT";
+export type FSError = 'ENOENT';
 const toFSError = (error: Error & { code?: string }): FSError => {
   switch (error.code) {
-    case "ENOENT":
-      return "ENOENT";
+    case 'ENOENT':
+      return 'ENOENT';
     default:
       throw error;
   }

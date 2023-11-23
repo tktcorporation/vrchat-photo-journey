@@ -1,20 +1,20 @@
-import { Button } from "@/components/ui/button";
-import { trpcReact } from "@/trpc";
-import { FolderOpen } from "lucide-react";
-import React from "react";
-import { useNavigate } from "react-router-dom";
-import { match } from "ts-pattern";
-import { sourceBadge } from "./components";
+import { Button } from '@/components/ui/button';
+import { trpcReact } from '@/trpc';
+import { FolderOpen } from 'lucide-react';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { match } from 'ts-pattern';
+import { sourceBadge } from './components';
 
 function Setting() {
   const { data: photoFilesDir, refetch } =
     trpcReact.getVRChatPhotoDir.useQuery();
   const errorMessage = match(photoFilesDir?.error)
     .with(
-      "photoYearMonthDirsNotFound",
-      () => "2099-01 のようなフォルダがある場所を指定してください",
+      'photoYearMonthDirsNotFound',
+      () => '2099-01 のようなフォルダがある場所を指定してください',
     )
-    .with("photoDirReadError", () => "フォルダの読み取りに失敗しました")
+    .with('photoDirReadError', () => 'フォルダの読み取りに失敗しました')
     .with(undefined, () => undefined)
     .with(null, () => undefined)
     .exhaustive();
@@ -58,7 +58,7 @@ function Setting() {
         <Button
           variant="secondary"
           onClick={() => {
-            deleteStoredPathMutation.mutateAsync("vrchatPhotoDir").then(() => {
+            deleteStoredPathMutation.mutateAsync('vrchatPhotoDir').then(() => {
               refetch();
             });
           }}

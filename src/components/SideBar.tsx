@@ -1,7 +1,7 @@
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { FolderIcon } from "lucide-react";
-import React, { useState } from "react";
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { FolderIcon } from 'lucide-react';
+import React, { useState } from 'react';
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   clickCallback: (key: string) => void;
@@ -18,7 +18,7 @@ function Sidebar({
   itemList,
   defaultKey,
 }: SidebarProps) {
-  const [selectedItem, setSelectedItem] = useState<string>("");
+  const [selectedItem, setSelectedItem] = useState<string>('');
 
   const handleItemClick = (key: string) => {
     setSelectedItem(key);
@@ -33,7 +33,7 @@ function Sidebar({
   }, [defaultKey]);
 
   return (
-    <div className={cn("pb-12", className)}>
+    <div className={cn('pb-12', className)}>
       <div className="space-y-6">
         <div className="px-3 py-2">
           <div className="space-y-1">
@@ -42,14 +42,14 @@ function Sidebar({
                 key={item.key}
                 variant="ghost"
                 className={cn(
-                  "w-full justify-start",
+                  'w-full justify-start',
                   item.key === selectedItem
-                    ? "bg-accent text-accent-foreground"
-                    : "",
+                    ? 'bg-accent text-accent-foreground'
+                    : '',
                 )}
                 onClick={() => handleItemClick(item.key)}
               >
-                <FolderIcon className="inline-block" />{" "}
+                <FolderIcon className="inline-block" />{' '}
                 <span className="ml-2">{item.label}</span>
               </Button>
             ))}

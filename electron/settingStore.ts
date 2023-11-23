@@ -1,14 +1,14 @@
-import Store from "electron-store";
-import * as neverthrow from "neverthrow";
+import Store from 'electron-store';
+import * as neverthrow from 'neverthrow';
 
-const settingsStore = new Store({ name: "v0-settings" });
+const settingsStore = new Store({ name: 'v0-settings' });
 
-const settingStoreKey = ["logFilesDir", "vrchatPhotoDir"] as const;
+const settingStoreKey = ['logFilesDir', 'vrchatPhotoDir'] as const;
 export type SettingStoreKey = typeof settingStoreKey[number];
 
 const get = (key: SettingStoreKey): string | null => {
   const value = settingsStore.get(key);
-  if (typeof value !== "string") {
+  if (typeof value !== 'string') {
     return null;
   }
   return value;
@@ -19,17 +19,17 @@ const set = (key: SettingStoreKey, value: string) => {
 };
 
 const getLogFilesDir = (): string | null => {
-  return get("logFilesDir");
+  return get('logFilesDir');
 };
 const setLogFilesDir = (dirPath: string) => {
-  set("logFilesDir", dirPath);
+  set('logFilesDir', dirPath);
 };
 
 const getVRChatPhotoDir = (): string | null => {
-  return get("vrchatPhotoDir");
+  return get('vrchatPhotoDir');
 };
 const setVRChatPhotoDir = (dirPath: string) => {
-  set("vrchatPhotoDir", dirPath);
+  set('vrchatPhotoDir', dirPath);
 };
 
 /**

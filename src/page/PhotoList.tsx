@@ -1,13 +1,13 @@
-import { trpcReact } from "@/trpc";
-import type { inferProcedureOutput } from "@trpc/server";
-import React, { useEffect } from "react";
+import { trpcReact } from '@/trpc';
+import type { inferProcedureOutput } from '@trpc/server';
+import React, { useEffect } from 'react';
 
-import Sidebar from "@/components/SideBar";
-import Photo from "@/components/ui/Photo";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { AppRouter } from "electron/api";
-import { RefreshCw } from "lucide-react";
+import Sidebar from '@/components/SideBar';
+import Photo from '@/components/ui/Photo';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { AppRouter } from 'electron/api';
+import { RefreshCw } from 'lucide-react';
 
 type YearMonth = {
   year: string;
@@ -25,12 +25,12 @@ function PhotoList() {
   const firstYearMonth = React.useMemo(
     () => sortedYearMonthList?.[0],
     [sortedYearMonthList],
-  ) ?? { year: "", month: "" };
+  ) ?? { year: '', month: '' };
   const [selectedFolderYearMonth, setSelectedFolderYearMonth] =
     React.useState<YearMonth>(firstYearMonth);
   const [photoItemList, setPhotoItemList] =
     React.useState<
-      inferProcedureOutput<AppRouter["getVRChatPhotoWithWorldIdAndDate"]>
+      inferProcedureOutput<AppRouter['getVRChatPhotoWithWorldIdAndDate']>
     >();
   const sortedPhotoItemList = photoItemList?.sort((a, b) => {
     if (!a || !b) return 0;
@@ -58,7 +58,7 @@ function PhotoList() {
     React.useState<
       ReturnType<
         typeof trpcReact.getVRChatPhotoWithWorldIdAndDate.useQuery
-      >["refetch"]
+      >['refetch']
     >();
 
   // useEffectを使用して、yearMonthListが更新されたらselectedFolderYearMonthを更新します。
@@ -91,7 +91,7 @@ function PhotoList() {
   ]);
 
   const handleSideBarClick = (key: string) => {
-    const [year, month] = key.split("-");
+    const [year, month] = key.split('-');
     setSelectedFolderYearMonth({
       year,
       month,
@@ -156,7 +156,7 @@ function PhotoList() {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-4">
               {sortedPhotoItemList?.map((item) => {
                 const content =
-                  item.type === "PHOTO" ? (
+                  item.type === 'PHOTO' ? (
                     <Photo photoPath={item.path} />
                   ) : (
                     <Photo photoPath={item.path} />

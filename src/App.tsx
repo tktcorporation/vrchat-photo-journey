@@ -1,21 +1,21 @@
-import Onboarding from "@/page/onboarding/Onboarding";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ipcLink } from "electron-trpc/renderer";
-import React from "react";
-import { HashRouter, Route, Routes } from "react-router-dom";
-import Template from "./Template";
-import AppBar from "./components/AppBar";
-import ClearSettings from "./page/ClearSettings";
-import CreateJoinInfo from "./page/CreateJoinInfo";
-import PhotoList from "./page/PhotoList";
-import Setting from "./page/Setting";
+import Onboarding from '@/page/onboarding/Onboarding';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ipcLink } from 'electron-trpc/renderer';
+import React from 'react';
+import { HashRouter, Route, Routes } from 'react-router-dom';
+import Template from './Template';
+import AppBar from './components/AppBar';
+import ClearSettings from './page/ClearSettings';
+import CreateJoinInfo from './page/CreateJoinInfo';
+import PhotoList from './page/PhotoList';
+import Setting from './page/Setting';
 
-import DefaultLayout from "./components/DefaultLayout";
-import { ROUTER_PATHS } from "./constants";
-import CreatedResult from "./page/CreatedResult";
-import VRChatLogPathSetting from "./page/setting/VRChatLogPathSetting";
-import VRChatPhotoPathSetting from "./page/setting/VRChatPhotoPathSetting";
-import { trpcReact } from "./trpc";
+import DefaultLayout from './components/DefaultLayout';
+import { ROUTER_PATHS } from './constants';
+import CreatedResult from './page/CreatedResult';
+import VRChatLogPathSetting from './page/setting/VRChatLogPathSetting';
+import VRChatPhotoPathSetting from './page/setting/VRChatPhotoPathSetting';
+import { trpcReact } from './trpc';
 
 const queryClient = new QueryClient();
 const trpcClient = trpcReact.createClient({

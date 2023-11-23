@@ -1,17 +1,17 @@
-import { Button } from "@/components/ui/button";
-import { trpcReact } from "@/trpc";
-import { FolderOpen } from "lucide-react";
-import React from "react";
-import { useNavigate } from "react-router-dom";
-import { match } from "ts-pattern";
-import { sourceBadge } from "./components";
+import { Button } from '@/components/ui/button';
+import { trpcReact } from '@/trpc';
+import { FolderOpen } from 'lucide-react';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { match } from 'ts-pattern';
+import { sourceBadge } from './components';
 
 function VRChatLogPathSetting() {
   const { data: logFilesDir, refetch } =
     trpcReact.getVRChatLogFilesDir.useQuery();
   const errorMessage = match(logFilesDir?.error)
-    .with("logFilesNotFound", () => "ログファイルが見つかりませんでした")
-    .with("logFileDirNotFound", () => "フォルダの読み取りに失敗しました")
+    .with('logFilesNotFound', () => 'ログファイルが見つかりませんでした')
+    .with('logFileDirNotFound', () => 'フォルダの読み取りに失敗しました')
     .with(undefined, () => undefined)
     .with(null, () => undefined)
     .exhaustive();
@@ -56,7 +56,7 @@ function VRChatLogPathSetting() {
         <Button
           variant="secondary"
           onClick={() => {
-            deleteStoredPathMutation.mutateAsync("logFilesDir").then(() => {
+            deleteStoredPathMutation.mutateAsync('logFilesDir').then(() => {
               refetch();
             });
           }}

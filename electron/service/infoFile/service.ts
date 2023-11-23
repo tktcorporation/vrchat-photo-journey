@@ -1,9 +1,9 @@
-import path from "path";
-import * as neverthrow from "neverthrow";
-import * as fs from "../../lib/wrappedFs";
+import path from 'path';
+import * as neverthrow from 'neverthrow';
+import * as fs from '../../lib/wrappedFs';
 
-import * as vrchatLogService from "../vrchatLog/vrchatLog";
-import { createOGPImage } from "./createWorldNameImage";
+import * as vrchatLogService from '../vrchatLog/vrchatLog';
+import { createOGPImage } from './createWorldNameImage';
 
 const getToCreateMap = async (
   vrchatPhotoDir: string,
@@ -59,10 +59,10 @@ const getToCreateMap = async (
 };
 
 const CreateFilesError = [
-  "FAILED_TO_CREATE_YEAR_MONTH_DIR",
-  "FAILED_TO_CREATE_FILE",
-  "FAILED_TO_CHECK_YEAR_MONTH_DIR_EXISTS",
-  "FAILED_TO_GET_TO_CREATE_MAP",
+  'FAILED_TO_CREATE_YEAR_MONTH_DIR',
+  'FAILED_TO_CREATE_FILE',
+  'FAILED_TO_CHECK_YEAR_MONTH_DIR_EXISTS',
+  'FAILED_TO_GET_TO_CREATE_MAP',
 ] as const;
 const createFiles = async (
   vrchatPhotoDir: string,
@@ -80,7 +80,7 @@ const createFiles = async (
   if (toCreateMapResult.isErr()) {
     return neverthrow.err({
       error: toCreateMapResult.error,
-      type: "FAILED_TO_GET_TO_CREATE_MAP",
+      type: 'FAILED_TO_GET_TO_CREATE_MAP',
     });
   }
   const toCreateMap = toCreateMapResult.value;
@@ -93,7 +93,7 @@ const createFiles = async (
     if (fileExistsResult.isErr()) {
       return neverthrow.err({
         error: fileExistsResult.error,
-        type: "FAILED_TO_CHECK_YEAR_MONTH_DIR_EXISTS",
+        type: 'FAILED_TO_CHECK_YEAR_MONTH_DIR_EXISTS',
       });
     }
     if (fileExistsResult.value !== true) {
@@ -102,7 +102,7 @@ const createFiles = async (
       if (result.isErr()) {
         return neverthrow.err({
           error: result.error,
-          type: "FAILED_TO_CREATE_YEAR_MONTH_DIR",
+          type: 'FAILED_TO_CREATE_YEAR_MONTH_DIR',
         });
       }
     }
@@ -117,7 +117,7 @@ const createFiles = async (
     if (result.isErr()) {
       return neverthrow.err({
         error: result.error,
-        type: "FAILED_TO_CREATE_FILE",
+        type: 'FAILED_TO_CREATE_FILE',
       });
     }
   }

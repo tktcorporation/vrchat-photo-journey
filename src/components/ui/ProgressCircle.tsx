@@ -1,36 +1,36 @@
-import { cn } from "@/lib/utils";
-import * as ProgressPrimitive from "@radix-ui/react-progress";
-import React, { forwardRef } from "react";
+import { cn } from '@/lib/utils';
+import * as ProgressPrimitive from '@radix-ui/react-progress';
+import React, { forwardRef } from 'react';
 
 type ProgressCircleProps = Omit<
   React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root>,
-  "value"
+  'value'
 > & {
   value: number;
   className?: string;
-  size: "small" | "medium" | "large";
+  size: 'small' | 'medium' | 'large';
 };
 
 const getVariables = (
-  size: "small" | "medium" | "large",
+  size: 'small' | 'medium' | 'large',
 ): { radius: number; textSize: string; strokeWidth: number } => {
   let radius: number;
   let textSize: string;
   let strokeWidth: number;
   switch (size) {
-    case "small":
+    case 'small':
       radius = 20;
-      textSize = "text-sm"; // 小さいテキストサイズ
+      textSize = 'text-sm'; // 小さいテキストサイズ
       strokeWidth = 4;
       break;
-    case "medium":
+    case 'medium':
       radius = 30;
-      textSize = "text-md"; // 中くらいのテキストサイズ
+      textSize = 'text-md'; // 中くらいのテキストサイズ
       strokeWidth = 6;
       break;
     default: // 大きいテキストサイズ
       radius = 40;
-      textSize = "text-lg";
+      textSize = 'text-lg';
       strokeWidth = 8;
   }
   return { radius, textSize, strokeWidth };
@@ -44,7 +44,7 @@ const ProgressCircle = forwardRef<HTMLDivElement, ProgressCircleProps>(
     const center = radius + strokeWidth / 2;
     const svgSize = radius * 2 + strokeWidth;
 
-    const color = value < 100 ? "text-red-500" : "text-green-500";
+    const color = value < 100 ? 'text-red-500' : 'text-green-500';
     const svgClassName = `w-${size} h-${size}`;
 
     return (
@@ -98,6 +98,6 @@ const ProgressCircle = forwardRef<HTMLDivElement, ProgressCircleProps>(
   },
 );
 
-ProgressCircle.displayName = "ProgressCircle";
+ProgressCircle.displayName = 'ProgressCircle';
 
 export default ProgressCircle;

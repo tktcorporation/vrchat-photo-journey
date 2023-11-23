@@ -1,8 +1,8 @@
-import { trpcReact } from "@/trpc";
-import { Ban, Loader } from "lucide-react";
-import React from "react";
+import { trpcReact } from '@/trpc';
+import { Ban, Loader } from 'lucide-react';
+import React from 'react';
 
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 
 export interface PhotoProps extends React.HTMLAttributes<HTMLDivElement> {
   photoPath: string;
@@ -26,7 +26,7 @@ function Photo({ photoPath, ...props }: PhotoProps) {
     <div
       {...props}
       className={cn(
-        "flex flex-col items-center justify-center w-full h-full",
+        'flex flex-col items-center justify-center w-full h-full',
         props.className,
       )}
     >

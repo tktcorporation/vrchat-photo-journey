@@ -4,65 +4,61 @@ module.exports = {
     es2021: true,
   },
   extends: [
-    "eslint:recommended",
-    "plugin:react/recommended",
-    "plugin:@typescript-eslint/recommended",
-    "airbnb",
-    "plugin:prettier/recommended",
-    "prettier",
+    'eslint:recommended',
+    'plugin:react/recommended',
+    'plugin:@typescript-eslint/recommended',
+    'airbnb',
   ],
-  parser: "@typescript-eslint/parser",
+  parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaFeatures: {
       jsx: true,
     },
     ecmaVersion: 12,
-    sourceType: "module",
+    sourceType: 'module',
   },
-  plugins: ["react", "@typescript-eslint", "prettier"],
+  plugins: ['react', '@typescript-eslint'],
   rules: {
-    // Prettier
-    "prettier/prettier": "error",
     // Typescript
-    "no-use-before-define": "off",
-    "import/prefer-default-export": "off",
-    "@typescript-eslint/no-use-before-define": ["error"],
-    "@typescript-eslint/no-unused-vars": "warn",
-    "@typescript-eslint/no-explicit-any": "warn",
-    "@typescript-eslint/no-var-requires": "warn",
-    "react/prop-types": "off",
+    'no-use-before-define': 'off',
+    'import/prefer-default-export': 'off',
+    '@typescript-eslint/no-use-before-define': ['error'],
+    '@typescript-eslint/no-unused-vars': 'warn',
+    '@typescript-eslint/no-explicit-any': 'warn',
+    '@typescript-eslint/no-var-requires': 'warn',
+    'react/prop-types': 'off',
     // react
-    "react/require-default-props": 0,
-    "react/button-has-type": 0,
-    "react/no-children-prop": 0,
-    "react/jsx-props-no-spreading": 0,
-    "react/function-component-definition": [
-      "warn",
+    'react/require-default-props': 0,
+    'react/button-has-type': 0,
+    'react/no-children-prop': 0,
+    'react/jsx-props-no-spreading': 0,
+    'react/function-component-definition': [
+      'warn',
       {
-        namedComponents: "function-declaration",
-        unnamedComponents: "function-expression",
+        namedComponents: 'function-declaration',
+        unnamedComponents: 'function-expression',
       },
     ],
-    "react/jsx-filename-extension": [
+    'react/jsx-filename-extension': [
       2,
       {
-        extensions: [".js", ".jsx", ".ts", ".tsx"],
+        extensions: ['.js', '.jsx', '.ts', '.tsx'],
       },
     ],
-    "no-restricted-syntax": [
-      "error",
-      "ForInStatement",
-      "LabeledStatement",
-      "WithStatement",
+    'no-restricted-syntax': [
+      'error',
+      'ForInStatement',
+      'LabeledStatement',
+      'WithStatement',
     ],
     // Import
-    "import/extensions": 0,
-    "no-restricted-imports": [
-      "error",
+    'import/extensions': 0,
+    'no-restricted-imports': [
+      'error',
       {
         paths: [
           {
-            name: "fs",
+            name: 'fs',
             message:
               "Please don't use fs module directly. Use fs/promises instead.",
           },
@@ -72,26 +68,26 @@ module.exports = {
   },
   overrides: [
     {
-      files: ["electron/lib/wrappedFs.ts"],
+      files: ['electron/lib/wrappedFs.ts'],
       rules: {
-        "no-restricted-imports": "off",
+        'no-restricted-imports': 'off',
       },
     },
     {
-      files: ["electron/**/error.ts"],
+      files: ['electron/**/error.ts'],
       rules: {
-        "max-classes-per-file": "off",
+        'max-classes-per-file': 'off',
       },
     },
   ],
   settings: {
-    "import/resolver": {
+    'import/resolver': {
       node: {
-        extensions: [".js", ".jsx", ".ts", ".tsx"],
+        extensions: ['.js', '.jsx', '.ts', '.tsx'],
       },
       typescript: {},
     },
-    "import/core-modules": ["electron", "electron-is-dev"],
+    'import/core-modules': ['electron', 'electron-is-dev'],
   },
-  ignorePatterns: ["node_modules/", "dist/", "main/", "src/out/"],
+  ignorePatterns: ['node_modules/', 'dist/', 'main/', 'src/out/'],
 };

@@ -1,17 +1,17 @@
-import path from "path";
+import path from 'path';
 // opentype ライブラリをインポートする
-import { app } from "electron";
-import * as opentype from "opentype.js";
+import { app } from 'electron';
+import * as opentype from 'opentype.js';
 
 // 正しいフォントファイルのパスを指定する 'assets/NotoSansCJKjp-Regular.ttf';
 const appPath = app.isPackaged ? process.resourcesPath : app.getAppPath();
-const fontfile = path.join(appPath, "assets", "NotoSansCJKjp-Regular.ttf");
+const fontfile = path.join(appPath, 'assets', 'NotoSansCJKjp-Regular.ttf');
 
 // フォントの読み込み、ローカルのフォントを読み込む
 const font = opentype.loadSync(fontfile);
 
 type TextOptions = {
-  align?: "left" | "right" | "center";
+  align?: 'left' | 'right' | 'center';
   color?: string;
   lines?: number;
 };
@@ -24,18 +24,18 @@ const generateTextPath = (
 ) => {
   // テキストオプションのデフォルト値を設定
   const textOptions = {
-    align: textOptionsDefault?.align ?? "left",
-    color: textOptionsDefault?.color ?? "#000",
+    align: textOptionsDefault?.align ?? 'left',
+    color: textOptionsDefault?.color ?? '#000',
     lines: textOptionsDefault?.lines ?? 1,
   };
 
   // opentype: 描画オプション
   const renderOptions: opentype.RenderOptions = {};
 
-  const columns: string[] = [""];
+  const columns: string[] = [''];
 
   // STEP1: 改行位置を算出して行ごとに分解
-  for (const char of text.split("")) {
+  for (const char of text.split('')) {
     // opentype: 改行位置を算出する為に長さを計測
     const measureWidth = font.getAdvanceWidth(
       columns[columns.length - 1] + char,
@@ -46,7 +46,7 @@ const generateTextPath = (
     // 改行位置を超えている場合
     if (width < measureWidth) {
       // 次の行にする
-      columns.push("");
+      columns.push('');
     }
 
     // 現在行に1文字追加
@@ -66,9 +66,9 @@ const generateTextPath = (
     let offsetX = 0;
 
     // 揃える位置に応じてオフセットを算出
-    if (textOptions.align === "right") {
+    if (textOptions.align === 'right') {
       offsetX = width - measureWidth;
-    } else if (textOptions.align === "center") {
+    } else if (textOptions.align === 'center') {
       offsetX = (width - measureWidth) / 2;
     }
 

@@ -1,14 +1,14 @@
-import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
 
-import { ROUTER_PATHS } from "@/constants";
-import { cn } from "@/lib/utils";
+import { ROUTER_PATHS } from '@/constants';
+import { cn } from '@/lib/utils';
 import {
   FilePlus2,
   HelpCircleIcon,
   ImageIcon,
   SettingsIcon,
-} from "lucide-react";
+} from 'lucide-react';
 
 function MainNav({ className, ...props }: React.HTMLAttributes<HTMLElement>) {
   // get current path
@@ -17,7 +17,7 @@ function MainNav({ className, ...props }: React.HTMLAttributes<HTMLElement>) {
   return (
     <nav
       className={cn(
-        "flex items-center space-x-4 lg:space-x-6 bg-muted py-2 justify-between",
+        'flex items-center space-x-4 lg:space-x-6 bg-muted py-2 justify-between',
         className,
       )}
       {...props}
@@ -26,8 +26,8 @@ function MainNav({ className, ...props }: React.HTMLAttributes<HTMLElement>) {
         <Link
           to={ROUTER_PATHS.SETTING}
           className={cn(
-            "text-sm font-medium transition-colors hover:text-primary px-2",
-            currentPath === ROUTER_PATHS.SETTING ? "" : "text-muted-foreground",
+            'text-sm font-medium transition-colors hover:text-primary px-2',
+            currentPath === ROUTER_PATHS.SETTING ? '' : 'text-muted-foreground',
           )}
         >
           <SettingsIcon />
@@ -35,10 +35,10 @@ function MainNav({ className, ...props }: React.HTMLAttributes<HTMLElement>) {
         <Link
           to={ROUTER_PATHS.CREATE_JOIN_INFO}
           className={cn(
-            "text-sm font-medium transition-colors hover:text-primary px-2",
+            'text-sm font-medium transition-colors hover:text-primary px-2',
             currentPath === ROUTER_PATHS.CREATE_JOIN_INFO
-              ? ""
-              : "text-muted-foreground",
+              ? ''
+              : 'text-muted-foreground',
           )}
         >
           <FilePlus2 />
@@ -46,10 +46,10 @@ function MainNav({ className, ...props }: React.HTMLAttributes<HTMLElement>) {
         <Link
           to={ROUTER_PATHS.PHOTO_LIST}
           className={cn(
-            "text-sm font-medium transition-colors hover:text-primary px-2",
+            'text-sm font-medium transition-colors hover:text-primary px-2',
             currentPath === ROUTER_PATHS.PHOTO_LIST
-              ? ""
-              : "text-muted-foreground",
+              ? ''
+              : 'text-muted-foreground',
           )}
         >
           <ImageIcon />
@@ -59,10 +59,10 @@ function MainNav({ className, ...props }: React.HTMLAttributes<HTMLElement>) {
         <Link
           to={ROUTER_PATHS.ONBORDING}
           className={cn(
-            "text-sm font-medium transition-colors hover:text-primary px-2",
+            'text-sm font-medium transition-colors hover:text-primary px-2',
             currentPath === ROUTER_PATHS.ONBORDING
-              ? ""
-              : "text-muted-foreground",
+              ? ''
+              : 'text-muted-foreground',
           )}
         >
           <HelpCircleIcon />

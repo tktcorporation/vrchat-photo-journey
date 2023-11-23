@@ -1,12 +1,12 @@
-import { ProcedureType } from "@trpc/server";
-import { contextBridge, ipcRenderer } from "electron";
+import { ProcedureType } from '@trpc/server';
+import { contextBridge, ipcRenderer } from 'electron';
 
-import type { Operation } from "@trpc/client";
-import type { TRPCResponseMessage } from "@trpc/server/rpc";
+import type { Operation } from '@trpc/client';
+import type { TRPCResponseMessage } from '@trpc/server/rpc';
 
 export type ETRPCRequest =
-  | { method: "request"; operation: Operation }
-  | { method: "subscription.stop"; id: number };
+  | { method: 'request'; operation: Operation }
+  | { method: 'subscription.stop'; id: number };
 
 export interface RendererGlobalElectronTRPC {
   sendMessage: (args: ETRPCRequest) => void;
@@ -19,7 +19,7 @@ export interface TRPCHandlerArgs {
   input?: unknown;
 }
 
-const ELECTRON_TRPC_CHANNEL = "electron-trpc";
+const ELECTRON_TRPC_CHANNEL = 'electron-trpc';
 
 const exposeElectronTRPC = () => {
   const electronTRPC: RendererGlobalElectronTRPC = {
@@ -28,9 +28,9 @@ const exposeElectronTRPC = () => {
     onMessage: (callback) =>
       ipcRenderer.on(ELECTRON_TRPC_CHANNEL, (_event, args) => callback(args)),
   };
-  contextBridge.exposeInMainWorld("electronTRPC", electronTRPC);
+  contextBridge.exposeInMainWorld('electronTRPC', electronTRPC);
 };
-process.once("loaded", () => {
+process.once('loaded', () => {
   exposeElectronTRPC();
   // If you expose something here, you get window.something in the React app
   // type it in types/exposedInMainWorld.d.ts to add it to the window type
@@ -55,40 +55,40 @@ const api = {
    * The function below can accessed using `window.Main.sayHello`
    */
   sendMessage: (message: string) => {
-    ipcRenderer.send("message", message);
+    ipcRenderer.send('message', message);
   },
   setLogFilePath: (path: string) => {
-    ipcRenderer.send("set-log-file-path", path);
+    ipcRenderer.send('set-log-file-path', path);
   },
   openDialogAndSetLogFilesDir: () => {
-    ipcRenderer.send("open-dialog-and-set-log-files-dir");
+    ipcRenderer.send('open-dialog-and-set-log-files-dir');
   },
   getLogFilesDir: () => {
-    ipcRenderer.send("get-log-files-dir");
+    ipcRenderer.send('get-log-files-dir');
   },
   openDialogAndSetVRChatPhotoDir: () => {
-    ipcRenderer.send("open-dialog-and-set-vrchat-photo-dir");
+    ipcRenderer.send('open-dialog-and-set-vrchat-photo-dir');
   },
   getVRChatPhotoDir: () => {
-    ipcRenderer.send("get-vrchat-photo-dir");
+    ipcRenderer.send('get-vrchat-photo-dir');
   },
   getStatusToUseVRChatLogFilesDir: () => {
-    ipcRenderer.send("get-status-to-use-vrchat-log-files-dir");
+    ipcRenderer.send('get-status-to-use-vrchat-log-files-dir');
   },
   createFiles: () => {
-    ipcRenderer.send("create-files");
+    ipcRenderer.send('create-files');
   },
   /**
     Here function for AppBar
    */
   Minimize: () => {
-    ipcRenderer.send("minimize");
+    ipcRenderer.send('minimize');
   },
   Maximize: () => {
-    ipcRenderer.send("maximize");
+    ipcRenderer.send('maximize');
   },
   Close: () => {
-    ipcRenderer.send("close");
+    ipcRenderer.send('close');
   },
   /**
    * Provide an easier way to listen to events
@@ -100,7 +100,7 @@ const api = {
     ipcRenderer.removeAllListeners(channel);
   },
 };
-contextBridge.exposeInMainWorld("Main", api);
+contextBridge.exposeInMainWorld('Main', api);
 
 /**
  * 型安全な ipcRenderer.on
@@ -109,13 +109,13 @@ const myOn = {
   receiveStatusToUseVRChatLogFilesDir: (
     callback: (
       data:
-        | "ready"
-        | "logFilesDirNotSet"
-        | "logFilesNotFound"
-        | "logFileDirNotFound",
+        | 'ready'
+        | 'logFilesDirNotSet'
+        | 'logFilesNotFound'
+        | 'logFileDirNotFound',
     ) => void,
   ) => {
-    const key = "status-to-use-vrchat-log-files-dir";
+    const key = 'status-to-use-vrchat-log-files-dir';
     ipcRenderer.on(key, (_, data) => callback(data));
     return () => {
       ipcRenderer.removeAllListeners(key);
@@ -125,20 +125,20 @@ const myOn = {
     callback: (data: {
       storedPath: string | null;
       path: string;
-      error: null | "photoYearMonthDirsNotFound" | "photoDirReadError";
+      error: null | 'photoYearMonthDirsNotFound' | 'photoDirReadError';
     }) => void,
   ) => {
-    const key = "vrchat-photo-dir-with-error";
+    const key = 'vrchat-photo-dir-with-error';
     ipcRenderer.on(key, (_, data) => callback(data));
     return () => {
       ipcRenderer.removeAllListeners(key);
     };
   },
 };
-contextBridge.exposeInMainWorld("MyOn", myOn);
+contextBridge.exposeInMainWorld('MyOn', myOn);
 
 /**
  * Using the ipcRenderer directly in the browser through the contextBridge ist not really secure.
  * I advise using the Main/api way !!
  */
-contextBridge.exposeInMainWorld("ipcRenderer", ipcRenderer);
+contextBridge.exposeInMainWorld('ipcRenderer', ipcRenderer);

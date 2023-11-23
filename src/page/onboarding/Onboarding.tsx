@@ -1,18 +1,19 @@
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ROUTER_PATHS } from "@/constants";
-import React from "react";
-import { Link } from "react-router-dom";
-import { OnBordingPreview } from "./Preview";
-import { OnBordingSetting } from "./setting";
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ROUTER_PATHS } from '@/constants';
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { OnBordingPreview } from './Preview';
+import { OnBordingSetting } from './setting';
 
 function Onboarding() {
-  const [tabValue, setTabValue] = React.useState("0");
+  const [tabValue, setTabValue] = React.useState('0');
   const handleChangeTab = (value: string) => {
     setTabValue(value);
   };
   return (
-    <div className="flex-auto h-full flex flex-col">
+    <div className="flex-auto h-full flex flex-col overflow-hidden">
       <Tabs
         value={tabValue}
         onValueChange={handleChangeTab}
@@ -25,7 +26,7 @@ function Onboarding() {
           <TabsTrigger value="3">・</TabsTrigger>
           <TabsTrigger value="4">・</TabsTrigger>
         </TabsList>
-        <div className="flex flex-col justify-center items-center space-y-8 h-full grow">
+        <div className="flex flex-col justify-center items-center space-y-8 grow overflow-auto">
           <TabsContent value="0">
             <p>ようこそ</p>
             <p>イメージ画像</p>
@@ -42,7 +43,7 @@ function Onboarding() {
             <p>すべての設定をグリーンにしてください</p>
             <OnBordingSetting />
           </TabsContent>
-          <TabsContent value="3">
+          <TabsContent value="3" className="overflow-auto">
             <OnBordingPreview />
           </TabsContent>
           <TabsContent value="4">

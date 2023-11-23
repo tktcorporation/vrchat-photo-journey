@@ -1,5 +1,5 @@
-import sharp from "sharp";
-import { generateTextPath } from "./lib";
+import sharp from 'sharp';
+import { generateTextPath } from './lib';
 
 interface Props {
   worldName: string;
@@ -49,8 +49,8 @@ const createOGPImage = async ({ worldName, date, exif }: Props) => {
     <!-- 指定した文字列をSVGパスに変換 -->
     <g transform="translate(70, 70)">
       ${generateTextPath(title, 1060, 80, {
-        align: "center",
-        color: "#555",
+        align: 'center',
+        color: '#555',
         lines: 4,
       })}
     </g>
@@ -63,8 +63,8 @@ const createOGPImage = async ({ worldName, date, exif }: Props) => {
         1060,
         64,
         {
-          align: "right",
-          color: "#ccc",
+          align: 'right',
+          color: '#ccc',
           lines: 1,
         },
       )} </g> `
@@ -82,7 +82,7 @@ const createOGPImage = async ({ worldName, date, exif }: Props) => {
           // 撮影日
           DateTimeOriginal: exif.dateTimeOriginal
             .toISOString()
-            .replace(/:/g, "-"),
+            .replace(/:/g, '-'),
         },
       },
     })

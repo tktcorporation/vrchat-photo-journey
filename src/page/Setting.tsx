@@ -1,9 +1,9 @@
-import { Button } from "@/components/ui/button";
-import { ROUTER_PATHS } from "@/constants";
-import { trpcReact } from "@/trpc";
-import { AlertTriangle, Check, ChevronRight } from "lucide-react";
-import React from "react";
-import { Link } from "react-router-dom";
+import { Button } from '@/components/ui/button';
+import { ROUTER_PATHS } from '@/constants';
+import { trpcReact } from '@/trpc';
+import { AlertTriangle, Check, ChevronRight } from 'lucide-react';
+import React from 'react';
+import { Link } from 'react-router-dom';
 
 function Setting() {
   // 初期表示時に log-files-dir を取得する

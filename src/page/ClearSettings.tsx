@@ -1,8 +1,8 @@
-import { Button } from "@/components/ui/button";
-import React from "react";
-import { Link } from "react-router-dom";
-import { ROUTER_PATHS } from "../constants";
-import { trpcReact } from "../trpc";
+import { Button } from '@/components/ui/button';
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { ROUTER_PATHS } from '../constants';
+import { trpcReact } from '../trpc';
 
 function ClearSettings() {
   const mutation = trpcReact.clearAllStoredSettings.useMutation();

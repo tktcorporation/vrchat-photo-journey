@@ -1,6 +1,6 @@
-import React from "react";
-import toast, { Toaster } from "react-hot-toast";
-import { trpcReact } from "./trpc";
+import React from 'react';
+import toast, { Toaster } from 'react-hot-toast';
+import { trpcReact } from './trpc';
 
 type Props = {
   children: React.ReactNode;
@@ -9,7 +9,7 @@ type Props = {
 function Template({ children }: Props) {
   trpcReact.subscribeToast.useSubscription(undefined, {
     onData: (content: unknown) => {
-      if (typeof content === "string") {
+      if (typeof content === 'string') {
         toast(content);
         return;
       }

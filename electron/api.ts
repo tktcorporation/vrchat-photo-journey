@@ -1,11 +1,11 @@
-import { EventEmitter } from "events";
-import { initTRPC } from "@trpc/server";
-import { observable } from "@trpc/server/observable";
-import z from "zod";
+import { EventEmitter } from 'events';
+import { initTRPC } from '@trpc/server';
+import { observable } from '@trpc/server/observable';
+import z from 'zod';
 
 // 呼び出し元は集約したい
-import path from "path";
-import * as service from "./service";
+import path from 'path';
+import * as service from './service';
 
 const ee = new EventEmitter();
 
@@ -25,10 +25,10 @@ export const router = t.router({
         emit.next(text);
       }
 
-      ee.on("toast", onToast);
+      ee.on('toast', onToast);
 
       return () => {
-        ee.off("toast", onToast);
+        ee.off('toast', onToast);
       };
     });
   }),
@@ -43,12 +43,12 @@ export const router = t.router({
   getStatusToUseVRChatLogFilesDir: procedure.query(async () => {
     const vrchatLogFilesDir = service.getVRChatLogFilesDir();
     let status:
-      | "ready"
-      | "logFilesDirNotSet"
-      | "logFilesNotFound"
-      | "logFileDirNotFound" = "ready";
+      | 'ready'
+      | 'logFilesDirNotSet'
+      | 'logFilesNotFound'
+      | 'logFileDirNotFound' = 'ready';
     if (vrchatLogFilesDir.path === null) {
-      status = "logFilesDirNotSet";
+      status = 'logFilesDirNotSet';
     } else if (vrchatLogFilesDir.error !== null) {
       status = vrchatLogFilesDir.error;
     }
@@ -58,11 +58,11 @@ export const router = t.router({
     const result = await service.getConfigAndValidateAndCreateFiles();
     return result.match(
       () => {
-        ee.emit("toast", "ファイルの作成に成功しました");
+        ee.emit('toast', 'ファイルの作成に成功しました');
         return true;
       },
       (error) => {
-        ee.emit("toast", error);
+        ee.emit('toast', error);
         return false;
       },
     );
@@ -77,31 +77,31 @@ export const router = t.router({
           // src に直接入れられるように buffer を base64 に変換
           content: `data:image/${path
             .extname(obj.fileName)
-            .replace(".", "")};base64,${obj.content.toString("base64")}`,
+            .replace('.', '')};base64,${obj.content.toString('base64')}`,
         }));
       },
       (error) => {
-        ee.emit("toast", error);
+        ee.emit('toast', error);
         return [];
       },
     );
   }),
   clearAllStoredSettings: procedure.mutation(async () => {
     service.clearAllStoredSettings();
-    ee.emit("toast", "設定をすべて削除しました");
+    ee.emit('toast', '設定をすべて削除しました');
     return undefined;
   }),
   clearStoredSetting: procedure
-    .input(z.union([z.literal("logFilesDir"), z.literal("vrchatPhotoDir")]))
+    .input(z.union([z.literal('logFilesDir'), z.literal('vrchatPhotoDir')]))
     .mutation(async (ctx) => {
       const result = service.clearStoredSetting(ctx.input);
       result.match(
         () => {
-          ee.emit("toast", "設定を削除しました");
+          ee.emit('toast', '設定を削除しました');
           return undefined;
         },
         (error) => {
-          ee.emit("toast", error);
+          ee.emit('toast', error);
           return undefined;
         },
       );
@@ -113,7 +113,7 @@ export const router = t.router({
         return true;
       },
       (error) => {
-        ee.emit("toast", error);
+        ee.emit('toast', error);
         return false;
       },
     );
@@ -125,7 +125,7 @@ export const router = t.router({
         return true;
       },
       (error) => {
-        ee.emit("toast", error);
+        ee.emit('toast', error);
         return false;
       },
     );
@@ -134,11 +134,11 @@ export const router = t.router({
     const result = await service.setVRChatPhotoDirByDialog();
     return result.match(
       () => {
-        ee.emit("toast", "VRChatの写真の保存先を設定しました");
+        ee.emit('toast', 'VRChatの写真の保存先を設定しました');
         return true;
       },
       (error) => {
-        ee.emit("toast", error);
+        ee.emit('toast', error);
         return false;
       },
     );
@@ -147,11 +147,11 @@ export const router = t.router({
     const result = await service.setVRChatLogFilesDirByDialog();
     return result.match(
       () => {
-        ee.emit("toast", "VRChatのログファイルの保存先を設定しました");
+        ee.emit('toast', 'VRChatのログファイルの保存先を設定しました');
         return true;
       },
       (error) => {
-        ee.emit("toast", error);
+        ee.emit('toast', error);
         return false;
       },
     );
@@ -169,11 +169,11 @@ export const router = t.router({
             path: obj.path,
             dataImage: `data:image/${path
               .extname(obj.path)
-              .replace(".", "")};base64,${obj.data.toString("base64")}`,
+              .replace('.', '')};base64,${obj.data.toString('base64')}`,
           }));
         },
         (error) => {
-          ee.emit("toast", error);
+          ee.emit('toast', error);
           return [];
         },
       );
@@ -185,7 +185,7 @@ export const router = t.router({
         return r;
       },
       (error) => {
-        ee.emit("toast", error);
+        ee.emit('toast', error);
         return [];
       },
     );
@@ -199,7 +199,7 @@ export const router = t.router({
           return r;
         },
         (error) => {
-          ee.emit("toast", error);
+          ee.emit('toast', error);
           return [];
         },
       );
@@ -210,11 +210,11 @@ export const router = t.router({
       (r) => {
         return `data:image/${path
           .extname(ctx.input)
-          .replace(".", "")};base64,${r.toString("base64")}`;
+          .replace('.', '')};base64,${r.toString('base64')}`;
       },
       (error) => {
-        ee.emit("toast", error);
-        return "";
+        ee.emit('toast', error);
+        return '';
       },
     );
   }),

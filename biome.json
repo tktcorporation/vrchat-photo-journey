@@ -18,6 +18,11 @@
     "indentWidth": 2,
     "indentStyle": "space"
   },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single"
+    }
+  },
   "files": {
     "ignore": ["**/node_modules/**", "**/dist/**", "**/main/**", "**/out/**"]
   }

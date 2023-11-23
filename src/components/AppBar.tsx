@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 
 function AppBar() {
   const [isMaximize, setMaximize] = useState(false);
@@ -27,7 +27,7 @@ function AppBar() {
           className="undraggable px-6 lg:px-5 pt-1 hover:bg-gray-300"
           type="button"
         >
-          {isMaximize ? "\u2752" : "\u2750"}
+          {isMaximize ? '\u2752' : '\u2750'}
         </button>
         <button
           onClick={window.Main.Close}

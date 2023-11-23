@@ -1,10 +1,10 @@
-import path from "path";
-import * as neverthrow from "neverthrow";
-import * as fs from "../../lib/wrappedFs";
-import * as settingStore from "../../settingStore";
-import VRChatLogFileError from "./error";
+import path from 'path';
+import * as neverthrow from 'neverthrow';
+import * as fs from '../../lib/wrappedFs';
+import * as settingStore from '../../settingStore';
+import VRChatLogFileError from './error';
 
-import { type JoinInfoFileName, convertToJoinInfoFileName } from "../type";
+import { type JoinInfoFileName, convertToJoinInfoFileName } from '../type';
 
 type WorldId = `wrld_${string}`;
 interface WorldJoinLogInfo {
@@ -21,7 +21,7 @@ interface WorldJoinLogInfo {
 interface VRChatLogFilesDirWithErr {
   storedPath: string | null;
   path: string;
-  error: null | "logFilesNotFound" | "logFileDirNotFound";
+  error: null | 'logFilesNotFound' | 'logFileDirNotFound';
 }
 
 const getVRChatLogFileNamesByDir = (
@@ -30,30 +30,30 @@ const getVRChatLogFileNamesByDir = (
   const logFileNamesResult = fs.readDirSyncSafe(logFilesDir);
   // output_log から始まるファイル名のみを取得
   const logFileNamesFiltered = logFileNamesResult.map((logFileNames) =>
-    logFileNames.filter((fileName) => fileName.startsWith("output_log")),
+    logFileNames.filter((fileName) => fileName.startsWith('output_log')),
   );
   return logFileNamesFiltered;
 };
 
 const getDefaultVRChatLogFilesDir = (): string => {
-  let logFilesDir = "";
-  if (process.platform === "win32" && process.env.APPDATA) {
+  let logFilesDir = '';
+  if (process.platform === 'win32' && process.env.APPDATA) {
     const DEFAULT_VRCHAT_LOG_FILES_DIR = path.join(
-      process.env.APPDATA || "",
-      "..",
-      "LocalLow",
-      "VRChat",
-      "VRChat",
+      process.env.APPDATA || '',
+      '..',
+      'LocalLow',
+      'VRChat',
+      'VRChat',
     );
     logFilesDir = DEFAULT_VRCHAT_LOG_FILES_DIR;
   } else {
     // 仮置き
     logFilesDir = path.join(
-      process.env.HOME || "",
-      "Library",
-      "Application Support",
-      "com.vrchat.VRChat",
-      "VRChat",
+      process.env.HOME || '',
+      'Library',
+      'Application Support',
+      'com.vrchat.VRChat',
+      'VRChat',
     );
   }
   return logFilesDir;
@@ -70,18 +70,18 @@ const getVRChatLogFileDir = (): VRChatLogFilesDirWithErr => {
   const logFileNamesResult = getVRChatLogFileNamesByDir(logFilesDir);
   if (logFileNamesResult.isErr()) {
     switch (logFileNamesResult.error) {
-      case "ENOENT":
+      case 'ENOENT':
         return {
           storedPath,
           path: logFilesDir,
-          error: "logFileDirNotFound",
+          error: 'logFileDirNotFound',
         };
       default:
         throw logFileNamesResult.error;
     }
   }
   if (logFileNamesResult.value.length === 0) {
-    return { storedPath, path: logFilesDir, error: "logFilesNotFound" };
+    return { storedPath, path: logFilesDir, error: 'logFilesNotFound' };
   }
   return { storedPath, path: logFilesDir, error: null };
 };
@@ -98,8 +98,8 @@ const getLogLinesFromDir = (
   const logFileNamesFilteredResult = getVRChatLogFileNamesByDir(logFilesDir);
   const logFileNamesFiltered = logFileNamesFilteredResult.mapErr((e) => {
     switch (e) {
-      case "ENOENT":
-        return new VRChatLogFileError("LOG_FILE_DIR_NOT_FOUND");
+      case 'ENOENT':
+        return new VRChatLogFileError('LOG_FILE_DIR_NOT_FOUND');
       default:
         throw e;
     }
@@ -108,7 +108,7 @@ const getLogLinesFromDir = (
     return neverthrow.err(logFileNamesFiltered.error);
   }
   if (logFileNamesFiltered.value.length === 0) {
-    return neverthrow.err(new VRChatLogFileError("LOG_FILES_NOT_FOUND"));
+    return neverthrow.err(new VRChatLogFileError('LOG_FILES_NOT_FOUND'));
   }
 
   const logLines: string[] = [];
@@ -121,7 +121,7 @@ const getLogLinesFromDir = (
       return neverthrow.err(result.error);
     }
 
-    logLines.push(...result.value.toString().split("\n"));
+    logLines.push(...result.value.toString().split('\n'));
   }
 
   return neverthrow.ok(logLines);
@@ -139,16 +139,16 @@ const extractWorldJoinInfoFromLogs = (
   if (!matches || matches.length < 4) {
     return null;
   }
-  const date = matches[1].replace(/\./g, "-");
-  const time = matches[2].replace(/:/g, "-");
+  const date = matches[1].replace(/\./g, '-');
+  const time = matches[2].replace(/:/g, '-');
   const worldId = matches[3];
 
   if (!validateWorldId(worldId)) {
-    throw new Error("WorldId did not match the expected format");
+    throw new Error('WorldId did not match the expected format');
   }
 
-  const [year, month, day] = date.split("-");
-  const [hour, minute, second] = time.split("-");
+  const [year, month, day] = date.split('-');
+  const [hour, minute, second] = time.split('-');
   let foundWorldName: string | null = null;
   // Extracting world name from the subsequent lines
   for (const log of logLines.slice(index + 1)) {
@@ -173,7 +173,7 @@ const extractWorldJoinInfoFromLogs = (
   }
 
   throw new Error(
-    "Failed to extract world name from the subsequent log entries",
+    'Failed to extract world name from the subsequent log entries',
   );
 };
 
@@ -184,7 +184,7 @@ const convertLogLinesToWorldJoinLogInfos = (
 
   // logLines.forEach((log, index) => {
   for (const [index, log] of logLines.entries()) {
-    if (log.includes("Joining wrld")) {
+    if (log.includes('Joining wrld')) {
       const info = extractWorldJoinInfoFromLogs(logLines, index);
       if (info) {
         worldJoinLogInfos.push(info);
@@ -208,7 +208,7 @@ const convertWorldJoinLogInfoToOneLine = (
     hour,
     minute,
     second,
-    millisecond: "000",
+    millisecond: '000',
     worldId,
   });
 };

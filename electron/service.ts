@@ -1,23 +1,23 @@
-import * as neverthrow from "neverthrow";
+import * as neverthrow from 'neverthrow';
 
-import path from "path";
-import * as infoFileService from "./service/infoFile/service";
+import path from 'path';
+import * as infoFileService from './service/infoFile/service';
 import {
   JoinInfoFileNameSchema,
   PhotoFileNameSchema,
   parseJoinInfoFileName,
   parsePhotoFileName,
-} from "./service/type";
-import * as utilsService from "./service/utilsService";
-import VRChatLogFileError from "./service/vrchatLog/error";
-import * as vrchatLogService from "./service/vrchatLog/vrchatLog";
-import * as vrchatPhotoService from "./service/vrchatPhoto/service";
-import * as settingStore from "./settingStore";
+} from './service/type';
+import * as utilsService from './service/utilsService';
+import VRChatLogFileError from './service/vrchatLog/error';
+import * as vrchatLogService from './service/vrchatLog/vrchatLog';
+import * as vrchatPhotoService from './service/vrchatPhoto/service';
+import * as settingStore from './settingStore';
 
 const getVRChatLogFilesDir = (): {
   storedPath: string | null;
   path: string;
-  error: null | "logFilesNotFound" | "logFileDirNotFound";
+  error: null | 'logFilesNotFound' | 'logFileDirNotFound';
 } => {
   return vrchatLogService.getVRChatLogFileDir();
 };
@@ -127,7 +127,7 @@ const openDirOnExplorer = (dirPath: string) => {
 };
 
 const setVRChatPhotoDirByDialog = async (): Promise<
-  neverthrow.Result<void, Error | "canceled">
+  neverthrow.Result<void, Error | 'canceled'>
 > => {
   return (await utilsService.openGetDirDialog()).map((dirPath) => {
     settingStore.setVRChatPhotoDir(dirPath);
@@ -136,7 +136,7 @@ const setVRChatPhotoDirByDialog = async (): Promise<
 };
 
 const setVRChatLogFilesDirByDialog = async (): Promise<
-  neverthrow.Result<void, Error | "canceled">
+  neverthrow.Result<void, Error | 'canceled'>
 > => {
   return (await utilsService.openGetDirDialog()).map((dirPath) => {
     settingStore.setLogFilesDir(dirPath);
@@ -166,19 +166,19 @@ const getVRChatPhotoWithWorldIdAndDate = ({
 }): neverthrow.Result<
   (
     | {
-        type: "PHOTO";
+        type: 'PHOTO';
         datetime: DateTime;
         path: string;
         worldId: null;
       }
     | {
-        type: "JOIN";
+        type: 'JOIN';
         datetime: DateTime;
         path: string;
         worldId: string;
       }
   )[],
-  "YEAR_MONTH_DIR_ENOENT" | "PHOTO_DIR_READ_ERROR"
+  'YEAR_MONTH_DIR_ENOENT' | 'PHOTO_DIR_READ_ERROR'
 > => {
   const result = vrchatPhotoService.getVRChatPhotoItemPathList(year, month);
   if (result.isErr()) {
@@ -199,7 +199,7 @@ const getVRChatPhotoWithWorldIdAndDate = ({
       }
       const { date, time } = parseResult.value;
       return {
-        type: "PHOTO" as const,
+        type: 'PHOTO' as const,
         datetime: { date, time },
         path: item,
         worldId: null,
@@ -213,7 +213,7 @@ const getVRChatPhotoWithWorldIdAndDate = ({
       }
       const { date, time, worldId } = parseResult.value;
       return {
-        type: "JOIN" as const,
+        type: 'JOIN' as const,
         datetime: { date, time },
         path: item,
         worldId,
@@ -233,14 +233,14 @@ const getVRChatPhotoItemDataListByYearMonth = (
   month: string,
 ): neverthrow.Result<
   { path: string; data: Buffer }[],
-  Error | "YEAR_MONTH_DIR_ENOENT" | "PHOTO_DIR_READ_ERROR"
+  Error | 'YEAR_MONTH_DIR_ENOENT' | 'PHOTO_DIR_READ_ERROR'
 > => {
   const result = vrchatPhotoService.getVRChatPhotoItemPathList(year, month);
   if (result.isErr()) {
     return neverthrow.err(result.error);
   }
   const pathList = result.value;
-  const imageExtensions = [".png", ".jpg", ".jpeg", ".gif", ".bmp"];
+  const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.bmp'];
   const photoItemPathList = pathList.filter((p) => {
     const ext = path.extname(p);
     return imageExtensions.includes(ext);

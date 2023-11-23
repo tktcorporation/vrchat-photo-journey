@@ -1,7 +1,7 @@
-import { Loader } from "lucide-react";
-import React from "react";
+import { Loader } from 'lucide-react';
+import React from 'react';
 
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 
 export interface PhotoByBuffProps extends React.HTMLAttributes<HTMLDivElement> {
   bufferString?: string;
@@ -18,7 +18,7 @@ function Photo({ bufferString, ...props }: PhotoByBuffProps) {
     <div
       {...props}
       className={cn(
-        "flex flex-col items-center justify-center w-full h-full",
+        'flex flex-col items-center justify-center w-full h-full',
         props.className,
       )}
     >

@@ -1,10 +1,10 @@
-import { Button } from "@/components/ui/button";
-import { ROUTER_PATHS } from "@/constants";
-import { cn } from "@/lib/utils";
-import { trpcReact } from "@/trpc";
-import { AlertTriangle, Check, ChevronRight } from "lucide-react";
-import React from "react";
-import { Link } from "react-router-dom";
+import { Button } from '@/components/ui/button';
+import { ROUTER_PATHS } from '@/constants';
+import { cn } from '@/lib/utils';
+import { trpcReact } from '@/trpc';
+import { AlertTriangle, Check, ChevronRight } from 'lucide-react';
+import React from 'react';
+import { Link } from 'react-router-dom';
 
 export function OnBordingSetting() {
   const logFilesDirError =
@@ -23,8 +23,8 @@ export function OnBordingSetting() {
     <div className="space-y-4">
       <div
         className={cn(
-          "flex flex-row items-center justify-between rounded-lg border p-4 space-x-4",
-          logFilesDirError ? "border-red-500" : "border-green-500",
+          'flex flex-row items-center justify-between rounded-lg border p-4 space-x-4',
+          logFilesDirError ? 'border-red-500' : 'border-green-500',
         )}
       >
         <div>{statusIcon(logFilesDirError)}</div>
@@ -45,8 +45,8 @@ export function OnBordingSetting() {
       </div>
       <div
         className={cn(
-          "flex flex-row items-center justify-between rounded-lg border p-4 space-x-4",
-          vrchatPhotoDirError ? "border-red-500" : "border-green-500",
+          'flex flex-row items-center justify-between rounded-lg border p-4 space-x-4',
+          vrchatPhotoDirError ? 'border-red-500' : 'border-green-500',
         )}
       >
         <div>{statusIcon(vrchatPhotoDirError)}</div>

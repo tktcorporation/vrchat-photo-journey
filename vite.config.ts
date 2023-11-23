@@ -1,23 +1,23 @@
-import { join } from "path";
-import react from "@vitejs/plugin-react";
-import { ConfigEnv, UserConfig } from "vite";
+import { join } from 'path';
+import react from '@vitejs/plugin-react';
+import { ConfigEnv, UserConfig } from 'vite';
 
-const srcRoot = join(__dirname, "src");
+const srcRoot = join(__dirname, 'src');
 
 export default ({ command }: ConfigEnv): UserConfig => {
   // DEV
-  if (command === "serve") {
+  if (command === 'serve') {
     return {
       root: srcRoot,
-      base: "/",
+      base: '/',
       plugins: [react()],
       resolve: {
         alias: {
-          "@": srcRoot,
+          '@': srcRoot,
         },
       },
       build: {
-        outDir: join(srcRoot, "/out"),
+        outDir: join(srcRoot, '/out'),
         emptyOutDir: true,
         rollupOptions: {},
       },
@@ -25,22 +25,22 @@ export default ({ command }: ConfigEnv): UserConfig => {
         port: process.env.PORT === undefined ? 3000 : +process.env.PORT,
       },
       optimizeDeps: {
-        exclude: ["path"],
+        exclude: ['path'],
       },
     };
   }
   // PROD
   return {
     root: srcRoot,
-    base: "./",
+    base: './',
     plugins: [react()],
     resolve: {
       alias: {
-        "@": srcRoot,
+        '@': srcRoot,
       },
     },
     build: {
-      outDir: join(srcRoot, "/out"),
+      outDir: join(srcRoot, '/out'),
       emptyOutDir: true,
       rollupOptions: {},
     },
@@ -48,7 +48,7 @@ export default ({ command }: ConfigEnv): UserConfig => {
       port: process.env.PORT === undefined ? 3000 : +process.env.PORT,
     },
     optimizeDeps: {
-      exclude: ["path"],
+      exclude: ['path'],
     },
   };
 };

@@ -1,5 +1,5 @@
-import CreateJoinInfoComponent from "@/components/CreateJoinInfo";
-import React from "react";
+import CreateJoinInfoComponent from '@/components/CreateJoinInfo';
+import React from 'react';
 
 function CreateJoinInfo() {
   return (

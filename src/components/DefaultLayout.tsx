@@ -1,5 +1,5 @@
-import React from "react";
-import MainNav from "./MainNav";
+import React from 'react';
+import MainNav from './MainNav';
 
 type Props = {
   children: React.ReactNode;

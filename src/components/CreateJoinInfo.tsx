@@ -1,14 +1,14 @@
-import ProgressCircle from "@/components/ui/ProgressCircle";
-import { Button } from "@/components/ui/button";
-import { ROUTER_PATHS } from "@/constants";
-import { trpcReact } from "@/trpc";
+import ProgressCircle from '@/components/ui/ProgressCircle';
+import { Button } from '@/components/ui/button';
+import { ROUTER_PATHS } from '@/constants';
+import { trpcReact } from '@/trpc';
 import {
   CheckIcon,
   ExclamationTriangleIcon,
-} from "@heroicons/react/24/outline";
-import React from "react";
-import { useNavigate } from "react-router-dom";
-import { match } from "ts-pattern";
+} from '@heroicons/react/24/outline';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { match } from 'ts-pattern';
 
 import {
   AlertDialog,
@@ -20,7 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 
 function CreateJoinInfo() {
   const settingsToCreateList = [
@@ -28,11 +28,11 @@ function CreateJoinInfo() {
     trpcReact.getVRChatLogFilesDir.useQuery(),
   ] as const;
   const readyToCreateFiles = settingsToCreateList.map(
-    (setting) => setting.data?.error || "ready",
+    (setting) => setting.data?.error || 'ready',
   );
   const progressToReady =
     100 *
-    (readyToCreateFiles.filter((status) => status === "ready").length /
+    (readyToCreateFiles.filter((status) => status === 'ready').length /
       readyToCreateFiles.length);
   const errorList = settingsToCreateList
     .map((setting) => setting.data?.error)
@@ -40,17 +40,17 @@ function CreateJoinInfo() {
     .map((error) => {
       return match(error)
         .with(
-          "logFileDirNotFound",
-          () => "ログファイルのディレクトリが見つかりませんでした",
+          'logFileDirNotFound',
+          () => 'ログファイルのディレクトリが見つかりませんでした',
         )
         .with(
-          "photoYearMonthDirsNotFound",
-          () => "写真のディレクトリにyyyy-mmのフォルダが見つかりませんでした",
+          'photoYearMonthDirsNotFound',
+          () => '写真のディレクトリにyyyy-mmのフォルダが見つかりませんでした',
         )
-        .with("logFilesNotFound", () => "ログファイルが見つかりませんでした")
+        .with('logFilesNotFound', () => 'ログファイルが見つかりませんでした')
         .with(
-          "photoDirReadError",
-          () => "写真のディレクトリが見つかりませんでした",
+          'photoDirReadError',
+          () => '写真のディレクトリが見つかりませんでした',
         )
         .with(null, () => `不明なエラーが発生しました: ${error}`)
         .with(undefined, () => `不明なエラーが発生しました: ${error}`)
