@@ -32,7 +32,7 @@ const getToCreateMap = async (
       );
       const fileName = `${vrchatLogService.convertWorldJoinLogInfoToOneLine(
         info,
-      )}.png`;
+      )}.jpeg`;
       const contentImage = await createOGPImage({
         worldName: info.worldName,
         date: {
