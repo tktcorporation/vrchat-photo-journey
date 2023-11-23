@@ -3,12 +3,16 @@ import path from 'path';
 import { app } from 'electron';
 import * as opentype from 'opentype.js';
 
-// 正しいフォントファイルのパスを指定する 'assets/NotoSansCJKjp-Regular.ttf';
-const appPath = app.isPackaged ? process.resourcesPath : app.getAppPath();
-const fontfile = path.join(appPath, 'assets', 'NotoSansCJKjp-Regular.ttf');
+const getFont = () => {
+  // 正しいフォントファイルのパスを指定する 'assets/NotoSansCJKjp-Regular.ttf';
+  const appPath = app.isPackaged ? process.resourcesPath : app.getAppPath();
+  const fontfile = path.join(appPath, 'assets', 'NotoSansCJKjp-Regular.ttf');
 
-// フォントの読み込み、ローカルのフォントを読み込む
-const font = opentype.loadSync(fontfile);
+  // フォントの読み込み、ローカルのフォントを読み込む
+  const font = opentype.loadSync(fontfile);
+
+  return font;
+};
 
 type TextOptions = {
   align?: 'left' | 'right' | 'center';
@@ -33,6 +37,8 @@ const generateTextPath = (
   const renderOptions: opentype.RenderOptions = {};
 
   const columns: string[] = [''];
+
+  const font = getFont();
 
   // STEP1: 改行位置を算出して行ごとに分解
   for (const char of text.split('')) {

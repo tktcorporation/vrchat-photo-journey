@@ -5,7 +5,6 @@ import z from 'zod';
 
 // 呼び出し元は集約したい
 import path from 'path';
-import * as log from 'electron-log';
 import * as service from './service';
 
 const ee = new EventEmitter();
@@ -89,7 +88,6 @@ export const router = t.router({
   }),
   getWorldJoinInfoWithPhotoPath: procedure.query(async () => {
     const result = await service.getWorldJoinInfoWithPhotoPath();
-    log.info(result);
     return result.match(
       (r) => {
         return r.map((obj) => ({

@@ -170,14 +170,8 @@ const getWorldJoinInfoWithPhotoPath = async (): Promise<
     end: new Date(),
   });
 
-  // 一番最初のJoin日時以降の写真を取得
-  const vrchatPhotoDir = getVRChatPhotoDir();
-  if (vrchatPhotoDir.error !== null) {
-    return err(vrchatPhotoDir.error);
-  }
-
   // 月ごとに写真を取得
-  let photoPathList: {
+  const photoPathList: {
     path: string;
     tookDatetime: Date;
   }[] = [];
@@ -191,16 +185,18 @@ const getWorldJoinInfoWithPhotoPath = async (): Promise<
     if (photoPathListResult.isErr()) {
       return err(photoPathListResult.error);
     }
-    photoPathList = photoPathListResult.value.map((photo) => {
-      return {
-        path: photo.path,
-        tookDatetime: datefns.parse(
-          `${photo.info.date.year}-${photo.info.date.month}-${photo.info.date.day} ${photo.info.time.hour}:${photo.info.time.minute}:${photo.info.time.second}`,
-          'yyyy-MM-dd HH:mm:ss',
-          new Date(),
-        ),
-      };
-    });
+    photoPathList.push(
+      ...photoPathListResult.value.map((photo) => {
+        return {
+          path: photo.path,
+          tookDatetime: datefns.parse(
+            `${photo.info.date.year}-${photo.info.date.month}-${photo.info.date.day} ${photo.info.time.hour}:${photo.info.time.minute}:${photo.info.time.second}`,
+            'yyyy-MM-dd HH:mm:ss',
+            new Date(),
+          ),
+        };
+      }),
+    );
   }
 
   // ワールドのJoin情報と写真の情報を結合

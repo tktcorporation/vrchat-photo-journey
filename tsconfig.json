@@ -6,7 +6,7 @@
     },
     "target": "ESNext",
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
-    "types": ["vite/client", "node", "electron"],
+    "types": ["vite/client", "node", "electron", "jest"],
     "allowJs": false,
     "skipLibCheck": false,
     "esModuleInterop": false,
@@ -20,6 +20,6 @@
     "noEmit": true,
     "jsx": "react"
   },
-  "exclude": ["node_modules"],
+  "exclude": ["node_modules", "**/*.spec.ts", "**/*.spec.tsx", "**/*.test.ts", "**/*.test.tsx"],
   "include": ["**/*.ts", "**/*.tsx", "**/*.js"]
 }

@@ -17,7 +17,7 @@ module.exports = {
     ecmaVersion: 12,
     sourceType: 'module',
   },
-  plugins: ['react', '@typescript-eslint'],
+  plugins: ['react', '@typescript-eslint', 'eslint-plugin-jest'],
   rules: {
     // override for biome
     'operator-linebreak': 'off',
@@ -35,6 +35,7 @@ module.exports = {
     '@typescript-eslint/no-var-requires': 'warn',
     'react/prop-types': 'off',
     // react
+    'react/jsx-one-expression-per-line': 'off',
     'react/require-default-props': 0,
     'react/button-has-type': 0,
     'react/no-children-prop': 0,
@@ -84,6 +85,12 @@ module.exports = {
       files: ['electron/**/error.ts'],
       rules: {
         'max-classes-per-file': 'off',
+      },
+    },
+    {
+      files: ['**/*.spec.*'],
+      env: {
+        jest: true,
       },
     },
   ],

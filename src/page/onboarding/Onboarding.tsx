@@ -26,7 +26,7 @@ function Onboarding() {
           <TabsTrigger value="3">・</TabsTrigger>
           <TabsTrigger value="4">・</TabsTrigger>
         </TabsList>
-        <div className="flex flex-col justify-center items-center space-y-8 grow overflow-auto">
+        <div className="flex flex-col justify-center items-center space-y-8 grow overflow-hidden">
           <TabsContent value="0">
             <p>ようこそ</p>
             <p>イメージ画像</p>
@@ -46,7 +46,7 @@ function Onboarding() {
           <TabsContent value="3" className="overflow-auto">
             <OnBordingPreview />
           </TabsContent>
-          <TabsContent value="4" className="overflow-auto">
+          <TabsContent value="4" className="overflow-hidden">
             <JoinInfoPreview />
           </TabsContent>
           <TabsContent value="5">
