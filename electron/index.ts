@@ -96,6 +96,7 @@ function createWindow(): BrowserWindow {
 
 process.on("uncaughtException", (error) => {
   log.error(error);
+  throw error;
 });
 
 app.whenReady().then(() => {
