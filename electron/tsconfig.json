@@ -7,6 +7,7 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "lib": ["dom", "es2017"],
+    "types": ["jest"],
     "module": "commonjs",
     "moduleResolution": "node",
     "noEmit": false,

@@ -1,12 +1,12 @@
 {
-    "features": {
-        "ghcr.io/devcontainers/features/desktop-lite:1": {}
-    },
-    "forwardPorts": [6080],
-    "portsAttributes": {
-        "6080": {
-            "label": "desktop"
-        }
-    },
-    "runArgs": ["--shm-size=2g"]
+  "features": {
+    "ghcr.io/devcontainers/features/desktop-lite:1": {}
+  },
+  "forwardPorts": [6080],
+  "portsAttributes": {
+    "6080": {
+      "label": "desktop"
+    }
+  },
+  "runArgs": ["--shm-size=2g"]
 }
