@@ -1,4 +1,5 @@
 import path from 'path';
+import * as datefns from 'date-fns';
 import * as neverthrow from 'neverthrow';
 import * as fs from '../../lib/wrappedFs';
 
@@ -125,4 +126,50 @@ const createFiles = async (
   return neverthrow.ok(undefined);
 };
 
-export { createFiles, getToCreateMap };
+const groupingPhotoListByWorldJoinInfo = (
+  worldJoinInfoList: {
+    worldId: `wrld_${string}`;
+    worldName: string;
+    joinDatetime: Date;
+  }[],
+  vrcPhotoList: {
+    photoPath: string;
+    tookDatetime: Date;
+  }[],
+): {
+  world: {
+    worldId: `wrld_${string}`;
+    worldName: string;
+    joinDatetime: Date;
+  };
+  tookPhotoList: {
+    photoPath: string;
+    tookDatetime: Date;
+  }[];
+}[] => {
+  const sortedWorldJoinInfoList = [...worldJoinInfoList].sort((a, b) => {
+    return datefns.compareAsc(a.joinDatetime, b.joinDatetime);
+  });
+  return sortedWorldJoinInfoList.map((world, index) => {
+    const nextWorldJoinDate =
+      index < sortedWorldJoinInfoList.length - 1
+        ? datefns.subSeconds(
+            new Date(sortedWorldJoinInfoList[index + 1].joinDatetime),
+            1,
+          )
+        : new Date();
+
+    const tookPhotoList = vrcPhotoList.filter(
+      (photo) =>
+        datefns.isAfter(photo.tookDatetime, world.joinDatetime) &&
+        datefns.isBefore(photo.tookDatetime, nextWorldJoinDate),
+    );
+
+    return {
+      world,
+      tookPhotoList,
+    };
+  });
+};
+
+export { createFiles, getToCreateMap, groupingPhotoListByWorldJoinInfo };

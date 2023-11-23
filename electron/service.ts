@@ -116,12 +116,12 @@ const getWorldJoinInfoWithPhotoPath = async (): Promise<
   neverthrow.Result<
     {
       world: {
-        worldId: string;
+        worldId: `wrld_${string}`;
         worldName: string;
         joinDatetime: Date;
       };
       tookPhotoList: {
-        path: string;
+        photoPath: string;
         tookDatetime: Date;
       }[];
     }[],
@@ -204,26 +204,15 @@ const getWorldJoinInfoWithPhotoPath = async (): Promise<
   }
 
   // ワールドのJoin情報と写真の情報を結合
-  const result = sortedWorldJoinInfoList.map((world, index) => {
-    const nextWorldJoinDate =
-      index < sortedWorldJoinInfoList.length - 1
-        ? datefns.subSeconds(
-            new Date(sortedWorldJoinInfoList[index + 1].joinDatetime),
-            1,
-          )
-        : new Date();
-
-    const tookPhotoList = photoPathList.filter(
-      (photo) =>
-        datefns.isAfter(photo.tookDatetime, world.joinDatetime) &&
-        datefns.isBefore(photo.tookDatetime, nextWorldJoinDate),
-    );
-
-    return {
-      world,
-      tookPhotoList,
-    };
-  });
+  const result = infoFileService.groupingPhotoListByWorldJoinInfo(
+    sortedWorldJoinInfoList,
+    photoPathList.map((photo) => {
+      return {
+        photoPath: photo.path,
+        tookDatetime: photo.tookDatetime,
+      };
+    }),
+  );
 
   return neverthrow.ok(result);
 };

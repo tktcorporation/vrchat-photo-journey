@@ -21,7 +21,7 @@ export function JoinInfoPreview({ className }: Props) {
                   <p>{item.world.joinDatetime}</p>
                   <p>{item.world.worldName}</p>
                   {item.tookPhotoList.map((photo) => {
-                    return <Photo photoPath={photo.path} />;
+                    return <Photo photoPath={photo.photoPath} />;
                   })}
                 </>
               );
