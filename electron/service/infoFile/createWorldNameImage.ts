@@ -1,5 +1,6 @@
 import sharp from 'sharp';
 import { generateTextPath } from './lib';
+import * as datefns from 'date-fns';
 
 interface Props {
   worldName: string;
@@ -78,8 +79,12 @@ const createOGPImage = async ({ worldName, date, exif }: Props) => {
       // exif に撮影日のデータを記録
       .withMetadata({
         exif: {
-          DateTimeOriginal: exif.dateTimeOriginal,
-          ImageDescription: exif.description,
+          IFD0: {
+            DateTime: datefns.format(exif.dateTimeOriginal, 'yyyy-MM-dd HH:mm:ss'),
+            DateTimeDigitized: datefns.format(exif.dateTimeOriginal, 'yyyy-MM-dd HH:mm:ss'),
+            DateTimeOriginal: datefns.format(exif.dateTimeOriginal, 'yyyy-MM-dd HH:mm:ss'),
+            ImageDescription: exif.description,
+          },
         },
       })
       .toBuffer()
