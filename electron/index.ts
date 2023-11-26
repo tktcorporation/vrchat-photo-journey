@@ -6,6 +6,7 @@ import { BrowserWindow, app, ipcMain } from 'electron';
 import isDev from 'electron-is-dev';
 import * as log from 'electron-log';
 import { createIPCHandler } from 'electron-trpc/main';
+import unhandled from 'electron-unhandled';
 import { router } from './api';
 
 import * as controller from './controller';
@@ -18,7 +19,7 @@ const CHANNELS = {
   OPEN_DIALOG_AND_SET_VRCHAT_PHOTO_DIR: 'open-dialog-and-set-vrchat-photo-dir',
   GET_VRCHAT_PHOTO_DIR: 'get-vrchat-photo-dir',
   CREATE_FILES: 'create-files',
-  MESSAGE: 'message',
+  ERROR_MESSAGE: 'error-message',
   TOAST: 'toast',
   LOG_FILES_DIR: 'log-files-dir',
   LOG_FILES_DIR_WITH_ERROR: 'log-files-dir-with-error',
@@ -37,8 +38,8 @@ function registerIpcMainListeners() {
     CHANNELS.OPEN_DIALOG_AND_SET_VRCHAT_PHOTO_DIR,
     controller.handleOpenDialogAndSetVRChatPhotoDir,
   );
-  ipcMain.on(CHANNELS.MESSAGE, (_, message) => {
-    log.info(message);
+  ipcMain.on(CHANNELS.ERROR_MESSAGE, (_, message) => {
+    log.error(message);
   });
 }
 
@@ -94,19 +95,35 @@ function createWindow(): BrowserWindow {
   return mainWindow;
 }
 
-process.on('uncaughtException', (error) => {
-  log.error(error);
-  throw error;
-});
+app
+  .whenReady()
+  .then(() => {
+    registerIpcMainListeners();
+    const window = createWindow();
 
-app.whenReady().then(() => {
-  registerIpcMainListeners();
-  createWindow();
+    app.on('activate', () => {
+      if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    });
 
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    // エラーを記録する
+    unhandled({
+      logger: (error) => {
+        log.error(error);
+      },
+    });
+    process.on('uncaughtException', (error) => {
+      log.error(error);
+    });
+    process.on('unhandledRejection', (error) => {
+      log.error(error);
+    });
+    window.webContents.on('crashed', (error) => {
+      log.error(error);
+    });
+  })
+  .catch((error) => {
+    log.error(error);
   });
-});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();

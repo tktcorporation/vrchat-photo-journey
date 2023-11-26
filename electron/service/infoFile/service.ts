@@ -1,5 +1,6 @@
 import path from 'path';
 import * as datefns from 'date-fns';
+import * as datefnsTz from 'date-fns-tz';
 import * as neverthrow from 'neverthrow';
 import * as fs from '../../lib/wrappedFs';
 
@@ -34,6 +35,19 @@ const getToCreateMap = async (
       const fileName = `${vrchatLogService.convertWorldJoinLogInfoToOneLine(
         info,
       )}.jpeg`;
+      const date = new Date(
+        Number(info.year),
+        Number(info.month) - 1,
+        Number(info.day),
+        Number(info.hour),
+        Number(info.minute),
+        Number(info.second),
+      );
+      // date は local time なので utc に変換
+      // timezone は実行環境から取得する
+      const { timeZone } = Intl.DateTimeFormat().resolvedOptions();
+      const utcDate = datefnsTz.zonedTimeToUtc(date, timeZone);
+
       const contentImage = await createOGPImage({
         worldName: info.worldName,
         date: {
@@ -42,14 +56,7 @@ const getToCreateMap = async (
           day: Number(info.day),
         },
         exif: {
-          dateTimeOriginal: new Date(
-            Number(info.year),
-            Number(info.month) - 1,
-            Number(info.day),
-            Number(info.hour),
-            Number(info.minute),
-            Number(info.second),
-          ),
+          dateTimeOriginal: utcDate,
           description: info.worldId,
         },
       });
