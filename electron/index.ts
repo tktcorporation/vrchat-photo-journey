@@ -98,7 +98,6 @@ function createWindow(): BrowserWindow {
 app
   .whenReady()
   .then(() => {
-    log.catchErrors;
     registerIpcMainListeners();
     const window = createWindow();
 

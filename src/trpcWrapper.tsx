@@ -8,7 +8,7 @@ import { trpcReact } from './trpc';
 export default ({ children }: { children: React.ReactNode }) => {
   const handleError = (error: Error) => {
     window.Main.sendErrorMessage(
-      `Error caught by ErrorBoundary: ${error.toString()}. Stack trace: ${
+      `Error caught by TrpcWrapper: ${error.toString()}. Stack trace: ${
         error.stack
       }`,
     );
