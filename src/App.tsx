@@ -1,7 +1,6 @@
 import Onboarding from '@/page/onboarding/Onboarding';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ipcLink } from 'electron-trpc/renderer';
 import React from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
 import { HashRouter, Route, Routes } from 'react-router-dom';
 import Template from './Template';
 import AppBar from './components/AppBar';
@@ -10,23 +9,29 @@ import CreateJoinInfo from './page/CreateJoinInfo';
 import PhotoList from './page/PhotoList';
 import Setting from './page/Setting';
 
+import { ErrorFallback } from './ErrorBoundary';
+
 import DefaultLayout from './components/DefaultLayout';
 import { ROUTER_PATHS } from './constants';
 import CreatedResult from './page/CreatedResult';
 import VRChatLogPathSetting from './page/setting/VRChatLogPathSetting';
 import VRChatPhotoPathSetting from './page/setting/VRChatPhotoPathSetting';
-import { trpcReact } from './trpc';
-
-const queryClient = new QueryClient();
-const trpcClient = trpcReact.createClient({
-  links: [ipcLink()],
-});
+import TrpcWrapper from './trpcWrapper';
 
 function Router() {
   return (
-    <trpcReact.Provider client={trpcClient} queryClient={queryClient}>
-      <QueryClientProvider client={queryClient}>
-        <Template>
+    <TrpcWrapper>
+      <Template>
+        <ErrorBoundary
+          FallbackComponent={ErrorFallback}
+          onError={(error: Error, info: React.ErrorInfo) => {
+            window.Main.sendErrorMessage(
+              `Error caught by ErrorBoundary: ${error.toString()}. Stack trace: ${
+                info.componentStack
+              }`,
+            );
+          }}
+        >
           <HashRouter>
             <DefaultLayout>
               <Routes>
@@ -56,9 +61,9 @@ function Router() {
               </Routes>
             </DefaultLayout>
           </HashRouter>
-        </Template>
-      </QueryClientProvider>
-    </trpcReact.Provider>
+        </ErrorBoundary>
+      </Template>
+    </TrpcWrapper>
   );
 }
 

@@ -9,7 +9,19 @@ import * as service from './service';
 
 const ee = new EventEmitter();
 
-const t = initTRPC.create({ isServer: true });
+const t = initTRPC.create({
+  isServer: true,
+});
+
+// エラーハンドリング
+// t.middleware(({ next }) => {
+//   return next().catch((err) => {
+//     ee.emit('toast', err.message);
+//     log.error(err);
+//     throw err;
+//   });
+// });
+
 const { procedure } = t;
 
 export const router = t.router({

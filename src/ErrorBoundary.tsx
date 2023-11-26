@@ -1,22 +1,19 @@
 import React from 'react';
+import { FallbackProps } from 'react-error-boundary';
 
-type Props = {
-  children: React.ReactNode;
+const ErrorFallback: React.FC<FallbackProps> = ({
+  error,
+  resetErrorBoundary,
+}) => {
+  return (
+    <div role="alert">
+      <p>何か問題が発生しました。</p>
+      <pre>{error.message}</pre>
+      <button type="button" onClick={resetErrorBoundary}>
+        リトライ
+      </button>
+    </div>
+  );
 };
 
-class ErrorBoundary extends React.Component<Props> {
-  componentDidCatch(error: Error, info: React.ErrorInfo) {
-    window.Main.sendMessage(
-      `Error caught by ErrorBoundary: ${error.toString()}. Stack trace: ${
-        info.componentStack
-      }`,
-    );
-  }
-
-  render() {
-    const { children } = this.props;
-    return children;
-  }
-}
-
-export default ErrorBoundary;
+export { ErrorFallback };

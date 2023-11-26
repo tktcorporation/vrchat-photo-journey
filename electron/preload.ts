@@ -54,8 +54,8 @@ const api = {
    *
    * The function below can accessed using `window.Main.sayHello`
    */
-  sendMessage: (message: string) => {
-    ipcRenderer.send('message', message);
+  sendErrorMessage: (message: string) => {
+    ipcRenderer.send('error-message', message);
   },
   setLogFilePath: (path: string) => {
     ipcRenderer.send('set-log-file-path', path);
