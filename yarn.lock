@@ -1517,6 +1517,18 @@
   dependencies:
     "@types/ms" "*"
 
+"@types/electron-is-dev@^1.1.1":
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/@types/electron-is-dev/-/electron-is-dev-1.1.1.tgz#b48cb249b4615915b16477891160414b57b9a8c5"
+  integrity sha512-axJ7z6N/FfXHf0Q6MO75Sl7gXCqAeIJMxxYd8n80FNmGev8GPHMcva31zQQX+i4B7aBUzdyVY1UfQeFxph3xVQ==
+  dependencies:
+    electron-is-dev "*"
+
+"@types/eslint-config-prettier@6.11.3":
+  version "6.11.3"
+  resolved "https://registry.yarnpkg.com/@types/eslint-config-prettier/-/eslint-config-prettier-6.11.3.tgz#319f53eeb5a8b50e702fa081a9fe39bf01df8c1d"
+  integrity sha512-3wXCiM8croUnhg9LdtZUJQwNcQYGWxxdOWDjPe1ykCqJFPVpzAKfs/2dgSoCtAvdPeaponcWPI7mPcGGp9dkKQ==
+
 "@types/eslint-utils@^3.0.0":
   version "3.0.4"
   resolved "https://registry.npmjs.org/@types/eslint-utils/-/eslint-utils-3.0.4.tgz"
@@ -1529,6 +1541,14 @@
   version "8.44.6"
   resolved "https://registry.npmjs.org/@types/eslint/-/eslint-8.44.6.tgz"
   integrity sha512-P6bY56TVmX8y9J87jHNgQh43h6VVU+6H7oN7hgvivV81K2XY8qJZ5vqPy/HdUoVIelii2kChYVzQanlswPWVFw==
+  dependencies:
+    "@types/estree" "*"
+    "@types/json-schema" "*"
+
+"@types/eslint@8.44.7":
+  version "8.44.7"
+  resolved "https://registry.yarnpkg.com/@types/eslint/-/eslint-8.44.7.tgz#430b3cc96db70c81f405e6a08aebdb13869198f5"
+  integrity sha512-f5ORu2hcBbKei97U73mf+l9t4zTGl74IqZ0GQk4oVea/VS8tQZYkUveSYojk+frraAVYId0V2WC9O4PTNru2FQ==
   dependencies:
     "@types/estree" "*"
     "@types/json-schema" "*"
@@ -3077,7 +3097,7 @@ electron-builder@^24.6.4:
     simple-update-notifier "2.0.0"
     yargs "^17.6.2"
 
-electron-is-dev@^2.0.0:
+electron-is-dev@*, electron-is-dev@^2.0.0:
   version "2.0.0"
   resolved "https://registry.npmjs.org/electron-is-dev/-/electron-is-dev-2.0.0.tgz"
   integrity sha512-3X99K852Yoqu9AcW50qz3ibYBWY79/pBhlMCab8ToEWS48R0T9tyxRiQhwylE7zQdXrMnx2JKqUJyMPmt5FBqA==
