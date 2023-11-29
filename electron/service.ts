@@ -70,6 +70,7 @@ const getConfigAndValidateAndGetToCreateInfoFileMap = async (): Promise<
   const result = await infoFileService.getToCreateMap(
     vrchatPhotoDir.path,
     worldJoinLogInfoList,
+    128,
   );
   return result.mapErr((error) => {
     return `${error}`;

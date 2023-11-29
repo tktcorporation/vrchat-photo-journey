@@ -183,7 +183,7 @@ const getVRChatPhotoItemData = async (
   photoPath: string,
 ): Promise<neverthrow.Result<Buffer, Error>> => {
   try {
-    return neverthrow.ok(await sharp(photoPath).resize(512).toBuffer());
+    return neverthrow.ok(await sharp(photoPath).resize(256).toBuffer());
   } catch (e) {
     if (e instanceof Error) {
       return neverthrow.err(e);

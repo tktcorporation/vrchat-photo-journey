@@ -10,6 +10,7 @@ import { createOGPImage } from './createWorldNameImage';
 const getToCreateMap = async (
   vrchatPhotoDir: string,
   worldJoinLogInfoList: vrchatLogService.WorldJoinLogInfo[],
+  imageWidth?: number,
 ): Promise<
   neverthrow.Result<
     {
@@ -59,6 +60,7 @@ const getToCreateMap = async (
           dateTimeOriginal: utcDate,
           description: info.worldId,
         },
+        imageWidth,
       });
       return { info, yearMonthPath, fileName, content: contentImage };
     }),
