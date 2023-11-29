@@ -31,7 +31,7 @@
     "type-check": "tsc",
     "find-deadcode": "ts-prune",
     "test": "jest",
-    "lint": "npx @biomejs/biome lint .",
+    "lint": "npx @biomejs/biome check .",
     "lint:fix": "npx @biomejs/biome check --apply ."
   },
   "dependencies": {
@@ -110,7 +110,7 @@
     "typescript": "^5.2.2"
   },
   "simple-git-hooks": {
-    "pre-commit": "yarn type-check && yarn lint"
+    "pre-commit": "yarn lint && yarn type-check"
   },
   "build": {
     "asar": true,

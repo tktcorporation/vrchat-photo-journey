@@ -24,7 +24,7 @@ jobs:
         run: yarn install --frozen-lockfile
 
       - name: lint
-        run: yarn type-check && yarn lint
+        run: yarn lint && yarn type-check
 
   create_tag:
     runs-on: ubuntu-latest

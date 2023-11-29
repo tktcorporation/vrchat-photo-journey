@@ -26,6 +26,7 @@ module.exports = {
     'object-curly-newline': 'off',
     'implicit-arrow-linebreak': 'off',
     'function-paren-newline': 'off',
+    'react/jsx-curly-newline': 'off',
     // Typescript
     'no-use-before-define': 'off',
     'import/prefer-default-export': 'off',

@@ -5,6 +5,8 @@ import z from 'zod';
 
 // 呼び出し元は集約したい
 import path from 'path';
+import { TRPCClientError } from '@trpc/client';
+import { Result } from 'neverthrow';
 import * as service from './service';
 
 const ee = new EventEmitter();
@@ -227,13 +229,42 @@ export const router = t.router({
     .input(z.object({ year: z.string(), month: z.string() }))
     .query(async (ctx) => {
       const result = await service.getVRChatPhotoWithWorldIdAndDate(ctx.input);
+      type ExtractDataTypeFromResult<R> = R extends Result<infer T, unknown>
+        ? T
+        : never;
+      type ExtractErrorTypeFromResult<R> = R extends Result<unknown, infer T>
+        ? T
+        : never;
+      const response: {
+        data: null | ExtractDataTypeFromResult<typeof result>;
+        error: null | {
+          code: ExtractErrorTypeFromResult<typeof result>;
+          message: string;
+        };
+      } = {
+        data: null,
+        error: null,
+      };
       return result.match(
         (r) => {
-          return r;
+          response.data = r;
+          return response;
         },
         (error) => {
           ee.emit('toast', error);
-          return [];
+          if (
+            error === 'PHOTO_DIR_READ_ERROR' ||
+            error === 'YEAR_MONTH_DIR_ENOENT'
+          ) {
+            return {
+              data: null,
+              error: {
+                code: error,
+                message: '写真の読み込みに失敗しました',
+              },
+            };
+          }
+          throw new TRPCClientError(error);
         },
       );
     }),

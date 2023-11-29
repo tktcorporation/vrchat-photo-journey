@@ -6,10 +6,12 @@ type Props = {
 };
 function DefaultLayout({ children }: Props) {
   return (
-    <>
-      <MainNav />
-      {children}
-    </>
+    <div className="flex flex-col h-full">
+      <div>
+        <MainNav />
+      </div>
+      <div className="overflow-auto flex-grow">{children}</div>
+    </div>
   );
 }
 

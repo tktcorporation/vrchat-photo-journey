@@ -14,14 +14,20 @@ interface Props {
     dateTimeOriginal: Date;
     description: string;
   };
+  imageWidth?: number;
 }
 
-const createOGPImage = async ({ worldName, date, exif }: Props) => {
+const createOGPImage = async ({ worldName, date, exif, imageWidth }: Props) => {
   const title = worldName;
+  // 縦横比率
+  const aspectRatio = 1200 / 630;
+  const imageHeight = imageWidth ? imageWidth / aspectRatio : undefined;
 
   // SVGを生成
   const svg = `
-  <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${1200}" height="${630}">
+  <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${
+    imageWidth ?? 1200
+  }" height="${imageHeight ?? 630}" viewBox="0 0 1200 630">
     <!-- フィルター定義 -->
     <defs>
       <!-- 影フィルター -->
@@ -73,31 +79,32 @@ const createOGPImage = async ({ worldName, date, exif }: Props) => {
   </svg>`;
 
   // sharp: SVG画像をJPEG画像に変換
-  return (
-    sharp(Buffer.from(svg))
-      .jpeg()
-      // exif に撮影日のデータを記録
-      .withMetadata({
-        exif: {
-          IFD0: {
-            DateTime: datefns.format(
-              exif.dateTimeOriginal,
-              'yyyy-MM-dd HH:mm:ss',
-            ),
-            DateTimeDigitized: datefns.format(
-              exif.dateTimeOriginal,
-              'yyyy-MM-dd HH:mm:ss',
-            ),
-            DateTimeOriginal: datefns.format(
-              exif.dateTimeOriginal,
-              'yyyy-MM-dd HH:mm:ss',
-            ),
-            ImageDescription: exif.description,
-          },
+  let file = sharp(Buffer.from(svg))
+    .jpeg()
+    // exif に撮影日のデータを記録
+    .withMetadata({
+      exif: {
+        IFD0: {
+          DateTime: datefns.format(
+            exif.dateTimeOriginal,
+            'yyyy-MM-dd HH:mm:ss',
+          ),
+          DateTimeDigitized: datefns.format(
+            exif.dateTimeOriginal,
+            'yyyy-MM-dd HH:mm:ss',
+          ),
+          DateTimeOriginal: datefns.format(
+            exif.dateTimeOriginal,
+            'yyyy-MM-dd HH:mm:ss',
+          ),
+          ImageDescription: exif.description,
         },
-      })
-      .toBuffer()
-  );
+      },
+    });
+  if (imageWidth) {
+    file = file.resize(imageWidth);
+  }
+  return file.toBuffer();
 };
 
 export { createOGPImage };

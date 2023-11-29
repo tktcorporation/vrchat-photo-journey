@@ -6,8 +6,10 @@ import Sidebar from '@/components/SideBar';
 import Photo from '@/components/ui/Photo';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { ROUTER_PATHS } from '@/constants';
 import { AppRouter } from 'electron/api';
 import { RefreshCw } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 type YearMonth = {
   year: string;
@@ -30,8 +32,16 @@ function PhotoList() {
     React.useState<YearMonth>(firstYearMonth);
   const [photoItemList, setPhotoItemList] =
     React.useState<
-      inferProcedureOutput<AppRouter['getVRChatPhotoWithWorldIdAndDate']>
+      inferProcedureOutput<
+        AppRouter['getVRChatPhotoWithWorldIdAndDate']
+      >['data']
     >();
+  const [photoItemFetchError, setPhotoItemFetchError] =
+    React.useState<
+      inferProcedureOutput<
+        AppRouter['getVRChatPhotoWithWorldIdAndDate']
+      >['error']
+    >(null);
   const sortedPhotoItemList = photoItemList?.sort((a, b) => {
     if (!a || !b) return 0;
     const datetimeA =
@@ -77,17 +87,17 @@ function PhotoList() {
     );
 
   useEffect(() => {
-    if (photoItemListQuery.data) {
-      setPhotoItemList(photoItemListQuery.data);
-    }
+    const { data } = photoItemListQuery;
+    setPhotoItemList(data?.data);
+    setPhotoItemFetchError(data?.error ?? null);
+
     // refetch関数を状態に保存します。
     setRefetchPhotoItemList(() => () => photoItemListQuery.refetch());
   }, [
     photoItemListQuery,
-    photoItemListQuery.data,
-    photoItemListQuery.refetch,
     setRefetchPhotoItemList,
     setPhotoItemList,
+    setPhotoItemFetchError,
   ]);
 
   const handleSideBarClick = (key: string) => {
@@ -116,7 +126,7 @@ function PhotoList() {
   );
 
   return (
-    <div className="h-screen grid grid-cols-5 overflow-hidden">
+    <div className="h-full grid grid-cols-5 overflow-hidden">
       <ScrollArea className="grow">
         <Sidebar
           className="col-span-1 overflow-auto"
@@ -151,22 +161,40 @@ function PhotoList() {
           </div>
         </div>
         {/* 画面サイズからはみ出さないようにする */}
-        <ScrollArea className="grow">
-          <div className="col-span-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-4">
-              {sortedPhotoItemList?.map((item) => {
-                const content =
-                  item.type === 'PHOTO' ? (
-                    <Photo photoPath={item.path} />
-                  ) : (
-                    <Photo photoPath={item.path} />
-                  );
-
-                return <div key={item.path}>{content}</div>;
-              })}
+        {photoItemFetchError !== null ? (
+          <div className="flex justify-center items-center h-full">
+            <div className="text-center space-y-4">
+              <div className="space-y-2">
+                <h1 className="text-xl font-bold">設定を完了させてください</h1>
+                <p>
+                  {photoItemFetchError.code} {photoItemFetchError.message}
+                </p>
+              </div>
+              <div>
+                <Link to={ROUTER_PATHS.SETTING} className="text-blue-500">
+                  設定画面へ
+                </Link>
+              </div>
             </div>
           </div>
-        </ScrollArea>
+        ) : (
+          <ScrollArea>
+            <div className="col-span-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-4">
+                {sortedPhotoItemList?.map((item) => {
+                  const content =
+                    item.type === 'PHOTO' ? (
+                      <Photo photoPath={item.path} />
+                    ) : (
+                      <Photo photoPath={item.path} />
+                    );
+
+                  return <div key={item.path}>{content}</div>;
+                })}
+              </div>
+            </div>
+          </ScrollArea>
+        )}
       </div>
     </div>
   );
