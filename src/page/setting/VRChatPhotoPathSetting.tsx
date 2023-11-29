@@ -25,7 +25,7 @@ function Setting() {
   const navigate = useNavigate();
 
   return (
-    <div className="flex-auto">
+    <div className="flex-auto h-full">
       <div className="flex flex-col justify-center items-center h-full">
         <div className="space-y-4 flex flex-col justify-center items-center">
           <h3 className="text-lg font-medium">写真ファイルの場所</h3>
