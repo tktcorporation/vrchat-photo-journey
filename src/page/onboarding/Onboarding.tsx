@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ROUTER_PATHS } from '@/constants';
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { JoinInfoPreview } from './JoinInfoPreview';
+import { JoinInfoPreview } from '../../components/JoinInfoPreview';
 import { OnBordingPreview } from './Preview';
 import { OnBordingSetting } from './setting';
 
@@ -43,10 +43,10 @@ function Onboarding() {
             <p>すべての設定をグリーンにしてください</p>
             <OnBordingSetting />
           </TabsContent>
-          <TabsContent value="3" className="overflow-auto">
+          <TabsContent value="3">
             <OnBordingPreview />
           </TabsContent>
-          <TabsContent value="4" className="overflow-hidden">
+          <TabsContent value="4" className="overflow-hidden p-8">
             <JoinInfoPreview />
           </TabsContent>
           <TabsContent value="5">
