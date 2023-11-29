@@ -20,8 +20,8 @@ function Setting() {
   };
 
   return (
-    <div className="flex-auto">
-      <div className=" flex flex-col justify-center items-center h-full space-y-8">
+    <div className="flex-auto h-full">
+      <div className="flex flex-col justify-center items-center h-full space-y-8">
         <h3 className="text-lg font-medium">設定</h3>
         <div className="space-y-4">
           <div className="flex flex-row items-center justify-between rounded-lg border p-4 space-x-4">

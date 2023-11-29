@@ -126,7 +126,7 @@ function PhotoList() {
   );
 
   return (
-    <div className="h-screen grid grid-cols-5 overflow-hidden">
+    <div className="h-full grid grid-cols-5 overflow-hidden">
       <ScrollArea className="grow">
         <Sidebar
           className="col-span-1 overflow-auto"
