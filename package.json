@@ -31,7 +31,7 @@
     "type-check": "tsc",
     "find-deadcode": "ts-prune",
     "test": "jest",
-    "lint": "npx @biomejs/biome lint .",
+    "lint": "npx @biomejs/biome check .",
     "lint:fix": "npx @biomejs/biome check --apply ."
   },
   "dependencies": {
