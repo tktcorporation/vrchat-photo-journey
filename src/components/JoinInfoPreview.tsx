@@ -11,18 +11,15 @@ export function JoinInfoPreview({ className }: Props) {
 
   return (
     <div className={cn('space-y-4 flex flex-col h-full', className)}>
-      <div>
-        <p>写真とワールドの情報を紐付けることができます</p>
-        <p>
-          (紐づけを行えるのは最後のVRChat起動から約24時間ほど前までに撮った写真です)
-        </p>
-      </div>
       <ScrollArea>
         <div className="flex-grow overflow-y space-y-8">
           {infoMap?.map((item) => {
             if (item.tookPhotoList.length === 0) return null;
             return (
-              <div className="space-y-3" key={item.world.joinDatetime}>
+              <div
+                className="space-y-3 basis-1/2"
+                key={item.world.joinDatetime}
+              >
                 <div>
                   <p className="text-lg">{item.world.worldName}</p>
                   <p className="text-sm text-gray-500">
