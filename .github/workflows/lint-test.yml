@@ -20,7 +20,7 @@ jobs:
         run: yarn install --frozen-lockfile
 
       - name: lint
-        run: yarn type-check && yarn lint
+        run: yarn yarn lint && type-check
 
       - name: test
         run: yarn test

@@ -110,7 +110,7 @@
     "typescript": "^5.2.2"
   },
   "simple-git-hooks": {
-    "pre-commit": "yarn type-check && yarn lint"
+    "pre-commit": "yarn lint && yarn type-check"
   },
   "build": {
     "asar": true,
