@@ -6,6 +6,7 @@ import z from 'zod';
 // 呼び出し元は集約したい
 import path from 'path';
 import { TRPCClientError } from '@trpc/client';
+import * as log from 'electron-log';
 import { Result } from 'neverthrow';
 import * as service from './service';
 
@@ -23,6 +24,16 @@ const t = initTRPC.create({
 //     throw err;
 //   });
 // });
+
+const logError = (err: Error | string) => {
+  if (typeof err === 'string') {
+    ee.emit('toast', err);
+    log.error(new Error(err));
+    return;
+  }
+  ee.emit('toast', err.message);
+  log.error(new Error(err.message, { cause: err }));
+};
 
 type ExtractDataTypeFromResult<R> = R extends Result<infer T, unknown>
   ? T
@@ -83,7 +94,7 @@ export const router = t.router({
         return true;
       },
       (error) => {
-        ee.emit('toast', error);
+        logError(error);
         return false;
       },
     );
@@ -102,7 +113,7 @@ export const router = t.router({
         }));
       },
       (error) => {
-        ee.emit('toast', error);
+        logError(error);
         return [];
       },
     );
@@ -124,7 +135,7 @@ export const router = t.router({
             }[];
           }[];
       error: null | {
-        code: ExtractErrorTypeFromResult<typeof result>;
+        code: string;
         message: string;
       };
     }
@@ -146,9 +157,9 @@ export const router = t.router({
         }));
       },
       (error) => {
-        ee.emit('toast', error);
+        logError(error);
         response.error = {
-          code: error,
+          code: error.message,
           message: '写真の読み込みに失敗しました',
         };
       },
@@ -170,7 +181,7 @@ export const router = t.router({
           return undefined;
         },
         (error) => {
-          ee.emit('toast', error);
+          logError(error);
           return undefined;
         },
       );
@@ -182,7 +193,7 @@ export const router = t.router({
         return true;
       },
       (error) => {
-        ee.emit('toast', error);
+        logError(error);
         return false;
       },
     );
@@ -194,7 +205,7 @@ export const router = t.router({
         return true;
       },
       (error) => {
-        ee.emit('toast', error);
+        logError(error);
         return false;
       },
     );
@@ -207,7 +218,7 @@ export const router = t.router({
         return true;
       },
       (error) => {
-        ee.emit('toast', error);
+        logError(error);
         return false;
       },
     );
@@ -220,7 +231,7 @@ export const router = t.router({
         return true;
       },
       (error) => {
-        ee.emit('toast', error);
+        logError(error);
         return false;
       },
     );
@@ -242,7 +253,7 @@ export const router = t.router({
           }));
         },
         (error) => {
-          ee.emit('toast', error);
+          logError(error);
           return [];
         },
       );
@@ -254,7 +265,7 @@ export const router = t.router({
         return r;
       },
       (error) => {
-        ee.emit('toast', error);
+        logError(error);
         return [];
       },
     );
@@ -279,7 +290,7 @@ export const router = t.router({
           return response;
         },
         (error) => {
-          ee.emit('toast', error);
+          logError(error);
           if (
             error === 'PHOTO_DIR_READ_ERROR' ||
             error === 'YEAR_MONTH_DIR_ENOENT'
@@ -305,7 +316,7 @@ export const router = t.router({
           .replace('.', '')};base64,${r.toString('base64')}`;
       },
       (error) => {
-        ee.emit('toast', error);
+        logError(error);
         return '';
       },
     );

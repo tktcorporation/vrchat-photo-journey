@@ -126,11 +126,11 @@ const getWorldJoinInfoWithPhotoPath = async (): Promise<
         tookDatetime: Date;
       }[];
     }[],
-    string
+    Error
   >
 > => {
   const err = (error: string) => {
-    return neverthrow.err(`getWorldJoinInfoWithPhotoPath: ${error}`);
+    return neverthrow.err(new Error(`getWorldJoinInfoWithPhotoPath: ${error}`));
   };
 
   const logFilesDir = getVRChatLogFilesDir();
