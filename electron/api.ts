@@ -5,7 +5,7 @@ import z from 'zod';
 
 // 呼び出し元は集約したい
 import path from 'path';
-import { TRPCClientError } from '@trpc/client';
+import * as log from 'electron-log';
 import { Result } from 'neverthrow';
 import * as service from './service';
 
@@ -23,6 +23,23 @@ const t = initTRPC.create({
 //     throw err;
 //   });
 // });
+
+const logError = (err: Error | string) => {
+  if (typeof err === 'string') {
+    ee.emit('toast', err);
+    log.error(new Error(err));
+    return;
+  }
+  ee.emit('toast', err.message);
+  log.error(new Error(err.message, { cause: err }));
+};
+
+type ExtractDataTypeFromResult<R> = R extends Result<infer T, unknown>
+  ? T
+  : never;
+// type ExtractErrorTypeFromResult<R> = R extends Result<unknown, infer T>
+//   ? T
+//   : never;
 
 const { procedure } = t;
 
@@ -76,7 +93,7 @@ export const router = t.router({
         return true;
       },
       (error) => {
-        ee.emit('toast', error);
+        logError(error);
         return false;
       },
     );
@@ -95,16 +112,39 @@ export const router = t.router({
         }));
       },
       (error) => {
-        ee.emit('toast', error);
+        logError(error);
         return [];
       },
     );
   }),
   getWorldJoinInfoWithPhotoPath: procedure.query(async () => {
     const result = await service.getWorldJoinInfoWithPhotoPath();
-    return result.match(
+    interface Response {
+      data:
+        | null
+        | {
+            world: {
+              worldId: string;
+              worldName: string;
+              joinDatetime: string;
+            };
+            tookPhotoList: {
+              photoPath: string;
+              tookDatetime: string;
+            }[];
+          }[];
+      error: null | {
+        code: string;
+        message: string;
+      };
+    }
+    const response: Response = {
+      data: null,
+      error: null,
+    };
+    result.match(
       (r) => {
-        return r.map((obj) => ({
+        response.data = r.map((obj) => ({
           world: {
             ...obj.world,
             joinDatetime: obj.world.joinDatetime.toISOString(),
@@ -116,10 +156,14 @@ export const router = t.router({
         }));
       },
       (error) => {
-        ee.emit('toast', error);
-        return undefined;
+        logError(error);
+        response.error = {
+          code: error.message,
+          message: '写真の読み込みに失敗しました',
+        };
       },
     );
+    return response;
   }),
   clearAllStoredSettings: procedure.mutation(async () => {
     service.clearAllStoredSettings();
@@ -136,7 +180,7 @@ export const router = t.router({
           return undefined;
         },
         (error) => {
-          ee.emit('toast', error);
+          logError(error);
           return undefined;
         },
       );
@@ -148,7 +192,7 @@ export const router = t.router({
         return true;
       },
       (error) => {
-        ee.emit('toast', error);
+        logError(error);
         return false;
       },
     );
@@ -160,7 +204,7 @@ export const router = t.router({
         return true;
       },
       (error) => {
-        ee.emit('toast', error);
+        logError(error);
         return false;
       },
     );
@@ -173,7 +217,7 @@ export const router = t.router({
         return true;
       },
       (error) => {
-        ee.emit('toast', error);
+        logError(error);
         return false;
       },
     );
@@ -186,7 +230,7 @@ export const router = t.router({
         return true;
       },
       (error) => {
-        ee.emit('toast', error);
+        logError(error);
         return false;
       },
     );
@@ -208,7 +252,7 @@ export const router = t.router({
           }));
         },
         (error) => {
-          ee.emit('toast', error);
+          logError(error);
           return [];
         },
       );
@@ -220,7 +264,7 @@ export const router = t.router({
         return r;
       },
       (error) => {
-        ee.emit('toast', error);
+        logError(error);
         return [];
       },
     );
@@ -229,16 +273,10 @@ export const router = t.router({
     .input(z.object({ year: z.string(), month: z.string() }))
     .query(async (ctx) => {
       const result = await service.getVRChatPhotoWithWorldIdAndDate(ctx.input);
-      type ExtractDataTypeFromResult<R> = R extends Result<infer T, unknown>
-        ? T
-        : never;
-      type ExtractErrorTypeFromResult<R> = R extends Result<unknown, infer T>
-        ? T
-        : never;
       const response: {
         data: null | ExtractDataTypeFromResult<typeof result>;
         error: null | {
-          code: ExtractErrorTypeFromResult<typeof result>;
+          code: string;
           message: string;
         };
       } = {
@@ -251,20 +289,14 @@ export const router = t.router({
           return response;
         },
         (error) => {
-          ee.emit('toast', error);
-          if (
-            error === 'PHOTO_DIR_READ_ERROR' ||
-            error === 'YEAR_MONTH_DIR_ENOENT'
-          ) {
-            return {
-              data: null,
-              error: {
-                code: error,
-                message: '写真の読み込みに失敗しました',
-              },
-            };
-          }
-          throw new TRPCClientError(error);
+          logError(error);
+          return {
+            data: null,
+            error: {
+              code: error.name,
+              message: `写真の読み込みに失敗しました: ${error.message}`,
+            },
+          };
         },
       );
     }),
@@ -277,7 +309,7 @@ export const router = t.router({
           .replace('.', '')};base64,${r.toString('base64')}`;
       },
       (error) => {
-        ee.emit('toast', error);
+        logError(error);
         return '';
       },
     );
