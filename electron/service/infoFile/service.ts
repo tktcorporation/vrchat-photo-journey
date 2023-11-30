@@ -49,8 +49,16 @@ const getToCreateMap = async (
       // timezone は実行環境から取得する
       const { timeZone } = Intl.DateTimeFormat().resolvedOptions();
       log.info(`timeZone: ${timeZone}`);
-      const utcDate = datefnsTz.zonedTimeToUtc(date, timeZone);
+      const localDateString = datefns.format(date, 'yyyy-MM-dd HH:mm:ss');
+      log.info(`localDateString: ${localDateString}`);
+      const utcDate = datefnsTz.zonedTimeToUtc(localDateString, timeZone);
       log.info(`date: ${date} -> utcDate: ${utcDate}`);
+      log.info(
+        `date: ${datefns.format(
+          date,
+          'yyyy-MM-dd HH:mm:ss',
+        )} -> utcDate: ${datefns.format(utcDate, 'yyyy-MM-dd HH:mm:ss')}`,
+      );
 
       const contentImage = await createOGPImage({
         worldName: info.worldName,
