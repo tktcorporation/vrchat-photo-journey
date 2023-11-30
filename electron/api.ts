@@ -24,6 +24,13 @@ const t = initTRPC.create({
 //   });
 // });
 
+type ExtractDataTypeFromResult<R> = R extends Result<infer T, unknown>
+  ? T
+  : never;
+type ExtractErrorTypeFromResult<R> = R extends Result<unknown, infer T>
+  ? T
+  : never;
+
 const { procedure } = t;
 
 export const router = t.router({
@@ -102,9 +109,32 @@ export const router = t.router({
   }),
   getWorldJoinInfoWithPhotoPath: procedure.query(async () => {
     const result = await service.getWorldJoinInfoWithPhotoPath();
-    return result.match(
+    interface Response {
+      data:
+        | null
+        | {
+            world: {
+              worldId: string;
+              worldName: string;
+              joinDatetime: string;
+            };
+            tookPhotoList: {
+              photoPath: string;
+              tookDatetime: string;
+            }[];
+          }[];
+      error: null | {
+        code: ExtractErrorTypeFromResult<typeof result>;
+        message: string;
+      };
+    }
+    const response: Response = {
+      data: null,
+      error: null,
+    };
+    result.match(
       (r) => {
-        return r.map((obj) => ({
+        response.data = r.map((obj) => ({
           world: {
             ...obj.world,
             joinDatetime: obj.world.joinDatetime.toISOString(),
@@ -117,9 +147,13 @@ export const router = t.router({
       },
       (error) => {
         ee.emit('toast', error);
-        return undefined;
+        response.error = {
+          code: error,
+          message: '写真の読み込みに失敗しました',
+        };
       },
     );
+    return response;
   }),
   clearAllStoredSettings: procedure.mutation(async () => {
     service.clearAllStoredSettings();
@@ -229,12 +263,6 @@ export const router = t.router({
     .input(z.object({ year: z.string(), month: z.string() }))
     .query(async (ctx) => {
       const result = await service.getVRChatPhotoWithWorldIdAndDate(ctx.input);
-      type ExtractDataTypeFromResult<R> = R extends Result<infer T, unknown>
-        ? T
-        : never;
-      type ExtractErrorTypeFromResult<R> = R extends Result<unknown, infer T>
-        ? T
-        : never;
       const response: {
         data: null | ExtractDataTypeFromResult<typeof result>;
         error: null | {
