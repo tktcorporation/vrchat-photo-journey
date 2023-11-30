@@ -2,6 +2,8 @@ import * as neverthrow from 'neverthrow';
 
 import path from 'path';
 import * as datefns from 'date-fns';
+import * as log from 'electron-log';
+import { YearMonthPathNotFoundError } from './service/error';
 import * as infoFileService from './service/infoFile/service';
 import {
   JoinInfoFileNameSchema,
@@ -187,12 +189,19 @@ const getWorldJoinInfoWithPhotoPath = async (): Promise<
   }[] = [];
   for (const d of eachMonth) {
     const monthString = datefns.format(d, 'yyyy-MM');
+    // path が存在しているか先に確認
     const photoPathListResult =
       vrchatPhotoService.getVRChatPhotoOnlyItemPathListByYearMonth(
         monthString.split('-')[0],
         monthString.split('-')[1],
       );
     if (photoPathListResult.isErr()) {
+      if (photoPathListResult.error instanceof YearMonthPathNotFoundError) {
+        // その月のディレクトリが存在しない場合はスキップ
+        // 撮影していない月であれば存在しない
+        log.warn(`yearMonth dir is not found ${photoPathListResult.error}`);
+        continue;
+      }
       return err(photoPathListResult.error);
     }
     photoPathList.push(

@@ -5,6 +5,7 @@ import sharp from 'sharp';
 import { match } from 'ts-pattern';
 import * as fs from '../../lib/wrappedFs';
 import * as settingStore from '../../settingStore';
+import { YearMonthPathNotFoundError } from '../error';
 import * as t from '../type';
 
 const getDefaultVRChatPhotoDir = (): string => {
@@ -92,7 +93,7 @@ const getVRChatPhotoFolderYearMonthList = (): neverthrow.Result<
 const getVRChatPhotoItemPathListByYearMonth = (
   year: string,
   month: string,
-): neverthrow.Result<string[], Error> => {
+): neverthrow.Result<string[], Error | YearMonthPathNotFoundError> => {
   const { path: photoDir, error } = getVRChatPhotoDir();
   if (error !== null) {
     return match(error)
@@ -110,7 +111,7 @@ const getVRChatPhotoItemPathListByYearMonth = (
   if (photoItemNamesResult.isErr()) {
     return match(photoItemNamesResult.error)
       .with('ENOENT', () =>
-        neverthrow.err(new Error(photoItemNamesResult.error)),
+        neverthrow.err(new YearMonthPathNotFoundError(yearMonthDir)),
       )
       .exhaustive();
   }
@@ -133,6 +134,9 @@ const getVRChatPhotoOnlyItemPathListByYearMonth = (
 > => {
   const itemListResult = getVRChatPhotoItemPathListByYearMonth(year, month);
   if (itemListResult.isErr()) {
+    if (itemListResult.error instanceof YearMonthPathNotFoundError) {
+      return neverthrow.err(itemListResult.error);
+    }
     return neverthrow.err(
       new Error('itemListResultError', { cause: itemListResult.error }),
     );

@@ -19,6 +19,8 @@ module.exports = {
   },
   plugins: ['react', '@typescript-eslint', 'eslint-plugin-jest'],
   rules: {
+    // override
+    'no-continue': 'off',
     // override for biome
     'operator-linebreak': 'off',
     'arrow-body-style': 'off',
