@@ -82,7 +82,9 @@ function PhotoList() {
     trpcReact.getVRChatPhotoWithWorldIdAndDate.useQuery(
       selectedFolderYearMonth,
       {
-        enabled: !!selectedFolderYearMonth,
+        enabled: !!(
+          selectedFolderYearMonth.year && selectedFolderYearMonth.month
+        ),
       },
     );
 
