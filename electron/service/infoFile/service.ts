@@ -1,6 +1,7 @@
 import path from 'path';
 import * as datefns from 'date-fns';
 import * as datefnsTz from 'date-fns-tz';
+import * as log from 'electron-log';
 import * as neverthrow from 'neverthrow';
 import * as fs from '../../lib/wrappedFs';
 
@@ -47,7 +48,9 @@ const getToCreateMap = async (
       // date は local time なので utc に変換
       // timezone は実行環境から取得する
       const { timeZone } = Intl.DateTimeFormat().resolvedOptions();
+      log.info(`timeZone: ${timeZone}`);
       const utcDate = datefnsTz.zonedTimeToUtc(date, timeZone);
+      log.info(`date: ${date} -> utcDate: ${utcDate}`);
 
       const contentImage = await createOGPImage({
         worldName: info.worldName,
