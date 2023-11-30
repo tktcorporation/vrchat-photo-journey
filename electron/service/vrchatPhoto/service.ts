@@ -92,19 +92,14 @@ const getVRChatPhotoFolderYearMonthList = (): neverthrow.Result<
 const getVRChatPhotoItemPathListByYearMonth = (
   year: string,
   month: string,
-): neverthrow.Result<
-  string[],
-  'YEAR_MONTH_DIR_ENOENT' | 'PHOTO_DIR_READ_ERROR'
-> => {
+): neverthrow.Result<string[], Error> => {
   const { path: photoDir, error } = getVRChatPhotoDir();
   if (error !== null) {
     return match(error)
       .with('photoYearMonthDirsNotFound', () =>
-        neverthrow.err('YEAR_MONTH_DIR_ENOENT' as const),
+        neverthrow.err(new Error(error)),
       )
-      .with('photoDirReadError', () =>
-        neverthrow.err('PHOTO_DIR_READ_ERROR' as const),
-      )
+      .with('photoDirReadError', () => neverthrow.err(new Error(error)))
       .exhaustive();
   }
   const yearMonthDir = path.join(
@@ -114,7 +109,9 @@ const getVRChatPhotoItemPathListByYearMonth = (
   const photoItemNamesResult = fs.readDirSyncSafe(yearMonthDir);
   if (photoItemNamesResult.isErr()) {
     return match(photoItemNamesResult.error)
-      .with('ENOENT', () => neverthrow.err('YEAR_MONTH_DIR_ENOENT' as const))
+      .with('ENOENT', () =>
+        neverthrow.err(new Error(photoItemNamesResult.error)),
+      )
       .exhaustive();
   }
   const photoItemPathList = photoItemNamesResult.value.map((photoItemName) =>
@@ -132,11 +129,13 @@ const getVRChatPhotoOnlyItemPathListByYearMonth = (
   month: string,
 ): neverthrow.Result<
   { path: string; info: t.ParsedPhotoFileName }[],
-  'YEAR_MONTH_DIR_ENOENT' | 'PHOTO_DIR_READ_ERROR'
+  Error
 > => {
   const itemListResult = getVRChatPhotoItemPathListByYearMonth(year, month);
   if (itemListResult.isErr()) {
-    return neverthrow.err(itemListResult.error);
+    return neverthrow.err(
+      new Error('itemListResultError', { cause: itemListResult.error }),
+    );
   }
   const photoItemPathList = itemListResult.value.map((itemPath) => {
     const itemExt = path.extname(itemPath);

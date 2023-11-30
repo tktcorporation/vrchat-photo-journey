@@ -5,7 +5,6 @@ import z from 'zod';
 
 // 呼び出し元は集約したい
 import path from 'path';
-import { TRPCClientError } from '@trpc/client';
 import * as log from 'electron-log';
 import { Result } from 'neverthrow';
 import * as service from './service';
@@ -38,9 +37,9 @@ const logError = (err: Error | string) => {
 type ExtractDataTypeFromResult<R> = R extends Result<infer T, unknown>
   ? T
   : never;
-type ExtractErrorTypeFromResult<R> = R extends Result<unknown, infer T>
-  ? T
-  : never;
+// type ExtractErrorTypeFromResult<R> = R extends Result<unknown, infer T>
+//   ? T
+//   : never;
 
 const { procedure } = t;
 
@@ -277,7 +276,7 @@ export const router = t.router({
       const response: {
         data: null | ExtractDataTypeFromResult<typeof result>;
         error: null | {
-          code: ExtractErrorTypeFromResult<typeof result>;
+          code: string;
           message: string;
         };
       } = {
@@ -291,19 +290,13 @@ export const router = t.router({
         },
         (error) => {
           logError(error);
-          if (
-            error === 'PHOTO_DIR_READ_ERROR' ||
-            error === 'YEAR_MONTH_DIR_ENOENT'
-          ) {
-            return {
-              data: null,
-              error: {
-                code: error,
-                message: '写真の読み込みに失敗しました',
-              },
-            };
-          }
-          throw new TRPCClientError(error);
+          return {
+            data: null,
+            error: {
+              code: error.name,
+              message: `写真の読み込みに失敗しました: ${error.message}`,
+            },
+          };
         },
       );
     }),

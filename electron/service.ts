@@ -129,8 +129,17 @@ const getWorldJoinInfoWithPhotoPath = async (): Promise<
     Error
   >
 > => {
-  const err = (error: string) => {
-    return neverthrow.err(new Error(`getWorldJoinInfoWithPhotoPath: ${error}`));
+  const err = (error: string | Error) => {
+    if (typeof error === 'string') {
+      return neverthrow.err(
+        new Error(`getWorldJoinInfoWithPhotoPath: ${error}`),
+      );
+    }
+    return neverthrow.err(
+      new Error(`getWorldJoinInfoWithPhotoPath: ${error.message}`, {
+        cause: error,
+      }),
+    );
   };
 
   const logFilesDir = getVRChatLogFilesDir();
@@ -284,14 +293,16 @@ const getVRChatPhotoWithWorldIdAndDate = ({
         worldId: string;
       }
   )[],
-  'YEAR_MONTH_DIR_ENOENT' | 'PHOTO_DIR_READ_ERROR'
+  Error
 > => {
   const result = vrchatPhotoService.getVRChatPhotoItemPathListByYearMonth(
     year,
     month,
   );
   if (result.isErr()) {
-    return neverthrow.err(result.error);
+    return neverthrow.err(
+      new Error(`${result.error}`, { cause: result.error }),
+    );
   }
   const pathList = result.value;
   const objList = pathList.map((item) => {
