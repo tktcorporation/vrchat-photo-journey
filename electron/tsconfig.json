@@ -10,6 +10,7 @@
     "types": ["jest"],
     "module": "commonjs",
     "moduleResolution": "node",
+    "sourceMap": true,
     "noEmit": false,
     "noFallthroughCasesInSwitch": true,
     "noUnusedLocals": true,
