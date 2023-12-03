@@ -20,6 +20,7 @@ export default ({ command }: ConfigEnv): UserConfig => {
         outDir: join(srcRoot, '/out'),
         emptyOutDir: true,
         rollupOptions: {},
+        sourcemap: true,
       },
       server: {
         port: process.env.PORT === undefined ? 3000 : +process.env.PORT,
@@ -43,6 +44,7 @@ export default ({ command }: ConfigEnv): UserConfig => {
       outDir: join(srcRoot, '/out'),
       emptyOutDir: true,
       rollupOptions: {},
+      sourcemap: true,
     },
     server: {
       port: process.env.PORT === undefined ? 3000 : +process.env.PORT,
