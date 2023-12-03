@@ -131,6 +131,7 @@ const getWorldJoinInfoWithPhotoPath = async (): Promise<
     Error
   >
 > => {
+  log.info('getWorldJoinInfoWithPhotoPath');
   const err = (error: string | Error) => {
     if (typeof error === 'string') {
       return neverthrow.err(
@@ -154,6 +155,9 @@ const getWorldJoinInfoWithPhotoPath = async (): Promise<
     return err(`${convertWorldJoinLogInfoListResult.error.code}`);
   }
   const convertWorldJoinLogInfoList = convertWorldJoinLogInfoListResult.value;
+  log.debug(
+    `convertWorldJoinLogInfoList len ${convertWorldJoinLogInfoList.length}`,
+  );
 
   const worldJoinInfoList = convertWorldJoinLogInfoList.map((info) => {
     return {
@@ -166,10 +170,13 @@ const getWorldJoinInfoWithPhotoPath = async (): Promise<
       ),
     };
   });
+  log.debug(`worldJoinInfoList len ${worldJoinInfoList.length}`);
   // sort by date asc
   const sortedWorldJoinInfoList = worldJoinInfoList.sort((a, b) => {
     return datefns.compareAsc(a.joinDatetime, b.joinDatetime);
   });
+
+  log.debug(`sortedWorldJoinInfoList len ${sortedWorldJoinInfoList.length}`);
 
   // log上で一番最初のJoin日時を取得
   const firstJoinDate = sortedWorldJoinInfoList[0].joinDatetime;
@@ -181,6 +188,8 @@ const getWorldJoinInfoWithPhotoPath = async (): Promise<
     start: firstJoinDate,
     end: new Date(),
   });
+
+  log.debug(`eachMonth len ${eachMonth.length}`);
 
   // 月ごとに写真を取得
   const photoPathList: {
@@ -204,6 +213,9 @@ const getWorldJoinInfoWithPhotoPath = async (): Promise<
       }
       return err(photoPathListResult.error);
     }
+    log.debug(
+      `photoPathListResult len ${photoPathListResult.value.length} ${monthString}`,
+    );
     photoPathList.push(
       ...photoPathListResult.value.map((photo) => {
         return {
@@ -217,6 +229,7 @@ const getWorldJoinInfoWithPhotoPath = async (): Promise<
       }),
     );
   }
+  log.debug(`photoPathList len ${photoPathList.length}`);
 
   // ワールドのJoin情報と写真の情報を結合
   const result = infoFileService.groupingPhotoListByWorldJoinInfo(
@@ -228,6 +241,7 @@ const getWorldJoinInfoWithPhotoPath = async (): Promise<
       };
     }),
   );
+  log.debug('groupingPhotoListByWorldJoinInfo result');
 
   return neverthrow.ok(result);
 };
