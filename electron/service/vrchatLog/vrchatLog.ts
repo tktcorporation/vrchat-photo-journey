@@ -1,4 +1,5 @@
 import path from 'path';
+import * as log from 'electron-log';
 import * as neverthrow from 'neverthrow';
 import * as fs from '../../lib/wrappedFs';
 import * as settingStore from '../../settingStore';
@@ -95,6 +96,7 @@ const getLogLinesFromDir = (
   logFilesDir: string,
 ): neverthrow.Result<string[], VRChatLogFileError> => {
   // output_log から始まるファイル名のみを取得
+  log.info('logFilesDir', logFilesDir);
   const logFileNamesFilteredResult = getVRChatLogFileNamesByDir(logFilesDir);
   const logFileNamesFiltered = logFileNamesFilteredResult.mapErr((e) => {
     switch (e) {
@@ -107,6 +109,7 @@ const getLogLinesFromDir = (
   if (logFileNamesFiltered.isErr()) {
     return neverthrow.err(logFileNamesFiltered.error);
   }
+  log.info('logFileNamesFiltered len', logFileNamesFiltered.value.length);
   if (logFileNamesFiltered.value.length === 0) {
     return neverthrow.err(new VRChatLogFileError('LOG_FILES_NOT_FOUND'));
   }
@@ -121,6 +124,8 @@ const getLogLinesFromDir = (
       return neverthrow.err(result.error);
     }
 
+    log.info('contentResult len', result.value.toString().split('\n').length);
+
     logLines.push(...result.value.toString().split('\n'));
   }
 
@@ -131,6 +136,8 @@ const extractWorldJoinInfoFromLogs = (
   logLines: string[],
   index: number,
 ): WorldJoinLogInfo | null => {
+  log.info('extractWorldJoinInfoFromLogs', index);
+  log.info('logLines len', logLines.length);
   const logEntry = logLines[index];
   const regex =
     /(\d{4}\.\d{2}\.\d{2}) (\d{2}:\d{2}:\d{2}) .* \[Behaviour\] Joining (wrld_[a-f0-9-]+):.*/;
@@ -151,9 +158,9 @@ const extractWorldJoinInfoFromLogs = (
   const [hour, minute, second] = time.split('-');
   let foundWorldName: string | null = null;
   // Extracting world name from the subsequent lines
-  for (const log of logLines.slice(index + 1)) {
+  for (const l of logLines.slice(index + 1)) {
     const worldNameRegex = /\[Behaviour\] Joining or Creating Room: (.+)/;
-    const [, worldName] = log.match(worldNameRegex) || [];
+    const [, worldName] = l.match(worldNameRegex) || [];
     if (worldName && !foundWorldName) {
       foundWorldName = worldName;
     }
@@ -182,9 +189,9 @@ const convertLogLinesToWorldJoinLogInfos = (
 ): WorldJoinLogInfo[] => {
   const worldJoinLogInfos: WorldJoinLogInfo[] = [];
 
-  // logLines.forEach((log, index) => {
-  for (const [index, log] of logLines.entries()) {
-    if (log.includes('Joining wrld')) {
+  log.info('logLines len', logLines.length);
+  for (const [index, l] of logLines.entries()) {
+    if (l.includes('Joining wrld')) {
       const info = extractWorldJoinInfoFromLogs(logLines, index);
       if (info) {
         worldJoinLogInfos.push(info);

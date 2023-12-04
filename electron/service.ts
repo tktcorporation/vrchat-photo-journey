@@ -145,10 +145,12 @@ const getWorldJoinInfoWithPhotoPath = async (): Promise<
     );
   };
 
+  log.info('getVRChatLogFilesDir');
   const logFilesDir = getVRChatLogFilesDir();
   if (logFilesDir.error !== null) {
     return err(`${logFilesDir.error}`);
   }
+  log.info('convertLogLinesToWorldJoinLogInfosByVRChatLogDir');
   const convertWorldJoinLogInfoListResult =
     convertLogLinesToWorldJoinLogInfosByVRChatLogDir(logFilesDir.path);
   if (convertWorldJoinLogInfoListResult.isErr()) {
