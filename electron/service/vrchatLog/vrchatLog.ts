@@ -1,10 +1,12 @@
 import path from 'path';
+import readline from 'readline';
 import * as log from 'electron-log';
 import * as neverthrow from 'neverthrow';
 import * as fs from '../../lib/wrappedFs';
 import * as settingStore from '../../settingStore';
 import VRChatLogFileError from './error';
 
+import { match } from 'ts-pattern';
 import { type JoinInfoFileName, convertToJoinInfoFileName } from '../type';
 
 type WorldId = `wrld_${string}`;
@@ -92,9 +94,46 @@ const validateWorldId = (value: string): value is WorldId => {
   return regex.test(value);
 };
 
-const getLogLinesFromDir = (
+const getLogLinesFromLogFileName = async (
+  logFilePath: string,
+): Promise<neverthrow.Result<string[], VRChatLogFileError>> => {
+  const logFilesDir = getVRChatLogFileDir();
+  if (logFilesDir.error) {
+    return match(logFilesDir.error)
+      .with('logFileDirNotFound', () =>
+        neverthrow.err(new VRChatLogFileError('LOG_FILE_DIR_NOT_FOUND')),
+      )
+      .with('logFilesNotFound', () =>
+        neverthrow.err(new VRChatLogFileError('LOG_FILES_NOT_FOUND')),
+      )
+      .exhaustive();
+  }
+
+  const stream = fs.createReadStream(logFilePath);
+  const reader = readline.createInterface({
+    input: stream,
+    crlfDelay: Infinity,
+  });
+  const lines: string[] = [];
+  reader.on('line', (line) => {
+    if (line.includes('Joining')) {
+      lines.push(line);
+    }
+  });
+  await Promise.all([
+    new Promise((resolve) => {
+      stream.on('close', () => {
+        resolve(null);
+      });
+    }),
+  ]);
+  log.debug('read lines len', lines.length);
+  return neverthrow.ok(lines);
+};
+
+const getLogLinesFromDir = async (
   logFilesDir: string,
-): neverthrow.Result<string[], VRChatLogFileError> => {
+): Promise<neverthrow.Result<string[], VRChatLogFileError>> => {
   // output_log から始まるファイル名のみを取得
   log.info('logFilesDir', logFilesDir);
   const logFileNamesFilteredResult = getVRChatLogFileNamesByDir(logFilesDir);
@@ -115,20 +154,21 @@ const getLogLinesFromDir = (
   }
 
   const logLines: string[] = [];
-  for (const fileName of logFileNamesFiltered.value) {
-    const filePath = path.join(logFilesDir, fileName);
-    const contentResult = fs.readFileSyncSafe(filePath);
-
-    const result = contentResult.mapErr((e) => new VRChatLogFileError(e));
-    if (result.isErr()) {
-      return neverthrow.err(result.error);
-    }
-
-    log.info('contentResult len', result.value.toString().split('\n').length);
-
-    logLines.push(...result.value.toString().split('\n'));
+  const errors: VRChatLogFileError[] = [];
+  await Promise.all(
+    logFileNamesFiltered.value.map(async (fileName) => {
+      const filePath = path.join(logFilesDir, fileName);
+      const result = await getLogLinesFromLogFileName(filePath);
+      if (result.isErr()) {
+        errors.push(result.error);
+        return;
+      }
+      logLines.push(...result.value);
+    }),
+  );
+  if (errors.length > 0) {
+    return neverthrow.err(errors[0]);
   }
-
   return neverthrow.ok(logLines);
 };
 
@@ -166,6 +206,8 @@ const extractWorldJoinInfoFromLogs = (
     }
   }
 
+  log.debug('foundWorldName', foundWorldName);
+
   if (foundWorldName) {
     return {
       year,
@@ -188,7 +230,7 @@ const convertLogLinesToWorldJoinLogInfos = (
   logLines: string[],
 ): WorldJoinLogInfo[] => {
   const worldJoinLogInfos: WorldJoinLogInfo[] = [];
-
+  log.debug('convertLogLinesToWorldJoinLogInfos');
   log.info('logLines len', logLines.length);
   for (const [index, l] of logLines.entries()) {
     if (l.includes('Joining wrld')) {
