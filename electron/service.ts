@@ -29,15 +29,18 @@ const getVRChatPhotoDir = () => {
   return vrchatPhotoService.getVRChatPhotoDir();
 };
 
-const convertLogLinesToWorldJoinLogInfosByVRChatLogDir = (
+const convertLogLinesToWorldJoinLogInfosByVRChatLogDir = async (
   logDir: string,
-): neverthrow.Result<
-  vrchatLogService.WorldJoinLogInfo[],
-  VRChatLogFileError
+): Promise<
+  neverthrow.Result<vrchatLogService.WorldJoinLogInfo[], VRChatLogFileError>
 > => {
-  const result = vrchatLogService.getLogLinesFromDir(logDir);
-  return result.map((logLines) =>
-    vrchatLogService.convertLogLinesToWorldJoinLogInfos(logLines),
+  const result = await vrchatLogService.getLogLinesFromDir(logDir);
+  if (result.isErr()) {
+    return neverthrow.err(result.error);
+  }
+  log.debug('getLogLinesFromDir result len', result.value.length);
+  return neverthrow.ok(
+    vrchatLogService.convertLogLinesToWorldJoinLogInfos(result.value),
   );
 };
 
@@ -57,7 +60,7 @@ const getConfigAndValidateAndGetToCreateInfoFileMap = async (): Promise<
     return neverthrow.err(`${logFilesDir.error}`);
   }
   const convertWorldJoinLogInfoListResult =
-    convertLogLinesToWorldJoinLogInfosByVRChatLogDir(logFilesDir.path);
+    await convertLogLinesToWorldJoinLogInfosByVRChatLogDir(logFilesDir.path);
   if (convertWorldJoinLogInfoListResult.isErr()) {
     return neverthrow.err(`${convertWorldJoinLogInfoListResult.error.code}`);
   }
@@ -87,7 +90,7 @@ const getConfigAndValidateAndCreateFiles = async (): Promise<
     return neverthrow.err(`${logFilesDir.error}`);
   }
   const convertWorldJoinLogInfoListResult =
-    convertLogLinesToWorldJoinLogInfosByVRChatLogDir(logFilesDir.path);
+    await convertLogLinesToWorldJoinLogInfosByVRChatLogDir(logFilesDir.path);
   if (convertWorldJoinLogInfoListResult.isErr()) {
     return neverthrow.err(`${convertWorldJoinLogInfoListResult.error.code}`);
   }
@@ -152,7 +155,7 @@ const getWorldJoinInfoWithPhotoPath = async (): Promise<
   }
   log.info('convertLogLinesToWorldJoinLogInfosByVRChatLogDir');
   const convertWorldJoinLogInfoListResult =
-    convertLogLinesToWorldJoinLogInfosByVRChatLogDir(logFilesDir.path);
+    await convertLogLinesToWorldJoinLogInfosByVRChatLogDir(logFilesDir.path);
   if (convertWorldJoinLogInfoListResult.isErr()) {
     return err(`${convertWorldJoinLogInfoListResult.error.code}`);
   }

@@ -92,3 +92,10 @@ export const readFileSafe = (
     throw e;
   }
 };
+
+export const createReadStream = (
+  filePath: string,
+  options?: Parameters<typeof fs.createReadStream>[1],
+): fs.ReadStream => {
+  return fs.createReadStream(filePath, options);
+};
