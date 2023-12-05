@@ -2,11 +2,11 @@ import path from 'path';
 import readline from 'readline';
 import * as log from 'electron-log';
 import * as neverthrow from 'neverthrow';
+import { match } from 'ts-pattern';
 import * as fs from '../../lib/wrappedFs';
 import * as settingStore from '../../settingStore';
 import VRChatLogFileError from './error';
 
-import { match } from 'ts-pattern';
 import { type JoinInfoFileName, convertToJoinInfoFileName } from '../type';
 
 type WorldId = `wrld_${string}`;
