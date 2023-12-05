@@ -32,21 +32,20 @@ type ExtractDataTypeFromResult<R> = R extends Result<infer T, unknown>
 //   ? T
 //   : never;
 
-const errorHandler = t.middleware(async (opts) => {
-  const { next } = opts;
-  try {
-    log.info('=================next===================');
-    return await next(opts);
-  } catch (err) {
-    log.error('==================err==================');
-    log.error(err);
-    throw err;
-  }
-});
-
 const { procedure: p } = t;
 
-const procedure = p.use(errorHandler);
+const errorHandlingProcedure = p.use(async ({ ctx, next }) => {
+  const resp = await next({ ctx });
+
+  if (!resp.ok) {
+    logError(resp.error);
+    throw resp.error;
+  }
+
+  return resp;
+});
+
+const procedure = errorHandlingProcedure;
 
 export const router = t.router({
   // sample
