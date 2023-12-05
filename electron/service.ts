@@ -38,7 +38,6 @@ const convertLogLinesToWorldJoinLogInfosByVRChatLogDir = async (
   if (result.isErr()) {
     return neverthrow.err(result.error);
   }
-  log.debug('getLogLinesFromDir result len', result.value.length);
   return neverthrow.ok(
     vrchatLogService.convertLogLinesToWorldJoinLogInfos(result.value),
   );
@@ -134,7 +133,6 @@ const getWorldJoinInfoWithPhotoPath = async (): Promise<
     Error
   >
 > => {
-  log.info('getWorldJoinInfoWithPhotoPath');
   const err = (error: string | Error) => {
     if (typeof error === 'string') {
       return neverthrow.err(
@@ -148,12 +146,10 @@ const getWorldJoinInfoWithPhotoPath = async (): Promise<
     );
   };
 
-  log.info('getVRChatLogFilesDir');
   const logFilesDir = getVRChatLogFilesDir();
   if (logFilesDir.error !== null) {
     return err(`${logFilesDir.error}`);
   }
-  log.info('convertLogLinesToWorldJoinLogInfosByVRChatLogDir');
   const convertWorldJoinLogInfoListResult =
     await convertLogLinesToWorldJoinLogInfosByVRChatLogDir(logFilesDir.path);
   if (convertWorldJoinLogInfoListResult.isErr()) {

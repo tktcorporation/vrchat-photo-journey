@@ -2,11 +2,11 @@ import path from 'path';
 import readline from 'readline';
 import * as log from 'electron-log';
 import * as neverthrow from 'neverthrow';
+import { match } from 'ts-pattern';
 import * as fs from '../../lib/wrappedFs';
 import * as settingStore from '../../settingStore';
 import VRChatLogFileError from './error';
 
-import { match } from 'ts-pattern';
 import { type JoinInfoFileName, convertToJoinInfoFileName } from '../type';
 
 type WorldId = `wrld_${string}`;
@@ -127,7 +127,6 @@ const getLogLinesFromLogFileName = async (
       });
     }),
   ]);
-  log.debug('read lines len', lines.length);
   return neverthrow.ok(lines);
 };
 
@@ -135,7 +134,6 @@ const getLogLinesFromDir = async (
   logFilesDir: string,
 ): Promise<neverthrow.Result<string[], VRChatLogFileError>> => {
   // output_log から始まるファイル名のみを取得
-  log.info('logFilesDir', logFilesDir);
   const logFileNamesFilteredResult = getVRChatLogFileNamesByDir(logFilesDir);
   const logFileNamesFiltered = logFileNamesFilteredResult.mapErr((e) => {
     switch (e) {
@@ -148,7 +146,6 @@ const getLogLinesFromDir = async (
   if (logFileNamesFiltered.isErr()) {
     return neverthrow.err(logFileNamesFiltered.error);
   }
-  log.info('logFileNamesFiltered len', logFileNamesFiltered.value.length);
   if (logFileNamesFiltered.value.length === 0) {
     return neverthrow.err(new VRChatLogFileError('LOG_FILES_NOT_FOUND'));
   }
@@ -176,8 +173,6 @@ const extractWorldJoinInfoFromLogs = (
   logLines: string[],
   index: number,
 ): WorldJoinLogInfo | null => {
-  log.info('extractWorldJoinInfoFromLogs', index);
-  log.info('logLines len', logLines.length);
   const logEntry = logLines[index];
   const regex =
     /(\d{4}\.\d{2}\.\d{2}) (\d{2}:\d{2}:\d{2}) .* \[Behaviour\] Joining (wrld_[a-f0-9-]+):.*/;
@@ -206,8 +201,6 @@ const extractWorldJoinInfoFromLogs = (
     }
   }
 
-  log.debug('foundWorldName', foundWorldName);
-
   if (foundWorldName) {
     return {
       year,
@@ -231,7 +224,6 @@ const convertLogLinesToWorldJoinLogInfos = (
 ): WorldJoinLogInfo[] => {
   const worldJoinLogInfos: WorldJoinLogInfo[] = [];
   log.debug('convertLogLinesToWorldJoinLogInfos');
-  log.info('logLines len', logLines.length);
   for (const [index, l] of logLines.entries()) {
     if (l.includes('Joining wrld')) {
       const info = extractWorldJoinInfoFromLogs(logLines, index);

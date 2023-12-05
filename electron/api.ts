@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events';
 import { initTRPC } from '@trpc/server';
 import { observable } from '@trpc/server/observable';
+import { stackWithCauses } from 'pony-cause';
 import z from 'zod';
 
 // 呼び出し元は集約したい
@@ -16,13 +17,13 @@ const t = initTRPC.create({
 });
 
 const logError = (err: Error | string) => {
+  let error: Error;
   if (typeof err === 'string') {
-    ee.emit('toast', err);
-    log.error(new Error(err));
-    return;
+    error = new Error(`TRPCErrorLogger: ${err}`);
+  } else {
+    error = new Error('TRPCErrorLogger', { cause: err });
   }
-  ee.emit('toast', err.message);
-  log.error(new Error(err.message, { cause: err }));
+  log.error(stackWithCauses(error));
 };
 
 type ExtractDataTypeFromResult<R> = R extends Result<infer T, unknown>
@@ -33,15 +34,16 @@ type ExtractDataTypeFromResult<R> = R extends Result<infer T, unknown>
 //   : never;
 
 const errorHandler = t.middleware(async (opts) => {
-  const { next } = opts;
-  try {
-    log.info('=================next===================');
-    return await next(opts);
-  } catch (err) {
-    log.error('==================err==================');
-    log.error(err);
-    throw err;
+  const resp = await opts.next(opts);
+
+  if (!resp.ok) {
+    logError(
+      new Error('Caught error in TRPC middleware', { cause: resp.error }),
+    );
+    throw resp.error;
   }
+
+  return resp;
 });
 
 const { procedure: p } = t;
