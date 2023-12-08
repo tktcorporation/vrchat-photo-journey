@@ -1,4 +1,4 @@
-import Photo from '@/components/ui/Photo';
+import VrcPhoto from '@/components/ui/VrcPhoto';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { trpcReact } from '@/trpc';
@@ -12,6 +12,8 @@ export function JoinInfoPreview({ className }: Props) {
   const infoMap = data?.data;
   const error = data?.error;
 
+  const openPhotoPathMutation = trpcReact.openPathOnExplorer.useMutation();
+
   const PhotoList = (
     tookPhotoList: {
       photoPath: string;
@@ -20,7 +22,8 @@ export function JoinInfoPreview({ className }: Props) {
   ) => {
     return tookPhotoList.map((photo) => {
       return (
-        <Photo
+        <VrcPhoto
+          onClickPhoto={() => openPhotoPathMutation.mutate(photo.photoPath)}
           photoPath={photo.photoPath}
           className="w-32"
           key={photo.tookDatetime}

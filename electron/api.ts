@@ -17,6 +17,7 @@ const t = initTRPC.create({
 });
 
 const logError = (err: Error | string) => {
+  ee.emit('toast', err);
   let error: Error;
   if (typeof err === 'string') {
     error = new Error(`TRPCErrorLogger: ${err}`);
@@ -194,6 +195,18 @@ export const router = t.router({
     }),
   openPathOnExplorer: procedure.input(z.string()).mutation(async (ctx) => {
     const result = await service.openPathOnExplorer(ctx.input);
+    return result.match(
+      () => {
+        return true;
+      },
+      (error) => {
+        logError(error);
+        return false;
+      },
+    );
+  }),
+  openElectronLogOnExplorer: procedure.mutation(async () => {
+    const result = await service.openElectronLogOnExplorer();
     return result.match(
       () => {
         return true;
