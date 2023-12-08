@@ -4,6 +4,7 @@ import React, { useEffect } from 'react';
 
 import Sidebar from '@/components/SideBar';
 import Photo from '@/components/ui/Photo';
+import VrcPhoto from '@/components/ui/VrcPhoto';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ROUTER_PATHS } from '@/constants';
@@ -127,6 +128,8 @@ function PhotoList() {
     [sortedYearMonthList],
   );
 
+  const openPhotoPathMutation = trpcReact.openPathOnExplorer.useMutation();
+
   return (
     <div className="h-full grid grid-cols-5 overflow-hidden">
       <ScrollArea className="grow">
@@ -186,7 +189,12 @@ function PhotoList() {
                 {sortedPhotoItemList?.map((item) => {
                   const content =
                     item.type === 'PHOTO' ? (
-                      <Photo photoPath={item.path} />
+                      <VrcPhoto
+                        photoPath={item.path}
+                        onClickPhoto={() => {
+                          openPhotoPathMutation.mutate(item.path);
+                        }}
+                      />
                     ) : (
                       <Photo photoPath={item.path} />
                     );

@@ -257,6 +257,7 @@ const clearStoredSetting = (
 };
 
 const openPathOnExplorer = (filePath: string) => {
+  log.debug(`openPathOnExplorer ${filePath}`);
   return utilsService.openPathInExplorer(filePath);
 };
 
