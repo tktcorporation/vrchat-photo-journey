@@ -19,6 +19,9 @@ function Setting() {
     return <Check size={24} className="text-green-500" />;
   };
 
+  const openAppLogFileMutation =
+    trpcReact.openElectronLogOnExplorer.useMutation();
+
   return (
     <div className="flex-auto h-full">
       <div className="flex flex-col justify-center items-center h-full space-y-8">
@@ -57,12 +60,14 @@ function Setting() {
               </Link>
             </div>
           </div>
+          <Button
+            variant="ghost"
+            className="w-full"
+            onClick={() => openAppLogFileMutation.mutate()}
+          >
+            アプリログを開く
+          </Button>
         </div>
-
-        {/* ファイル生成画面に移動するボタン */}
-        <Link to={ROUTER_PATHS.CREATE_JOIN_INFO}>
-          <Button variant="outline">完了</Button>
-        </Link>
       </div>
     </div>
   );

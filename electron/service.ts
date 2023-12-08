@@ -260,6 +260,12 @@ const openPathOnExplorer = (filePath: string) => {
   return utilsService.openPathInExplorer(filePath);
 };
 
+const openElectronLogOnExplorer = async () => {
+  const electronLogPath = log.transports.file.getFile().path;
+  log.debug(`electronLogPath ${electronLogPath}`);
+  return utilsService.openPathInExplorer(electronLogPath);
+};
+
 const openDirOnExplorer = (dirPath: string) => {
   const dir = path.dirname(dirPath);
   return utilsService.openPathInExplorer(dir);
@@ -410,6 +416,7 @@ export {
   clearAllStoredSettings,
   clearStoredSetting,
   openPathOnExplorer,
+  openElectronLogOnExplorer,
   openDirOnExplorer,
   getVRChatPhotoItemDataListByYearMonth,
   getVRChatPhotoWithWorldIdAndDate,
