@@ -190,8 +190,6 @@ const getWorldJoinInfoWithPhotoPath = async (): Promise<
     end: new Date(),
   });
 
-  log.debug(`eachMonth len ${eachMonth.length}`);
-
   // 月ごとに写真を取得
   const photoPathList: {
     path: string;
@@ -214,9 +212,6 @@ const getWorldJoinInfoWithPhotoPath = async (): Promise<
       }
       return err(photoPathListResult.error);
     }
-    log.debug(
-      `photoPathListResult len ${photoPathListResult.value.length} ${monthString}`,
-    );
     photoPathList.push(
       ...photoPathListResult.value.map((photo) => {
         return {

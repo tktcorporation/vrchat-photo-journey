@@ -22,7 +22,7 @@
     "formatter": {
       "quoteStyle": "single"
     },
-    "globals": ["it", "describe", "expect"]
+    "globals": ["it", "describe", "expect", "jest"]
   },
   "files": {
     "ignore": ["**/node_modules/**", "**/dist/**", "**/main/**", "**/out/**"]
