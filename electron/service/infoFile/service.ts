@@ -6,10 +6,47 @@ import * as fs from '../../lib/wrappedFs';
 import * as vrchatLogService from '../vrchatLog/vrchatLog';
 import { createOGPImage } from './createWorldNameImage';
 
+const removeAdjacentDuplicateWorldEntries = (
+  worldJoinLogInfoList: vrchatLogService.WorldJoinLogInfo[],
+): vrchatLogService.WorldJoinLogInfo[] => {
+  worldJoinLogInfoList.sort((a, b) => {
+    return datefns.compareAsc(
+      new Date(
+        Number(a.year),
+        Number(a.month) - 1,
+        Number(a.day),
+        Number(a.hour),
+        Number(a.minute),
+        Number(a.second),
+      ),
+      new Date(
+        Number(b.year),
+        Number(b.month) - 1,
+        Number(b.day),
+        Number(b.hour),
+        Number(b.minute),
+        Number(b.second),
+      ),
+    );
+  });
+
+  // 隣接する重複を削除
+  let previousWorldId: string | null = null;
+  return worldJoinLogInfoList.filter((info, index) => {
+    if (index === 0 || info.worldId !== previousWorldId) {
+      previousWorldId = info.worldId;
+      return true;
+    }
+    return false;
+  });
+};
+
 const getToCreateMap = async (
   vrchatPhotoDir: string,
   worldJoinLogInfoList: vrchatLogService.WorldJoinLogInfo[],
   imageWidth?: number,
+  // 同じワールドに連続して複数回入った履歴を削除するかどうか
+  removeAdjacentDuplicateWorldEntriesFlag = false,
 ): Promise<
   neverthrow.Result<
     {
@@ -21,13 +58,22 @@ const getToCreateMap = async (
     Error
   >
 > => {
+  // 前処理された worldJoinLogInfoList を作成
+  let preprocessedWorldJoinLogInfoList = worldJoinLogInfoList;
+  if (removeAdjacentDuplicateWorldEntriesFlag) {
+    preprocessedWorldJoinLogInfoList = removeAdjacentDuplicateWorldEntries(
+      preprocessedWorldJoinLogInfoList,
+    );
+  }
+
+  // ファイルの作成
   const toCreateMap: {
     info: vrchatLogService.WorldJoinLogInfo;
     yearMonthPath: string;
     fileName: string;
     content: Buffer;
   }[] = await Promise.all(
-    worldJoinLogInfoList.map(async (info) => {
+    preprocessedWorldJoinLogInfoList.map(async (info) => {
       const yearMonthPath = path.join(
         vrchatPhotoDir,
         `${info.year}-${info.month}`,
@@ -180,4 +226,9 @@ const groupingPhotoListByWorldJoinInfo = (
   });
 };
 
-export { createFiles, getToCreateMap, groupingPhotoListByWorldJoinInfo };
+export {
+  createFiles,
+  getToCreateMap,
+  groupingPhotoListByWorldJoinInfo,
+  removeAdjacentDuplicateWorldEntries,
+};
