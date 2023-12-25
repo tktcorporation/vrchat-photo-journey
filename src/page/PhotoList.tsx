@@ -187,6 +187,7 @@ function PhotoList() {
             <div className="col-span-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-4">
                 {sortedPhotoItemList?.map((item) => {
+                  // TODO: join だけだったら簡易表示、photo もあればグルーピングして表示
                   const content =
                     item.type === 'PHOTO' ? (
                       <VrcPhoto
