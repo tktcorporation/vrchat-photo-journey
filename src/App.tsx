@@ -6,8 +6,8 @@ import Template from './Template';
 import AppBar from './components/AppBar';
 import ClearSettings from './page/ClearSettings';
 import CreateJoinInfo from './page/CreateJoinInfo';
-import PhotoList from './page/PhotoList';
 import Setting from './page/Setting';
+import PhotoList from './page/photoList/PhotoList';
 
 import { ErrorFallback } from './ErrorBoundary';
 
