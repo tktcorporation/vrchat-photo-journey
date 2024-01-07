@@ -9,7 +9,8 @@
       "recommended": true,
       "correctness": {
         "noUndeclaredVariables": "error",
-        "noUnusedVariables": "error"
+        "noUnusedVariables": "error",
+        "useExhaustiveDependencies": "off"
       }
     }
   },

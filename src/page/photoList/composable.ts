@@ -55,34 +55,36 @@ export const usePhotoItems = (selectedFolderYearMonth: YearMonth) => {
       },
     );
 
-  useEffect(() => {
-    const { data } = photoItemListQuery;
-    if (data?.data) {
-      const sortedData = [...data.data].sort((a, b) => {
-        const datetimeA =
-          a.datetime.date.year +
-          a.datetime.date.month +
-          a.datetime.date.day +
-          a.datetime.time.hour +
-          a.datetime.time.minute +
-          a.datetime.time.second +
-          a.datetime.time.millisecond;
-        const datetimeB =
-          b.datetime.date.year +
-          b.datetime.date.month +
-          b.datetime.date.day +
-          b.datetime.time.hour +
-          b.datetime.time.minute +
-          b.datetime.time.second +
-          b.datetime.time.millisecond;
-        return datetimeB.localeCompare(datetimeA);
-      });
-      setPhotoItemList(sortedData);
-    } else {
-      setPhotoItemList([]);
+  const sortedPhotoItems = useMemo(() => {
+    if (!photoItemListQuery.data?.data) {
+      return [];
     }
-    setPhotoItemFetchError(data?.error ?? null);
-  }, [photoItemListQuery]);
+
+    return [...photoItemListQuery.data.data].sort((a, b) => {
+      const datetimeA =
+        a.datetime.date.year +
+        a.datetime.date.month +
+        a.datetime.date.day +
+        a.datetime.time.hour +
+        a.datetime.time.minute +
+        a.datetime.time.second +
+        a.datetime.time.millisecond;
+      const datetimeB =
+        b.datetime.date.year +
+        b.datetime.date.month +
+        b.datetime.date.day +
+        b.datetime.time.hour +
+        b.datetime.time.minute +
+        b.datetime.time.second +
+        b.datetime.time.millisecond;
+      return datetimeB.localeCompare(datetimeA);
+    });
+  }, [photoItemListQuery.data?.data]);
+
+  useEffect(() => {
+    setPhotoItemList(sortedPhotoItems);
+    setPhotoItemFetchError(photoItemListQuery.data?.error ?? null);
+  }, [sortedPhotoItems, photoItemListQuery.data?.error]);
 
   const refetchPhotoItemList = () => photoItemListQuery.refetch();
 

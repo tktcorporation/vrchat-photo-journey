@@ -1,5 +1,5 @@
 import { trpcReact } from '@/trpc';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import Sidebar from '@/components/SideBar';
 import Photo from '@/components/ui/Photo';
@@ -14,11 +14,14 @@ import { usePhotoItems, useYearMonthList } from './composable';
 function PhotoList() {
   const { sortedYearMonthList, refetchYearMonthList } = useYearMonthList();
   const firstYearMonth = useMemo(
-    () => sortedYearMonthList?.[0],
+    () => sortedYearMonthList?.[0] || { year: '', month: '' },
     [sortedYearMonthList],
-  ) ?? { year: '', month: '' };
+  );
   const [selectedFolderYearMonth, setSelectedFolderYearMonth] =
     useState(firstYearMonth);
+  useEffect(() => {
+    setSelectedFolderYearMonth(firstYearMonth);
+  }, [firstYearMonth]);
 
   const { photoItemList, photoItemFetchError, refetchPhotoItemList } =
     usePhotoItems(selectedFolderYearMonth);
