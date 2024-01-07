@@ -1,5 +1,5 @@
 import { trpcReact } from '@/trpc';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import Sidebar from '@/components/SideBar';
 import Photo from '@/components/ui/Photo';
@@ -13,10 +13,7 @@ import { usePhotoItems, useYearMonthList } from './composable';
 
 function PhotoList() {
   const { sortedYearMonthList, refetchYearMonthList } = useYearMonthList();
-  const firstYearMonth = useMemo(
-    () => sortedYearMonthList?.[0] || { year: '', month: '' },
-    [sortedYearMonthList],
-  );
+  const firstYearMonth = sortedYearMonthList?.[0] || { year: '', month: '' };
   const [selectedFolderYearMonth, setSelectedFolderYearMonth] =
     useState(firstYearMonth);
   useEffect(() => {
@@ -136,5 +133,7 @@ function PhotoList() {
     </div>
   );
 }
+
+PhotoList.whyDidYouRender = true;
 
 export default PhotoList;
