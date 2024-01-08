@@ -119,19 +119,21 @@ const CreateFilesError = [
   'FAILED_TO_CHECK_YEAR_MONTH_DIR_EXISTS',
   'FAILED_TO_GET_TO_CREATE_MAP',
 ] as const;
-const createFiles = async (
-  vrchatPhotoDir: string,
-  worldJoinLogInfoList: vrchatLogService.WorldJoinLogInfo[],
-): Promise<
+const createFiles = async (props: {
+  vrchatPhotoDir: string;
+  worldJoinLogInfoList: vrchatLogService.WorldJoinLogInfo[];
+  removeAdjacentDuplicateWorldEntriesFlag: boolean;
+}): Promise<
   neverthrow.Result<
     void,
     { error: Error; type: typeof CreateFilesError[number] }
   >
 > => {
   const toCreateMapResult = await getToCreateMap({
-    vrchatPhotoDir,
-    worldJoinLogInfoList,
-    removeAdjacentDuplicateWorldEntriesFlag: false,
+    vrchatPhotoDir: props.vrchatPhotoDir,
+    worldJoinLogInfoList: props.worldJoinLogInfoList,
+    removeAdjacentDuplicateWorldEntriesFlag:
+      props.removeAdjacentDuplicateWorldEntriesFlag,
   });
   if (toCreateMapResult.isErr()) {
     return neverthrow.err({

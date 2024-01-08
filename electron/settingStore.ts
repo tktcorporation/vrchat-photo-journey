@@ -3,7 +3,11 @@ import * as neverthrow from 'neverthrow';
 
 const settingsStore = new Store({ name: 'v0-settings' });
 
-const settingStoreKey = ['logFilesDir', 'vrchatPhotoDir'] as const;
+const settingStoreKey = [
+  'logFilesDir',
+  'vrchatPhotoDir',
+  'removeAdjacentDuplicateWorldEntriesFlag',
+] as const;
 export type SettingStoreKey = typeof settingStoreKey[number];
 
 const get = (key: SettingStoreKey): string | null => {
@@ -30,6 +34,20 @@ const getVRChatPhotoDir = (): string | null => {
 };
 const setVRChatPhotoDir = (dirPath: string) => {
   set('vrchatPhotoDir', dirPath);
+};
+
+/**
+ * 連続して同じワールドに入った場合に、2回目以降のワールド入場ログを削除するかどうか
+ */
+const getRemoveAdjacentDuplicateWorldEntriesFlag = (): boolean | null => {
+  const value = settingsStore.get('removeAdjacentDuplicateWorldEntriesFlag');
+  if (typeof value !== 'boolean') {
+    return null;
+  }
+  return value;
+};
+const setRemoveAdjacentDuplicateWorldEntriesFlag = (flag: boolean) => {
+  settingsStore.set('removeAdjacentDuplicateWorldEntriesFlag', flag);
 };
 
 /**
@@ -61,5 +79,7 @@ export {
   setLogFilesDir,
   getVRChatPhotoDir,
   setVRChatPhotoDir,
+  getRemoveAdjacentDuplicateWorldEntriesFlag,
+  setRemoveAdjacentDuplicateWorldEntriesFlag,
   clearStoredSetting,
 };

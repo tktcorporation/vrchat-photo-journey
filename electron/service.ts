@@ -80,7 +80,8 @@ const getConfigAndValidateAndGetToCreateInfoFileMap = async (): Promise<
     vrchatPhotoDir: vrchatPhotoDir.path,
     worldJoinLogInfoList,
     imageWidth: 128,
-    removeAdjacentDuplicateWorldEntriesFlag: false,
+    removeAdjacentDuplicateWorldEntriesFlag:
+      settingStore.getRemoveAdjacentDuplicateWorldEntriesFlag() ?? false,
   });
   return result.mapErr((error) => {
     return `${error}`;
@@ -107,10 +108,12 @@ const getConfigAndValidateAndCreateFiles = async (): Promise<
     return neverthrow.err(vrchatPhotoDir.error);
   }
 
-  const result = await infoFileService.createFiles(
-    vrchatPhotoDir.path,
-    convertWorldJoinLogInfoList,
-  );
+  const result = await infoFileService.createFiles({
+    vrchatPhotoDir: vrchatPhotoDir.path,
+    worldJoinLogInfoList: convertWorldJoinLogInfoList,
+    removeAdjacentDuplicateWorldEntriesFlag:
+      settingStore.getRemoveAdjacentDuplicateWorldEntriesFlag() ?? false,
+  });
   return result
     .map(() => {
       return undefined;
