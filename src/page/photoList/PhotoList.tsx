@@ -1,6 +1,5 @@
 import { trpcReact } from '@/trpc';
-import type { inferProcedureOutput } from '@trpc/server';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import Sidebar from '@/components/SideBar';
 import Photo from '@/components/ui/Photo';
@@ -8,100 +7,21 @@ import VrcPhoto from '@/components/ui/VrcPhoto';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ROUTER_PATHS } from '@/constants';
-import { AppRouter } from 'electron/api';
 import { RefreshCw } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
-type YearMonth = {
-  year: string;
-  month: string;
-};
+import { usePhotoItems, useYearMonthList } from './composable';
 
 function PhotoList() {
-  const { data: yearMonthList, refetch: refetchYearMonthList } =
-    trpcReact.getVRChatPhotoFolderYearMonthList.useQuery();
-  const sortedYearMonthList = yearMonthList?.sort((a, b) => {
-    const yearMonthA = a.year + a.month;
-    const yearMonthB = b.year + b.month;
-    return yearMonthB.localeCompare(yearMonthA);
-  });
-  const firstYearMonth = React.useMemo(
-    () => sortedYearMonthList?.[0],
-    [sortedYearMonthList],
-  ) ?? { year: '', month: '' };
+  const { sortedYearMonthList, refetchYearMonthList } = useYearMonthList();
+  const firstYearMonth = sortedYearMonthList?.[0] || { year: '', month: '' };
   const [selectedFolderYearMonth, setSelectedFolderYearMonth] =
-    React.useState<YearMonth>(firstYearMonth);
-  const [photoItemList, setPhotoItemList] =
-    React.useState<
-      inferProcedureOutput<
-        AppRouter['getVRChatPhotoWithWorldIdAndDate']
-      >['data']
-    >();
-  const [photoItemFetchError, setPhotoItemFetchError] =
-    React.useState<
-      inferProcedureOutput<
-        AppRouter['getVRChatPhotoWithWorldIdAndDate']
-      >['error']
-    >(null);
-  const sortedPhotoItemList = photoItemList?.sort((a, b) => {
-    if (!a || !b) return 0;
-    const datetimeA =
-      a.datetime.date.year +
-      a.datetime.date.month +
-      a.datetime.date.day +
-      a.datetime.time.hour +
-      a.datetime.time.minute +
-      a.datetime.time.second +
-      a.datetime.time.millisecond;
-    const datetimeB =
-      b.datetime.date.year +
-      b.datetime.date.month +
-      b.datetime.date.day +
-      b.datetime.time.hour +
-      b.datetime.time.minute +
-      b.datetime.time.second +
-      b.datetime.time.millisecond;
-    // 降順に並び替える
-    return datetimeB.localeCompare(datetimeA);
-  });
-
-  const [refetchPhotoItemList, setRefetchPhotoItemList] =
-    React.useState<
-      ReturnType<
-        typeof trpcReact.getVRChatPhotoWithWorldIdAndDate.useQuery
-      >['refetch']
-    >();
-
-  // useEffectを使用して、yearMonthListが更新されたらselectedFolderYearMonthを更新します。
+    useState(firstYearMonth);
   useEffect(() => {
-    if (yearMonthList) {
-      setSelectedFolderYearMonth(firstYearMonth);
-    }
-  }, [yearMonthList, setSelectedFolderYearMonth, firstYearMonth]);
+    setSelectedFolderYearMonth(firstYearMonth);
+  }, [firstYearMonth]);
 
-  const photoItemListQuery =
-    trpcReact.getVRChatPhotoWithWorldIdAndDate.useQuery(
-      selectedFolderYearMonth,
-      {
-        enabled: !!(
-          selectedFolderYearMonth.year && selectedFolderYearMonth.month
-        ),
-      },
-    );
-
-  useEffect(() => {
-    const { data } = photoItemListQuery;
-    setPhotoItemList(data?.data);
-    setPhotoItemFetchError(data?.error ?? null);
-
-    // refetch関数を状態に保存します。
-    setRefetchPhotoItemList(() => () => photoItemListQuery.refetch());
-  }, [
-    photoItemListQuery,
-    setRefetchPhotoItemList,
-    setPhotoItemList,
-    setPhotoItemFetchError,
-  ]);
+  const { photoItemList, photoItemFetchError, refetchPhotoItemList } =
+    usePhotoItems(selectedFolderYearMonth);
 
   const handleSideBarClick = (key: string) => {
     const [year, month] = key.split('-');
@@ -151,7 +71,10 @@ function PhotoList() {
             <Button
               className="inline"
               variant="ghost"
-              onClick={() => refetchPhotoItemList?.() && refetchYearMonthList()}
+              onClick={() => {
+                refetchPhotoItemList();
+                refetchYearMonthList();
+              }}
             >
               <RefreshCw className="inline-block" />
             </Button>
@@ -186,7 +109,8 @@ function PhotoList() {
           <ScrollArea>
             <div className="col-span-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-4">
-                {sortedPhotoItemList?.map((item) => {
+                {photoItemList?.map((item) => {
+                  // TODO: join だけだったら簡易表示、photo もあればグルーピングして表示
                   const content =
                     item.type === 'PHOTO' ? (
                       <VrcPhoto
@@ -209,5 +133,7 @@ function PhotoList() {
     </div>
   );
 }
+
+PhotoList.whyDidYouRender = true;
 
 export default PhotoList;

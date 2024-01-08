@@ -9,7 +9,8 @@
       "recommended": true,
       "correctness": {
         "noUndeclaredVariables": "error",
-        "noUnusedVariables": "error"
+        "noUnusedVariables": "error",
+        "useExhaustiveDependencies": "off"
       }
     }
   },
@@ -22,7 +23,7 @@
     "formatter": {
       "quoteStyle": "single"
     },
-    "globals": ["it", "describe", "expect"]
+    "globals": ["it", "describe", "expect", "jest", "beforeEach"]
   },
   "files": {
     "ignore": ["**/node_modules/**", "**/dist/**", "**/main/**", "**/out/**"]

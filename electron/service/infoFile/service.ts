@@ -6,11 +6,48 @@ import * as fs from '../../lib/wrappedFs';
 import * as vrchatLogService from '../vrchatLog/vrchatLog';
 import { createOGPImage } from './createWorldNameImage';
 
-const getToCreateMap = async (
-  vrchatPhotoDir: string,
+const removeAdjacentDuplicateWorldEntries = (
   worldJoinLogInfoList: vrchatLogService.WorldJoinLogInfo[],
-  imageWidth?: number,
-): Promise<
+): vrchatLogService.WorldJoinLogInfo[] => {
+  worldJoinLogInfoList.sort((a, b) => {
+    return datefns.compareAsc(
+      new Date(
+        Number(a.year),
+        Number(a.month) - 1,
+        Number(a.day),
+        Number(a.hour),
+        Number(a.minute),
+        Number(a.second),
+      ),
+      new Date(
+        Number(b.year),
+        Number(b.month) - 1,
+        Number(b.day),
+        Number(b.hour),
+        Number(b.minute),
+        Number(b.second),
+      ),
+    );
+  });
+
+  // 隣接する重複を削除
+  let previousWorldId: string | null = null;
+  return worldJoinLogInfoList.filter((info, index) => {
+    if (index === 0 || info.worldId !== previousWorldId) {
+      previousWorldId = info.worldId;
+      return true;
+    }
+    return false;
+  });
+};
+
+const getToCreateMap = async (props: {
+  vrchatPhotoDir: string;
+  worldJoinLogInfoList: vrchatLogService.WorldJoinLogInfo[];
+  imageWidth?: number;
+  // 同じワールドに連続して複数回入った履歴を削除するかどうか
+  removeAdjacentDuplicateWorldEntriesFlag: boolean;
+}): Promise<
   neverthrow.Result<
     {
       info: vrchatLogService.WorldJoinLogInfo;
@@ -21,15 +58,24 @@ const getToCreateMap = async (
     Error
   >
 > => {
+  // 前処理された worldJoinLogInfoList を作成
+  let preprocessedWorldJoinLogInfoList = props.worldJoinLogInfoList;
+  if (props.removeAdjacentDuplicateWorldEntriesFlag) {
+    preprocessedWorldJoinLogInfoList = removeAdjacentDuplicateWorldEntries(
+      preprocessedWorldJoinLogInfoList,
+    );
+  }
+
+  // ファイルの作成
   const toCreateMap: {
     info: vrchatLogService.WorldJoinLogInfo;
     yearMonthPath: string;
     fileName: string;
     content: Buffer;
   }[] = await Promise.all(
-    worldJoinLogInfoList.map(async (info) => {
+    preprocessedWorldJoinLogInfoList.map(async (info) => {
       const yearMonthPath = path.join(
-        vrchatPhotoDir,
+        props.vrchatPhotoDir,
         `${info.year}-${info.month}`,
       );
       const fileName = `${vrchatLogService.convertWorldJoinLogInfoToOneLine(
@@ -59,7 +105,7 @@ const getToCreateMap = async (
           dateTimeOriginal: utcDate,
           description: info.worldId,
         },
-        imageWidth,
+        imageWidth: props.imageWidth,
       });
       return { info, yearMonthPath, fileName, content: contentImage };
     }),
@@ -73,19 +119,22 @@ const CreateFilesError = [
   'FAILED_TO_CHECK_YEAR_MONTH_DIR_EXISTS',
   'FAILED_TO_GET_TO_CREATE_MAP',
 ] as const;
-const createFiles = async (
-  vrchatPhotoDir: string,
-  worldJoinLogInfoList: vrchatLogService.WorldJoinLogInfo[],
-): Promise<
+const createFiles = async (props: {
+  vrchatPhotoDir: string;
+  worldJoinLogInfoList: vrchatLogService.WorldJoinLogInfo[];
+  removeAdjacentDuplicateWorldEntriesFlag: boolean;
+}): Promise<
   neverthrow.Result<
     void,
     { error: Error; type: typeof CreateFilesError[number] }
   >
 > => {
-  const toCreateMapResult = await getToCreateMap(
-    vrchatPhotoDir,
-    worldJoinLogInfoList,
-  );
+  const toCreateMapResult = await getToCreateMap({
+    vrchatPhotoDir: props.vrchatPhotoDir,
+    worldJoinLogInfoList: props.worldJoinLogInfoList,
+    removeAdjacentDuplicateWorldEntriesFlag:
+      props.removeAdjacentDuplicateWorldEntriesFlag,
+  });
   if (toCreateMapResult.isErr()) {
     return neverthrow.err({
       error: toCreateMapResult.error,
@@ -180,4 +229,9 @@ const groupingPhotoListByWorldJoinInfo = (
   });
 };
 
-export { createFiles, getToCreateMap, groupingPhotoListByWorldJoinInfo };
+export {
+  createFiles,
+  getToCreateMap,
+  groupingPhotoListByWorldJoinInfo,
+  removeAdjacentDuplicateWorldEntries,
+};

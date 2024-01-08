@@ -8,5 +8,6 @@
       "label": "desktop"
     }
   },
-  "runArgs": ["--shm-size=2g"]
+  "runArgs": ["--shm-size=2g"],
+  "postCreateCommand": "npm i -g @antfu/ni"
 }
