@@ -28,7 +28,7 @@
     "dist": "npm run build && electron-builder --publish never",
     "pack": "npm run build && electron-builder --dir",
     "clean": "rimraf dist main src/out",
-    "type-check": "tsc",
+    "type-check": "tsc --noEmit",
     "find-deadcode": "ts-prune",
     "test": "jest",
     "lint": "npx @biomejs/biome check .",

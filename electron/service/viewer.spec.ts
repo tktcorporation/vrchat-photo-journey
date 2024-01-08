@@ -8,20 +8,15 @@ import {
   getVRChatPhotoItemPathListByYearMonth,
 } from './vrchatPhoto/service';
 
-// getVRChatPhotoDir の結果を mock する
-jest.mock('../settingStore', () => {
-  return {
-    getVRChatPhotoDir: jest
-      .fn()
-      .mockReturnValue(
-        '/workspaces/add-world-name-to-vrc-photo/debug/photos/VRChat',
-      ),
-  };
-});
-
 const settingStore = getSettingStore('test-settings');
 
 describe('viewer', () => {
+  beforeEach(async () => {
+    await settingStore.clearAllStoredSettings();
+    await settingStore.setVRChatPhotoDir(
+      '/workspaces/add-world-name-to-vrc-photo/debug/photos/VRChat',
+    );
+  });
   it('should be defined', () => {
     const VrcPhotoPath = settingStore.getVRChatPhotoDir();
     console.log(VrcPhotoPath);

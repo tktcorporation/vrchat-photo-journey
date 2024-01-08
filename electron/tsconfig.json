@@ -21,6 +21,6 @@
     "target": "esnext",
     "outDir": "../main"
   },
-  "exclude": ["node_modules"],
+  "exclude": ["node_modules", "**/*.spec.*", "**/*.test.*"],
   "include": ["**/*.ts", "**/*.tsx", "**/*.js"]
 }
