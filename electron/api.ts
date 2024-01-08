@@ -8,7 +8,8 @@ import z from 'zod';
 import path from 'path';
 import * as log from 'electron-log';
 import { Result } from 'neverthrow';
-import * as service from './service';
+import { getService } from './service';
+import { getSettingStore } from './settingStore';
 
 const ee = new EventEmitter();
 
@@ -50,6 +51,8 @@ const errorHandler = t.middleware(async (opts) => {
 const { procedure: p } = t;
 
 const procedure = p.use(errorHandler);
+
+const service = getService(getSettingStore('v0-settings'));
 
 export const router = t.router({
   // sample

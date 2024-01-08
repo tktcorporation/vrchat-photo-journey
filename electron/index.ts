@@ -8,8 +8,10 @@ import * as log from 'electron-log';
 import { createIPCHandler } from 'electron-trpc/main';
 import unhandled from 'electron-unhandled';
 import { router } from './api';
+import { getController } from './controller';
+import { getSettingStore } from './settingStore';
 
-import * as controller from './controller';
+const controller = getController(getSettingStore('v0-settings'));
 
 const CHANNELS = {
   CLEAR_ALL_STORED_SETTINGS: 'clear-all-stored-settings',

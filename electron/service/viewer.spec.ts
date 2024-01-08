@@ -1,7 +1,7 @@
 /* eslint-disable */
 
 import * as path from 'path';
-import * as settingStore from '../settingStore';
+import { getSettingStore } from '../settingStore';
 import * as t from './type';
 import {
   getVRChatPhotoFolderYearMonthList,
@@ -19,6 +19,8 @@ jest.mock('../settingStore', () => {
   };
 });
 
+const settingStore = getSettingStore('test-settings');
+
 describe('viewer', () => {
   it('should be defined', () => {
     const VrcPhotoPath = settingStore.getVRChatPhotoDir();
@@ -26,12 +28,15 @@ describe('viewer', () => {
     expect(VrcPhotoPath).toStrictEqual(
       '/workspaces/add-world-name-to-vrc-photo/debug/photos/VRChat',
     );
-    const yearMonthList = getVRChatPhotoFolderYearMonthList()._unsafeUnwrap();
+    const yearMonthList = getVRChatPhotoFolderYearMonthList({
+      storedPath: VrcPhotoPath,
+    })._unsafeUnwrap();
     const { year, month } = yearMonthList[0];
-    const vrcPhotoPathList = getVRChatPhotoItemPathListByYearMonth(
+    const vrcPhotoPathList = getVRChatPhotoItemPathListByYearMonth({
       year,
       month,
-    )._unsafeUnwrap();
+      storedVRCPhotoDir: VrcPhotoPath,
+    })._unsafeUnwrap();
     console.log(vrcPhotoPathList);
 
     const infoFileName: string[] = [];

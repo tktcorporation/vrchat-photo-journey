@@ -4,7 +4,6 @@ import * as neverthrow from 'neverthrow';
 import sharp from 'sharp';
 import { match } from 'ts-pattern';
 import * as fs from '../../lib/wrappedFs';
-import * as settingStore from '../../settingStore';
 import { YearMonthPathNotFoundError } from '../error';
 import * as t from '../type';
 
@@ -37,27 +36,34 @@ const validateVRChatPhotoDir = (
   return neverthrow.ok(dir);
 };
 
-const getVRChatPhotoDir = (): {
+const getVRChatPhotoDir = (props: {
+  storedPath: string | null;
+}): {
   storedPath: string | null;
   path: string;
   error: null | typeof validateError[number];
 } => {
-  const storedPath = settingStore.getVRChatPhotoDir();
   const defaultPath = getDefaultVRChatPhotoDir();
 
-  const targetPath = storedPath ?? defaultPath;
+  const targetPath = props.storedPath ?? defaultPath;
   const validateResult = validateVRChatPhotoDir(targetPath);
   if (validateResult.isOk()) {
-    return { storedPath, path: targetPath, error: null };
+    return { storedPath: props.storedPath, path: targetPath, error: null };
   }
-  return { storedPath, path: targetPath, error: validateResult.error };
+  return {
+    storedPath: props.storedPath,
+    path: targetPath,
+    error: validateResult.error,
+  };
 };
 
-const getVRChatPhotoFolderYearMonthList = (): neverthrow.Result<
+const getVRChatPhotoFolderYearMonthList = (props: {
+  storedPath: string | null;
+}): neverthrow.Result<
   { year: string; month: string }[],
   'PHOTO_DIR_READ_ERROR' | 'PHOTO_YEAR_MONTH_DIRS_NOT_FOUND'
 > => {
-  const { path: photoDir, error } = getVRChatPhotoDir();
+  const { path: photoDir, error } = getVRChatPhotoDir(props);
   if (error !== null) {
     return match(error)
       .with('photoDirReadError', () =>
@@ -90,11 +96,14 @@ const getVRChatPhotoFolderYearMonthList = (): neverthrow.Result<
 /**
  * VRChatの写真もそれ以外も含む
  */
-const getVRChatPhotoItemPathListByYearMonth = (
-  year: string,
-  month: string,
-): neverthrow.Result<string[], Error | YearMonthPathNotFoundError> => {
-  const { path: photoDir, error } = getVRChatPhotoDir();
+const getVRChatPhotoItemPathListByYearMonth = (props: {
+  storedVRCPhotoDir: string | null;
+  year: string;
+  month: string;
+}): neverthrow.Result<string[], Error | YearMonthPathNotFoundError> => {
+  const { path: photoDir, error } = getVRChatPhotoDir({
+    storedPath: props.storedVRCPhotoDir,
+  });
   if (error !== null) {
     return match(error)
       .with('photoYearMonthDirsNotFound', () =>
@@ -105,7 +114,7 @@ const getVRChatPhotoItemPathListByYearMonth = (
   }
   const yearMonthDir = path.join(
     photoDir,
-    `${year}-${month.toString().padStart(2, '0')}`,
+    `${props.year}-${props.month.toString().padStart(2, '0')}`,
   );
   const photoItemNamesResult = fs.readDirSyncSafe(yearMonthDir);
   if (photoItemNamesResult.isErr()) {
@@ -125,14 +134,15 @@ const getVRChatPhotoItemPathListByYearMonth = (
 /**
  * VRChatの写真pathのみを返す
  */
-const getVRChatPhotoOnlyItemPathListByYearMonth = (
-  year: string,
-  month: string,
-): neverthrow.Result<
+const getVRChatPhotoOnlyItemPathListByYearMonth = (props: {
+  storedVRCPhotoDir: string | null;
+  year: string;
+  month: string;
+}): neverthrow.Result<
   { path: string; info: t.ParsedPhotoFileName }[],
   Error
 > => {
-  const itemListResult = getVRChatPhotoItemPathListByYearMonth(year, month);
+  const itemListResult = getVRChatPhotoItemPathListByYearMonth(props);
   if (itemListResult.isErr()) {
     if (itemListResult.error instanceof YearMonthPathNotFoundError) {
       return neverthrow.err(itemListResult.error);
