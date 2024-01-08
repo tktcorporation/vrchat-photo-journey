@@ -10,13 +10,23 @@ import {
 
 const settingStore = getSettingStore('test-settings');
 
+// settingStore.getVRChatPhotoDir の結果を mock する
+jest.mock('../settingStore', () => {
+  const originalModule = jest.requireActual('../settingStore');
+  return {
+    __esModule: true,
+    ...originalModule,
+    getSettingStore: jest.fn().mockReturnValue({
+      getVRChatPhotoDir: jest
+        .fn()
+        .mockReturnValue(
+          '/workspaces/add-world-name-to-vrc-photo/debug/photos/VRChat',
+        ),
+    }),
+  };
+});
+
 describe('viewer', () => {
-  beforeEach(async () => {
-    await settingStore.clearAllStoredSettings();
-    await settingStore.setVRChatPhotoDir(
-      '/workspaces/add-world-name-to-vrc-photo/debug/photos/VRChat',
-    );
-  });
   it('should be defined', () => {
     const VrcPhotoPath = settingStore.getVRChatPhotoDir();
     console.log(VrcPhotoPath);
