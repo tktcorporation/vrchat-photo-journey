@@ -41,13 +41,13 @@ const removeAdjacentDuplicateWorldEntries = (
   });
 };
 
-const getToCreateMap = async (
-  vrchatPhotoDir: string,
-  worldJoinLogInfoList: vrchatLogService.WorldJoinLogInfo[],
-  imageWidth?: number,
+const getToCreateMap = async (props: {
+  vrchatPhotoDir: string;
+  worldJoinLogInfoList: vrchatLogService.WorldJoinLogInfo[];
+  imageWidth?: number;
   // 同じワールドに連続して複数回入った履歴を削除するかどうか
-  removeAdjacentDuplicateWorldEntriesFlag = false,
-): Promise<
+  removeAdjacentDuplicateWorldEntriesFlag: boolean;
+}): Promise<
   neverthrow.Result<
     {
       info: vrchatLogService.WorldJoinLogInfo;
@@ -59,8 +59,8 @@ const getToCreateMap = async (
   >
 > => {
   // 前処理された worldJoinLogInfoList を作成
-  let preprocessedWorldJoinLogInfoList = worldJoinLogInfoList;
-  if (removeAdjacentDuplicateWorldEntriesFlag) {
+  let preprocessedWorldJoinLogInfoList = props.worldJoinLogInfoList;
+  if (props.removeAdjacentDuplicateWorldEntriesFlag) {
     preprocessedWorldJoinLogInfoList = removeAdjacentDuplicateWorldEntries(
       preprocessedWorldJoinLogInfoList,
     );
@@ -75,7 +75,7 @@ const getToCreateMap = async (
   }[] = await Promise.all(
     preprocessedWorldJoinLogInfoList.map(async (info) => {
       const yearMonthPath = path.join(
-        vrchatPhotoDir,
+        props.vrchatPhotoDir,
         `${info.year}-${info.month}`,
       );
       const fileName = `${vrchatLogService.convertWorldJoinLogInfoToOneLine(
@@ -105,7 +105,7 @@ const getToCreateMap = async (
           dateTimeOriginal: utcDate,
           description: info.worldId,
         },
-        imageWidth,
+        imageWidth: props.imageWidth,
       });
       return { info, yearMonthPath, fileName, content: contentImage };
     }),
@@ -128,10 +128,11 @@ const createFiles = async (
     { error: Error; type: typeof CreateFilesError[number] }
   >
 > => {
-  const toCreateMapResult = await getToCreateMap(
+  const toCreateMapResult = await getToCreateMap({
     vrchatPhotoDir,
     worldJoinLogInfoList,
-  );
+    removeAdjacentDuplicateWorldEntriesFlag: false,
+  });
   if (toCreateMapResult.isErr()) {
     return neverthrow.err({
       error: toCreateMapResult.error,

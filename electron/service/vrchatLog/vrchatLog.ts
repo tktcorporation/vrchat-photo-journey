@@ -4,7 +4,6 @@ import * as log from 'electron-log';
 import * as neverthrow from 'neverthrow';
 import { match } from 'ts-pattern';
 import * as fs from '../../lib/wrappedFs';
-import * as settingStore from '../../settingStore';
 import VRChatLogFileError from './error';
 
 import { type JoinInfoFileName, convertToJoinInfoFileName } from '../type';
@@ -62,20 +61,21 @@ const getDefaultVRChatLogFilesDir = (): string => {
   return logFilesDir;
 };
 
-const getVRChatLogFileDir = (): VRChatLogFilesDirWithErr => {
+const getVRChatLogFileDir = (props: {
+  storedLogFilesDirPath: string | null;
+}): VRChatLogFilesDirWithErr => {
   let logFilesDir: string;
-  const storedPath = settingStore.getLogFilesDir();
-  if (storedPath === null) {
+  if (props.storedLogFilesDirPath === null) {
     logFilesDir = getDefaultVRChatLogFilesDir();
   } else {
-    logFilesDir = storedPath;
+    logFilesDir = props.storedLogFilesDirPath;
   }
   const logFileNamesResult = getVRChatLogFileNamesByDir(logFilesDir);
   if (logFileNamesResult.isErr()) {
     switch (logFileNamesResult.error) {
       case 'ENOENT':
         return {
-          storedPath,
+          storedPath: props.storedLogFilesDirPath,
           path: logFilesDir,
           error: 'logFileDirNotFound',
         };
@@ -84,9 +84,17 @@ const getVRChatLogFileDir = (): VRChatLogFilesDirWithErr => {
     }
   }
   if (logFileNamesResult.value.length === 0) {
-    return { storedPath, path: logFilesDir, error: 'logFilesNotFound' };
+    return {
+      storedPath: props.storedLogFilesDirPath,
+      path: logFilesDir,
+      error: 'logFilesNotFound',
+    };
   }
-  return { storedPath, path: logFilesDir, error: null };
+  return {
+    storedPath: props.storedLogFilesDirPath,
+    path: logFilesDir,
+    error: null,
+  };
 };
 
 const validateWorldId = (value: string): value is WorldId => {
@@ -94,10 +102,13 @@ const validateWorldId = (value: string): value is WorldId => {
   return regex.test(value);
 };
 
-const getLogLinesFromLogFileName = async (
-  logFilePath: string,
-): Promise<neverthrow.Result<string[], VRChatLogFileError>> => {
-  const logFilesDir = getVRChatLogFileDir();
+const getLogLinesFromLogFileName = async (props: {
+  storedLogFilesDirPath: string | null;
+  logFilePath: string;
+}): Promise<neverthrow.Result<string[], VRChatLogFileError>> => {
+  const logFilesDir = getVRChatLogFileDir({
+    storedLogFilesDirPath: props.storedLogFilesDirPath,
+  });
   if (logFilesDir.error) {
     return match(logFilesDir.error)
       .with('logFileDirNotFound', () =>
@@ -109,7 +120,7 @@ const getLogLinesFromLogFileName = async (
       .exhaustive();
   }
 
-  const stream = fs.createReadStream(logFilePath);
+  const stream = fs.createReadStream(props.logFilePath);
   const reader = readline.createInterface({
     input: stream,
     crlfDelay: Infinity,
@@ -130,11 +141,14 @@ const getLogLinesFromLogFileName = async (
   return neverthrow.ok(lines);
 };
 
-const getLogLinesFromDir = async (
-  logFilesDir: string,
-): Promise<neverthrow.Result<string[], VRChatLogFileError>> => {
+const getLogLinesFromDir = async (props: {
+  storedLogFilesDirPath: string | null;
+  logFilesDir: string;
+}): Promise<neverthrow.Result<string[], VRChatLogFileError>> => {
   // output_log から始まるファイル名のみを取得
-  const logFileNamesFilteredResult = getVRChatLogFileNamesByDir(logFilesDir);
+  const logFileNamesFilteredResult = getVRChatLogFileNamesByDir(
+    props.logFilesDir,
+  );
   const logFileNamesFiltered = logFileNamesFilteredResult.mapErr((e) => {
     switch (e) {
       case 'ENOENT':
@@ -154,8 +168,11 @@ const getLogLinesFromDir = async (
   const errors: VRChatLogFileError[] = [];
   await Promise.all(
     logFileNamesFiltered.value.map(async (fileName) => {
-      const filePath = path.join(logFilesDir, fileName);
-      const result = await getLogLinesFromLogFileName(filePath);
+      const filePath = path.join(props.logFilesDir, fileName);
+      const result = await getLogLinesFromLogFileName({
+        storedLogFilesDirPath: props.storedLogFilesDirPath,
+        logFilePath: filePath,
+      });
       if (result.isErr()) {
         errors.push(result.error);
         return;
