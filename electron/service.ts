@@ -460,6 +460,19 @@ const getVRChatPhotoFolderYearMonthList =
 const getVRChatPhotoItemData = (photoPath: string) => {
   return vrchatPhotoService.getVRChatPhotoItemData(photoPath);
 };
+const getVrcWorldInfoByWorldId = async (
+  worldId: string,
+): Promise<neverthrow.Result<{ name: string }, Error>> => {
+  const reqUrl = `https://api.vrchat.cloud/api/1/worlds/${worldId}`;
+  const response = await fetch(reqUrl);
+  if (!response.ok) {
+    return neverthrow.err(
+      new Error(`getVrcWorldInfoByWorldId: ${response.statusText}`),
+    );
+  }
+  const json = await response.json();
+  return neverthrow.ok({ name: json.name });
+};
 
 const getService = (settingStore: ReturnType<typeof getSettingStore>) => {
   return {
@@ -488,6 +501,7 @@ const getService = (settingStore: ReturnType<typeof getSettingStore>) => {
     getVRChatPhotoWithWorldIdAndDate:
       getVRChatPhotoWithWorldIdAndDate(settingStore),
     getVRChatPhotoItemData,
+    getVrcWorldInfoByWorldId,
   };
 };
 

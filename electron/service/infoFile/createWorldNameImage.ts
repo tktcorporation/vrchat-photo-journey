@@ -12,7 +12,6 @@ interface Props {
   exif: {
     // 撮影日
     dateTimeOriginal: Date;
-    description: string;
   };
   imageWidth?: number;
 }
@@ -97,7 +96,7 @@ const createOGPImage = async ({ worldName, date, exif, imageWidth }: Props) => {
             exif.dateTimeOriginal,
             'yyyy-MM-dd HH:mm:ss',
           ),
-          ImageDescription: exif.description,
+          ImageDescription: worldName,
         },
       },
     });

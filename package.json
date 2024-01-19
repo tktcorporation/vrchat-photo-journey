@@ -5,7 +5,7 @@
   "author": {
     "name": "tktcorporation"
   },
-  "description": "Starter using Vite 2+ React +Typescript + Electron for fast prototyping.",
+  "description": "",
   "keywords": [
     "vite",
     "react",
@@ -33,6 +33,13 @@
     "test": "jest",
     "lint": "npx @biomejs/biome check .",
     "lint:fix": "npx @biomejs/biome check --apply ."
+  },
+  "simple-git-hooks": {
+    "pre-commit": "yarn lint && yarn type-check"
+  },
+  "engines": {
+    "node": "20",
+    "yarn": "1"
   },
   "dependencies": {
     "@heroicons/react": "^2.0.18",
@@ -111,9 +118,6 @@
     "simple-git-hooks": "^2.9.0",
     "ts-prune": "^0.10.3",
     "typescript": "^5.2.2"
-  },
-  "simple-git-hooks": {
-    "pre-commit": "yarn lint && yarn type-check"
   },
   "build": {
     "asar": true,

@@ -84,7 +84,7 @@ const JoinInfoFileNameSchema = z
 type JoinInfoFileName = z.infer<typeof JoinInfoFileNameSchema>;
 const parseJoinInfoFileName = (joinInfoFileName: JoinInfoFileName) => {
   const matches = joinInfoFileName.match(
-    /^VRChat_(\d{4})-(\d{2})-(\d{2})_(\d{2})-(\d{2})-(\d{2}).(\d{3})_wrld_(\w{8}-\w{4}-\w{4}-\w{4}-\w{12})$/,
+    /^VRChat_(\d{4})-(\d{2})-(\d{2})_(\d{2})-(\d{2})-(\d{2}).(\d{3})_(wrld_\w{8}-\w{4}-\w{4}-\w{4}-\w{12})$/,
   );
   if (!matches) {
     return neverthrow.err('parseJoinInfoFileName: matches is null');

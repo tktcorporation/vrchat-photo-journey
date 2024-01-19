@@ -103,7 +103,6 @@ const getToCreateMap = async (props: {
         },
         exif: {
           dateTimeOriginal: utcDate,
-          description: info.worldId,
         },
         imageWidth: props.imageWidth,
       });
