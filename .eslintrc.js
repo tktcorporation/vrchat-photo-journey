@@ -46,8 +46,8 @@ module.exports = {
     'react/function-component-definition': [
       'warn',
       {
-        namedComponents: 'function-declaration',
-        unnamedComponents: 'function-expression',
+        namedComponents: 'arrow-function',
+        unnamedComponents: 'arrow-function',
       },
     ],
     'react/jsx-filename-extension': [
