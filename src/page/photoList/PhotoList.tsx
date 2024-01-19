@@ -10,16 +10,25 @@ import { RefreshCw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { usePhotoItems, useYearMonthList } from './composable';
 
-// const getWorldNameByVrcWorldId = (vrcWorldId: string): Promise<string> => {
-//   const reqUrl = `https://api.vrchat.cloud/api/1/worlds/${vrcWorldId}`;
-//   return fetch(reqUrl)
-//     .then((res) => res.json())
-//     .then((data) => data.name);
-// };
-
-const WorldName = ({ vrcWorldId }: { vrcWorldId: string }) => {
-  const { data } = trpcReact.getVrcWorldInfoByWorldId.useQuery(vrcWorldId);
-  return <p>{data?.name ?? vrcWorldId}</p>;
+const WorldInfo = ({
+  vrcWorldId,
+  datetime,
+}: {
+  vrcWorldId: string;
+  datetime: { year: string; month: string; day: string };
+}) => {
+  const { data } = trpcReact.getVrcWorldInfoByWorldId.useQuery(vrcWorldId, {
+    staleTime: 1000 * 60 * 5, // キャッシュの有効期限を5分に設定
+    cacheTime: 1000 * 60 * 30, // キャッシュされたデータを30分間メモリに保持
+  });
+  return (
+    <div>
+      <p>{data?.name ?? vrcWorldId}</p>
+      <p className="text-sm text-gray-500">
+        Join: {datetime.year}/{datetime.month}/{datetime.day}
+      </p>
+    </div>
+  );
 };
 
 const PhotoList = () => {
@@ -121,7 +130,6 @@ const PhotoList = () => {
             <div className="col-span-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-4">
                 {photoItemList?.map((item) => {
-                  // TODO: join だけだったら簡易表示、photo もあればグルーピングして表示
                   const content =
                     item.type === 'PHOTO' ? (
                       <VrcPhoto
@@ -131,7 +139,14 @@ const PhotoList = () => {
                         }}
                       />
                     ) : (
-                      <WorldName vrcWorldId={item.worldId} />
+                      <WorldInfo
+                        vrcWorldId={item.worldId}
+                        datetime={{
+                          year: item.datetime.date.year,
+                          month: item.datetime.date.month,
+                          day: item.datetime.date.day,
+                        }}
+                      />
                     );
 
                   return (
