@@ -337,6 +337,18 @@ export const router = t.router({
       },
     );
   }),
+  getVrcWorldInfoByWorldId: procedure.input(z.string()).query(async (ctx) => {
+    const result = await service.getVrcWorldInfoByWorldId(ctx.input);
+    return result.match(
+      (r) => {
+        return r;
+      },
+      (error) => {
+        logError(error);
+        return null;
+      },
+    );
+  }),
 });
 
 export type AppRouter = typeof router;

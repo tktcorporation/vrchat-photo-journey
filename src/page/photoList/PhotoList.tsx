@@ -2,7 +2,6 @@ import { trpcReact } from '@/trpc';
 import React, { useEffect, useState } from 'react';
 
 import Sidebar from '@/components/SideBar';
-import Photo from '@/components/ui/Photo';
 import VrcPhoto from '@/components/ui/VrcPhoto';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -11,7 +10,19 @@ import { RefreshCw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { usePhotoItems, useYearMonthList } from './composable';
 
-function PhotoList() {
+// const getWorldNameByVrcWorldId = (vrcWorldId: string): Promise<string> => {
+//   const reqUrl = `https://api.vrchat.cloud/api/1/worlds/${vrcWorldId}`;
+//   return fetch(reqUrl)
+//     .then((res) => res.json())
+//     .then((data) => data.name);
+// };
+
+const WorldName = ({ vrcWorldId }: { vrcWorldId: string }) => {
+  const { data } = trpcReact.getVrcWorldInfoByWorldId.useQuery(vrcWorldId);
+  return <p>{data?.name ?? vrcWorldId}</p>;
+};
+
+const PhotoList = () => {
   const { sortedYearMonthList, refetchYearMonthList } = useYearMonthList();
   const firstYearMonth = sortedYearMonthList?.[0] || { year: '', month: '' };
   const [selectedFolderYearMonth, setSelectedFolderYearMonth] =
@@ -120,10 +131,19 @@ function PhotoList() {
                         }}
                       />
                     ) : (
-                      <Photo photoPath={item.path} />
+                      <WorldName vrcWorldId={item.worldId} />
                     );
 
-                  return <div key={item.path}>{content}</div>;
+                  return (
+                    <div
+                      key={item.path}
+                      className={
+                        item.type === 'PHOTO' ? 'col-span-1' : 'col-span-full'
+                      }
+                    >
+                      {content}
+                    </div>
+                  );
                 })}
               </div>
             </div>
@@ -132,7 +152,7 @@ function PhotoList() {
       </div>
     </div>
   );
-}
+};
 
 PhotoList.whyDidYouRender = true;
 
