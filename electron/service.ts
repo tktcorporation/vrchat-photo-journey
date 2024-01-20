@@ -346,6 +346,33 @@ type DateTime = {
     millisecond: string;
   };
 };
+const parseDateTime = (datetime: DateTime): Date => {
+  return datefns.parseISO(
+    `${datetime.date.year}-${datetime.date.month.padStart(
+      2,
+      '0',
+    )}-${datetime.date.day.padStart(2, '0')}T${datetime.time.hour.padStart(
+      2,
+      '0',
+    )}:${datetime.time.minute.padStart(2, '0')}:${datetime.time.second.padStart(
+      2,
+      '0',
+    )}.${datetime.time.millisecond}Z`,
+  );
+};
+type PhotoOrJoinImgInfo =
+  | {
+      type: 'PHOTO';
+      datetime: DateTime;
+      path: string;
+      worldId: null;
+    }
+  | {
+      type: 'JOIN';
+      datetime: DateTime;
+      path: string;
+      worldId: string;
+    };
 const getVRChatPhotoWithWorldIdAndDate =
   (settingStore: ReturnType<typeof getSettingStore>) =>
   ({
@@ -354,23 +381,7 @@ const getVRChatPhotoWithWorldIdAndDate =
   }: {
     year: string;
     month: string;
-  }): neverthrow.Result<
-    (
-      | {
-          type: 'PHOTO';
-          datetime: DateTime;
-          path: string;
-          worldId: null;
-        }
-      | {
-          type: 'JOIN';
-          datetime: DateTime;
-          path: string;
-          worldId: string;
-        }
-    )[],
-    Error
-  > => {
+  }): neverthrow.Result<PhotoOrJoinImgInfo[], Error> => {
     const result = vrchatPhotoService.getVRChatPhotoItemPathListByYearMonth({
       year,
       month,
@@ -423,6 +434,77 @@ const getVRChatPhotoWithWorldIdAndDate =
       null
     >[];
     return neverthrow.ok(filteredObjList);
+  };
+
+interface JoinInfo {
+  joinDatetime: Date;
+  worldId: string;
+  imgPath: string;
+  photoList: {
+    datetime: Date;
+    path: string;
+  }[];
+}
+type GetVRChatJoinInfoWithVRChatPhotoListResult = JoinInfo[];
+const getVRChatJoinInfoWithVRChatPhotoList =
+  (props: {
+    getVRChatPhotoWithWorldIdAndDate: ReturnType<
+      typeof getVRChatPhotoWithWorldIdAndDate
+    >;
+  }) =>
+  ({
+    year,
+    month,
+  }: { year: string; month: string }): neverthrow.Result<
+    GetVRChatJoinInfoWithVRChatPhotoListResult,
+    Error
+  > => {
+    const result = props.getVRChatPhotoWithWorldIdAndDate({ year, month });
+
+    if (result.isErr()) {
+      return neverthrow.err(result.error);
+    }
+
+    const data = result.value;
+
+    // datetimeに基づいて時系列順にソート
+    data.sort((a, b) => {
+      const aDatetime = parseDateTime(a.datetime);
+      const bDatetime = parseDateTime(b.datetime);
+      return datefns.compareAsc(aDatetime, bDatetime);
+    });
+
+    const joinData: JoinInfo[] = [];
+
+    for (let i = 0; i < data.length; i += 1) {
+      if (data[i].type === 'JOIN') {
+        const joinDatetime = parseDateTime(data[i].datetime);
+        const nextJoinIndex = data.findIndex(
+          (item, index) => index > i && item.type === 'JOIN',
+        );
+
+        const photoList = data
+          .slice(i + 1, nextJoinIndex !== -1 ? nextJoinIndex : undefined)
+          .filter((item) => item.type === 'PHOTO')
+          .map((photo) => ({
+            datetime: parseDateTime(photo.datetime),
+            path: photo.path,
+          }));
+
+        const { worldId } = data[i];
+        if (worldId === null) {
+          throw new Error('要ロジック修正 data[i].worldId === null');
+        }
+        joinData.push({
+          joinDatetime,
+          worldId,
+          imgPath: data[i].path,
+          photoList,
+        });
+      }
+    }
+
+    return neverthrow.ok(joinData);
   };
 
 const getVRChatPhotoItemDataListByYearMonth =
@@ -502,6 +584,7 @@ const getService = (settingStore: ReturnType<typeof getSettingStore>) => {
       getVRChatPhotoWithWorldIdAndDate(settingStore),
     getVRChatPhotoItemData,
     getVrcWorldInfoByWorldId,
+    getVRChatJoinInfoWithVRChatPhotoList,
   };
 };
 

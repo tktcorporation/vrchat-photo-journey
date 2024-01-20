@@ -15,18 +15,33 @@ const WorldInfo = ({
   datetime,
 }: {
   vrcWorldId: string;
-  datetime: { year: string; month: string; day: string };
+  datetime:
+    | {
+        year: string;
+        month: string;
+        day: string;
+        hour: string;
+        minute: string;
+      }
+    | Date;
 }) => {
   const { data } = trpcReact.getVrcWorldInfoByWorldId.useQuery(vrcWorldId, {
     staleTime: 1000 * 60 * 5, // キャッシュの有効期限を5分に設定
     cacheTime: 1000 * 60 * 30, // キャッシュされたデータを30分間メモリに保持
   });
+  const date =
+    datetime instanceof Date
+      ? datetime
+      : new Date(
+          `${datetime.year}-${datetime.month}-${datetime.day}T${datetime.hour}:${datetime.minute}:00`,
+        );
+  const dateToDisplay = `${date.getFullYear()}/${
+    date.getMonth() + 1
+  }/${date.getDate()} ${date.getHours()}:${date.getMinutes()}`;
   return (
     <div>
       <p>{data?.name ?? vrcWorldId}</p>
-      <p className="text-sm text-gray-500">
-        Join: {datetime.year}/{datetime.month}/{datetime.day}
-      </p>
+      <p className="text-sm text-gray-500">Join: {dateToDisplay}</p>
     </div>
   );
 };
@@ -57,7 +72,7 @@ const PhotoList = () => {
   const handleOpenFolder = () => {
     return (
       photoItemList?.[0] &&
-      openDirOnExplorerMutatation.mutate(photoItemList[0].path)
+      openDirOnExplorerMutatation.mutate(photoItemList[0].imgPath)
     );
   };
 
@@ -130,34 +145,28 @@ const PhotoList = () => {
             <div className="col-span-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-4">
                 {photoItemList?.map((item) => {
-                  const content =
-                    item.type === 'PHOTO' ? (
+                  // item.photoList がある場合は写真一覧を表示する
+                  const photoList = item.photoList.map((photo) => (
+                    <div key={item.imgPath} className="col-span-1">
                       <VrcPhoto
-                        photoPath={item.path}
+                        key={photo.path}
+                        photoPath={photo.path}
                         onClickPhoto={() => {
-                          openPhotoPathMutation.mutate(item.path);
+                          openPhotoPathMutation.mutate(photo.path);
                         }}
                       />
-                    ) : (
-                      <WorldInfo
-                        vrcWorldId={item.worldId}
-                        datetime={{
-                          year: item.datetime.date.year,
-                          month: item.datetime.date.month,
-                          day: item.datetime.date.day,
-                        }}
-                      />
-                    );
-
-                  return (
-                    <div
-                      key={item.path}
-                      className={
-                        item.type === 'PHOTO' ? 'col-span-1' : 'col-span-full'
-                      }
-                    >
-                      {content}
                     </div>
+                  ));
+                  return (
+                    <>
+                      <div key={item.imgPath} className="col-span-full">
+                        <WorldInfo
+                          vrcWorldId={item.worldId}
+                          datetime={item.joinDatetime}
+                        />
+                      </div>
+                      {photoList}
+                    </>
                   );
                 })}
               </div>
