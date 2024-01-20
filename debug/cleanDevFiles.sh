@@ -22,7 +22,10 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 
 delete_file_path="$script_dir/photos"
 delete_file_names=(
+    # このツールで作成するJoin記録用の画像ファイル
     "VRChat*wrld*.png"
+    # VRChatで写真を撮ったときに作成される画像ファイル
+    # (開発環境では `genDevFiles.sh` で作成する`)
     "VRChat_*x*.png"
 )
 
