@@ -19,6 +19,7 @@
   "scripts": {
     "preinstall": "npx only-allow yarn",
     "postinstall": "simple-git-hooks",
+    "setup:debug": "bash debug/genDevFiles.sh",
     "dev": "eval `dbus-launch --sh-syntax` && concurrently \"yarn dev:vite\" \" yarn dev:electron\"",
     "dev:vite": "vite",
     "dev:electron": "npm run build:electron && electron . --disable-gpu",
@@ -27,7 +28,8 @@
     "build:electron": "tsc -p electron",
     "dist": "npm run build && electron-builder --publish never",
     "pack": "npm run build && electron-builder --dir",
-    "clean": "rimraf dist main src/out",
+    "clean:build": "rimraf dist main src/out",
+    "clean:debug": "bash debug/cleanDevFiles.sh",
     "type-check": "tsc --noEmit",
     "find-deadcode": "ts-prune",
     "test": "jest",
