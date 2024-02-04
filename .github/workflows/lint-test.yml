@@ -11,16 +11,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: setup bun
-        uses: oven-sh/setup-bun@v1
-
-      - run: npm i -g @antfu/ni
-
+      - name: setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: 'package.json'
+      
       - name: install dependencies
-        run: nci
+        run: yarn install --frozen-lockfile
 
       - name: lint
-        run: nr lint && nr type-check
+        run: yarn lint && yarn type-check
 
       - name: test
-        run: nr test
+        run: yarn test

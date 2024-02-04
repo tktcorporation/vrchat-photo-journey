@@ -15,16 +15,16 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: setup bun
-        uses: oven-sh/setup-bun@v1
-
-      - run: npm i -g @antfu/ni
+      - name: setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: 'package.json'
       
       - name: install dependencies
-        run: nci
+        run: yarn install --frozen-lockfile
 
       - name: lint
-        run: nr lint && nr type-check
+        run: yarn lint && yarn type-check
 
   create_tag:
     runs-on: ubuntu-latest
