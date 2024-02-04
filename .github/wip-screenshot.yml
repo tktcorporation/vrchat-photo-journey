@@ -14,8 +14,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: setup bun
-        uses: oven-sh/setup-bun@v1
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: 'package.json'
 
       - run: npm i -g @antfu/ni
 
@@ -23,7 +25,7 @@ jobs:
         run: nci
 
       - name: Start web app (example using Vite)
-        run: nr dev &
+        run: yarn dev &
 
       - name: Run Puppeteer script to capture screenshot
         id: capture-screenshot

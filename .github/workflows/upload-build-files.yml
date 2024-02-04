@@ -22,8 +22,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: setup bun
-        uses: oven-sh/setup-bun@v1
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: 'package.json'
 
       - run: npm i -g @antfu/ni
 
@@ -31,7 +33,7 @@ jobs:
         run: nci
 
       - name: Build Electron app
-        run: nr dist
+        run: yarn dist
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
