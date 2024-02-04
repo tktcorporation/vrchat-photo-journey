@@ -22,16 +22,14 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version-file: 'package.json'
+      - name: setup bun
+        uses: oven-sh/setup-bun@v1
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: nci
 
       - name: Build Electron app
-        run: yarn dist
+        run: nr dist
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3

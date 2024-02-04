@@ -17,7 +17,7 @@
   },
   "productName": "add-metadata-to-vrc-photo",
   "scripts": {
-    "preinstall": "npx only-allow yarn",
+    "preinstall": "npx only-allow bun",
     "postinstall": "simple-git-hooks",
     "setup:debug": "bash debug/genDevFiles.sh",
     "dev": "eval `dbus-launch --sh-syntax` && concurrently \"nr dev:vite\" \" nr dev:electron\"",
@@ -41,7 +41,7 @@
   },
   "engines": {
     "node": "20",
-    "yarn": "1"
+    "bun": "1"
   },
   "dependencies": {
     "@heroicons/react": "^2.0.18",
