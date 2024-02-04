@@ -25,6 +25,8 @@ jobs:
       - name: setup bun
         uses: oven-sh/setup-bun@v1
 
+      - run: npm i -g @antfu/ni
+
       - name: Install dependencies
         run: nci
 
