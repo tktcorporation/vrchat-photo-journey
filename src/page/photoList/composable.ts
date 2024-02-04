@@ -9,7 +9,6 @@ type YearMonth = {
 };
 
 export const useYearMonthList = () => {
-  console.log('useYearMonthList');
   const { data: yearMonthList, refetch: refetchYearMonthList } =
     trpcReact.getVRChatPhotoFolderYearMonthList.useQuery();
   const sortedYearMonthList = yearMonthList?.sort((a, b) => {
@@ -31,22 +30,22 @@ export const useYearMonthList = () => {
 };
 
 export const usePhotoItems = (selectedFolderYearMonth: YearMonth) => {
-  console.log('selectedFolderYearMonth', selectedFolderYearMonth);
   const [photoItemList, setPhotoItemList] =
     useState<
       inferProcedureOutput<
-        AppRouter['getVRChatPhotoWithWorldIdAndDate']
+        AppRouter['getVRChatJoinInfoWithVRChatPhotoList']
       >['data']
     >();
+
   const [photoItemFetchError, setPhotoItemFetchError] =
     useState<
       inferProcedureOutput<
-        AppRouter['getVRChatPhotoWithWorldIdAndDate']
+        AppRouter['getVRChatJoinInfoWithVRChatPhotoList']
       >['error']
     >(null);
 
   const photoItemListQuery =
-    trpcReact.getVRChatPhotoWithWorldIdAndDate.useQuery(
+    trpcReact.getVRChatJoinInfoWithVRChatPhotoList.useQuery(
       selectedFolderYearMonth,
       {
         enabled: !!(
@@ -55,36 +54,10 @@ export const usePhotoItems = (selectedFolderYearMonth: YearMonth) => {
       },
     );
 
-  const sortedPhotoItems = useMemo(() => {
-    if (!photoItemListQuery.data?.data) {
-      return [];
-    }
-
-    return [...photoItemListQuery.data.data].sort((a, b) => {
-      const datetimeA =
-        a.datetime.date.year +
-        a.datetime.date.month +
-        a.datetime.date.day +
-        a.datetime.time.hour +
-        a.datetime.time.minute +
-        a.datetime.time.second +
-        a.datetime.time.millisecond;
-      const datetimeB =
-        b.datetime.date.year +
-        b.datetime.date.month +
-        b.datetime.date.day +
-        b.datetime.time.hour +
-        b.datetime.time.minute +
-        b.datetime.time.second +
-        b.datetime.time.millisecond;
-      return datetimeB.localeCompare(datetimeA);
-    });
-  }, [photoItemListQuery.data?.data]);
-
   useEffect(() => {
-    setPhotoItemList(sortedPhotoItems);
+    setPhotoItemList(photoItemListQuery.data?.data);
     setPhotoItemFetchError(photoItemListQuery.data?.error ?? null);
-  }, [sortedPhotoItems, photoItemListQuery.data?.error]);
+  }, [photoItemListQuery.data?.data, photoItemListQuery.data?.error]);
 
   const refetchPhotoItemList = () => photoItemListQuery.refetch();
 

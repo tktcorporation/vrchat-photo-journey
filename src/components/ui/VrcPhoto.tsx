@@ -15,7 +15,8 @@ export interface PhotoProps extends React.HTMLAttributes<HTMLDivElement> {
   onClickPhoto: (photoPath: string) => void;
 }
 
-function VrcPhoto({ photoPath, ...props }: PhotoProps) {
+const VrcPhoto = ({ photoPath, ...props }: PhotoProps) => {
+  const photoName = photoPath.split('/').pop();
   const query = trpcReact.getVRChatPhotoItemData.useQuery(photoPath);
   const { data, isLoading } = query;
 
@@ -43,11 +44,11 @@ function VrcPhoto({ photoPath, ...props }: PhotoProps) {
           </button>
         </TooltipTrigger>
         <TooltipContent>
-          <p>Open</p>
+          <p>{photoName}</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );
-}
+};
 
 export default VrcPhoto;

@@ -17,6 +17,7 @@ yarn-error.log*
 # dev debug
 debug/photos/**/*.html
 debug/photos/**/VRChat*wrld*
+debug/photos/**/VRChat_*x*.png
 debug/photos/**/*.txt
 
 # local env files

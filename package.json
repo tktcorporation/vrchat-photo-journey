@@ -19,15 +19,17 @@
   "scripts": {
     "preinstall": "npx only-allow yarn",
     "postinstall": "simple-git-hooks",
-    "dev": "eval `dbus-launch --sh-syntax` && concurrently \"yarn dev:vite\" \" yarn dev:electron\"",
+    "setup:debug": "bash debug/genDevFiles.sh",
+    "dev": "eval `dbus-launch --sh-syntax` && concurrently \"nr dev:vite\" \" nr dev:electron\"",
     "dev:vite": "vite",
-    "dev:electron": "npm run build:electron && electron . --disable-gpu",
-    "build": "npm run build:vite && npm run build:electron",
+    "dev:electron": "nr build:electron && electron . --disable-gpu",
+    "build": "nr build:vite && nr build:electron",
     "build:vite": "vite build",
     "build:electron": "tsc -p electron",
-    "dist": "npm run build && electron-builder --publish never",
-    "pack": "npm run build && electron-builder --dir",
-    "clean": "rimraf dist main src/out",
+    "dist": "nr build && electron-builder --publish never",
+    "pack": "nr build && electron-builder --dir",
+    "clean:build": "rimraf dist main src/out",
+    "clean:debug": "bash debug/cleanDevFiles.sh",
     "type-check": "tsc --noEmit",
     "find-deadcode": "ts-prune",
     "test": "jest",
@@ -35,7 +37,7 @@
     "lint:fix": "npx @biomejs/biome check --apply ."
   },
   "simple-git-hooks": {
-    "pre-commit": "yarn lint && yarn type-check"
+    "pre-commit": "nr lint && nr type-check"
   },
   "engines": {
     "node": "20",
@@ -75,11 +77,12 @@
     "react-hot-toast": "^2.4.1",
     "react-router-dom": "^6.18.0",
     "sharp": "^0.32.6",
+    "superjson": "1.13.3",
     "tailwind-merge": "^2.0.0",
     "tailwindcss": "^3.3.5",
     "tailwindcss-animate": "^1.0.7",
     "ts-pattern": "^5.0.5",
-    "vite": "^4.5.1",
+    "vite": "^4.5.2",
     "zod": "^3.22.4"
   },
   "devDependencies": {

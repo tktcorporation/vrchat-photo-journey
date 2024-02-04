@@ -2,6 +2,7 @@ import { EventEmitter } from 'events';
 import { initTRPC } from '@trpc/server';
 import { observable } from '@trpc/server/observable';
 import { stackWithCauses } from 'pony-cause';
+import superjson from 'superjson';
 import z from 'zod';
 
 // 呼び出し元は集約したい
@@ -15,6 +16,7 @@ const ee = new EventEmitter();
 
 const t = initTRPC.create({
   isServer: true,
+  transformer: superjson,
 });
 
 const logError = (err: Error | string) => {
@@ -296,6 +298,43 @@ export const router = t.router({
     .input(z.object({ year: z.string(), month: z.string() }))
     .query(async (ctx) => {
       const result = await service.getVRChatPhotoWithWorldIdAndDate(ctx.input);
+      const response: {
+        data: null | ExtractDataTypeFromResult<typeof result>;
+        error: null | {
+          code: string;
+          message: string;
+        };
+      } = {
+        data: null,
+        error: null,
+      };
+      return result.match(
+        (r) => {
+          response.data = r;
+          return response;
+        },
+        (error) => {
+          logError(error);
+          return {
+            data: null,
+            error: {
+              code: error.name,
+              message: `写真の読み込みに失敗しました: ${error.message}`,
+            },
+          };
+        },
+      );
+    }),
+  getVRChatJoinInfoWithVRChatPhotoList: procedure
+    .input(z.object({ year: z.string(), month: z.string() }))
+    .query(async (ctx) => {
+      const result = await service.getVRChatJoinInfoWithVRChatPhotoList({
+        getVRChatPhotoWithWorldIdAndDate:
+          service.getVRChatPhotoWithWorldIdAndDate,
+      })({
+        year: ctx.input.year,
+        month: ctx.input.month,
+      });
       const response: {
         data: null | ExtractDataTypeFromResult<typeof result>;
         error: null | {
