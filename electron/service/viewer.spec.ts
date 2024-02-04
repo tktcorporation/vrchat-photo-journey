@@ -79,10 +79,10 @@ describe('viewer_api', () => {
       .parseJoinInfoFileName(infoFileNameWithoutExt)
       ._unsafeUnwrap().worldId;
     // api で world 情報を取得する
-    const reqUrl = `https://api.vrchat.cloud/api/1/worlds/wrld_${worldId}`;
-    console.log(reqUrl);
+    const reqUrl = `https://api.vrchat.cloud/api/1/worlds/${worldId}`;
     const res = await fetch(reqUrl);
     const worldInfo = await res.json();
-    console.log(worldInfo);
+    expect(worldInfo.id).toBe(worldId);
+    expect(typeof worldInfo.name).toBe('string');
   });
 });
