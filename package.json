@@ -43,6 +43,7 @@
     "node": "20",
     "bun": "1"
   },
+  "trustedDependencies": ["simple-git-hooks"],
   "dependencies": {
     "@heroicons/react": "^2.0.18",
     "@radix-ui/react-alert-dialog": "^1.0.5",
