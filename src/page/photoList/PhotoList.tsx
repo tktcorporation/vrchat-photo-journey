@@ -38,9 +38,14 @@ const WorldInfo = ({
   const dateToDisplay = `${date.getFullYear()}/${
     date.getMonth() + 1
   }/${date.getDate()} ${date.getHours()}:${date.getMinutes()}`;
+  const worldUrl = `https://vrchat.com/home/world/${vrcWorldId}`;
   return (
     <div>
-      <p>{data?.name ?? vrcWorldId}</p>
+      <p>
+        <a href={worldUrl} target="_blank" rel="noreferrer">
+          {data?.name ?? vrcWorldId}
+        </a>
+      </p>
       <p className="text-sm text-gray-500">Join: {dateToDisplay}</p>
     </div>
   );
@@ -147,7 +152,10 @@ const PhotoList = () => {
                 {photoItemList?.map((item) => {
                   // item.photoList がある場合は写真一覧を表示する
                   const photoList = item.photoList.map((photo) => (
-                    <div key={item.imgPath} className="col-span-1">
+                    <div
+                      key={`photo-container-${item.joinDatetime.toISOString()}`}
+                      className="col-span-1"
+                    >
                       <VrcPhoto
                         key={photo.path}
                         photoPath={photo.path}
@@ -159,7 +167,10 @@ const PhotoList = () => {
                   ));
                   return (
                     <>
-                      <div key={item.imgPath} className="col-span-full">
+                      <div
+                        key={`world-info-${item.joinDatetime.toISOString()}`}
+                        className="col-span-full"
+                      >
                         <WorldInfo
                           vrcWorldId={item.worldId}
                           datetime={item.joinDatetime}

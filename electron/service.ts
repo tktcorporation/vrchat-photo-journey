@@ -504,6 +504,9 @@ const getVRChatJoinInfoWithVRChatPhotoList =
       }
     }
 
+    // joinDataの順番を逆にする
+    joinData.reverse();
+
     return neverthrow.ok(joinData);
   };
 
