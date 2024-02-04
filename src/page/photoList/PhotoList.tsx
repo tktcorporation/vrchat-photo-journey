@@ -153,7 +153,7 @@ const PhotoList = () => {
                   // item.photoList がある場合は写真一覧を表示する
                   const photoList = item.photoList.map((photo) => (
                     <div
-                      key={item.joinDatetime.toISOString()}
+                      key={`photo-container-${item.joinDatetime.toISOString()}`}
                       className="col-span-1"
                     >
                       <VrcPhoto
@@ -168,7 +168,7 @@ const PhotoList = () => {
                   return (
                     <>
                       <div
-                        key={item.joinDatetime.toISOString()}
+                        key={`world-info-${item.joinDatetime.toISOString()}`}
                         className="col-span-full"
                       >
                         <WorldInfo
