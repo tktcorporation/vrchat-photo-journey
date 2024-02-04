@@ -187,10 +187,15 @@ describe('getVRChatJoinInfoWithVRChatPhotoList', () => {
 
     expect(result.value).toEqual([
       {
-        joinDatetime: new Date('2023-12-13T12:00:00.000Z'),
+        joinDatetime: new Date('2023-12-13T18:00:00.000Z'),
         worldId: 'wrld_1234567890',
-        imgPath: '2023-12/join1',
-        photoList: [],
+        imgPath: '2023-12/join3',
+        photoList: [
+          {
+            datetime: new Date('2023-12-13T19:00:00.000Z'),
+            path: '2023-12/photo3',
+          },
+        ],
       },
       {
         joinDatetime: new Date('2023-12-13T14:00:00.000Z'),
@@ -208,15 +213,10 @@ describe('getVRChatJoinInfoWithVRChatPhotoList', () => {
         ],
       },
       {
-        joinDatetime: new Date('2023-12-13T18:00:00.000Z'),
+        joinDatetime: new Date('2023-12-13T12:00:00.000Z'),
         worldId: 'wrld_1234567890',
-        imgPath: '2023-12/join3',
-        photoList: [
-          {
-            datetime: new Date('2023-12-13T19:00:00.000Z'),
-            path: '2023-12/photo3',
-          },
-        ],
+        imgPath: '2023-12/join1',
+        photoList: [],
       },
     ]);
   });
