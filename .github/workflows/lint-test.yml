@@ -15,12 +15,14 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version-file: 'package.json'
+
+      - run: npm i -g @antfu/ni
       
       - name: install dependencies
-        run: yarn install --frozen-lockfile
+        run: nci
 
       - name: lint
-        run: yarn lint && yarn type-check
+        run: nr lint && nr type-check
 
       - name: test
-        run: yarn test
+        run: nr test

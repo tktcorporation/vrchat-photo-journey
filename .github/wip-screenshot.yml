@@ -19,8 +19,10 @@ jobs:
         with:
           node-version-file: 'package.json'
 
+      - run: npm i -g @antfu/ni
+
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: nci
 
       - name: Start web app (example using Vite)
         run: yarn dev &
