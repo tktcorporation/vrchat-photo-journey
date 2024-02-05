@@ -15,29 +15,17 @@ const WorldInfo = ({
   datetime,
 }: {
   vrcWorldId: string;
-  datetime:
-    | {
-        year: string;
-        month: string;
-        day: string;
-        hour: string;
-        minute: string;
-      }
-    | Date;
+  datetime: Date;
 }) => {
   const { data } = trpcReact.getVrcWorldInfoByWorldId.useQuery(vrcWorldId, {
     staleTime: 1000 * 60 * 5, // キャッシュの有効期限を5分に設定
     cacheTime: 1000 * 60 * 30, // キャッシュされたデータを30分間メモリに保持
   });
-  const date =
-    datetime instanceof Date
-      ? datetime
-      : new Date(
-          `${datetime.year}-${datetime.month}-${datetime.day}T${datetime.hour}:${datetime.minute}:00`,
-        );
-  const dateToDisplay = `${date.getFullYear()}/${
-    date.getMonth() + 1
-  }/${date.getDate()} ${date.getHours()}:${date.getMinutes()}`;
+  console.log('datetime', data);
+  const date = datetime;
+  const dateToDisplay = `${date.getUTCFullYear()}/${
+    date.getUTCMonth() + 1
+  }/${date.getUTCDate()} ${date.getUTCHours()}:${date.getUTCMinutes()}`;
   const worldUrl = `https://vrchat.com/home/world/${vrcWorldId}`;
   return (
     <div>
