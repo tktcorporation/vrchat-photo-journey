@@ -35,6 +35,7 @@ for dest_file in "${destination_files[@]}"
 do
   # ファイルが既に存在する場合はスキップ
   if [ ! -f "$dest_file" ]; then
+    mkdir -p "$(dirname "$dest_file")"
     cp "$source_file" "$dest_file"
     echo "File $dest_file created."
   else

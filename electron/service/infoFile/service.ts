@@ -125,7 +125,7 @@ const createFiles = async (props: {
 }): Promise<
   neverthrow.Result<
     void,
-    { error: Error; type: typeof CreateFilesError[number] }
+    { error: Error; type: (typeof CreateFilesError)[number] }
   >
 > => {
   const toCreateMapResult = await getToCreateMap({

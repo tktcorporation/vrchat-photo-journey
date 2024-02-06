@@ -96,6 +96,7 @@ const PhotoList = () => {
       <div className="flex flex-col col-span-4 p-4 overflow-hidden">
         <div className="flex-none shrink-0">
           <div className="flex items-center">
+            <h1 className="text-2xl font-bold">Join List</h1>
             <Button
               className="inline"
               variant="ghost"
@@ -106,7 +107,6 @@ const PhotoList = () => {
             >
               <RefreshCw className="inline-block" />
             </Button>
-            <h1 className="text-2xl font-bold">Photo</h1>
             <Button
               variant="ghost"
               className="ml-auto"
@@ -136,7 +136,7 @@ const PhotoList = () => {
         ) : (
           <ScrollArea>
             <div className="col-span-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mt-5">
                 {photoItemList?.map((item) => {
                   // item.photoList がある場合は写真一覧を表示する
                   const photoList = item.photoList.map((photo) => (
