@@ -41,7 +41,7 @@
   },
   "engines": {
     "node": "20",
-    "yarn": "1"
+    "yarn": "4"
   },
   "dependencies": {
     "@heroicons/react": "^2.0.18",
