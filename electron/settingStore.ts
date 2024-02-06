@@ -8,7 +8,7 @@ const settingStoreKey = [
   'vrchatPhotoDir',
   'removeAdjacentDuplicateWorldEntriesFlag',
 ] as const;
-export type SettingStoreKey = typeof settingStoreKey[number];
+export type SettingStoreKey = (typeof settingStoreKey)[number];
 
 const getValue =
   (settingsStore: Store) =>
