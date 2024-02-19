@@ -1,14 +1,10 @@
-// Native
-import { join } from 'path';
-
 // Packages
 import { BrowserWindow, app, ipcMain } from 'electron';
-import isDev from 'electron-is-dev';
 import * as log from 'electron-log';
-import { createIPCHandler } from 'electron-trpc/main';
 import unhandled from 'electron-unhandled';
-import { router } from './api';
+import { getBackgroundUsecase } from './backGroundUsecase';
 import { getController } from './controller';
+import * as electronUtil from './electronUtil';
 import { getSettingStore } from './settingStore';
 
 const controller = getController(getSettingStore('v0-settings'));
@@ -45,67 +41,23 @@ function registerIpcMainListeners() {
   });
 }
 
-const height = 600;
-const width = 800;
-
-function createWindow(): BrowserWindow {
-  // Create the browser window.
-  const mainWindow = new BrowserWindow({
-    width,
-    height,
-    //  change to false to use AppBar
-    frame: false,
-    show: true,
-    resizable: true,
-    fullscreenable: true,
-    backgroundColor: '#fff',
-    webPreferences: {
-      preload: join(__dirname, 'preload.js'),
-    },
-  });
-
-  createIPCHandler({ router, windows: [mainWindow] });
-  const port = process.env.PORT || 3000;
-  const url = isDev
-    ? `http://localhost:${port}`
-    : join(__dirname, '../src/out/index.html');
-
-  // and load the index.html of the app.
-  if (isDev) {
-    mainWindow.loadURL(url);
-  } else {
-    mainWindow.loadFile(url);
-  }
-  // Open the DevTools.
-  // mainWindow.webContents.openDevTools();
-
-  // For AppBar
-  ipcMain.on('minimize', () => {
-    // eslint-disable-next-line no-unused-expressions
-    mainWindow.isMinimized() ? mainWindow.restore() : mainWindow.minimize();
-    // or alternatively: win.isVisible() ? win.hide() : win.show()
-  });
-  ipcMain.on('maximize', () => {
-    // eslint-disable-next-line no-unused-expressions
-    mainWindow.isMaximized() ? mainWindow.restore() : mainWindow.maximize();
-  });
-
-  ipcMain.on('close', () => {
-    mainWindow.close();
-  });
-
-  return mainWindow;
-}
+const backgroundUsecase = getBackgroundUsecase(getSettingStore('v0-settings'));
 
 app
   .whenReady()
   .then(() => {
     registerIpcMainListeners();
-    const window = createWindow();
+    const window = electronUtil.createWindow();
 
     app.on('activate', () => {
-      if (BrowserWindow.getAllWindows().length === 0) createWindow();
+      if (BrowserWindow.getAllWindows().length === 0)
+        electronUtil.createWindow();
     });
+
+    if (backgroundUsecase.getIsEnabledBackgroundProcess()) {
+      electronUtil.setTimeEventEmitter();
+      electronUtil.setTray(window);
+    }
 
     // エラーを記録する
     unhandled({
@@ -128,5 +80,12 @@ app
   });
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
+  if (process.platform === 'darwin') {
+    return;
+  }
+  // background処理が有効になっている場合は終了しない
+  if (backgroundUsecase.getIsEnabledBackgroundProcess()) {
+    return;
+  }
+  app.quit();
 });
