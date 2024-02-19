@@ -7,6 +7,7 @@ const settingStoreKey = [
   'logFilesDir',
   'vrchatPhotoDir',
   'removeAdjacentDuplicateWorldEntriesFlag',
+  'backgroundFileCreateFlag',
 ] as const;
 export type SettingStoreKey = (typeof settingStoreKey)[number];
 
@@ -79,6 +80,23 @@ const setRemoveAdjacentDuplicateWorldEntriesFlag =
   };
 
 /**
+ * バックグラウンドでファイル作成処理を行うかどうか
+ */
+const setBackgroundFileCreateFlag =
+  (set: (key: SettingStoreKey, value: unknown) => void) => (flag: boolean) => {
+    set('backgroundFileCreateFlag', flag);
+  };
+
+const getBackgroundFileCreateFlag =
+  (getB: (key: SettingStoreKey) => boolean | null) => (): boolean | null => {
+    const value = getB('backgroundFileCreateFlag');
+    if (typeof value !== 'boolean') {
+      return null;
+    }
+    return value;
+  };
+
+/**
  * Clear all settings
  */
 const clearAllStoredSettings = (settingsStore: Store) => () => {
@@ -120,6 +138,8 @@ const getSettingStore = (name: storeName) => {
       getRemoveAdjacentDuplicateWorldEntriesFlag(getB),
     setRemoveAdjacentDuplicateWorldEntriesFlag:
       setRemoveAdjacentDuplicateWorldEntriesFlag(set),
+    getBackgroundFileCreateFlag: getBackgroundFileCreateFlag(getB),
+    setBackgroundFileCreateFlag: setBackgroundFileCreateFlag(set),
     clearAllStoredSettings: clearAllStoredSettings(settingStore),
     clearStoredSetting: clearStoredSetting(settingStore),
   };
