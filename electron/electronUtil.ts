@@ -51,12 +51,10 @@ function createWindow(): BrowserWindow {
 
   // For AppBar
   ipcMain.on('minimize', () => {
-    // eslint-disable-next-line no-unused-expressions
     mainWindow.isMinimized() ? mainWindow.restore() : mainWindow.minimize();
     // or alternatively: win.isVisible() ? win.hide() : win.show()
   });
   ipcMain.on('maximize', () => {
-    // eslint-disable-next-line no-unused-expressions
     mainWindow.isMaximized() ? mainWindow.restore() : mainWindow.maximize();
   });
 
