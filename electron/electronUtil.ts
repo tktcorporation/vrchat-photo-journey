@@ -10,7 +10,9 @@ import {
   Tray,
   app,
   ipcMain,
+  shell,
 } from 'electron';
+import type { Event } from 'electron';
 import isDev from 'electron-is-dev';
 import { createIPCHandler } from 'electron-trpc/main';
 import { router } from './api';
@@ -48,6 +50,15 @@ function createWindow(): BrowserWindow {
   }
   // Open the DevTools.
   // mainWindow.webContents.openDevTools();
+
+  // http or httpsのリンクをクリックしたときにデフォルトブラウザで開く
+  const handleUrlOpen = (e: Event, url: string) => {
+    if (url.match(/^http/)) {
+      e.preventDefault();
+      shell.openExternal(url);
+    }
+  };
+  mainWindow.webContents.on('will-navigate', handleUrlOpen);
 
   // For AppBar
   ipcMain.on('minimize', () => {
