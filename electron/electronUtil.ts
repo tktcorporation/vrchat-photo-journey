@@ -104,13 +104,24 @@ const setTray = (mainWindow: BrowserWindow) => {
 };
 
 const setTimeEventEmitter = () => {
-  // 1分ごとにtimeイベントをemitする
+  // 6時間ごとに通知を出す
   const intervalEventEmitter = new EventEmitter();
-  setInterval(() => {
-    intervalEventEmitter.emit('time', new Date());
-  }, 1000 * 20);
+  setInterval(
+    () => {
+      intervalEventEmitter.emit('time', new Date());
+    },
+    1000 * 60 * 60 * 6,
+    // 1000 * 20
+  );
 
   intervalEventEmitter.on('time', (now: Date) => {
+    // TODO: trpc のapiを叩く
+    // router.createFiles({
+    //   ctx: {},
+    //   rawInput: {},
+    //   path: '',
+    //   type: 'query',
+    // });
     const notification = new Notification({
       title: '時間になりました。',
       body: now.toString(),
