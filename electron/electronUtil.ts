@@ -10,7 +10,9 @@ import {
   Tray,
   app,
   ipcMain,
+  shell,
 } from 'electron';
+import type { Event } from 'electron';
 import isDev from 'electron-is-dev';
 import { createIPCHandler } from 'electron-trpc/main';
 import { router } from './api';
@@ -49,14 +51,21 @@ function createWindow(): BrowserWindow {
   // Open the DevTools.
   // mainWindow.webContents.openDevTools();
 
+  // http or httpsのリンクをクリックしたときにデフォルトブラウザで開く
+  const handleUrlOpen = (e: Event, url: string) => {
+    if (url.match(/^http/)) {
+      e.preventDefault();
+      shell.openExternal(url);
+    }
+  };
+  mainWindow.webContents.on('will-navigate', handleUrlOpen);
+
   // For AppBar
   ipcMain.on('minimize', () => {
-    // eslint-disable-next-line no-unused-expressions
     mainWindow.isMinimized() ? mainWindow.restore() : mainWindow.minimize();
     // or alternatively: win.isVisible() ? win.hide() : win.show()
   });
   ipcMain.on('maximize', () => {
-    // eslint-disable-next-line no-unused-expressions
     mainWindow.isMaximized() ? mainWindow.restore() : mainWindow.maximize();
   });
 
@@ -95,13 +104,24 @@ const setTray = (mainWindow: BrowserWindow) => {
 };
 
 const setTimeEventEmitter = () => {
-  // 1分ごとにtimeイベントをemitする
+  // 6時間ごとに通知を出す
   const intervalEventEmitter = new EventEmitter();
-  setInterval(() => {
-    intervalEventEmitter.emit('time', new Date());
-  }, 1000 * 20);
+  setInterval(
+    () => {
+      intervalEventEmitter.emit('time', new Date());
+    },
+    1000 * 60 * 60 * 6,
+    // 1000 * 20
+  );
 
   intervalEventEmitter.on('time', (now: Date) => {
+    // TODO: trpc のapiを叩く
+    // router.createFiles({
+    //   ctx: {},
+    //   rawInput: {},
+    //   path: '',
+    //   type: 'query',
+    // });
     const notification = new Notification({
       title: '時間になりました。',
       body: now.toString(),

@@ -7,7 +7,6 @@
     "steoates.autoimport",
     "atishay-jain.all-autocomplete",
     "usernamehw.errorlens",
-    "dbaeumer.vscode-eslint",
     "ofhumanbondage.react-proptypes-intellisense",
     "mgmcdermott.vscode-language-babel",
     "wix.vscode-import-cost",
@@ -17,6 +16,7 @@
     "bradlc.vscode-tailwindcss",
     "github.vscode-github-actions",
     "vivaxy.vscode-conventional-commits",
+    "github.vscode-github-actions",
     "biomejs.biome"
   ]
 }

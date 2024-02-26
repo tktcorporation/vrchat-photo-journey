@@ -1,5 +1,3 @@
-/* eslint-disable */
-
 import * as path from 'path';
 import * as t from './type';
 // import { getSettingStore } from '../settingStore';

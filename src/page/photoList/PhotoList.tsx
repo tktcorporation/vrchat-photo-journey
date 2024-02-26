@@ -29,8 +29,13 @@ const WorldInfo = ({
   const worldUrl = `https://vrchat.com/home/world/${vrcWorldId}`;
   return (
     <div>
-      <p>
-        <a href={worldUrl} target="_blank" rel="noreferrer">
+      <p className="font-medium">
+        <a
+          href={worldUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="hover:underline"
+        >
           {data?.name ?? vrcWorldId}
         </a>
       </p>
