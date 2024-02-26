@@ -31,17 +31,21 @@ jobs:
         run: nr playwright install --with-deps
       - name: Run Playwright tests
         run: xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" -- nr playwright test
+      
+      - name: upload screenshot
+        id: upload-screenshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshot
+          path: intro.png
 
       - name: Comment PR with screenshot
         uses: actions/github-script@v7
         env:
-          SCREENSHOT_PATH: intro.png
+          screenshotUrl: ${{ steps.upload-screenshot.outputs.artifact-url }}
         with:
           script: |
-            const fs = require('fs');
-            const screenshotPath = process.env.SCREENSHOT_PATH;
-            console.log(fs.readdirSync('.'));
-            const screenshot = fs.readFileSync(screenshotPath);
+            const screenshotPath = process.env.screenshotUrl;
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
