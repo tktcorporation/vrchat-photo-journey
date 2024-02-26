@@ -2,9 +2,6 @@ name: PR Screenshot Commenter
 
 on:
   pull_request:
-    types:
-      - synchronize
-      - opened
 
 jobs:
   screenshot:
@@ -24,22 +21,10 @@ jobs:
       - name: Install dependencies
         run: nci
 
-      - name: Start web app (example using Vite)
-        run: yarn dev &
-
-      - name: Run Puppeteer script to capture screenshot
-        id: capture-screenshot
-        uses: maku693/action-puppeteer-script@v0
-        with:
-          script: |
-            const page = await browser.newPage();
-            await page.goto('http://localhost:3000');  // Adjust this to your web app's URL
-            try {
-              await page.waitForSelector('button', { timeout: 60000 });
-            } catch (error) {
-              console.log('No <button> found within 60 seconds. Continuing...');
-            }
-            await page.screenshot({ path: '/github/workspace/screenshot.png' });
+      - name: Install Playwright Browsers
+        run: nr playwright install --with-deps
+      - name: Run Playwright tests
+        run: nr playwright test
 
       - name: Comment PR with screenshot
         uses: actions/github-script@v5
@@ -51,7 +36,7 @@ jobs:
             const core = require('@actions/core');
 
             const { context } = github;
-            const screenshotPath = '/github/workspace/screenshot.png';
+            const screenshotPath = '/intro.png';
             const image = fs.readFileSync(screenshotPath, { encoding: 'base64' });
             
             const commentBody = `
