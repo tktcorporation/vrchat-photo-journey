@@ -19,7 +19,10 @@ jobs:
       - run: npm i -g @antfu/ni
 
       - name: Install dependencies
-        run: nci
+        run: ni
+
+      - name: build app
+        run: nr build
 
       - name: Install Playwright Browsers
         run: nr playwright install --with-deps
