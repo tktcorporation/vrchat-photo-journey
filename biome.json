@@ -26,6 +26,16 @@
     "globals": ["it", "describe", "expect", "jest", "beforeEach"]
   },
   "files": {
-    "ignore": ["**/node_modules/**", "**/dist/**", "**/main/**", "**/out/**"]
+    "ignore": [
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/main/**",
+      "**/out/**",
+      "**/coverage/**",
+      "**/build/**",
+      "**/playwright-report/**",
+      "**/blob-report/**",
+      "**/playwright/.cache/**"
+    ]
   }
 }
