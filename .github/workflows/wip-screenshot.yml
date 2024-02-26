@@ -27,7 +27,7 @@ jobs:
       - name: Install Playwright Browsers
         run: nr playwright install --with-deps
       - name: Run Playwright tests
-        run: nr playwright test
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" -- nr playwright test
 
       - name: Comment PR with screenshot
         uses: actions/github-script@v5
