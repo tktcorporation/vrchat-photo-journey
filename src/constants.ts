@@ -14,9 +14,13 @@ type KeyOfRouterPaths = keyof typeof ROUTER_PATHS;
 const routerPathValues = Object.values(ROUTER_PATHS);
 
 const getRoutePathKeyByValue = (value: ROUTER_PATHS): KeyOfRouterPaths => {
-  return Object.keys(ROUTER_PATHS).find(
+  const keys = Object.keys(ROUTER_PATHS).find(
     (key) => ROUTER_PATHS[key as KeyOfRouterPaths] === value,
-  ) as KeyOfRouterPaths;
+  );
+  if (!keys) {
+    throw new Error('Invalid route path');
+  }
+  return keys as KeyOfRouterPaths;
 };
 
 export { ROUTER_PATHS, getRoutePathKeyByValue, routerPathValues };
