@@ -36,8 +36,8 @@ jobs:
         id: upload-screenshot
         uses: actions/upload-artifact@v4
         with:
-          name: screenshot
-          path: intro.png
+          name: screenshots
+          path: playwright/previews/*.png
 
       - name: Comment PR with screenshot
         uses: actions/github-script@v7
@@ -51,4 +51,22 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: '![screenshot](' + screenshotPath + ')'
+            });
+
+      - name: Comment PR with screenshot 2
+        uses: actions/github-script@v7
+        env:
+          path: 'playwright/previews'
+        with:
+          script: |
+            const screenshotPath = process.env.screenshotUrl;
+            const fs = require('fs');
+            const screenshotList = fs.readdirSync(screenshotPath).filter(file => file.endsWith('.png'));
+            const screenshot = screenshotList[0];
+            const base64encoded = fs.readFileSync(`${screenshotPath}/${screenshot}`, 'base64');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '![screenshot](data:image/png;base64,' + base64encoded + ')'
             });
