@@ -27,17 +27,16 @@ const WorldInfo = ({
     date.getUTCMonth() + 1
   }/${date.getUTCDate()} ${date.getUTCHours()}:${date.getUTCMinutes()}`;
   const worldUrl = `https://vrchat.com/home/world/${vrcWorldId}`;
+  const openUrlMutation = trpcReact.openUrlInDefaultBrowser.useMutation();
+  const onClickWorldUrl = () => {
+    openUrlMutation.mutate(worldUrl);
+  };
   return (
     <div>
       <p className="font-medium">
-        <a
-          href={worldUrl}
-          target="_blank"
-          rel="noreferrer"
-          className="hover:underline"
-        >
+        <Button onClick={onClickWorldUrl} variant="link" className="px-0">
           {data?.name ?? vrcWorldId}
-        </a>
+        </Button>
       </p>
       <p className="text-sm text-gray-500">Join: {dateToDisplay}</p>
     </div>

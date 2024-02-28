@@ -37,4 +37,8 @@ const openGetDirDialog = async (): Promise<
     });
 };
 
-export { openPathInExplorer, openGetDirDialog };
+const openUrlInDefaultBrowser = (url: string) => {
+  return shell.openExternal(url);
+};
+
+export { openPathInExplorer, openGetDirDialog, openUrlInDefaultBrowser };

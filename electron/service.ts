@@ -559,6 +559,7 @@ const getVrcWorldInfoByWorldId = async (
   return neverthrow.ok({ name: json.name });
 };
 
+// FIXME: 肥大化してきたので controller に分けて書いていくようにする
 const getService = (settingStore: ReturnType<typeof getSettingStore>) => {
   return {
     getVRChatLogFilesDir: getVRChatLogFilesDir(settingStore),
