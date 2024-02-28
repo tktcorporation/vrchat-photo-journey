@@ -9,6 +9,7 @@ import z from 'zod';
 import path from 'path';
 import * as log from 'electron-log';
 import { Result } from 'neverthrow';
+import { getController } from './controller/index';
 import { getService } from './service';
 import { getSettingStore } from './settingStore';
 
@@ -55,6 +56,7 @@ const { procedure: p } = t;
 const procedure = p.use(errorHandler);
 
 const service = getService(getSettingStore('v0-settings'));
+const controller = getController();
 
 export const router = t.router({
   // sample
@@ -233,6 +235,10 @@ export const router = t.router({
         return false;
       },
     );
+  }),
+  openUrlInDefaultBrowser: procedure.input(z.string()).mutation(async (ctx) => {
+    console.log('openUrlInDefaultBrowser', ctx.input);
+    await controller.electronUtilController.openUrlInDefaultBrowser(ctx.input);
   }),
   setVRChatPhotoDirByDialog: procedure.mutation(async () => {
     const result = await service.setVRChatPhotoDirByDialog();
