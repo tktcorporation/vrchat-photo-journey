@@ -31,6 +31,13 @@ jobs:
         run: nr playwright install --with-deps
       - name: Run Playwright tests
         run: xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" -- nr playwright test
+      
+      - name: debug
+        run: |
+          pwd
+          ls
+          ls playwright
+          ls playwright/previews
 
       - name: Comment PR with screenshot 2
         uses: actions/github-script@v7
