@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { ROUTER_PATHS } from '@/constants';
 import { trpcReact } from '@/trpc';
-import { AlertTriangle, Check, ChevronRight } from 'lucide-react';
+import { AlertTriangle, Bed, Check, ChevronRight } from 'lucide-react';
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -54,6 +54,25 @@ function Setting() {
             </div>
             <div>
               <Link to={ROUTER_PATHS.SETTING_VRCHAT_PHOTO_PATH}>
+                <Button variant="ghost">
+                  <ChevronRight size={24} />
+                </Button>
+              </Link>
+            </div>
+          </div>
+          {/* バックグラウンド実行 */}
+          <div className="flex flex-row items-center justify-between rounded-lg border p-4 space-x-4">
+            <div>
+              <Bed size={24} />
+            </div>
+            <div className="space-y-0.5">
+              <div className="text-base">バックグラウンド実行</div>
+              <div className="text-sm text-muted-foreground">
+                アプリを閉じたあとの動作設定
+              </div>
+            </div>
+            <div>
+              <Link to={ROUTER_PATHS.SETTING_BACKGROUND_EXECUTION}>
                 <Button variant="ghost">
                   <ChevronRight size={24} />
                 </Button>
