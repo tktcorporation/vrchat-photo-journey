@@ -1,11 +1,27 @@
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import React from 'react';
+import { trpcReact } from '@/trpc';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const BackGroundSettings = () => {
   const navigate = useNavigate();
+  const enabledBackgroundExecutionQuery =
+    trpcReact.backgroundSettings.getIsBackgroundFileCreationEnabled.useQuery();
+  const [enabledBackgroundExecution, setIsBackgroundFileCreationEnabled] =
+    useState(enabledBackgroundExecutionQuery.data);
+  const setIsBackgroundFileCreationEnabledMutation =
+    trpcReact.backgroundSettings.setIsBackgroundFileCreationEnabled.useMutation();
+
+  const onChangeSwitch = async (checked: boolean) => {
+    await setIsBackgroundFileCreationEnabledMutation.mutate(checked);
+    setIsBackgroundFileCreationEnabled(checked);
+  };
+
+  const switchDisabled =
+    enabledBackgroundExecutionQuery.status === 'loading' ||
+    setIsBackgroundFileCreationEnabledMutation.status === 'loading';
 
   return (
     <div className="flex-auto h-full">
@@ -22,7 +38,12 @@ const BackGroundSettings = () => {
               <Label htmlFor="back-ground-execution">
                 閉じたあともJoinの記録を続ける
               </Label>
-              <Switch id="back-ground-execution" />
+              <Switch
+                id="back-ground-execution"
+                checked={enabledBackgroundExecution ?? false}
+                onCheckedChange={onChangeSwitch}
+                disabled={switchDisabled}
+              />
             </div>
           </div>
         </div>
