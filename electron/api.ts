@@ -9,9 +9,9 @@ import z from 'zod';
 import path from 'path';
 import * as log from 'electron-log';
 import { Result } from 'neverthrow';
-import { getController } from './controller/index';
-import { getService } from './service';
-import { getSettingStore } from './settingStore';
+import { getController } from './module/controller/index';
+import { getService } from './module/service';
+import { getSettingStore } from './module/settingStore';
 
 const ee = new EventEmitter();
 
