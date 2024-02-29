@@ -65,8 +65,8 @@ function Setting() {
         >
           設定をリセットする
         </Button>
-        <Button variant="outline" onClick={() => navigate(-1)} className="mt-4">
-          戻る
+        <Button variant="ghost" onClick={() => navigate(-1)} className="mt-4">
+          もどる
         </Button>
       </div>
     </div>

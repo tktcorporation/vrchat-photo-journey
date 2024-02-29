@@ -1,71 +1,32 @@
-import { EventEmitter } from 'events';
-import { initTRPC } from '@trpc/server';
 import { observable } from '@trpc/server/observable';
-import { stackWithCauses } from 'pony-cause';
-import superjson from 'superjson';
 import z from 'zod';
 
 // 呼び出し元は集約したい
 import path from 'path';
 import * as log from 'electron-log';
 import { Result } from 'neverthrow';
-import { getController } from './controller/index';
-import { getService } from './service';
-import { getSettingStore } from './settingStore';
-
-const ee = new EventEmitter();
-
-const t = initTRPC.create({
-  isServer: true,
-  transformer: superjson,
-});
-
-const logError = (err: Error | string) => {
-  ee.emit('toast', err);
-  let error: Error;
-  if (typeof err === 'string') {
-    error = new Error(`TRPCErrorLogger: ${err}`);
-  } else {
-    error = new Error('TRPCErrorLogger', { cause: err });
-  }
-  log.error(stackWithCauses(error));
-};
+import { backgroundSettingsRouter } from './module/backgroundSettings/controller/backgroundSettingsController';
+import { getController } from './module/controller/index';
+import { getService } from './module/service';
+import { getSettingStore } from './module/settingStore';
+import {
+  eventEmitter as ee,
+  logError,
+  procedure,
+  router as trpcRouter,
+} from './trpc';
 
 type ExtractDataTypeFromResult<R> = R extends Result<infer T, unknown>
   ? T
   : never;
-// type ExtractErrorTypeFromResult<R> = R extends Result<unknown, infer T>
-//   ? T
-//   : never;
 
-const errorHandler = t.middleware(async (opts) => {
-  const resp = await opts.next(opts);
-
-  if (!resp.ok) {
-    logError(
-      new Error('Caught error in TRPC middleware', { cause: resp.error }),
-    );
-    throw resp.error;
-  }
-
-  return resp;
-});
-
-const { procedure: p } = t;
-
-const procedure = p.use(errorHandler);
-
-const service = getService(getSettingStore('v0-settings'));
+const settingStore = getSettingStore('v0-settings');
+const service = getService(settingStore);
 const controller = getController();
 
-export const router = t.router({
-  // sample
-  createTodo: procedure
-    .input(z.object({ text: z.string() }))
-    .mutation(async (req) => {
-      return req;
-    }),
-  subscribeToast: t.procedure.subscription(() => {
+export const router = trpcRouter({
+  backgroundSettings: backgroundSettingsRouter(settingStore),
+  subscribeToast: procedure.subscription(() => {
     return observable((emit) => {
       function onToast(text: string) {
         emit.next(text);

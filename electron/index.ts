@@ -2,10 +2,10 @@
 import { BrowserWindow, app, ipcMain } from 'electron';
 import * as log from 'electron-log';
 import unhandled from 'electron-unhandled';
-import { getBackgroundUsecase } from './backGroundUsecase';
-import { getController } from './controller';
 import * as electronUtil from './electronUtil';
-import { getSettingStore } from './settingStore';
+import { getBackgroundUsecase } from './module/backGroundUsecase';
+import { getController } from './module/controller';
+import { getSettingStore } from './module/settingStore';
 
 const controller = getController(getSettingStore('v0-settings'));
 

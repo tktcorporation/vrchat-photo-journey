@@ -5,6 +5,7 @@ const ROUTER_PATHS = {
   SETTING: '/setting',
   SETTING_VRCHAT_LOG_PATH: '/setting/vrchat-log-path',
   SETTING_VRCHAT_PHOTO_PATH: '/setting/vrchat-photo-path',
+  SETTING_BACKGROUND_EXECUTION: '/setting/background-execution',
   CLEAR_SETTINGS: '/clear-settings',
   CREATED_RESULT: '/created-result',
 } as const;

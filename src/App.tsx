@@ -14,6 +14,7 @@ import { ErrorFallback } from './ErrorBoundary';
 import DefaultLayout from './components/DefaultLayout';
 import { ROUTER_PATHS } from './constants';
 import CreatedResult from './page/CreatedResult';
+import BackGroundSettings from './page/setting/BackGroundSettings';
 import VRChatLogPathSetting from './page/setting/VRChatLogPathSetting';
 import VRChatPhotoPathSetting from './page/setting/VRChatPhotoPathSetting';
 import TrpcWrapper from './trpcWrapper';
@@ -53,6 +54,10 @@ function Router() {
                 <Route
                   path={ROUTER_PATHS.SETTING_VRCHAT_PHOTO_PATH}
                   element={<VRChatPhotoPathSetting />}
+                />
+                <Route
+                  path={ROUTER_PATHS.SETTING_BACKGROUND_EXECUTION}
+                  element={<BackGroundSettings />}
                 />
                 <Route
                   path={ROUTER_PATHS.CLEAR_SETTINGS}
