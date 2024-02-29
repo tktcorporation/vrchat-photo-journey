@@ -17,9 +17,9 @@ function ClearSettings() {
         >
           設定をリセットする
         </button>
-        {/* 設定に戻る */}
+        {/* 設定にもどる */}
         <Link to={ROUTER_PATHS.SETTING}>
-          <Button>戻る</Button>
+          <Button>もどる</Button>
         </Link>
       </div>
     </div>

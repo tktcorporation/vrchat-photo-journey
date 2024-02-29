@@ -27,7 +27,7 @@ const BackGroundSettings = () => {
           </div>
         </div>
         <Button variant="ghost" onClick={() => navigate(-1)} className="mt-4">
-          戻る
+          もどる
         </Button>
       </div>
     </div>
