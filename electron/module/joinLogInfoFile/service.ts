@@ -41,6 +41,65 @@ const removeAdjacentDuplicateWorldEntries = (
   });
 };
 
+/**
+ * JoinInfoLog の作成対象になる WorldJoinLogInfo[] を取得する
+ */
+const getToCreateWorldJoinLogInfos =
+  (settingStore: ReturnType<typeof getSettingStore>) =>
+  async (): Promise<
+    neverthrow.Result<vrchatLogService.WorldJoinLogInfo[], VRChatLogFileError>
+  > => {
+
+    const logFilesDir = getVRChatLogFilesDir(settingStore)();
+    if (logFilesDir.error !== null) {
+      // FIXME: neverthrow
+      throw new Error(logFilesDir.error);
+    }
+
+    const logLinesResult = await vrchatLogService.getLogLinesFromDir({
+      storedLogFilesDirPath: logFilesDir.storedPath,
+      logFilesDir: logFilesDir.path,
+    });
+    if (logLinesResult.isErr()) {
+      return neverthrow.err(logLinesResult.error);
+    }
+    let preprocessedWorldJoinLogInfoList =
+      vrchatLogService.convertLogLinesToWorldJoinLogInfos(logLinesResult.value);
+
+    // removeAdjacentDuplicateWorldEntriesFlag が true の場合は隣接する重複を削除
+    if (settingStore.getRemoveAdjacentDuplicateWorldEntriesFlag()) {
+      preprocessedWorldJoinLogInfoList = removeAdjacentDuplicateWorldEntries(
+        preprocessedWorldJoinLogInfoList,
+      );
+    }
+
+    const vrchatPhotoDir = vrchatPhotoService.getVRChatPhotoDir({
+      storedPath: settingStore.getVRChatPhotoDir(),
+    });
+    if (vrchatPhotoDir.error !== null) {
+      // FIXME: neverthrow
+      throw new Error(vrchatPhotoDir.error);
+    }
+
+    const genYearMonthPath = (info: vrchatLogService.WorldJoinLogInfo) => {
+      return path.join(vrchatPhotoDir.path, `${info.year}-${info.month}`);
+    };
+    const genfileName = (info: vrchatLogService.WorldJoinLogInfo) => {
+      return `${vrchatLogService.convertWorldJoinLogInfoToOneLine(info)}.jpeg`;
+    };
+
+    // ログから抽出した作成できるファイルの情報から、すでに存在するファイルを除外
+    preprocessedWorldJoinLogInfoList = preprocessedWorldJoinLogInfoList.filter(
+      (info) => {
+        return !fs.existsSyncSafe(
+          path.join(genYearMonthPath(info), genfileName(info)),
+        );
+      },
+    );
+
+    return neverthrow.ok(preprocessedWorldJoinLogInfoList);
+  };
+
 const getToCreateMap = async (props: {
   vrchatPhotoDir: string;
   worldJoinLogInfoList: vrchatLogService.WorldJoinLogInfo[];
@@ -58,13 +117,19 @@ const getToCreateMap = async (props: {
     Error
   >
 > => {
-  // 前処理された worldJoinLogInfoList を作成
-  let preprocessedWorldJoinLogInfoList = props.worldJoinLogInfoList;
-  if (props.removeAdjacentDuplicateWorldEntriesFlag) {
-    preprocessedWorldJoinLogInfoList = removeAdjacentDuplicateWorldEntries(
-      preprocessedWorldJoinLogInfoList,
-    );
+
+  const genYearMonthPath = (info: vrchatLogService.WorldJoinLogInfo) => {
+    return path.join(props.vrchatPhotoDir, `${info.year}-${info.month}`);
+  };
+  const genfileName = (info: vrchatLogService.WorldJoinLogInfo) => {
+    return `${vrchatLogService.convertWorldJoinLogInfoToOneLine(info)}.jpeg`;
+  };
+
+  const worldJoinLogInfoList = await getToCreateWorldJoinLogInfos(settingStore)();
+  if (worldJoinLogInfoList.isErr()) {
+    return neverthrow.err(worldJoinLogInfoList.error);
   }
+
 
   // ファイルの作成
   const toCreateMap: ({
@@ -73,14 +138,7 @@ const getToCreateMap = async (props: {
     fileName: string;
     content: Buffer;
   } | null)[] = await Promise.all(
-    preprocessedWorldJoinLogInfoList.map(async (info) => {
-      const yearMonthPath = path.join(
-        props.vrchatPhotoDir,
-        `${info.year}-${info.month}`,
-      );
-      const fileName = `${vrchatLogService.convertWorldJoinLogInfoToOneLine(
-        info,
-      )}.jpeg`;
+    worldJoinLogInfoList.value.map(async (info) => {
       const date = new Date(
         Number(info.year),
         Number(info.month) - 1,
@@ -89,12 +147,6 @@ const getToCreateMap = async (props: {
         Number(info.minute),
         Number(info.second),
       );
-      // すでにファイルが存在している場合は作成しない
-      const filePath = path.join(yearMonthPath, fileName);
-      // fs.existsSyncを使用してファイルの存在を確認
-      if (fs.existsSyncSafe(filePath)) {
-        return null;
-      }
 
       // date は local time なので utc に変換
       // timezone は実行環境から取得する
@@ -113,7 +165,12 @@ const getToCreateMap = async (props: {
         },
         imageWidth: props.imageWidth,
       });
-      return { info, yearMonthPath, fileName, content: contentImage };
+      return {
+        info,
+        yearMonthPath: genYearMonthPath(info),
+        fileName: genfileName(info),
+        content: contentImage,
+      };
     }),
   );
   const filteredMap = toCreateMap.filter((map) => map !== null) as Exclude<

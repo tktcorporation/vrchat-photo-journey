@@ -4,6 +4,7 @@ import path from 'path';
 import * as datefns from 'date-fns';
 import * as log from 'electron-log';
 import * as infoFileService from './joinLogInfoFile/service';
+import * as fs from './lib/wrappedFs';
 import { YearMonthPathNotFoundError } from './service/error';
 import {
   JoinInfoFileNameSchema,
@@ -34,25 +35,6 @@ const getVRChatPhotoDir =
     return vrchatPhotoService.getVRChatPhotoDir({
       storedPath: settingStore.getVRChatPhotoDir(),
     });
-  };
-
-const convertLogLinesToWorldJoinLogInfosByVRChatLogDir =
-  (settingStore: ReturnType<typeof getSettingStore>) =>
-  async (
-    logDir: string,
-  ): Promise<
-    neverthrow.Result<vrchatLogService.WorldJoinLogInfo[], VRChatLogFileError>
-  > => {
-    const result = await vrchatLogService.getLogLinesFromDir({
-      storedLogFilesDirPath: settingStore.getLogFilesDir(),
-      logFilesDir: logDir,
-    });
-    if (result.isErr()) {
-      return neverthrow.err(result.error);
-    }
-    return neverthrow.ok(
-      vrchatLogService.convertLogLinesToWorldJoinLogInfos(result.value),
-    );
   };
 
 /**
@@ -89,14 +71,8 @@ const getWorldJoinInfoWithPhotoPath =
       );
     };
 
-    const logFilesDir = getVRChatLogFilesDir(settingStore)();
-    if (logFilesDir.error !== null) {
-      return err(`${logFilesDir.error}`);
-    }
     const convertWorldJoinLogInfoListResult =
-      await convertLogLinesToWorldJoinLogInfosByVRChatLogDir(settingStore)(
-        logFilesDir.path,
-      );
+      await getToCreateWorldJoinLogInfos(settingStore)();
     if (convertWorldJoinLogInfoListResult.isErr()) {
       return err(`${convertWorldJoinLogInfoListResult.error.code}`);
     }
