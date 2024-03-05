@@ -55,50 +55,6 @@ const convertLogLinesToWorldJoinLogInfosByVRChatLogDir =
     );
   };
 
-const getConfigAndValidateAndGetToCreateInfoFileMap =
-  (settingStore: ReturnType<typeof getSettingStore>) =>
-  async (): Promise<
-    neverthrow.Result<
-      {
-        info: vrchatLogService.WorldJoinLogInfo;
-        yearMonthPath: string;
-        fileName: string;
-        content: Buffer;
-      }[],
-      string
-    >
-  > => {
-    const logFilesDir = getVRChatLogFilesDir(settingStore)();
-    if (logFilesDir.error !== null) {
-      return neverthrow.err(`${logFilesDir.error}`);
-    }
-    const convertWorldJoinLogInfoListResult =
-      await convertLogLinesToWorldJoinLogInfosByVRChatLogDir(settingStore)(
-        logFilesDir.path,
-      );
-    if (convertWorldJoinLogInfoListResult.isErr()) {
-      return neverthrow.err(`${convertWorldJoinLogInfoListResult.error.code}`);
-    }
-    const worldJoinLogInfoList = convertWorldJoinLogInfoListResult.value;
-
-    // create files
-    const vrchatPhotoDir = getVRChatPhotoDir(settingStore)();
-    if (vrchatPhotoDir.error !== null) {
-      return neverthrow.err(vrchatPhotoDir.error);
-    }
-
-    const result = await infoFileService.getToCreateMap({
-      vrchatPhotoDir: vrchatPhotoDir.path,
-      worldJoinLogInfoList,
-      imageWidth: 128,
-      removeAdjacentDuplicateWorldEntriesFlag:
-        settingStore.getRemoveAdjacentDuplicateWorldEntriesFlag() ?? false,
-    });
-    return result.mapErr((error) => {
-      return `${error}`;
-    });
-  };
-
 /**
  * どの写真がどこで撮られたのかのデータを返す
  */
@@ -531,8 +487,6 @@ const getService = (settingStore: ReturnType<typeof getSettingStore>) => {
       getRemoveAdjacentDuplicateWorldEntriesFlag(settingStore),
     setRemoveAdjacentDuplicateWorldEntriesFlag:
       setRemoveAdjacentDuplicateWorldEntriesFlag(settingStore),
-    getConfigAndValidateAndGetToCreateInfoFileMap:
-      getConfigAndValidateAndGetToCreateInfoFileMap(settingStore),
     getWorldJoinInfoWithPhotoPath: getWorldJoinInfoWithPhotoPath(settingStore),
     clearAllStoredSettings: clearAllStoredSettings(settingStore),
     clearStoredSetting: clearStoredSetting(settingStore),

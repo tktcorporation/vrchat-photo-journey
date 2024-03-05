@@ -63,25 +63,6 @@ export const router = trpcRouter({
     }
     return status;
   }),
-  getToCreateInfoFileMap: procedure.query(async () => {
-    const result =
-      await service.getConfigAndValidateAndGetToCreateInfoFileMap();
-    return result.match(
-      (r) => {
-        return r.map((obj) => ({
-          ...obj,
-          // src に直接入れられるように buffer を base64 に変換
-          content: `data:image/${path
-            .extname(obj.fileName)
-            .replace('.', '')};base64,${obj.content.toString('base64')}`,
-        }));
-      },
-      (error) => {
-        logError(error);
-        return [];
-      },
-    );
-  }),
   getWorldJoinInfoWithPhotoPath: procedure.query(async () => {
     const result = await service.getWorldJoinInfoWithPhotoPath();
     interface Response {
