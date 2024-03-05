@@ -67,12 +67,12 @@ const getToCreateMap = async (props: {
   }
 
   // ファイルの作成
-  const toCreateMap: {
+  const toCreateMap: ({
     info: vrchatLogService.WorldJoinLogInfo;
     yearMonthPath: string;
     fileName: string;
     content: Buffer;
-  }[] = await Promise.all(
+  } | null)[] = await Promise.all(
     preprocessedWorldJoinLogInfoList.map(async (info) => {
       const yearMonthPath = path.join(
         props.vrchatPhotoDir,
@@ -89,6 +89,13 @@ const getToCreateMap = async (props: {
         Number(info.minute),
         Number(info.second),
       );
+      // すでにファイルが存在している場合は作成しない
+      const filePath = path.join(yearMonthPath, fileName);
+      // fs.existsSyncを使用してファイルの存在を確認
+      if (fs.existsSyncSafe(filePath)) {
+        return null;
+      }
+
       // date は local time なので utc に変換
       // timezone は実行環境から取得する
       const diffMinsToUtc = date.getTimezoneOffset();
@@ -109,7 +116,11 @@ const getToCreateMap = async (props: {
       return { info, yearMonthPath, fileName, content: contentImage };
     }),
   );
-  return neverthrow.ok(toCreateMap);
+  const filteredMap = toCreateMap.filter((map) => map !== null) as Exclude<
+    (typeof toCreateMap)[number],
+    null
+  >[];
+  return neverthrow.ok(filteredMap);
 };
 
 const CreateFilesError = [
