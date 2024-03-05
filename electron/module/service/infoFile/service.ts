@@ -4,7 +4,7 @@ import * as neverthrow from 'neverthrow';
 import * as fs from '../../lib/wrappedFs';
 
 import * as vrchatLogService from '../vrchatLog/vrchatLog';
-import { createOGPImage } from './createWorldNameImage';
+import { generateOGPImageBuffer } from './createWorldNameImage';
 
 const removeAdjacentDuplicateWorldEntries = (
   worldJoinLogInfoList: vrchatLogService.WorldJoinLogInfo[],
@@ -94,7 +94,7 @@ const getToCreateMap = async (props: {
       const diffMinsToUtc = date.getTimezoneOffset();
       const utcDate = datefns.addMinutes(date, diffMinsToUtc);
 
-      const contentImage = await createOGPImage({
+      const contentImage = await generateOGPImageBuffer({
         worldName: info.worldName,
         date: {
           year: Number(info.year),
