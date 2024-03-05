@@ -1,10 +1,10 @@
 import path from 'path';
 import * as datefns from 'date-fns';
 import * as neverthrow from 'neverthrow';
-import * as fs from '../../lib/wrappedFs';
+import * as fs from '../lib/wrappedFs';
 
-import * as vrchatLogService from '../vrchatLog/vrchatLog';
-import { generateOGPImageBuffer } from './createWorldNameImage';
+import * as vrchatLogService from '../service/vrchatLog/vrchatLog';
+import { generateOGPImageBuffer } from './service/createWorldNameImage';
 
 const removeAdjacentDuplicateWorldEntries = (
   worldJoinLogInfoList: vrchatLogService.WorldJoinLogInfo[],

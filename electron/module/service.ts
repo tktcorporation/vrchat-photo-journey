@@ -3,8 +3,8 @@ import * as neverthrow from 'neverthrow';
 import path from 'path';
 import * as datefns from 'date-fns';
 import * as log from 'electron-log';
+import * as infoFileService from './joinLogInfoFile/service';
 import { YearMonthPathNotFoundError } from './service/error';
-import * as infoFileService from './service/infoFile/service';
 import {
   JoinInfoFileNameSchema,
   PhotoFileNameSchema,
@@ -97,43 +97,6 @@ const getConfigAndValidateAndGetToCreateInfoFileMap =
     return result.mapErr((error) => {
       return `${error}`;
     });
-  };
-
-const getConfigAndValidateAndCreateFiles =
-  (settingStore: ReturnType<typeof getSettingStore>) =>
-  async (): Promise<neverthrow.Result<void, string>> => {
-    const logFilesDir = getVRChatLogFilesDir(settingStore)();
-    if (logFilesDir.error !== null) {
-      return neverthrow.err(`${logFilesDir.error}`);
-    }
-    const convertWorldJoinLogInfoListResult =
-      await convertLogLinesToWorldJoinLogInfosByVRChatLogDir(settingStore)(
-        logFilesDir.path,
-      );
-    if (convertWorldJoinLogInfoListResult.isErr()) {
-      return neverthrow.err(`${convertWorldJoinLogInfoListResult.error.code}`);
-    }
-    const convertWorldJoinLogInfoList = convertWorldJoinLogInfoListResult.value;
-
-    // create files
-    const vrchatPhotoDir = getVRChatPhotoDir(settingStore)();
-    if (vrchatPhotoDir.error !== null) {
-      return neverthrow.err(vrchatPhotoDir.error);
-    }
-
-    const result = await infoFileService.createFiles({
-      vrchatPhotoDir: vrchatPhotoDir.path,
-      worldJoinLogInfoList: convertWorldJoinLogInfoList,
-      removeAdjacentDuplicateWorldEntriesFlag:
-        settingStore.getRemoveAdjacentDuplicateWorldEntriesFlag() ?? false,
-    });
-    return result
-      .map(() => {
-        return undefined;
-      })
-      .mapErr((error) => {
-        return `${error.type}: ${error.error}`;
-      });
   };
 
 /**
@@ -568,8 +531,6 @@ const getService = (settingStore: ReturnType<typeof getSettingStore>) => {
       getRemoveAdjacentDuplicateWorldEntriesFlag(settingStore),
     setRemoveAdjacentDuplicateWorldEntriesFlag:
       setRemoveAdjacentDuplicateWorldEntriesFlag(settingStore),
-    getConfigAndValidateAndCreateFiles:
-      getConfigAndValidateAndCreateFiles(settingStore),
     getConfigAndValidateAndGetToCreateInfoFileMap:
       getConfigAndValidateAndGetToCreateInfoFileMap(settingStore),
     getWorldJoinInfoWithPhotoPath: getWorldJoinInfoWithPhotoPath(settingStore),

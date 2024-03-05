@@ -7,6 +7,7 @@ import * as log from 'electron-log';
 import { Result } from 'neverthrow';
 import { backgroundSettingsRouter } from './module/backgroundSettings/controller/backgroundSettingsController';
 import { getController } from './module/controller/index';
+import { joinInfoLogFileRouter } from './module/joinLogInfoFile/controller';
 import { getService } from './module/service';
 import { getSettingStore } from './module/settingStore';
 import {
@@ -26,6 +27,7 @@ const controller = getController();
 
 export const router = trpcRouter({
   backgroundSettings: backgroundSettingsRouter(settingStore),
+  joinInfoLogFile: joinInfoLogFileRouter(settingStore),
   subscribeToast: procedure.subscription(() => {
     return observable((emit) => {
       function onToast(text: string) {
@@ -60,19 +62,6 @@ export const router = trpcRouter({
       status = vrchatLogFilesDir.error;
     }
     return status;
-  }),
-  createFiles: procedure.mutation(async () => {
-    const result = await service.getConfigAndValidateAndCreateFiles();
-    return result.match(
-      () => {
-        ee.emit('toast', 'ファイルの作成に成功しました');
-        return true;
-      },
-      (error) => {
-        logError(error);
-        return false;
-      },
-    );
   }),
   getToCreateInfoFileMap: procedure.query(async () => {
     const result =

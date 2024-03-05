@@ -59,7 +59,8 @@ function CreateJoinInfo() {
         .exhaustive();
     });
 
-  const createFilesMutation = trpcReact.createFiles.useMutation();
+  const createFilesMutation =
+    trpcReact.joinInfoLogFile.createFiles.useMutation();
   const navigate = useNavigate();
 
   const [isLoading, setIsLoading] = React.useState(false);
