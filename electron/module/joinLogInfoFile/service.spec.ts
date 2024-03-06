@@ -1,4 +1,4 @@
-import { WorldId } from '../type';
+import { WorldId } from '../service/type';
 import {
   groupingPhotoListByWorldJoinInfo,
   removeAdjacentDuplicateWorldEntries,

@@ -16,7 +16,16 @@ interface Props {
   imageWidth?: number;
 }
 
-const createOGPImage = async ({ worldName, date, exif, imageWidth }: Props) => {
+/**
+ * OGP画像のbufferを生成
+ * ファイルの作成までは行わない
+ */
+const generateOGPImageBuffer = async ({
+  worldName,
+  date,
+  exif,
+  imageWidth,
+}: Props): Promise<Buffer> => {
   const title = worldName;
   // 縦横比率
   const aspectRatio = 1200 / 630;
@@ -106,4 +115,4 @@ const createOGPImage = async ({ worldName, date, exif, imageWidth }: Props) => {
   return file.toBuffer();
 };
 
-export { createOGPImage };
+export { generateOGPImageBuffer };

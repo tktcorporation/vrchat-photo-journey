@@ -2,10 +2,6 @@ import ProgressCircle from '@/components/ui/ProgressCircle';
 import { Button } from '@/components/ui/button';
 import { ROUTER_PATHS } from '@/constants';
 import { trpcReact } from '@/trpc';
-import {
-  CheckIcon,
-  ExclamationTriangleIcon,
-} from '@heroicons/react/24/outline';
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { match } from 'ts-pattern';
@@ -59,7 +55,8 @@ function CreateJoinInfo() {
         .exhaustive();
     });
 
-  const createFilesMutation = trpcReact.createFiles.useMutation();
+  const createFilesMutation =
+    trpcReact.joinInfoLogFile.createFiles.useMutation();
   const navigate = useNavigate();
 
   const [isLoading, setIsLoading] = React.useState(false);
@@ -84,23 +81,9 @@ function CreateJoinInfo() {
     <div className="flex flex-col justify-center items-center h-full space-y-4 py-4">
       <ProgressCircle value={progressToReady} size="large" />
       {/* progressToReady が 100 だったら */}
-      <div className="text-xl text-gray-900 text-center space-y-2">
-        {progressToReady === 100 ? (
-          <>
-            ファイル生成の準備が整いました
-            <CheckIcon className="w-6 h-6 inline-block text-green-500" />
-          </>
-        ) : (
-          <>
-            ファイル生成の準備が整っていません
-            <ExclamationTriangleIcon className="w-6 h-6 inline-block text-red-500" />
-          </>
-        )}
+      <div className="text-center space-y-2">
         <div className="text-center text-sm">
-          <p>写真を撮影したワールドを記録できます</p>
-          <p>
-            (記録できるのは最後のVRChat起動から約24時間ほど前までに撮った写真です)
-          </p>
+          <p>最近Joinしたワールド情報を保存して、写真をまとめて表示できます</p>
         </div>
       </div>
       {/* エラーがあったら */}

@@ -3,8 +3,9 @@ import * as neverthrow from 'neverthrow';
 import path from 'path';
 import * as datefns from 'date-fns';
 import * as log from 'electron-log';
+import * as infoFileService from './joinLogInfoFile/service';
+import { getToCreateWorldJoinLogInfos } from './joinLogInfoFile/service';
 import { YearMonthPathNotFoundError } from './service/error';
-import * as infoFileService from './service/infoFile/service';
 import {
   JoinInfoFileNameSchema,
   PhotoFileNameSchema,
@@ -12,7 +13,6 @@ import {
   parsePhotoFileName,
 } from './service/type';
 import * as utilsService from './service/utilsService';
-import VRChatLogFileError from './service/vrchatLog/error';
 import * as vrchatLogService from './service/vrchatLog/vrchatLog';
 import * as vrchatPhotoService from './service/vrchatPhoto/service';
 import { getSettingStore } from './settingStore';
@@ -34,106 +34,6 @@ const getVRChatPhotoDir =
     return vrchatPhotoService.getVRChatPhotoDir({
       storedPath: settingStore.getVRChatPhotoDir(),
     });
-  };
-
-const convertLogLinesToWorldJoinLogInfosByVRChatLogDir =
-  (settingStore: ReturnType<typeof getSettingStore>) =>
-  async (
-    logDir: string,
-  ): Promise<
-    neverthrow.Result<vrchatLogService.WorldJoinLogInfo[], VRChatLogFileError>
-  > => {
-    const result = await vrchatLogService.getLogLinesFromDir({
-      storedLogFilesDirPath: settingStore.getLogFilesDir(),
-      logFilesDir: logDir,
-    });
-    if (result.isErr()) {
-      return neverthrow.err(result.error);
-    }
-    return neverthrow.ok(
-      vrchatLogService.convertLogLinesToWorldJoinLogInfos(result.value),
-    );
-  };
-
-const getConfigAndValidateAndGetToCreateInfoFileMap =
-  (settingStore: ReturnType<typeof getSettingStore>) =>
-  async (): Promise<
-    neverthrow.Result<
-      {
-        info: vrchatLogService.WorldJoinLogInfo;
-        yearMonthPath: string;
-        fileName: string;
-        content: Buffer;
-      }[],
-      string
-    >
-  > => {
-    const logFilesDir = getVRChatLogFilesDir(settingStore)();
-    if (logFilesDir.error !== null) {
-      return neverthrow.err(`${logFilesDir.error}`);
-    }
-    const convertWorldJoinLogInfoListResult =
-      await convertLogLinesToWorldJoinLogInfosByVRChatLogDir(settingStore)(
-        logFilesDir.path,
-      );
-    if (convertWorldJoinLogInfoListResult.isErr()) {
-      return neverthrow.err(`${convertWorldJoinLogInfoListResult.error.code}`);
-    }
-    const worldJoinLogInfoList = convertWorldJoinLogInfoListResult.value;
-
-    // create files
-    const vrchatPhotoDir = getVRChatPhotoDir(settingStore)();
-    if (vrchatPhotoDir.error !== null) {
-      return neverthrow.err(vrchatPhotoDir.error);
-    }
-
-    const result = await infoFileService.getToCreateMap({
-      vrchatPhotoDir: vrchatPhotoDir.path,
-      worldJoinLogInfoList,
-      imageWidth: 128,
-      removeAdjacentDuplicateWorldEntriesFlag:
-        settingStore.getRemoveAdjacentDuplicateWorldEntriesFlag() ?? false,
-    });
-    return result.mapErr((error) => {
-      return `${error}`;
-    });
-  };
-
-const getConfigAndValidateAndCreateFiles =
-  (settingStore: ReturnType<typeof getSettingStore>) =>
-  async (): Promise<neverthrow.Result<void, string>> => {
-    const logFilesDir = getVRChatLogFilesDir(settingStore)();
-    if (logFilesDir.error !== null) {
-      return neverthrow.err(`${logFilesDir.error}`);
-    }
-    const convertWorldJoinLogInfoListResult =
-      await convertLogLinesToWorldJoinLogInfosByVRChatLogDir(settingStore)(
-        logFilesDir.path,
-      );
-    if (convertWorldJoinLogInfoListResult.isErr()) {
-      return neverthrow.err(`${convertWorldJoinLogInfoListResult.error.code}`);
-    }
-    const convertWorldJoinLogInfoList = convertWorldJoinLogInfoListResult.value;
-
-    // create files
-    const vrchatPhotoDir = getVRChatPhotoDir(settingStore)();
-    if (vrchatPhotoDir.error !== null) {
-      return neverthrow.err(vrchatPhotoDir.error);
-    }
-
-    const result = await infoFileService.createFiles({
-      vrchatPhotoDir: vrchatPhotoDir.path,
-      worldJoinLogInfoList: convertWorldJoinLogInfoList,
-      removeAdjacentDuplicateWorldEntriesFlag:
-        settingStore.getRemoveAdjacentDuplicateWorldEntriesFlag() ?? false,
-    });
-    return result
-      .map(() => {
-        return undefined;
-      })
-      .mapErr((error) => {
-        return `${error.type}: ${error.error}`;
-      });
   };
 
 /**
@@ -170,14 +70,8 @@ const getWorldJoinInfoWithPhotoPath =
       );
     };
 
-    const logFilesDir = getVRChatLogFilesDir(settingStore)();
-    if (logFilesDir.error !== null) {
-      return err(`${logFilesDir.error}`);
-    }
     const convertWorldJoinLogInfoListResult =
-      await convertLogLinesToWorldJoinLogInfosByVRChatLogDir(settingStore)(
-        logFilesDir.path,
-      );
+      await getToCreateWorldJoinLogInfos(settingStore)();
     if (convertWorldJoinLogInfoListResult.isErr()) {
       return err(`${convertWorldJoinLogInfoListResult.error.code}`);
     }
@@ -198,6 +92,9 @@ const getWorldJoinInfoWithPhotoPath =
       };
     });
     log.debug(`worldJoinInfoList len ${worldJoinInfoList.length}`);
+    if (worldJoinInfoList.length === 0) {
+      return neverthrow.ok([]);
+    }
     // sort by date asc
     const sortedWorldJoinInfoList = worldJoinInfoList.sort((a, b) => {
       return datefns.compareAsc(a.joinDatetime, b.joinDatetime);
@@ -568,10 +465,6 @@ const getService = (settingStore: ReturnType<typeof getSettingStore>) => {
       getRemoveAdjacentDuplicateWorldEntriesFlag(settingStore),
     setRemoveAdjacentDuplicateWorldEntriesFlag:
       setRemoveAdjacentDuplicateWorldEntriesFlag(settingStore),
-    getConfigAndValidateAndCreateFiles:
-      getConfigAndValidateAndCreateFiles(settingStore),
-    getConfigAndValidateAndGetToCreateInfoFileMap:
-      getConfigAndValidateAndGetToCreateInfoFileMap(settingStore),
     getWorldJoinInfoWithPhotoPath: getWorldJoinInfoWithPhotoPath(settingStore),
     clearAllStoredSettings: clearAllStoredSettings(settingStore),
     clearStoredSetting: clearStoredSetting(settingStore),
