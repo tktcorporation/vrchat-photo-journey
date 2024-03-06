@@ -7,6 +7,7 @@ import * as fs from '../lib/wrappedFs';
 import { getService } from '../service';
 import VRChatLogFileError from '../service/vrchatLog/error';
 import * as vrchatLogService from '../service/vrchatLog/vrchatLog';
+import * as vrchatPhotoService from '../service/vrchatPhoto/service';
 import { generateOGPImageBuffer } from './service/createWorldNameImage';
 
 const removeAdjacentDuplicateWorldEntries = (
@@ -314,10 +315,58 @@ const groupingPhotoListByWorldJoinInfo = (
   });
 };
 
+const getConfigAndValidateAndCreateFiles =
+  (settingStore: ReturnType<typeof getSettingStore>) =>
+  async (): Promise<neverthrow.Result<void, string>> => {
+    const service = getService(settingStore);
+
+    // vrchat log のディレクトリを取得
+    const logFilesDir = service.getVRChatLogFilesDir();
+    if (logFilesDir.error !== null) {
+      return neverthrow.err(`${logFilesDir.error}`);
+    }
+
+    // vrchat log のディレクトリから join 情報を取得
+    const vrchatLogLinesResult = await vrchatLogService.getLogLinesFromDir({
+      storedLogFilesDirPath: settingStore.getLogFilesDir(),
+      logFilesDir: logFilesDir.path,
+    });
+    if (vrchatLogLinesResult.isErr()) {
+      return neverthrow.err(`${vrchatLogLinesResult.error.code}`);
+    }
+    // join log の行を join log info の形式に変換
+    const worldJoinLogInfoList =
+      vrchatLogService.convertLogLinesToWorldJoinLogInfos(
+        vrchatLogLinesResult.value,
+      );
+
+    // ファイルを作成する場所になる vrchat photo のディレクトリを取得
+    const vrchatPhotoDir = vrchatPhotoService.getVRChatPhotoDir({
+      storedPath: settingStore.getVRChatPhotoDir(),
+    });
+    if (vrchatPhotoDir.error !== null) {
+      return neverthrow.err(vrchatPhotoDir.error);
+    }
+    // join情報を記録するファイルを作成
+    const result = await createFiles(settingStore)({
+      vrchatPhotoDir: vrchatPhotoDir.path,
+      worldJoinLogInfoList: worldJoinLogInfoList,
+      removeAdjacentDuplicateWorldEntriesFlag:
+        settingStore.getRemoveAdjacentDuplicateWorldEntriesFlag() ?? false,
+    });
+    return result
+      .map(() => {
+        return undefined;
+      })
+      .mapErr((error) => {
+        return `${error.type}: ${error.error}`;
+      });
+  };
+
 export {
   getToCreateWorldJoinLogInfos,
   createFiles,
   getToCreateMap,
   groupingPhotoListByWorldJoinInfo,
-  removeAdjacentDuplicateWorldEntries,
+  getConfigAndValidateAndCreateFiles,
 };
