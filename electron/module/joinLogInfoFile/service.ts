@@ -317,7 +317,9 @@ const groupingPhotoListByWorldJoinInfo = (
 
 const getConfigAndValidateAndCreateFiles =
   (settingStore: ReturnType<typeof getSettingStore>) =>
-  async (): Promise<neverthrow.Result<void, string>> => {
+  async (): Promise<
+    neverthrow.Result<{ createdFilesLength: number }, string>
+  > => {
     const service = getService(settingStore);
 
     // vrchat log のディレクトリを取得
@@ -356,7 +358,7 @@ const getConfigAndValidateAndCreateFiles =
     });
     return result
       .map(() => {
-        return undefined;
+        return { createdFilesLength: worldJoinLogInfoList.length };
       })
       .mapErr((error) => {
         return `${error.type}: ${error.error}`;

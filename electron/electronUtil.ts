@@ -14,8 +14,10 @@ import {
 } from 'electron';
 import type { Event } from 'electron';
 import isDev from 'electron-is-dev';
+import * as log from 'electron-log';
 import { createIPCHandler } from 'electron-trpc/main';
 import { router } from './api';
+import * as joinLogInfoFileService from './module/joinLogInfoFile/service';
 
 const height = 600;
 const width = 800;
@@ -102,8 +104,10 @@ const setTray = (mainWindow: BrowserWindow) => {
     }
   });
 };
-
-const setTimeEventEmitter = () => {
+import type { getSettingStore } from './module/settingStore';
+const setTimeEventEmitter = (
+  settingStore: ReturnType<typeof getSettingStore>,
+) => {
   // 6時間ごとに通知を出す
   const intervalEventEmitter = new EventEmitter();
   setInterval(
@@ -114,20 +118,34 @@ const setTimeEventEmitter = () => {
     // 1000 * 20
   );
 
-  intervalEventEmitter.on('time', (now: Date) => {
-    // TODO: trpc のapiを叩く
-    // router.createFiles({
-    //   ctx: {},
-    //   rawInput: {},
-    //   path: '',
-    //   type: 'query',
-    // });
+  intervalEventEmitter.on('time', async (now: Date) => {
+    if (!settingStore.getBackgroundFileCreateFlag()) {
+      log.info(`backgroundFileCreateFlag is false: ${now.toString()}`);
+      return;
+    }
+    const result =
+      await joinLogInfoFileService.getConfigAndValidateAndCreateFiles(
+        settingStore,
+      )();
+
+    let notificationTitle = '';
+    let notificationBody = '';
+
+    if (result.isErr()) {
+      log.error(result.error);
+      notificationTitle = 'エラーが発生しました。';
+      notificationBody = result.error;
+    } else {
+      log.info(result.value);
+      notificationTitle = 'joinの記録に成功しました';
+      notificationBody = JSON.stringify(result.value);
+    }
+
     const notification = new Notification({
-      title: '時間になりました。',
-      body: now.toString(),
+      title: notificationTitle,
+      body: `${notificationBody}: ${now.toString()}`,
     });
     notification.show();
-    console.log('time', now, notification);
   });
 };
 

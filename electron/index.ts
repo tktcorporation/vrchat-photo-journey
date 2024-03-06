@@ -7,7 +7,8 @@ import { getBackgroundUsecase } from './module/backGroundUsecase';
 import { getController } from './module/controller';
 import { getSettingStore } from './module/settingStore';
 
-const controller = getController(getSettingStore('v0-settings'));
+const settingStore = getSettingStore('v0-settings');
+const controller = getController(settingStore);
 
 const CHANNELS = {
   CLEAR_ALL_STORED_SETTINGS: 'clear-all-stored-settings',
@@ -55,7 +56,7 @@ app
     });
 
     if (backgroundUsecase.getIsEnabledBackgroundProcess()) {
-      electronUtil.setTimeEventEmitter();
+      electronUtil.setTimeEventEmitter(settingStore);
       electronUtil.setTray(window);
     }
 
