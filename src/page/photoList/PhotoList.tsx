@@ -56,6 +56,11 @@ const PhotoList = () => {
     usePhotoItems(selectedFolderYearMonth);
 
   const handleSideBarClick = (key: string) => {
+    // TODO: Newの表示
+    if (key === '') {
+      // TODO: Newの表示
+    }
+
     const [year, month] = key.split('-');
     setSelectedFolderYearMonth({
       year,

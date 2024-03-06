@@ -1,5 +1,6 @@
 import path from 'path';
 import * as datefns from 'date-fns';
+import * as log from 'electron-log';
 import * as neverthrow from 'neverthrow';
 import { getSettingStore } from '../../module/settingStore';
 import * as fs from '../lib/wrappedFs';
@@ -43,8 +44,15 @@ const removeAdjacentDuplicateWorldEntries = (
   });
 };
 
-// COMMENT: ファイル作成の処理とプレビューの処理で、共通の「これからこのファイル作成するよ」処理を使いたい
-// COMMENT: そのあとなんかしようとしてたんだっけ？
+const genYearMonthPath = (
+  vrchatPhotoDir: string,
+  info: vrchatLogService.WorldJoinLogInfo,
+) => {
+  return path.join(vrchatPhotoDir, `${info.year}-${info.month}`);
+};
+const genfileName = (info: vrchatLogService.WorldJoinLogInfo) => {
+  return `${vrchatLogService.convertWorldJoinLogInfoToOneLine(info)}.jpeg`;
+};
 
 /**
  * JoinInfoLog の作成対象になる WorldJoinLogInfo[] を取得する
@@ -54,6 +62,7 @@ const getToCreateWorldJoinLogInfos =
   async (): Promise<
     neverthrow.Result<vrchatLogService.WorldJoinLogInfo[], VRChatLogFileError>
   > => {
+    console.log('getToCreateWorldJoinLogInfos');
     const service = getService(settingStore);
 
     const logFilesDir = service.getVRChatLogFilesDir();
@@ -85,20 +94,27 @@ const getToCreateWorldJoinLogInfos =
       throw new Error(vrchatPhotoDir.error);
     }
 
-    const genYearMonthPath = (info: vrchatLogService.WorldJoinLogInfo) => {
-      return path.join(vrchatPhotoDir.path, `${info.year}-${info.month}`);
-    };
-    const genfileName = (info: vrchatLogService.WorldJoinLogInfo) => {
-      return `${vrchatLogService.convertWorldJoinLogInfoToOneLine(info)}.jpeg`;
-    };
-
     // ログから抽出した作成できるファイルの情報から、すでに存在するファイルを除外
     preprocessedWorldJoinLogInfoList = preprocessedWorldJoinLogInfoList.filter(
       (info) => {
-        return !fs.existsSyncSafe(
-          path.join(genYearMonthPath(info), genfileName(info)),
+        const infoPath = path.join(
+          genYearMonthPath(vrchatPhotoDir.path, info),
+          genfileName(info),
         );
+        const isPathAlreadyExistResult = fs.existsSyncSafe(infoPath);
+        if (isPathAlreadyExistResult.isErr()) {
+          log.error('isPathAlreadyExistResult', isPathAlreadyExistResult.error);
+          return false;
+        }
+        const isPathAlreadyExist = isPathAlreadyExistResult.value;
+        console.log('isPathAlreadyExist', isPathAlreadyExist, infoPath);
+        return !isPathAlreadyExist;
       },
+    );
+
+    console.log(
+      'preprocessedWorldJoinLogInfoList',
+      preprocessedWorldJoinLogInfoList.length,
     );
 
     return neverthrow.ok(preprocessedWorldJoinLogInfoList);
@@ -123,13 +139,6 @@ const getToCreateMap =
       Error
     >
   > => {
-    const genYearMonthPath = (info: vrchatLogService.WorldJoinLogInfo) => {
-      return path.join(props.vrchatPhotoDir, `${info.year}-${info.month}`);
-    };
-    const genfileName = (info: vrchatLogService.WorldJoinLogInfo) => {
-      return `${vrchatLogService.convertWorldJoinLogInfoToOneLine(info)}.jpeg`;
-    };
-
     const worldJoinLogInfoList =
       await getToCreateWorldJoinLogInfos(settingStore)();
     if (worldJoinLogInfoList.isErr()) {
@@ -172,7 +181,7 @@ const getToCreateMap =
         });
         return {
           info,
-          yearMonthPath: genYearMonthPath(info),
+          yearMonthPath: genYearMonthPath(props.vrchatPhotoDir, info),
           fileName: genfileName(info),
           content: contentImage,
         };
