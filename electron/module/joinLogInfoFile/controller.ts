@@ -44,7 +44,7 @@ const getConfigAndValidateAndCreateFiles =
       return neverthrow.err(vrchatPhotoDir.error);
     }
     // join情報を記録するファイルを作成
-    const result = await joinLogInfoFileService.createFiles({
+    const result = await joinLogInfoFileService.createFiles(settingStore)({
       vrchatPhotoDir: vrchatPhotoDir.path,
       worldJoinLogInfoList: worldJoinLogInfoList,
       removeAdjacentDuplicateWorldEntriesFlag:

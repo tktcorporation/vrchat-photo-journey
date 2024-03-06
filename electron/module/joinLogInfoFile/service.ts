@@ -1,8 +1,10 @@
 import path from 'path';
 import * as datefns from 'date-fns';
 import * as neverthrow from 'neverthrow';
+import { getSettingStore } from '../../module/settingStore';
 import * as fs from '../lib/wrappedFs';
-
+import { getService } from '../service';
+import VRChatLogFileError from '../service/vrchatLog/error';
 import * as vrchatLogService from '../service/vrchatLog/vrchatLog';
 import { generateOGPImageBuffer } from './service/createWorldNameImage';
 
@@ -41,6 +43,9 @@ const removeAdjacentDuplicateWorldEntries = (
   });
 };
 
+// COMMENT: ファイル作成の処理とプレビューの処理で、共通の「これからこのファイル作成するよ」処理を使いたい
+// COMMENT: そのあとなんかしようとしてたんだっけ？
+
 /**
  * JoinInfoLog の作成対象になる WorldJoinLogInfo[] を取得する
  */
@@ -49,8 +54,9 @@ const getToCreateWorldJoinLogInfos =
   async (): Promise<
     neverthrow.Result<vrchatLogService.WorldJoinLogInfo[], VRChatLogFileError>
   > => {
+    const service = getService(settingStore);
 
-    const logFilesDir = getVRChatLogFilesDir(settingStore)();
+    const logFilesDir = service.getVRChatLogFilesDir();
     if (logFilesDir.error !== null) {
       // FIXME: neverthrow
       throw new Error(logFilesDir.error);
@@ -73,9 +79,7 @@ const getToCreateWorldJoinLogInfos =
       );
     }
 
-    const vrchatPhotoDir = vrchatPhotoService.getVRChatPhotoDir({
-      storedPath: settingStore.getVRChatPhotoDir(),
-    });
+    const vrchatPhotoDir = service.getVRChatPhotoDir();
     if (vrchatPhotoDir.error !== null) {
       // FIXME: neverthrow
       throw new Error(vrchatPhotoDir.error);
@@ -100,85 +104,86 @@ const getToCreateWorldJoinLogInfos =
     return neverthrow.ok(preprocessedWorldJoinLogInfoList);
   };
 
-const getToCreateMap = async (props: {
-  vrchatPhotoDir: string;
-  worldJoinLogInfoList: vrchatLogService.WorldJoinLogInfo[];
-  imageWidth?: number;
-  // 同じワールドに連続して複数回入った履歴を削除するかどうか
-  removeAdjacentDuplicateWorldEntriesFlag: boolean;
-}): Promise<
-  neverthrow.Result<
-    {
+const getToCreateMap =
+  (settingStore: ReturnType<typeof getSettingStore>) =>
+  async (props: {
+    vrchatPhotoDir: string;
+    worldJoinLogInfoList: vrchatLogService.WorldJoinLogInfo[];
+    imageWidth?: number;
+    // 同じワールドに連続して複数回入った履歴を削除するかどうか
+    removeAdjacentDuplicateWorldEntriesFlag: boolean;
+  }): Promise<
+    neverthrow.Result<
+      {
+        info: vrchatLogService.WorldJoinLogInfo;
+        yearMonthPath: string;
+        fileName: string;
+        content: Buffer;
+      }[],
+      Error
+    >
+  > => {
+    const genYearMonthPath = (info: vrchatLogService.WorldJoinLogInfo) => {
+      return path.join(props.vrchatPhotoDir, `${info.year}-${info.month}`);
+    };
+    const genfileName = (info: vrchatLogService.WorldJoinLogInfo) => {
+      return `${vrchatLogService.convertWorldJoinLogInfoToOneLine(info)}.jpeg`;
+    };
+
+    const worldJoinLogInfoList =
+      await getToCreateWorldJoinLogInfos(settingStore)();
+    if (worldJoinLogInfoList.isErr()) {
+      return neverthrow.err(worldJoinLogInfoList.error);
+    }
+
+    // ファイルの作成
+    const toCreateMap: ({
       info: vrchatLogService.WorldJoinLogInfo;
       yearMonthPath: string;
       fileName: string;
       content: Buffer;
-    }[],
-    Error
-  >
-> => {
+    } | null)[] = await Promise.all(
+      worldJoinLogInfoList.value.map(async (info) => {
+        const date = new Date(
+          Number(info.year),
+          Number(info.month) - 1,
+          Number(info.day),
+          Number(info.hour),
+          Number(info.minute),
+          Number(info.second),
+        );
 
-  const genYearMonthPath = (info: vrchatLogService.WorldJoinLogInfo) => {
-    return path.join(props.vrchatPhotoDir, `${info.year}-${info.month}`);
+        // date は local time なので utc に変換
+        // timezone は実行環境から取得する
+        const diffMinsToUtc = date.getTimezoneOffset();
+        const utcDate = datefns.addMinutes(date, diffMinsToUtc);
+
+        const contentImage = await generateOGPImageBuffer({
+          worldName: info.worldName,
+          date: {
+            year: Number(info.year),
+            month: Number(info.month),
+            day: Number(info.day),
+          },
+          exif: {
+            dateTimeOriginal: utcDate,
+          },
+          imageWidth: props.imageWidth,
+        });
+        return {
+          info,
+          yearMonthPath: genYearMonthPath(info),
+          fileName: genfileName(info),
+          content: contentImage,
+        };
+      }),
+    );
+    const filteredMap = toCreateMap.filter((map) => map !== null) as Exclude<
+      (typeof toCreateMap)[number],
+      null
+    >[];
+    return neverthrow.ok(filteredMap);
   };
-  const genfileName = (info: vrchatLogService.WorldJoinLogInfo) => {
-    return `${vrchatLogService.convertWorldJoinLogInfoToOneLine(info)}.jpeg`;
-  };
-
-  const worldJoinLogInfoList = await getToCreateWorldJoinLogInfos(settingStore)();
-  if (worldJoinLogInfoList.isErr()) {
-    return neverthrow.err(worldJoinLogInfoList.error);
-  }
-
-
-  // ファイルの作成
-  const toCreateMap: ({
-    info: vrchatLogService.WorldJoinLogInfo;
-    yearMonthPath: string;
-    fileName: string;
-    content: Buffer;
-  } | null)[] = await Promise.all(
-    worldJoinLogInfoList.value.map(async (info) => {
-      const date = new Date(
-        Number(info.year),
-        Number(info.month) - 1,
-        Number(info.day),
-        Number(info.hour),
-        Number(info.minute),
-        Number(info.second),
-      );
-
-      // date は local time なので utc に変換
-      // timezone は実行環境から取得する
-      const diffMinsToUtc = date.getTimezoneOffset();
-      const utcDate = datefns.addMinutes(date, diffMinsToUtc);
-
-      const contentImage = await generateOGPImageBuffer({
-        worldName: info.worldName,
-        date: {
-          year: Number(info.year),
-          month: Number(info.month),
-          day: Number(info.day),
-        },
-        exif: {
-          dateTimeOriginal: utcDate,
-        },
-        imageWidth: props.imageWidth,
-      });
-      return {
-        info,
-        yearMonthPath: genYearMonthPath(info),
-        fileName: genfileName(info),
-        content: contentImage,
-      };
-    }),
-  );
-  const filteredMap = toCreateMap.filter((map) => map !== null) as Exclude<
-    (typeof toCreateMap)[number],
-    null
-  >[];
-  return neverthrow.ok(filteredMap);
-};
 
 const CreateFilesError = [
   'FAILED_TO_CREATE_YEAR_MONTH_DIR',
@@ -186,69 +191,73 @@ const CreateFilesError = [
   'FAILED_TO_CHECK_YEAR_MONTH_DIR_EXISTS',
   'FAILED_TO_GET_TO_CREATE_MAP',
 ] as const;
-const createFiles = async (props: {
-  vrchatPhotoDir: string;
-  worldJoinLogInfoList: vrchatLogService.WorldJoinLogInfo[];
-  removeAdjacentDuplicateWorldEntriesFlag: boolean;
-}): Promise<
-  neverthrow.Result<
-    void,
-    { error: Error; type: (typeof CreateFilesError)[number] }
-  >
-> => {
-  const toCreateMapResult = await getToCreateMap({
-    vrchatPhotoDir: props.vrchatPhotoDir,
-    worldJoinLogInfoList: props.worldJoinLogInfoList,
-    removeAdjacentDuplicateWorldEntriesFlag:
-      props.removeAdjacentDuplicateWorldEntriesFlag,
-  });
-  if (toCreateMapResult.isErr()) {
-    return neverthrow.err({
-      error: toCreateMapResult.error,
-      type: 'FAILED_TO_GET_TO_CREATE_MAP',
+const createFiles =
+  (settingStore: ReturnType<typeof getSettingStore>) =>
+  async (props: {
+    vrchatPhotoDir: string;
+    worldJoinLogInfoList: vrchatLogService.WorldJoinLogInfo[];
+    removeAdjacentDuplicateWorldEntriesFlag: boolean;
+  }): Promise<
+    neverthrow.Result<
+      void,
+      { error: Error; type: (typeof CreateFilesError)[number] }
+    >
+  > => {
+    const toCreateMapResult = await getToCreateMap(settingStore)({
+      vrchatPhotoDir: props.vrchatPhotoDir,
+      worldJoinLogInfoList: props.worldJoinLogInfoList,
+      removeAdjacentDuplicateWorldEntriesFlag:
+        props.removeAdjacentDuplicateWorldEntriesFlag,
     });
-  }
-  const toCreateMap = toCreateMapResult.value;
-
-  // ディレクトリを作成(なければ)
-  // yearMonthPath が重複している場合は一つにまとめる
-  const yearMonthPathSet = new Set(toCreateMap.map((map) => map.yearMonthPath));
-  for (const yearMonthPath of yearMonthPathSet) {
-    const fileExistsResult = fs.existsSyncSafe(yearMonthPath);
-    if (fileExistsResult.isErr()) {
+    if (toCreateMapResult.isErr()) {
       return neverthrow.err({
-        error: fileExistsResult.error,
-        type: 'FAILED_TO_CHECK_YEAR_MONTH_DIR_EXISTS',
+        error: toCreateMapResult.error,
+        type: 'FAILED_TO_GET_TO_CREATE_MAP',
       });
     }
-    if (fileExistsResult.value !== true) {
-      // ディレクトリが存在しない場合のみ作成を試みる
-      const result = fs.mkdirSyncSafe(yearMonthPath); // recursiveオプションは不要
+    const toCreateMap = toCreateMapResult.value;
+
+    // ディレクトリを作成(なければ)
+    // yearMonthPath が重複している場合は一つにまとめる
+    const yearMonthPathSet = new Set(
+      toCreateMap.map((map) => map.yearMonthPath),
+    );
+    for (const yearMonthPath of yearMonthPathSet) {
+      const fileExistsResult = fs.existsSyncSafe(yearMonthPath);
+      if (fileExistsResult.isErr()) {
+        return neverthrow.err({
+          error: fileExistsResult.error,
+          type: 'FAILED_TO_CHECK_YEAR_MONTH_DIR_EXISTS',
+        });
+      }
+      if (fileExistsResult.value !== true) {
+        // ディレクトリが存在しない場合のみ作成を試みる
+        const result = fs.mkdirSyncSafe(yearMonthPath); // recursiveオプションは不要
+        if (result.isErr()) {
+          return neverthrow.err({
+            error: result.error,
+            type: 'FAILED_TO_CREATE_YEAR_MONTH_DIR',
+          });
+        }
+      }
+    }
+
+    // ファイルを作成
+    for (const map of toCreateMap) {
+      const result = fs.writeFileSyncSafe(
+        path.join(map.yearMonthPath, map.fileName),
+        map.content,
+      );
       if (result.isErr()) {
         return neverthrow.err({
           error: result.error,
-          type: 'FAILED_TO_CREATE_YEAR_MONTH_DIR',
+          type: 'FAILED_TO_CREATE_FILE',
         });
       }
     }
-  }
 
-  // ファイルを作成
-  for (const map of toCreateMap) {
-    const result = fs.writeFileSyncSafe(
-      path.join(map.yearMonthPath, map.fileName),
-      map.content,
-    );
-    if (result.isErr()) {
-      return neverthrow.err({
-        error: result.error,
-        type: 'FAILED_TO_CREATE_FILE',
-      });
-    }
-  }
-
-  return neverthrow.ok(undefined);
-};
+    return neverthrow.ok(undefined);
+  };
 
 const groupingPhotoListByWorldJoinInfo = (
   worldJoinInfoList: {
@@ -297,6 +306,7 @@ const groupingPhotoListByWorldJoinInfo = (
 };
 
 export {
+  getToCreateWorldJoinLogInfos,
   createFiles,
   getToCreateMap,
   groupingPhotoListByWorldJoinInfo,

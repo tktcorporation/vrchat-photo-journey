@@ -4,7 +4,7 @@ import path from 'path';
 import * as datefns from 'date-fns';
 import * as log from 'electron-log';
 import * as infoFileService from './joinLogInfoFile/service';
-import * as fs from './lib/wrappedFs';
+import { getToCreateWorldJoinLogInfos } from './joinLogInfoFile/service';
 import { YearMonthPathNotFoundError } from './service/error';
 import {
   JoinInfoFileNameSchema,
@@ -13,7 +13,6 @@ import {
   parsePhotoFileName,
 } from './service/type';
 import * as utilsService from './service/utilsService';
-import VRChatLogFileError from './service/vrchatLog/error';
 import * as vrchatLogService from './service/vrchatLog/vrchatLog';
 import * as vrchatPhotoService from './service/vrchatPhoto/service';
 import { getSettingStore } from './settingStore';
@@ -93,6 +92,9 @@ const getWorldJoinInfoWithPhotoPath =
       };
     });
     log.debug(`worldJoinInfoList len ${worldJoinInfoList.length}`);
+    if (worldJoinInfoList.length === 0) {
+      return neverthrow.ok([]);
+    }
     // sort by date asc
     const sortedWorldJoinInfoList = worldJoinInfoList.sort((a, b) => {
       return datefns.compareAsc(a.joinDatetime, b.joinDatetime);
