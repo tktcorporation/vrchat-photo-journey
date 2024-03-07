@@ -253,7 +253,6 @@ const convertLogLinesToWorldJoinLogInfos = (
   return worldJoinLogInfos;
 };
 
-type WorldJoinLogInfoOneLine = string;
 const convertWorldJoinLogInfoToOneLine = (
   worldJoinLogInfo: WorldJoinLogInfo,
 ): JoinInfoFileName => {
@@ -273,10 +272,8 @@ const convertWorldJoinLogInfoToOneLine = (
 
 export {
   getVRChatLogFileDir,
-  getVRChatLogFileNamesByDir,
   getLogLinesFromDir,
-  extractWorldJoinInfoFromLogs,
   convertLogLinesToWorldJoinLogInfos,
   convertWorldJoinLogInfoToOneLine,
 };
-export type { WorldId, WorldJoinLogInfo, WorldJoinLogInfoOneLine };
+export type { WorldJoinLogInfo };

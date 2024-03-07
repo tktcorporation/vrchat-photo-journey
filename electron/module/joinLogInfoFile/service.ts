@@ -366,9 +366,6 @@ const getConfigAndValidateAndCreateFiles =
 
 export {
   getToCreateWorldJoinLogInfos,
-  removeAdjacentDuplicateWorldEntries,
-  createFiles,
-  getToCreateMap,
   groupingPhotoListByWorldJoinInfo,
   getConfigAndValidateAndCreateFiles,
 };

@@ -1,22 +1,15 @@
-import { ProcedureType } from '@trpc/server';
 import { contextBridge, ipcRenderer } from 'electron';
 
 import type { Operation } from '@trpc/client';
 import type { TRPCResponseMessage } from '@trpc/server/rpc';
 
-export type ETRPCRequest =
+type ETRPCRequest =
   | { method: 'request'; operation: Operation }
   | { method: 'subscription.stop'; id: number };
 
-export interface RendererGlobalElectronTRPC {
+interface RendererGlobalElectronTRPC {
   sendMessage: (args: ETRPCRequest) => void;
   onMessage: (callback: (args: TRPCResponseMessage) => void) => void;
-}
-
-export interface TRPCHandlerArgs {
-  path: string;
-  type: ProcedureType;
-  input?: unknown;
 }
 
 const ELECTRON_TRPC_CHANNEL = 'electron-trpc';
