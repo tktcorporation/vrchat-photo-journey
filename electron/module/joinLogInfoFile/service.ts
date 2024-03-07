@@ -108,7 +108,6 @@ const getToCreateWorldJoinLogInfos =
           return false;
         }
         const isPathAlreadyExist = isPathAlreadyExistResult.value;
-        console.log('isPathAlreadyExist', isPathAlreadyExist, infoPath);
         return !isPathAlreadyExist;
       },
     );
