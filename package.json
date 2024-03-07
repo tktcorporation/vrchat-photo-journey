@@ -34,11 +34,11 @@
     "find-deadcode": "ts-prune",
     "test": "jest",
     "test:playwright": "playwright install --with-deps && playwright test",
-    "lint": "nlx @biomejs/biome check .",
+    "lint": "nlx @biomejs/biome check . && nr type-check",
     "lint:fix": "nlx @biomejs/biome check --apply ."
   },
   "simple-git-hooks": {
-    "pre-commit": "nr lint && nr type-check"
+    "pre-commit": "nr lint"
   },
   "engines": {
     "node": "20",
