@@ -1,6 +1,6 @@
 const ROUTER_PATHS = {
   ONBORDING: '/onboarding',
-  CREATE_JOIN_INFO: '/',
+  HOME: '/',
   PHOTO_LIST: '/photo-list',
   SETTING: '/setting',
   SETTING_VRCHAT_LOG_PATH: '/setting/vrchat-log-path',

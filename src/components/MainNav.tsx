@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 
 import { ROUTER_PATHS } from '@/constants';
 import { cn } from '@/lib/utils';
-import { FilePlus2, ImageIcon, SettingsIcon } from 'lucide-react';
+import { ImageIcon, SettingsIcon } from 'lucide-react';
 
 const MainNav = ({
   className,
@@ -21,17 +21,6 @@ const MainNav = ({
       {...props}
     >
       <div className="flex items-center space-x-4 lg:space-x-6">
-        <Link
-          to={ROUTER_PATHS.CREATE_JOIN_INFO}
-          className={cn(
-            'text-sm font-medium transition-colors hover:text-primary px-2',
-            currentPath === ROUTER_PATHS.CREATE_JOIN_INFO
-              ? ''
-              : 'text-muted-foreground',
-          )}
-        >
-          <FilePlus2 />
-        </Link>
         <Link
           to={ROUTER_PATHS.PHOTO_LIST}
           className={cn(

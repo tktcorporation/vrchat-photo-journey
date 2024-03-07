@@ -7,6 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { ROUTER_PATHS } from '@/constants';
 import { RefreshCw } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { CreateJoinInfo } from './CreateJoinInfo';
 import { PhotoItemList } from './PhotoItemList';
 import { usePhotoItems, useYearMonthList } from './composable';
 
@@ -22,18 +23,25 @@ const PhotoList = () => {
   const { photoItemList, photoItemFetchError, refetchPhotoItemList } =
     usePhotoItems(selectedFolderYearMonth);
 
+  // 右側に表示するコンポーネント joinList or error or createJoinInfo
+  const [selectedComponentKey, setSelectedComponentKey] = useState<
+    'joinList' | 'createJoinInfo'
+  >('joinList');
+
   const handleSideBarClick = (key: string) => {
-    // TODO: Newの表示
+    // Newの表示
     if (key === '') {
-      // TODO: Newの表示
+      setSelectedComponentKey('createJoinInfo');
+      return;
     }
 
+    setSelectedComponentKey('joinList');
     const [year, month] = key.split('-');
     setSelectedFolderYearMonth({
       year,
       month,
     });
-    // データを更新するためにrefetch関数を呼び出すことができます。
+    // データを更新するためにrefetch関数を呼び出す
     refetchPhotoItemList?.();
   };
 
@@ -51,6 +59,41 @@ const PhotoList = () => {
       `${sortedYearMonthList[0].year}-${sortedYearMonthList[0].month}`,
     [sortedYearMonthList],
   );
+
+  const JoinListComponent = () => {
+    return (
+      <>
+        {/* 画面サイズからはみ出さないようにする */}
+        {photoItemFetchError !== null ? (
+          <div className="flex justify-center items-center h-full">
+            <div className="text-center space-y-4">
+              <div className="space-y-2">
+                <h1 className="text-xl font-bold">設定を完了させてください</h1>
+                <p>
+                  {photoItemFetchError.code} {photoItemFetchError.message}
+                </p>
+              </div>
+              <div>
+                <Link to={ROUTER_PATHS.SETTING} className="text-blue-500">
+                  設定画面へ
+                </Link>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <ScrollArea>
+            <PhotoItemList photoItemList={photoItemList} />
+          </ScrollArea>
+        )}
+      </>
+    );
+  };
+  const RightPanel = () => {
+    if (selectedComponentKey === 'joinList') {
+      return <JoinListComponent />;
+    }
+    return <CreateJoinInfo />;
+  };
 
   return (
     <div className="h-full grid grid-cols-5 overflow-hidden">
@@ -90,28 +133,7 @@ const PhotoList = () => {
             </Button>
           </div>
         </div>
-        {/* 画面サイズからはみ出さないようにする */}
-        {photoItemFetchError !== null ? (
-          <div className="flex justify-center items-center h-full">
-            <div className="text-center space-y-4">
-              <div className="space-y-2">
-                <h1 className="text-xl font-bold">設定を完了させてください</h1>
-                <p>
-                  {photoItemFetchError.code} {photoItemFetchError.message}
-                </p>
-              </div>
-              <div>
-                <Link to={ROUTER_PATHS.SETTING} className="text-blue-500">
-                  設定画面へ
-                </Link>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <ScrollArea>
-            <PhotoItemList photoItemList={photoItemList} />
-          </ScrollArea>
-        )}
+        <RightPanel />
       </div>
     </div>
   );
