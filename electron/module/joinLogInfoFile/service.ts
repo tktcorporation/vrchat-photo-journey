@@ -2,10 +2,10 @@ import path from 'path';
 import * as datefns from 'date-fns';
 import * as log from 'electron-log';
 import * as neverthrow from 'neverthrow';
-import { getSettingStore } from '../../module/settingStore';
+import type { getSettingStore } from '../../module/settingStore';
 import * as fs from '../lib/wrappedFs';
 import { getService } from '../service';
-import VRChatLogFileError from '../service/vrchatLog/error';
+import type VRChatLogFileError from '../service/vrchatLog/error';
 import * as vrchatLogService from '../service/vrchatLog/vrchatLog';
 import * as vrchatPhotoService from '../service/vrchatPhoto/service';
 import { generateOGPImageBuffer } from './service/createWorldNameImage';
@@ -188,7 +188,7 @@ const getToCreateMap =
       }),
     );
     const filteredMap = toCreateMap.filter((map) => map !== null) as Exclude<
-      (typeof toCreateMap)[number],
+      typeof toCreateMap[number],
       null
     >[];
     return neverthrow.ok(filteredMap);
@@ -209,7 +209,7 @@ const createFiles =
   }): Promise<
     neverthrow.Result<
       void,
-      { error: Error; type: (typeof CreateFilesError)[number] }
+      { error: Error; type: typeof CreateFilesError[number] }
     >
   > => {
     const toCreateMapResult = await getToCreateMap(settingStore)({

@@ -2,7 +2,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-        "@/*": ["./src/*"]
+      "@/*": ["./src/*"]
     },
     "sourceMap": true,
     "target": "ESNext",
@@ -21,6 +21,12 @@
     "noEmit": true,
     "jsx": "react"
   },
-  "exclude": ["node_modules", "**/*.spec.ts", "**/*.spec.tsx", "**/*.test.ts", "**/*.test.tsx"],
+  "exclude": [
+    "node_modules",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "**/*.test.ts",
+    "**/*.test.tsx"
+  ],
   "include": ["**/*.ts", "**/*.tsx", "**/*.js"]
 }

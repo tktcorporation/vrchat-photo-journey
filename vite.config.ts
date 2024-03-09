@@ -1,6 +1,6 @@
 import { join } from 'path';
 import react from '@vitejs/plugin-react';
-import { ConfigEnv, UserConfig } from 'vite';
+import type { ConfigEnv, UserConfig } from 'vite';
 
 const srcRoot = join(__dirname, 'src');
 

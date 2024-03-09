@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import { Result, err, ok } from 'neverthrow';
+import { type Result, err, ok } from 'neverthrow';
 
 export const readFileSyncSafe = (
   filePath: string,

@@ -9,7 +9,7 @@ const ROUTER_PATHS = {
   CLEAR_SETTINGS: '/clear-settings',
   CREATED_RESULT: '/created-result',
 } as const;
-type ROUTER_PATHS = (typeof ROUTER_PATHS)[keyof typeof ROUTER_PATHS];
+type ROUTER_PATHS = typeof ROUTER_PATHS[keyof typeof ROUTER_PATHS];
 type KeyOfRouterPaths = keyof typeof ROUTER_PATHS;
 
 const routerPathValues = Object.values(ROUTER_PATHS);
