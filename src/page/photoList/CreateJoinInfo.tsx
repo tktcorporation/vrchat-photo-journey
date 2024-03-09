@@ -1,4 +1,3 @@
-import ProgressCircle from '@/components/ui/ProgressCircle';
 import { Button } from '@/components/ui/button';
 import { ROUTER_PATHS } from '@/constants';
 import { trpcReact } from '@/trpc';
@@ -18,9 +17,9 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Loader } from 'lucide-react';
-import { JoinInfoPreview } from '../components/JoinInfoPreview';
+import { JoinInfoPreview } from '../../components/JoinInfoPreview';
 
-function CreateJoinInfo() {
+export const CreateJoinInfo = () => {
   const settingsToCreateList = [
     trpcReact.getVRChatPhotoDir.useQuery(),
     trpcReact.getVRChatLogFilesDir.useQuery(),
@@ -78,14 +77,7 @@ function CreateJoinInfo() {
     createFilesMutation.isLoading || progressToReady !== 100;
 
   return !isLoading ? (
-    <div className="flex flex-col justify-center items-center h-full space-y-4 py-4">
-      <ProgressCircle value={progressToReady} size="large" />
-      {/* progressToReady が 100 だったら */}
-      <div className="text-center space-y-2">
-        <div className="text-center text-sm">
-          <p>最近Joinしたワールド情報を保存して、写真をまとめて表示できます</p>
-        </div>
-      </div>
+    <div className="flex flex-col justify-center items-center h-full">
       {/* エラーがあったら */}
       {errorList.length > 0 && (
         <div className="text-red-500">
@@ -97,13 +89,19 @@ function CreateJoinInfo() {
 
       {errorList.length === 0 ? (
         <>
-          <div className="px-8 flex-grow overflow-hidden rounded-lg">
+          <div className="flex-grow overflow-hidden rounded-lg">
             <JoinInfoPreview />
           </div>
 
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button disabled={disabledCreateFilesButton}>保存する</Button>
+              {/* TODO: ウィンドウが狭いとボタンの株が埋もれてしまうので mb で応急処理 */}
+              <Button
+                disabled={disabledCreateFilesButton}
+                className="mt-4 mb-8"
+              >
+                保存する
+              </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
@@ -141,6 +139,4 @@ function CreateJoinInfo() {
       </div>
     </div>
   );
-}
-
-export default CreateJoinInfo;
+};

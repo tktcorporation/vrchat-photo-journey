@@ -6,7 +6,10 @@ import { match } from 'ts-pattern';
 import * as fs from '../../lib/wrappedFs';
 import VRChatLogFileError from './error';
 
-import { type JoinInfoFileName, convertToJoinInfoFileName } from '../type';
+import {
+  type JoinInfoFileName,
+  convertToJoinInfoFileName,
+} from '../../vrchatLog/type';
 
 type WorldId = `wrld_${string}`;
 interface WorldJoinLogInfo {
@@ -123,7 +126,7 @@ const getLogLinesFromLogFileName = async (props: {
   const stream = fs.createReadStream(props.logFilePath);
   const reader = readline.createInterface({
     input: stream,
-    crlfDelay: Infinity,
+    crlfDelay: Number.POSITIVE_INFINITY,
   });
   const lines: string[] = [];
   reader.on('line', (line) => {
@@ -253,7 +256,6 @@ const convertLogLinesToWorldJoinLogInfos = (
   return worldJoinLogInfos;
 };
 
-type WorldJoinLogInfoOneLine = string;
 const convertWorldJoinLogInfoToOneLine = (
   worldJoinLogInfo: WorldJoinLogInfo,
 ): JoinInfoFileName => {
@@ -273,10 +275,8 @@ const convertWorldJoinLogInfoToOneLine = (
 
 export {
   getVRChatLogFileDir,
-  getVRChatLogFileNamesByDir,
   getLogLinesFromDir,
-  extractWorldJoinInfoFromLogs,
   convertLogLinesToWorldJoinLogInfos,
   convertWorldJoinLogInfoToOneLine,
 };
-export type { WorldId, WorldJoinLogInfo, WorldJoinLogInfoOneLine };
+export type { WorldJoinLogInfo };

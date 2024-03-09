@@ -5,7 +5,6 @@ import { HashRouter, Route, Routes } from 'react-router-dom';
 import Template from './Template';
 import AppBar from './components/AppBar';
 import ClearSettings from './page/ClearSettings';
-import CreateJoinInfo from './page/CreateJoinInfo';
 import Setting from './page/Setting';
 import PhotoList from './page/photoList/PhotoList';
 
@@ -37,10 +36,7 @@ function Router() {
             <DefaultLayout>
               <Routes>
                 <Route path={ROUTER_PATHS.ONBORDING} element={<Onboarding />} />
-                <Route
-                  path={ROUTER_PATHS.CREATE_JOIN_INFO}
-                  element={<CreateJoinInfo />}
-                />
+                <Route path={ROUTER_PATHS.HOME} element={<PhotoList />} />
                 <Route path={ROUTER_PATHS.PHOTO_LIST} element={<PhotoList />} />
                 <Route
                   path={ROUTER_PATHS.CREATED_RESULT}

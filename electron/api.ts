@@ -4,7 +4,7 @@ import z from 'zod';
 // 呼び出し元は集約したい
 import path from 'path';
 import * as log from 'electron-log';
-import { Result } from 'neverthrow';
+import type { Result } from 'neverthrow';
 import { backgroundSettingsRouter } from './module/backgroundSettings/controller/backgroundSettingsController';
 import { getController } from './module/controller/index';
 import { joinInfoLogFileRouter } from './module/joinLogInfoFile/controller';

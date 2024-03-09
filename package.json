@@ -6,12 +6,7 @@
     "name": "tktcorporation"
   },
   "description": "",
-  "keywords": [
-    "vite",
-    "react",
-    "electron",
-    "typescript"
-  ],
+  "keywords": ["vite", "react", "electron", "typescript"],
   "repository": {
     "url": "https://github.com/tktcorporation/add-world-name-to-vrc-photo"
   },
@@ -34,11 +29,11 @@
     "find-deadcode": "ts-prune",
     "test": "jest",
     "test:playwright": "playwright install --with-deps && playwright test",
-    "lint": "nlx @biomejs/biome check .",
-    "lint:fix": "nlx @biomejs/biome check --apply ."
+    "lint": "nr biome check . && nr type-check",
+    "lint:fix": "nr biome check --apply ."
   },
   "simple-git-hooks": {
-    "pre-commit": "nr lint && nr type-check"
+    "pre-commit": "nr lint"
   },
   "engines": {
     "node": "20",
@@ -115,10 +110,7 @@
   },
   "build": {
     "asar": true,
-    "files": [
-      "main",
-      "src/out"
-    ],
+    "files": ["main", "src/out"],
     "directories": {
       "buildResources": "resources"
     },

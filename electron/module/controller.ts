@@ -1,6 +1,6 @@
 import { dialog } from 'electron';
 import * as neverthrow from 'neverthrow';
-import { getSettingStore } from './settingStore';
+import type { getSettingStore } from './settingStore';
 
 const handleOpenDialogAndSetLogFilesDir =
   (settingStore: ReturnType<typeof getSettingStore>) =>

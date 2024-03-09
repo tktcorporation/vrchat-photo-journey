@@ -1,4 +1,4 @@
-import { getSettingStore } from './settingStore';
+import type { getSettingStore } from './settingStore';
 
 const getIsEnabledBackgroundProcess =
   (settingStore: ReturnType<typeof getSettingStore>) => () => {

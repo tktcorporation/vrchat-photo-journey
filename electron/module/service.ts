@@ -6,16 +6,15 @@ import * as log from 'electron-log';
 import * as infoFileService from './joinLogInfoFile/service';
 import { getToCreateWorldJoinLogInfos } from './joinLogInfoFile/service';
 import { YearMonthPathNotFoundError } from './service/error';
-import {
-  JoinInfoFileNameSchema,
-  PhotoFileNameSchema,
-  parseJoinInfoFileName,
-  parsePhotoFileName,
-} from './service/type';
+import { PhotoFileNameSchema, parsePhotoFileName } from './service/type';
 import * as utilsService from './service/utilsService';
 import * as vrchatLogService from './service/vrchatLog/vrchatLog';
 import * as vrchatPhotoService from './service/vrchatPhoto/service';
-import { getSettingStore } from './settingStore';
+import type { getSettingStore } from './settingStore';
+import {
+  JoinInfoFileNameSchema,
+  parseJoinInfoFileName,
+} from './vrchatLog/type';
 
 const getVRChatLogFilesDir =
   (settingStore: ReturnType<typeof getSettingStore>) =>
@@ -327,7 +326,7 @@ const getVRChatPhotoWithWorldIdAndDate =
       return null;
     });
     const filteredObjList = objList.filter((obj) => obj !== null) as Exclude<
-      (typeof objList)[number],
+      typeof objList[number],
       null
     >[];
     return neverthrow.ok(filteredObjList);

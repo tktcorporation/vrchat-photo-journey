@@ -22,7 +22,7 @@ jobs:
         run: nci
 
       - name: lint
-        run: nr lint && nr type-check
+        run: nr lint
 
       - name: test
         run: nr test
