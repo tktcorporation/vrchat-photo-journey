@@ -53,6 +53,7 @@ const MainNav = ({
           )}
         >
           <SettingsIcon />
+          <span className="sr-only">設定画面へ</span>
         </Link>
       </div>
     </nav>
