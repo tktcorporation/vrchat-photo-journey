@@ -1,5 +1,5 @@
 import * as path from 'path';
-import * as t from './type';
+import * as type from './type';
 // import { getSettingStore } from '../settingStore';
 // import {
 //   getVRChatPhotoFolderYearMonthList,
@@ -73,7 +73,7 @@ describe('viewer_api', () => {
     const infoFileNameWithoutExt = path
       .basename(infoFilePath)
       .replace(/\.[^/.]+$/, '');
-    const worldId = t
+    const worldId = type
       .parseJoinInfoFileName(infoFileNameWithoutExt)
       ._unsafeUnwrap().worldId;
     // api で world 情報を取得する
