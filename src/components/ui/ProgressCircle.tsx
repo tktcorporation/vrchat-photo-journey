@@ -1,6 +1,7 @@
 import { cn } from '@/lib/utils';
 import * as ProgressPrimitive from '@radix-ui/react-progress';
-import React, { forwardRef } from 'react';
+import type React from 'react';
+import { forwardRef } from 'react';
 
 type ProgressCircleProps = Omit<
   React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root>,

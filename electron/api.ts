@@ -2,7 +2,7 @@ import { observable } from '@trpc/server/observable';
 import z from 'zod';
 
 // 呼び出し元は集約したい
-import path from 'path';
+import path from 'node:path';
 import * as log from 'electron-log';
 import type { Result } from 'neverthrow';
 import { backgroundSettingsRouter } from './module/backgroundSettings/controller/backgroundSettingsController';

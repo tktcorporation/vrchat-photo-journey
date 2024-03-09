@@ -1,6 +1,6 @@
 import * as neverthrow from 'neverthrow';
 
-import path from 'path';
+import path from 'node:path';
 import * as datefns from 'date-fns';
 import * as log from 'electron-log';
 import * as infoFileService from './joinLogInfoFile/service';
@@ -326,7 +326,7 @@ const getVRChatPhotoWithWorldIdAndDate =
       return null;
     });
     const filteredObjList = objList.filter((obj) => obj !== null) as Exclude<
-      typeof objList[number],
+      (typeof objList)[number],
       null
     >[];
     return neverthrow.ok(filteredObjList);

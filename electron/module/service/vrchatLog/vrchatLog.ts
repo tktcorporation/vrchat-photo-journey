@@ -1,5 +1,5 @@
-import path from 'path';
-import readline from 'readline';
+import path from 'node:path';
+import readline from 'node:readline';
 import * as log from 'electron-log';
 import * as neverthrow from 'neverthrow';
 import { match } from 'ts-pattern';

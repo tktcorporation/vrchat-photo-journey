@@ -9,7 +9,7 @@ const settingStoreKey = [
   'removeAdjacentDuplicateWorldEntriesFlag',
   'backgroundFileCreateFlag',
 ] as const;
-export type SettingStoreKey = typeof settingStoreKey[number];
+export type SettingStoreKey = (typeof settingStoreKey)[number];
 
 const getValue =
   (settingsStore: Store) =>

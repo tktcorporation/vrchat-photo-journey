@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 import { app } from 'electron';
 import * as neverthrow from 'neverthrow';
 import sharp from 'sharp';
@@ -22,7 +22,7 @@ const validateError = [
 ] as const;
 const validateVRChatPhotoDir = (
   dir: string,
-): neverthrow.Result<string, typeof validateError[number]> => {
+): neverthrow.Result<string, (typeof validateError)[number]> => {
   const dirNames = fs.readDirSyncSafe(dir);
   if (dirNames.isErr()) {
     return neverthrow.err('photoDirReadError');
@@ -41,7 +41,7 @@ const getVRChatPhotoDir = (props: {
 }): {
   storedPath: string | null;
   path: string;
-  error: null | typeof validateError[number];
+  error: null | (typeof validateError)[number];
 } => {
   const defaultPath = getDefaultVRChatPhotoDir();
 
@@ -171,7 +171,7 @@ const getVRChatPhotoOnlyItemPathListByYearMonth = (props: {
   });
   const photoItemPathListExcludeNull = photoItemPathList.filter(
     (photoItemPath) => photoItemPath !== null,
-  ) as Exclude<typeof photoItemPathList[number], null>[];
+  ) as Exclude<(typeof photoItemPathList)[number], null>[];
   return neverthrow.ok(photoItemPathListExcludeNull);
 };
 
