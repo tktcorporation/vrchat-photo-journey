@@ -1,5 +1,5 @@
 // Packages
-import { BrowserWindow, app, ipcMain } from 'electron';
+import { type BrowserWindow, app, ipcMain } from 'electron';
 import * as log from 'electron-log';
 import unhandled from 'electron-unhandled';
 import * as electronUtil from './electronUtil';
@@ -44,12 +44,11 @@ const registerIpcMainListeners = () => {
 
 const backgroundUsecase = getBackgroundUsecase(getSettingStore('v0-settings'));
 
-// メインウィンドウを保持する変数
-let mainWindow: BrowserWindow | null = null;
-
-const createMainWindow = async () => {
-  mainWindow = electronUtil.createWindow();
+const createOrGetMainWindow = async (): Promise<BrowserWindow> => {
+  const mainWindow = electronUtil.createOrGetWindow();
+  electronUtil.setTray(mainWindow);
   // 他のウィンドウ設定やイベントリスナーをここに追加
+  return mainWindow;
 };
 
 const initializeApp = async () => {
@@ -60,7 +59,7 @@ const initializeApp = async () => {
   }
 
   registerIpcMainListeners();
-  await createMainWindow();
+  await createOrGetMainWindow();
 
   unhandled({
     logger: (error) => log.error(error),
@@ -76,22 +75,15 @@ process.on('uncaughtException', (error) => log.error(error));
 process.on('unhandledRejection', (error) => log.error(error));
 
 app.on('second-instance', () => {
-  if (mainWindow) {
-    if (mainWindow.isMinimized()) mainWindow.restore();
-    mainWindow.focus();
-  }
+  const mainWindow = electronUtil.createOrGetWindow();
+  if (mainWindow.isMinimized()) mainWindow.restore();
+  mainWindow.focus();
 });
 
-app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
-  else if (mainWindow) mainWindow.show();
-});
-
-app.on('before-quit', () => {
-  if (backgroundUsecase.getIsEnabledBackgroundProcess() && mainWindow) {
-    electronUtil.setTimeEventEmitter(settingStore);
-    electronUtil.setTray(mainWindow);
-  }
+app.on('activate', async () => {
+  const mainWindow = await createOrGetMainWindow();
+  mainWindow.show();
+  mainWindow.focus();
 });
 
 app.on('window-all-closed', () => {
@@ -100,6 +92,7 @@ app.on('window-all-closed', () => {
   }
   // background処理が有効になっている場合は終了しない
   if (backgroundUsecase.getIsEnabledBackgroundProcess()) {
+    electronUtil.setTimeEventEmitter(settingStore);
     return;
   }
   app.quit();
