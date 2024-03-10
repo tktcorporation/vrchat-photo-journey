@@ -64,33 +64,58 @@ function createWindow(): BrowserWindow {
 
   // For AppBar
   ipcMain.on('minimize', () => {
-    mainWindow.isMinimized() ? mainWindow.restore() : mainWindow.minimize();
+    const win = BrowserWindow.getFocusedWindow();
+    if (!win) {
+      return;
+    }
+    win.isMinimized() ? win.restore() : win.minimize();
     // or alternatively: win.isVisible() ? win.hide() : win.show()
   });
   ipcMain.on('maximize', () => {
-    mainWindow.isMaximized() ? mainWindow.restore() : mainWindow.maximize();
+    const win = BrowserWindow.getFocusedWindow();
+    if (!win) {
+      return;
+    }
+    win.isMaximized() ? win.restore() : win.maximize();
   });
 
   ipcMain.on('close', () => {
-    mainWindow.close();
+    const win = BrowserWindow.getFocusedWindow();
+    if (!win) {
+      return;
+    }
+    win.close();
   });
 
   return mainWindow;
 }
 
+let mainWindow: BrowserWindow | null = null;
+const getWindow = (): BrowserWindow | null => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    return mainWindow;
+  }
+  const windows = BrowserWindow.getAllWindows();
+  if (windows.length > 0) {
+    mainWindow = windows[0];
+    return mainWindow;
+  }
+  return null;
+};
 /**
  * window が存在しなければ新しく作成する
  * 存在していれば取得する
  */
 const createOrGetWindow = (): BrowserWindow => {
-  const windows = BrowserWindow.getAllWindows();
-  if (windows.length === 0) {
-    return createWindow();
+  const window = getWindow();
+  if (window) {
+    return window;
   }
-  return windows[0];
+  mainWindow = createWindow();
+  return mainWindow;
 };
 
-const setTray = (mainWindow: BrowserWindow) => {
+const setTray = () => {
   const appPath = app.isPackaged ? process.resourcesPath : app.getAppPath();
   const fontfile = join(appPath, 'assets', 'icons', 'Icon-Electron.png');
   const tray = new Tray(fontfile);
@@ -111,9 +136,9 @@ const setTray = (mainWindow: BrowserWindow) => {
   tray.setToolTip(app.name);
   tray.setContextMenu(contextMenu);
   tray.on('click', () => {
-    if (mainWindow) {
-      mainWindow.show();
-    }
+    const mWindow = createOrGetWindow();
+    mWindow.show();
+    mWindow.focus();
   });
 };
 import type { getSettingStore } from './module/settingStore';
