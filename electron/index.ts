@@ -46,7 +46,7 @@ const backgroundUsecase = getBackgroundUsecase(getSettingStore('v0-settings'));
 
 const createOrGetMainWindow = async (): Promise<BrowserWindow> => {
   const mainWindow = electronUtil.createOrGetWindow();
-  electronUtil.setTray(mainWindow);
+  electronUtil.setTray();
   // 他のウィンドウ設定やイベントリスナーをここに追加
   return mainWindow;
 };
