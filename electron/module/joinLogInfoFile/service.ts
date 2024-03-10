@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 import * as datefns from 'date-fns';
 import * as log from 'electron-log';
 import * as neverthrow from 'neverthrow';
@@ -188,7 +188,7 @@ const getToCreateMap =
       }),
     );
     const filteredMap = toCreateMap.filter((map) => map !== null) as Exclude<
-      typeof toCreateMap[number],
+      (typeof toCreateMap)[number],
       null
     >[];
     return neverthrow.ok(filteredMap);
@@ -209,7 +209,7 @@ const createFiles =
   }): Promise<
     neverthrow.Result<
       void,
-      { error: Error; type: typeof CreateFilesError[number] }
+      { error: Error; type: (typeof CreateFilesError)[number] }
     >
   > => {
     const toCreateMapResult = await getToCreateMap(settingStore)({

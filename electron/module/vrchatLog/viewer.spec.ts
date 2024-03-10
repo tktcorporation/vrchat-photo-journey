@@ -1,4 +1,4 @@
-import * as path from 'path';
+import * as path from 'node:path';
 import * as type from './type';
 // import { getSettingStore } from '../settingStore';
 // import {

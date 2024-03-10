@@ -1,5 +1,5 @@
 import Onboarding from '@/page/onboarding/Onboarding';
-import React from 'react';
+import type React from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { HashRouter, Route, Routes } from 'react-router-dom';
 import Template from './Template';
@@ -70,7 +70,7 @@ function Router() {
 
 function App() {
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen font-sans">
       <div className="shadow-sm z-10">{window.Main && <AppBar />}</div>
       <div className="overflow-hidden flex-grow">
         {window.Main && <Router />}

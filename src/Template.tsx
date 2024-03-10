@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import { trpcReact } from './trpc';
 

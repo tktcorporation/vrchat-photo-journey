@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 import { ROUTER_PATHS } from '@/constants';
@@ -53,6 +53,7 @@ const MainNav = ({
           )}
         >
           <SettingsIcon />
+          <span className="sr-only">設定画面へ</span>
         </Link>
       </div>
     </nav>

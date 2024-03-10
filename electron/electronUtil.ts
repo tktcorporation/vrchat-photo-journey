@@ -1,7 +1,7 @@
 // Native
-import { join } from 'path';
+import { join } from 'node:path';
 
-import EventEmitter from 'events';
+import EventEmitter from 'node:events';
 // Packages
 import {
   BrowserWindow,

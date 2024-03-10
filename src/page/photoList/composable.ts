@@ -1,6 +1,6 @@
 import { trpcReact } from '@/trpc';
 import type { inferProcedureOutput } from '@trpc/server';
-import { AppRouter } from 'electron/api';
+import type { AppRouter } from 'electron/api';
 import { useEffect, useMemo, useState } from 'react';
 
 type YearMonth = {

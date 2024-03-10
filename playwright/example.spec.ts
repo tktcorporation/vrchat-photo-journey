@@ -1,4 +1,4 @@
-import * as path from 'path';
+import * as path from 'node:path';
 import { _electron, test } from '@playwright/test';
 import { getRoutePathKeyByValue, routerPathValues } from '../src/constants';
 

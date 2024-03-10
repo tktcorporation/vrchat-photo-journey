@@ -54,7 +54,18 @@ module.exports = {
         sm: 'calc(var(--radius) - 4px)',
       },
       fontFamily: {
-        sans: ['var(--font-sans)', ...fontFamily.sans],
+        sans: [
+          '"Noto Sans CJK JP"',
+          '"Noto Sans JP"',
+          '"-apple-system"',
+          '"blinkmacsystemfont"',
+          '"Segoe UI"',
+          '"Hiragino Kaku Gothic ProN"',
+          '"BIZ UDPGothic"',
+          '"meiryo"',
+          '"sans-serif"',
+          ...fontFamily.sans,
+        ],
       },
       keyframes: {
         'accordion-down': {
@@ -70,12 +81,6 @@ module.exports = {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
       },
-    },
-  },
-  variants: {
-    extend: {},
-    fontFamily: {
-      sans: ['Inter', 'ui-sans-serif', 'system-ui'],
     },
   },
   plugins: [require('tailwindcss-animate')],

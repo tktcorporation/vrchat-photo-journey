@@ -1,4 +1,4 @@
-import { join } from 'path';
+import { join } from 'node:path';
 import react from '@vitejs/plugin-react';
 import type { ConfigEnv, UserConfig } from 'vite';
 

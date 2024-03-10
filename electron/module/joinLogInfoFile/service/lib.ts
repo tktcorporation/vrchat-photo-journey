@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 // opentype ライブラリをインポートする
 import { app } from 'electron';
 import * as opentype from 'opentype.js';

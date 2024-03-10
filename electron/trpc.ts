@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events';
+import { EventEmitter } from 'node:events';
 import { initTRPC } from '@trpc/server';
 import * as log from 'electron-log';
 import { stackWithCauses } from 'pony-cause';
