@@ -28,7 +28,7 @@ const CHANNELS = {
   GET_STATUS_TO_USE_VRCHAT_PHOTO_DIR: 'get-status-to-use-vrchat-photo-dir',
 };
 
-function registerIpcMainListeners() {
+const registerIpcMainListeners = () => {
   ipcMain.on(
     CHANNELS.OPEN_DIALOG_AND_SET_LOG_FILES_DIR,
     controller.handleOpenDialogAndSetLogFilesDir,
@@ -40,45 +40,59 @@ function registerIpcMainListeners() {
   ipcMain.on(CHANNELS.ERROR_MESSAGE, (_, message) => {
     log.error(message);
   });
-}
+};
 
 const backgroundUsecase = getBackgroundUsecase(getSettingStore('v0-settings'));
 
+// メインウィンドウを保持する変数
+let mainWindow: BrowserWindow | null = null;
+
+const createMainWindow = async () => {
+  mainWindow = electronUtil.createWindow();
+  // 他のウィンドウ設定やイベントリスナーをここに追加
+};
+
+const initializeApp = async () => {
+  const gotTheLock = app.requestSingleInstanceLock();
+  if (!gotTheLock) {
+    app.quit();
+    return;
+  }
+
+  registerIpcMainListeners();
+  await createMainWindow();
+
+  unhandled({
+    logger: (error) => log.error(error),
+  });
+};
+
 app
   .whenReady()
-  .then(() => {
-    registerIpcMainListeners();
-    const window = electronUtil.createWindow();
+  .then(initializeApp)
+  .catch((error) => log.error(error));
 
-    app.on('activate', () => {
-      if (BrowserWindow.getAllWindows().length === 0)
-        electronUtil.createWindow();
-    });
+process.on('uncaughtException', (error) => log.error(error));
+process.on('unhandledRejection', (error) => log.error(error));
 
-    if (backgroundUsecase.getIsEnabledBackgroundProcess()) {
-      electronUtil.setTimeEventEmitter(settingStore);
-      electronUtil.setTray(window);
-    }
+app.on('second-instance', () => {
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.focus();
+  }
+});
 
-    // エラーを記録する
-    unhandled({
-      logger: (error) => {
-        log.error(error);
-      },
-    });
-    process.on('uncaughtException', (error) => {
-      log.error(error);
-    });
-    process.on('unhandledRejection', (error) => {
-      log.error(error);
-    });
-    window.webContents.on('crashed', (error) => {
-      log.error(error);
-    });
-  })
-  .catch((error) => {
-    log.error(error);
-  });
+app.on('activate', () => {
+  if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
+  else if (mainWindow) mainWindow.show();
+});
+
+app.on('before-quit', () => {
+  if (backgroundUsecase.getIsEnabledBackgroundProcess() && mainWindow) {
+    electronUtil.setTimeEventEmitter(settingStore);
+    electronUtil.setTray(mainWindow);
+  }
+});
 
 app.on('window-all-closed', () => {
   if (process.platform === 'darwin') {
