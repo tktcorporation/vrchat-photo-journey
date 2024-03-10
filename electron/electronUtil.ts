@@ -96,7 +96,7 @@ const setTray = (mainWindow: BrowserWindow) => {
       },
     },
   ]);
-  tray.setToolTip('This is my application.');
+  tray.setToolTip(app.name);
   tray.setContextMenu(contextMenu);
   tray.on('click', () => {
     if (mainWindow) {
