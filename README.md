@@ -1,4 +1,4 @@
-# add-metadata-to-vrc-photo
+# vrchat-join-recorder
 
 ## はじめに
 

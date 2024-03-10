@@ -1,5 +1,5 @@
 {
-  "name": "add-metadata-to-vrc-photo",
+  "name": "vrchat-join-recorder",
   "version": "0.0.1",
   "main": "main/index.js",
   "author": {
@@ -15,7 +15,7 @@
   "repository": {
     "url": "https://github.com/tktcorporation/add-world-name-to-vrc-photo"
   },
-  "productName": "add-metadata-to-vrc-photo",
+  "productName": "vrchat-join-recorder",
   "scripts": {
     "preinstall": "nlx only-allow yarn",
     "postinstall": "simple-git-hooks",

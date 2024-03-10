@@ -78,6 +78,18 @@ function createWindow(): BrowserWindow {
   return mainWindow;
 }
 
+/**
+ * window が存在しなければ新しく作成する
+ * 存在していれば取得する
+ */
+const createOrGetWindow = (): BrowserWindow => {
+  const windows = BrowserWindow.getAllWindows();
+  if (windows.length === 0) {
+    return createWindow();
+  }
+  return windows[0];
+};
+
 const setTray = (mainWindow: BrowserWindow) => {
   const appPath = app.isPackaged ? process.resourcesPath : app.getAppPath();
   const fontfile = join(appPath, 'assets', 'icons', 'Icon-Electron.png');
@@ -96,7 +108,7 @@ const setTray = (mainWindow: BrowserWindow) => {
       },
     },
   ]);
-  tray.setToolTip('This is my application.');
+  tray.setToolTip(app.name);
   tray.setContextMenu(contextMenu);
   tray.on('click', () => {
     if (mainWindow) {
@@ -149,4 +161,4 @@ const setTimeEventEmitter = (
   });
 };
 
-export { setTray, createWindow, setTimeEventEmitter };
+export { setTray, createOrGetWindow, setTimeEventEmitter };
