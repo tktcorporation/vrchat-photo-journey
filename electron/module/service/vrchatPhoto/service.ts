@@ -140,7 +140,7 @@ const getVRChatPhotoOnlyItemPathListByYearMonth = (props: {
   month: string;
 }): neverthrow.Result<
   { path: string; info: t.ParsedPhotoFileName }[],
-  Error
+  YearMonthPathNotFoundError
 > => {
   const itemListResult = getVRChatPhotoItemPathListByYearMonth(props);
   if (itemListResult.isErr()) {

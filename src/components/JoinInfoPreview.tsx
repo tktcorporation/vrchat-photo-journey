@@ -42,7 +42,7 @@ export function JoinInfoPreview({ className }: Props) {
             </div>
           ) : (
             infoMap?.map((item) => {
-              if (item.tookPhotoList.length === 0) return null;
+              // if (item.tookPhotoList.length === 0) return null;
               return (
                 <div
                   className="space-y-3 basis-1/2"

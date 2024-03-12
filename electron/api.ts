@@ -6,7 +6,7 @@ import path from 'node:path';
 import * as log from 'electron-log';
 import type { Result } from 'neverthrow';
 import { backgroundSettingsRouter } from './module/backgroundSettings/controller/backgroundSettingsController';
-import { getController } from './module/controller/index';
+import { electronUtilRouter } from './module/electronUtil/controller/electronUtilController';
 import { joinInfoLogFileRouter } from './module/joinLogInfoFile/controller';
 import { getService } from './module/service';
 import { getSettingStore } from './module/settingStore';
@@ -23,11 +23,11 @@ type ExtractDataTypeFromResult<R> = R extends Result<infer T, unknown>
 
 const settingStore = getSettingStore('v0-settings');
 const service = getService(settingStore);
-const controller = getController();
 
 export const router = trpcRouter({
   backgroundSettings: backgroundSettingsRouter(settingStore),
   joinInfoLogFile: joinInfoLogFileRouter(settingStore),
+  electronUtil: electronUtilRouter(),
   subscribeToast: procedure.subscription(() => {
     return observable((emit) => {
       function onToast(text: string) {
@@ -102,10 +102,9 @@ export const router = trpcRouter({
         }));
       },
       (error) => {
-        logError(error);
         response.error = {
-          code: error.message,
-          message: '写真の読み込みに失敗しました',
+          code: error.name,
+          message: error.message,
         };
       },
     );
@@ -166,10 +165,6 @@ export const router = trpcRouter({
         return false;
       },
     );
-  }),
-  openUrlInDefaultBrowser: procedure.input(z.string()).mutation(async (ctx) => {
-    console.log('openUrlInDefaultBrowser', ctx.input);
-    await controller.electronUtilController.openUrlInDefaultBrowser(ctx.input);
   }),
   setVRChatPhotoDirByDialog: procedure.mutation(async () => {
     const result = await service.setVRChatPhotoDirByDialog();

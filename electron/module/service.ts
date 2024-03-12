@@ -8,7 +8,9 @@ import { getToCreateWorldJoinLogInfos } from './joinLogInfoFile/service';
 import { YearMonthPathNotFoundError } from './service/error';
 import { PhotoFileNameSchema, parsePhotoFileName } from './service/type';
 import * as utilsService from './service/utilsService';
+import type VRChatLogFileError from './service/vrchatLog/error';
 import * as vrchatLogService from './service/vrchatLog/vrchatLog';
+import type VRChatPhotoFileError from './service/vrchatPhoto/error';
 import * as vrchatPhotoService from './service/vrchatPhoto/service';
 import type { getSettingStore } from './settingStore';
 import {
@@ -53,26 +55,13 @@ const getWorldJoinInfoWithPhotoPath =
           tookDatetime: Date;
         }[];
       }[],
-      Error
+      YearMonthPathNotFoundError | VRChatLogFileError | VRChatPhotoFileError
     >
   > => {
-    const err = (error: string | Error) => {
-      if (typeof error === 'string') {
-        return neverthrow.err(
-          new Error(`getWorldJoinInfoWithPhotoPath: ${error}`),
-        );
-      }
-      return neverthrow.err(
-        new Error(`getWorldJoinInfoWithPhotoPath: ${error.message}`, {
-          cause: error,
-        }),
-      );
-    };
-
     const convertWorldJoinLogInfoListResult =
       await getToCreateWorldJoinLogInfos(settingStore)();
     if (convertWorldJoinLogInfoListResult.isErr()) {
-      return err(`${convertWorldJoinLogInfoListResult.error.code}`);
+      return neverthrow.err(convertWorldJoinLogInfoListResult.error);
     }
     const convertWorldJoinLogInfoList = convertWorldJoinLogInfoListResult.value;
     log.debug(
@@ -107,6 +96,7 @@ const getWorldJoinInfoWithPhotoPath =
     // 今月までのyear-monthディレクトリを取得
     // firstJoinDate が 2022-12 で 現在が 2023-03 だった場合、
     // 2022-12, 2023-01, 2023-02, 2023-03 のディレクトリを取得する
+    log.debug(`firstJoinDate ${firstJoinDate}`);
     const eachMonth = datefns.eachMonthOfInterval({
       start: firstJoinDate,
       end: new Date(),
@@ -133,7 +123,7 @@ const getWorldJoinInfoWithPhotoPath =
           log.warn(`yearMonth dir is not found ${photoPathListResult.error}`);
           continue;
         }
-        return err(photoPathListResult.error);
+        return neverthrow.err(photoPathListResult.error);
       }
       photoPathList.push(
         ...photoPathListResult.value.map((photo) => {
@@ -160,7 +150,7 @@ const getWorldJoinInfoWithPhotoPath =
         };
       }),
     );
-    log.debug('groupingPhotoListByWorldJoinInfo result');
+    log.debug('groupingPhotoListByWorldJoinInfo result len', result.length);
 
     return neverthrow.ok(result);
   };

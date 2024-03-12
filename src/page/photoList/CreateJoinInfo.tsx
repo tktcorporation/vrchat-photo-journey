@@ -19,7 +19,10 @@ import {
 import { Loader } from 'lucide-react';
 import { JoinInfoPreview } from '../../components/JoinInfoPreview';
 
-export const CreateJoinInfo = () => {
+interface CreateJoinInfoProps {
+  successCallback?: () => void;
+}
+export const CreateJoinInfo = ({ successCallback }: CreateJoinInfoProps) => {
   const settingsToCreateList = [
     trpcReact.getVRChatPhotoDir.useQuery(),
     trpcReact.getVRChatLogFilesDir.useQuery(),
@@ -56,7 +59,6 @@ export const CreateJoinInfo = () => {
 
   const createFilesMutation =
     trpcReact.joinInfoLogFile.createFiles.useMutation();
-  const navigate = useNavigate();
 
   const [isLoading, setIsLoading] = React.useState(false);
 
@@ -66,7 +68,8 @@ export const CreateJoinInfo = () => {
       .mutateAsync()
       .then((isSuccess) => {
         if (isSuccess) {
-          navigate(ROUTER_PATHS.PHOTO_LIST);
+          // navigate(ROUTER_PATHS.PHOTO_LIST);
+          successCallback?.();
         }
       })
       .finally(() => {
@@ -77,57 +80,72 @@ export const CreateJoinInfo = () => {
     createFilesMutation.isLoading || progressToReady !== 100;
 
   return !isLoading ? (
-    <div className="flex flex-col justify-center items-center h-full">
-      {/* エラーがあったら */}
-      {errorList.length > 0 && (
-        <div className="text-red-500">
-          {errorList.map((error) => (
-            <div key={error}>{error}</div>
-          ))}
+    <>
+      <div className="flex-none shrink-0">
+        <div className="flex items-center">
+          <h1 className="text-2xl font-bold">New Join List</h1>
         </div>
-      )}
-
-      {errorList.length === 0 ? (
-        <>
-          <div className="flex-grow overflow-hidden rounded-lg">
-            <JoinInfoPreview />
+      </div>
+      <div className="flex flex-col justify-center items-center h-full mt-1">
+        {/* エラーがあったら */}
+        {errorList.length > 0 && (
+          <div className="flex justify-center items-center h-full">
+            <div className="text-center space-y-4">
+              <div className="space-y-2">
+                <h1 className="text-xl font-bold">設定を完了させてください</h1>
+                {errorList.map((error) => (
+                  <p key={error}>{error}</p>
+                ))}
+              </div>
+              <div>
+                <Link to={ROUTER_PATHS.SETTING} className="text-blue-500">
+                  設定画面へ
+                </Link>
+              </div>
+            </div>
           </div>
+        )}
 
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              {/* TODO: ウィンドウが狭いとボタンの株が埋もれてしまうので mb で応急処理 */}
-              <Button
-                disabled={disabledCreateFilesButton}
-                className="mt-4 mb-8"
-              >
-                保存する
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>実行しても良いですか？</AlertDialogTitle>
-                <AlertDialogDescription>
-                  VRChatの写真と同じ場所に訪れたワールドの記録を画像として保存します
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>キャンセル</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleClickCreateFiles}
+        {errorList.length === 0 ? (
+          <>
+            <div className="flex-grow overflow-hidden rounded-lg">
+              <JoinInfoPreview />
+            </div>
+
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                {/* TODO: ウィンドウが狭いとボタンの株が埋もれてしまうので mb で応急処理 */}
+                <Button
                   disabled={disabledCreateFilesButton}
+                  className="mt-4 mb-8"
                 >
-                  実行
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </>
-      ) : (
-        <Link to={ROUTER_PATHS.SETTING}>
-          <Button>設定画面へ</Button>
-        </Link>
-      )}
-    </div>
+                  保存する
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>実行しても良いですか？</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    VRChatの写真と同じ場所に訪れたワールドの記録を画像として保存します
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>キャンセル</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleClickCreateFiles}
+                    disabled={disabledCreateFilesButton}
+                  >
+                    実行
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </>
+        ) : (
+          <></>
+        )}
+      </div>
+    </>
   ) : (
     <div className="flex flex-col justify-center items-center h-full">
       <Loader className="w-8 h-8" />

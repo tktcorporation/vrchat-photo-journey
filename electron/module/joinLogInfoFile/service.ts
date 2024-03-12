@@ -2,11 +2,13 @@ import path from 'node:path';
 import * as datefns from 'date-fns';
 import * as log from 'electron-log';
 import * as neverthrow from 'neverthrow';
+import { match } from 'ts-pattern';
 import type { getSettingStore } from '../../module/settingStore';
 import * as fs from '../lib/wrappedFs';
 import { getService } from '../service';
-import type VRChatLogFileError from '../service/vrchatLog/error';
+import VRChatLogFileError from '../service/vrchatLog/error';
 import * as vrchatLogService from '../service/vrchatLog/vrchatLog';
+import VRChatPhotoFileError from '../service/vrchatPhoto/error';
 import * as vrchatPhotoService from '../service/vrchatPhoto/service';
 import { generateOGPImageBuffer } from './service/createWorldNameImage';
 
@@ -61,15 +63,24 @@ const genfileName = (info: vrchatLogService.WorldJoinLogInfo) => {
 const getToCreateWorldJoinLogInfos =
   (settingStore: ReturnType<typeof getSettingStore>) =>
   async (): Promise<
-    neverthrow.Result<vrchatLogService.WorldJoinLogInfo[], VRChatLogFileError>
+    neverthrow.Result<
+      vrchatLogService.WorldJoinLogInfo[],
+      VRChatLogFileError | VRChatPhotoFileError
+    >
   > => {
     console.log('getToCreateWorldJoinLogInfos');
     const service = getService(settingStore);
 
     const logFilesDir = service.getVRChatLogFilesDir();
     if (logFilesDir.error !== null) {
-      // FIXME: neverthrow
-      throw new Error(logFilesDir.error);
+      match(logFilesDir.error)
+        .with('logFileDirNotFound', () =>
+          neverthrow.err(new VRChatLogFileError('LOG_FILE_DIR_NOT_FOUND')),
+        )
+        .with('logFilesNotFound', () =>
+          neverthrow.err(new VRChatLogFileError('LOG_FILES_NOT_FOUND')),
+        )
+        .exhaustive();
     }
 
     const logLinesResult = await vrchatLogService.getLogLinesFromDir({
@@ -91,8 +102,16 @@ const getToCreateWorldJoinLogInfos =
 
     const vrchatPhotoDir = service.getVRChatPhotoDir();
     if (vrchatPhotoDir.error !== null) {
-      // FIXME: neverthrow
-      throw new Error(vrchatPhotoDir.error);
+      return match(vrchatPhotoDir.error)
+        .with('photoDirReadError', () =>
+          neverthrow.err(new VRChatPhotoFileError('PHOTO_DIR_READ_ERROR')),
+        )
+        .with('photoYearMonthDirsNotFound', () =>
+          neverthrow.err(
+            new VRChatPhotoFileError('PHOTO_YEAR_MONTH_DIRS_NOT_FOUND'),
+          ),
+        )
+        .exhaustive();
     }
 
     // ログから抽出した作成できるファイルの情報から、すでに存在するファイルを除外
