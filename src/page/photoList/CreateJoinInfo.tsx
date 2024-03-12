@@ -80,10 +80,20 @@ export const CreateJoinInfo = () => {
     <div className="flex flex-col justify-center items-center h-full">
       {/* エラーがあったら */}
       {errorList.length > 0 && (
-        <div className="text-red-500">
-          {errorList.map((error) => (
-            <div key={error}>{error}</div>
-          ))}
+        <div className="flex justify-center items-center h-full">
+          <div className="text-center space-y-4">
+            <div className="space-y-2">
+              <h1 className="text-xl font-bold">設定を完了させてください</h1>
+              {errorList.map((error) => (
+                <p key={error}>{error}</p>
+              ))}
+            </div>
+            <div>
+              <Link to={ROUTER_PATHS.SETTING} className="text-blue-500">
+                設定画面へ
+              </Link>
+            </div>
+          </div>
         </div>
       )}
 
@@ -123,9 +133,7 @@ export const CreateJoinInfo = () => {
           </AlertDialog>
         </>
       ) : (
-        <Link to={ROUTER_PATHS.SETTING}>
-          <Button>設定画面へ</Button>
-        </Link>
+        <></>
       )}
     </div>
   ) : (
