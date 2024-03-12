@@ -6,6 +6,29 @@ describe('groupingPhotoListByWorldJoinInfo', () => {
     expect(result).toStrictEqual([]);
   });
 
+  it('join情報のみだった場合', () => {
+    const result = groupingPhotoListByWorldJoinInfo(
+      [
+        {
+          worldId: 'wrld_1234',
+          worldName: 'worldName',
+          joinDatetime: new Date('2020-01-01'),
+        },
+      ],
+      [],
+    );
+    expect(result).toStrictEqual([
+      {
+        world: {
+          worldId: 'wrld_1234',
+          worldName: 'worldName',
+          joinDatetime: new Date('2020-01-01'),
+        },
+        tookPhotoList: [],
+      },
+    ]);
+  });
+
   it('1対1でグルーピング', () => {
     const result = groupingPhotoListByWorldJoinInfo(
       [

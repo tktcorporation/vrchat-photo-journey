@@ -102,10 +102,9 @@ export const router = trpcRouter({
         }));
       },
       (error) => {
-        logError(error);
         response.error = {
-          code: error.message,
-          message: '写真の読み込みに失敗しました',
+          code: error.name,
+          message: error.message,
         };
       },
     );
