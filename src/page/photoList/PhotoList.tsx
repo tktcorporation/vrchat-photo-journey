@@ -120,9 +120,9 @@ const PhotoList = ({ firstYearMonth, sortedYearMonthList }: PhotoListProps) => {
     [sortedYearMonthList],
   );
 
+  const reloadWindoMutation = trpcReact.electronUtil.reloadWindow.useMutation();
   const reloadPage = () => {
-    // TODO: electron の reload を実行する
-    window.location.reload();
+    reloadWindoMutation.mutate();
   };
 
   return (

@@ -20,7 +20,8 @@ export const WorldInfo = ({
     date.getUTCMonth() + 1
   }/${date.getUTCDate()} ${date.getUTCHours()}:${date.getUTCMinutes()}`;
   const worldUrl = `https://vrchat.com/home/world/${vrcWorldId}`;
-  const openUrlMutation = trpcReact.openUrlInDefaultBrowser.useMutation();
+  const openUrlMutation =
+    trpcReact.electronUtil.openUrlInDefaultBrowser.useMutation();
   const onClickWorldUrl = () => {
     openUrlMutation.mutate(worldUrl);
   };

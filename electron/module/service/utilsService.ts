@@ -1,5 +1,6 @@
 import { dialog, shell } from 'electron';
 import * as neverthrow from 'neverthrow';
+import { getWindow } from '../../electronUtil';
 
 const openPathInExplorer = async (
   path: string,
@@ -41,4 +42,16 @@ const openUrlInDefaultBrowser = (url: string) => {
   return shell.openExternal(url);
 };
 
-export { openPathInExplorer, openGetDirDialog, openUrlInDefaultBrowser };
+const reloadWindow = () => {
+  const mainWindow = getWindow();
+  if (mainWindow) {
+    mainWindow.reload();
+  }
+};
+
+export {
+  openPathInExplorer,
+  openGetDirDialog,
+  openUrlInDefaultBrowser,
+  reloadWindow,
+};

@@ -91,7 +91,8 @@ function createWindow(): BrowserWindow {
 }
 
 let mainWindow: BrowserWindow | null = null;
-const getWindow = (): BrowserWindow | null => {
+// FIXME: このexport はやめたい
+export const getWindow = (): BrowserWindow | null => {
   if (mainWindow && !mainWindow.isDestroyed()) {
     return mainWindow;
   }
