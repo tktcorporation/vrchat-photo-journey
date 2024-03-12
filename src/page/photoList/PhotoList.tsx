@@ -1,5 +1,5 @@
 import { trpcReact } from '@/trpc';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import Sidebar from '@/components/SideBar';
 import { Button } from '@/components/ui/button';
@@ -13,12 +13,18 @@ import { usePhotoItems, useYearMonthList } from './composable';
 
 const PhotoList = () => {
   const { sortedYearMonthList, refetchYearMonthList } = useYearMonthList();
-  const firstYearMonth = sortedYearMonthList?.[0] || { year: '', month: '' };
+  // useMemoを使用して、sortedYearMonthList?.[0]が変わらない限り、
+  // firstYearMonthの参照が保持されるようにする
+  const firstYearMonth = useMemo(() => {
+    return sortedYearMonthList?.[0] || { year: '', month: '' };
+  }, [sortedYearMonthList?.[0]?.year, sortedYearMonthList?.[0]?.month]);
   const [selectedFolderYearMonth, setSelectedFolderYearMonth] =
     useState(firstYearMonth);
+
   useEffect(() => {
     setSelectedFolderYearMonth(firstYearMonth);
-  }, [firstYearMonth]);
+    // firstYearMonthのyearとmonthプロパティのみを依存配列に入れる
+  }, [firstYearMonth.year, firstYearMonth.month]);
 
   const { photoItemList, photoItemFetchError, refetchPhotoItemList } =
     usePhotoItems(selectedFolderYearMonth);

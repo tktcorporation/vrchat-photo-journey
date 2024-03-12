@@ -2,10 +2,11 @@ import path from 'node:path';
 import * as datefns from 'date-fns';
 import * as log from 'electron-log';
 import * as neverthrow from 'neverthrow';
+import { match } from 'ts-pattern';
 import type { getSettingStore } from '../../module/settingStore';
 import * as fs from '../lib/wrappedFs';
 import { getService } from '../service';
-import type VRChatLogFileError from '../service/vrchatLog/error';
+import VRChatLogFileError from '../service/vrchatLog/error';
 import * as vrchatLogService from '../service/vrchatLog/vrchatLog';
 import * as vrchatPhotoService from '../service/vrchatPhoto/service';
 import { generateOGPImageBuffer } from './service/createWorldNameImage';
@@ -68,8 +69,14 @@ const getToCreateWorldJoinLogInfos =
 
     const logFilesDir = service.getVRChatLogFilesDir();
     if (logFilesDir.error !== null) {
-      // FIXME: neverthrow
-      throw new Error(logFilesDir.error);
+      match(logFilesDir.error)
+        .with('logFileDirNotFound', () =>
+          neverthrow.err(new VRChatLogFileError('LOG_FILE_DIR_NOT_FOUND')),
+        )
+        .with('logFilesNotFound', () =>
+          neverthrow.err(new VRChatLogFileError('LOG_FILES_NOT_FOUND')),
+        )
+        .exhaustive();
     }
 
     const logLinesResult = await vrchatLogService.getLogLinesFromDir({
