@@ -20,7 +20,7 @@ const MainNav = ({
       )}
       {...props}
     >
-      <div className="flex items-center space-x-4 lg:space-x-6">
+      <div className="flex items-center space-x-4 lg:space-x-6 p-1">
         <Link
           to={ROUTER_PATHS.PHOTO_LIST}
           className={cn(
@@ -30,10 +30,10 @@ const MainNav = ({
               : 'text-muted-foreground',
           )}
         >
-          <ImageIcon />
+          <ImageIcon className="w-7 h-7" />
         </Link>
       </div>
-      <div className="flex items-center space-x-4 lg:space-x-6">
+      <div className="flex items-center space-x-4 lg:space-x-6 p-1">
         {/* <Link
           to={ROUTER_PATHS.ONBORDING}
           className={cn(
@@ -52,7 +52,7 @@ const MainNav = ({
             currentPath === ROUTER_PATHS.SETTING ? '' : 'text-muted-foreground',
           )}
         >
-          <SettingsIcon />
+          <SettingsIcon className="w-7 h-7" />
           <span className="sr-only">設定画面へ</span>
         </Link>
       </div>
