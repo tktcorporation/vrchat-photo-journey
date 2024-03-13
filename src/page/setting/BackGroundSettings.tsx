@@ -2,15 +2,18 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { trpcReact } from '@/trpc';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const BackGroundSettings = () => {
-  const navigate = useNavigate();
-  const enabledBackgroundExecutionQuery =
-    trpcReact.backgroundSettings.getIsBackgroundFileCreationEnabled.useQuery();
+interface BackgroundFileCreateToggleProps {
+  defaultChecked: boolean;
+}
+const BackgroundFileCreateToggle = ({
+  defaultChecked,
+}: BackgroundFileCreateToggleProps) => {
   const [enabledBackgroundExecution, setIsBackgroundFileCreationEnabled] =
-    useState(enabledBackgroundExecutionQuery.data);
+    useState<boolean | null>(null);
+
   const setIsBackgroundFileCreationEnabledMutation =
     trpcReact.backgroundSettings.setIsBackgroundFileCreationEnabled.useMutation();
 
@@ -19,9 +22,28 @@ const BackGroundSettings = () => {
     setIsBackgroundFileCreationEnabled(checked);
   };
 
-  const switchDisabled =
-    enabledBackgroundExecutionQuery.status === 'loading' ||
-    setIsBackgroundFileCreationEnabledMutation.status === 'loading';
+  const checked = enabledBackgroundExecution ?? defaultChecked;
+  console.log('checked', checked);
+
+  return (
+    <>
+      <Label htmlFor="back-ground-execution">
+        閉じたあともJoinの記録を続ける
+      </Label>
+      <Switch
+        id="back-ground-execution"
+        checked={checked}
+        onCheckedChange={onChangeSwitch}
+      />
+    </>
+  );
+};
+
+const BackGroundSettings = () => {
+  const navigate = useNavigate();
+  const enabledBackgroundExecution =
+    trpcReact.backgroundSettings.getIsBackgroundFileCreationEnabled.useQuery()
+      .data;
 
   return (
     <div className="flex-auto h-full">
@@ -35,15 +57,13 @@ const BackGroundSettings = () => {
         <div className="space-y-4 my-8 flex flex-col justify-center items-center">
           <div className="flex flex-row items-center justify-between space-x-4">
             <div className="flex items-center space-x-2">
-              <Label htmlFor="back-ground-execution">
-                閉じたあともJoinの記録を続ける
-              </Label>
-              <Switch
-                id="back-ground-execution"
-                checked={enabledBackgroundExecution ?? false}
-                onCheckedChange={onChangeSwitch}
-                disabled={switchDisabled}
-              />
+              {enabledBackgroundExecution !== undefined ? (
+                <BackgroundFileCreateToggle
+                  defaultChecked={enabledBackgroundExecution}
+                />
+              ) : (
+                <div>loading...</div>
+              )}
             </div>
           </div>
         </div>

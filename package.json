@@ -81,7 +81,7 @@
     "sharp": "^0.32.6",
     "superjson": "1.13.3",
     "tailwind-merge": "^2.0.0",
-    "tailwindcss": "^3.3.5",
+    "tailwindcss": "^3.4.1",
     "tailwindcss-animate": "^1.0.7",
     "ts-pattern": "^5.0.5",
     "vite": "^4.5.2",

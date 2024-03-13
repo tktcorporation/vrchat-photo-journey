@@ -24,10 +24,10 @@ function Setting() {
 
   return (
     <div className="flex-auto h-full">
-      <div className="flex flex-col justify-center items-center h-full space-y-8">
+      <div className="flex flex-col justify-center items-center h-full space-y-9">
         <h3 className="text-lg font-medium">設定</h3>
-        <div className="space-y-4">
-          <div className="flex flex-row items-center justify-between rounded-lg border p-4 space-x-4">
+        <div className="divide-y *:py-7 first:*:pt-0 last:*:pb-0">
+          <div className="flex flex-row items-center justify-between p-5 space-x-4">
             <div>{statusIcon(logFilesDirError)}</div>
             <div className="space-y-0.5">
               <div className="text-base">ログファイルの場所</div>
@@ -38,13 +38,13 @@ function Setting() {
             </div>
             <div>
               <Link to={ROUTER_PATHS.SETTING_VRCHAT_LOG_PATH}>
-                <Button variant="ghost">
+                <Button variant="link">
                   <ChevronRight size={24} />
                 </Button>
               </Link>
             </div>
           </div>
-          <div className="flex flex-row items-center justify-between rounded-lg border p-4 space-x-4">
+          <div className="flex flex-row items-center justify-between p-5 space-x-4">
             <div>{statusIcon(vrchatPhotoDirError)}</div>
             <div className="space-y-0.5">
               <div className="text-base">写真ファイルの場所</div>
@@ -54,14 +54,14 @@ function Setting() {
             </div>
             <div>
               <Link to={ROUTER_PATHS.SETTING_VRCHAT_PHOTO_PATH}>
-                <Button variant="ghost">
+                <Button variant="link">
                   <ChevronRight size={24} />
                 </Button>
               </Link>
             </div>
           </div>
           {/* バックグラウンド実行 */}
-          <div className="flex flex-row items-center justify-between rounded-lg border p-4 space-x-4">
+          <div className="flex flex-row items-center justify-between p-5 space-x-4">
             <div>
               <Bed size={24} />
             </div>
@@ -73,15 +73,16 @@ function Setting() {
             </div>
             <div>
               <Link to={ROUTER_PATHS.SETTING_BACKGROUND_EXECUTION}>
-                <Button variant="ghost">
+                <Button variant="link">
                   <ChevronRight size={24} />
                 </Button>
               </Link>
             </div>
           </div>
+        </div>
+        <div className="flex flex-row items-center justify-between">
           <Button
             variant="ghost"
-            className="w-full"
             onClick={() => openAppLogFileMutation.mutate()}
           >
             アプリログを開く
