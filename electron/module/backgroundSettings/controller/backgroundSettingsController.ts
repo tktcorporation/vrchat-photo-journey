@@ -5,17 +5,19 @@ import type { getSettingStore } from './../../settingStore';
 const getIsBackgroundFileCreationEnabled =
   (settingStore: ReturnType<typeof getSettingStore>) =>
   async (): Promise<boolean> => {
-    return settingStore.getBackgroundFileCreateFlag() ?? false;
+    const flag = settingStore.getBackgroundFileCreateFlag();
+    console.log('flag', flag);
+    return flag ?? false;
   };
 
 const setIsBackgroundFileCreationEnabled =
   (settingStore: ReturnType<typeof getSettingStore>) =>
   async (isEnabled: boolean) => {
+    settingStore.setBackgroundFileCreateFlag(isEnabled);
     console.log(
       'settingStore.getBackgroundFileCreateFlag()',
       settingStore.getBackgroundFileCreateFlag(),
     );
-    settingStore.setBackgroundFileCreateFlag(isEnabled);
   };
 
 export const backgroundSettingsRouter = (
