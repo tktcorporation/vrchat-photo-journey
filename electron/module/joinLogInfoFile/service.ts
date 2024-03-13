@@ -143,7 +143,6 @@ const getToCreateMap =
   (settingStore: ReturnType<typeof getSettingStore>) =>
   async (props: {
     vrchatPhotoDir: string;
-    worldJoinLogInfoList: vrchatLogService.WorldJoinLogInfo[];
     imageWidth?: number;
     // 同じワールドに連続して複数回入った履歴を削除するかどうか
     removeAdjacentDuplicateWorldEntriesFlag: boolean;
@@ -219,23 +218,25 @@ const CreateFilesError = [
   'FAILED_TO_CHECK_YEAR_MONTH_DIR_EXISTS',
   'FAILED_TO_GET_TO_CREATE_MAP',
 ] as const;
+interface CreateFilesProps {
+  vrchatPhotoDir: string;
+  removeAdjacentDuplicateWorldEntriesFlag: boolean;
+}
 const createFiles =
   (settingStore: ReturnType<typeof getSettingStore>) =>
-  async (props: {
-    vrchatPhotoDir: string;
-    worldJoinLogInfoList: vrchatLogService.WorldJoinLogInfo[];
-    removeAdjacentDuplicateWorldEntriesFlag: boolean;
-  }): Promise<
+  async ({
+    vrchatPhotoDir,
+    removeAdjacentDuplicateWorldEntriesFlag,
+  }: CreateFilesProps): Promise<
     neverthrow.Result<
-      void,
+      { createdFilesLength: number },
       { error: Error; type: (typeof CreateFilesError)[number] }
     >
   > => {
     const toCreateMapResult = await getToCreateMap(settingStore)({
-      vrchatPhotoDir: props.vrchatPhotoDir,
-      worldJoinLogInfoList: props.worldJoinLogInfoList,
+      vrchatPhotoDir: vrchatPhotoDir,
       removeAdjacentDuplicateWorldEntriesFlag:
-        props.removeAdjacentDuplicateWorldEntriesFlag,
+        removeAdjacentDuplicateWorldEntriesFlag,
     });
     if (toCreateMapResult.isErr()) {
       return neverthrow.err({
@@ -284,7 +285,7 @@ const createFiles =
       }
     }
 
-    return neverthrow.ok(undefined);
+    return neverthrow.ok({ createdFilesLength: toCreateMap.length });
   };
 
 const groupingPhotoListByWorldJoinInfo = (
@@ -338,28 +339,6 @@ const getConfigAndValidateAndCreateFiles =
   async (): Promise<
     neverthrow.Result<{ createdFilesLength: number }, string>
   > => {
-    const service = getService(settingStore);
-
-    // vrchat log のディレクトリを取得
-    const logFilesDir = service.getVRChatLogFilesDir();
-    if (logFilesDir.error !== null) {
-      return neverthrow.err(`${logFilesDir.error}`);
-    }
-
-    // vrchat log のディレクトリから join 情報を取得
-    const vrchatLogLinesResult = await vrchatLogService.getLogLinesFromDir({
-      storedLogFilesDirPath: settingStore.getLogFilesDir(),
-      logFilesDir: logFilesDir.path,
-    });
-    if (vrchatLogLinesResult.isErr()) {
-      return neverthrow.err(`${vrchatLogLinesResult.error.code}`);
-    }
-    // join log の行を join log info の形式に変換
-    const worldJoinLogInfoList =
-      vrchatLogService.convertLogLinesToWorldJoinLogInfos(
-        vrchatLogLinesResult.value,
-      );
-
     // ファイルを作成する場所になる vrchat photo のディレクトリを取得
     const vrchatPhotoDir = vrchatPhotoService.getVRChatPhotoDir({
       storedPath: settingStore.getVRChatPhotoDir(),
@@ -370,13 +349,12 @@ const getConfigAndValidateAndCreateFiles =
     // join情報を記録するファイルを作成
     const result = await createFiles(settingStore)({
       vrchatPhotoDir: vrchatPhotoDir.path,
-      worldJoinLogInfoList: worldJoinLogInfoList,
       removeAdjacentDuplicateWorldEntriesFlag:
         settingStore.getRemoveAdjacentDuplicateWorldEntriesFlag() ?? false,
     });
     return result
-      .map(() => {
-        return { createdFilesLength: worldJoinLogInfoList.length };
+      .map((r) => {
+        return r;
       })
       .mapErr((error) => {
         return `${error.type}: ${error.error}`;
