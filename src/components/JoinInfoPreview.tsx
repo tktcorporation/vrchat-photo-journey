@@ -10,6 +10,12 @@ export function JoinInfoPreview({ className }: Props) {
   const query = trpcReact.getWorldJoinInfoWithPhotoPath.useQuery;
   const { data } = query();
   const infoMap = data?.data;
+
+  // join日時の降順で並び替え
+  const sortedInfoMap = infoMap?.sort((a, b) => {
+    return a.world.joinDatetime > b.world.joinDatetime ? -1 : 1;
+  });
+
   const error = data?.error;
 
   const openPhotoPathMutation = trpcReact.openPathOnExplorer.useMutation();
@@ -41,7 +47,7 @@ export function JoinInfoPreview({ className }: Props) {
               {error.code} {error.message}
             </div>
           ) : (
-            infoMap?.map((item) => {
+            sortedInfoMap?.map((item) => {
               // if (item.tookPhotoList.length === 0) return null;
               return (
                 <div
