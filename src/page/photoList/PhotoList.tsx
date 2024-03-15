@@ -8,7 +8,7 @@ import { ROUTER_PATHS } from '@/constants';
 import { Link } from 'react-router-dom';
 import { match } from 'ts-pattern';
 import { CreateJoinInfo } from './CreateJoinInfo';
-import { PhotoItemList } from './PhotoItemList';
+import { JoinInfoList } from './PhotoItemList';
 import { usePhotoItems, useYearMonthList } from './composable';
 
 interface JoinListProps {
@@ -63,7 +63,7 @@ const JoinListComponent = ({ selectedFolderYearMonth }: JoinListProps) => {
         </div>
       ) : (
         <ScrollArea>
-          <PhotoItemList photoItemList={photoItemList} />
+          <JoinInfoList joinInfoList={photoItemList} />
         </ScrollArea>
       )}
     </>
