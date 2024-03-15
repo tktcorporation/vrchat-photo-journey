@@ -1,7 +1,9 @@
 // Packages
 import { type BrowserWindow, app, ipcMain } from 'electron';
 import * as log from 'electron-log';
+import { createIPCHandler } from 'electron-trpc/main';
 import unhandled from 'electron-unhandled';
+import { router } from './api';
 import * as electronUtil from './electronUtil';
 import { getBackgroundUsecase } from './module/backGroundUsecase';
 import { getController } from './module/controller';
@@ -46,7 +48,6 @@ const backgroundUsecase = getBackgroundUsecase(getSettingStore('v0-settings'));
 
 const createOrGetMainWindow = async (): Promise<BrowserWindow> => {
   const mainWindow = electronUtil.createOrGetWindow();
-  electronUtil.setTray();
   // 他のウィンドウ設定やイベントリスナーをここに追加
   return mainWindow;
 };
@@ -59,7 +60,8 @@ const initializeApp = async () => {
   }
 
   registerIpcMainListeners();
-  await createOrGetMainWindow();
+  const mainWindow = await createOrGetMainWindow();
+  createIPCHandler({ router, windows: [mainWindow] });
 
   unhandled({
     logger: (error) => log.error(error),

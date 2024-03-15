@@ -15,8 +15,6 @@ import {
 import type { Event } from 'electron';
 import isDev from 'electron-is-dev';
 import * as log from 'electron-log';
-import { createIPCHandler } from 'electron-trpc/main';
-import { router } from './api';
 import * as joinLogInfoFileService from './module/joinLogInfoFile/service';
 
 const height = 600;
@@ -38,7 +36,6 @@ function createWindow(): BrowserWindow {
     },
   });
 
-  createIPCHandler({ router, windows: [mainWindow] });
   const port = process.env.PORT || 3000;
   const url = isDev
     ? `http://localhost:${port}`
@@ -113,6 +110,7 @@ const createOrGetWindow = (): BrowserWindow => {
     return window;
   }
   mainWindow = createWindow();
+  setTray();
   return mainWindow;
 };
 
@@ -175,6 +173,9 @@ const setTimeEventEmitter = (
       notificationBody = result.error;
     } else {
       log.info(result.value);
+      if (result.value.createdFilesLength === 0) {
+        return;
+      }
       notificationTitle = 'joinの記録に成功しました';
       notificationBody = JSON.stringify(result.value);
     }
