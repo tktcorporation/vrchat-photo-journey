@@ -6680,6 +6680,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-intersection-observer@npm:^9.8.1":
+  version: 9.8.1
+  resolution: "react-intersection-observer@npm:9.8.1"
+  peerDependencies:
+    react: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0
+    react-dom: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0
+  peerDependenciesMeta:
+    react-dom:
+      optional: true
+  checksum: 10c0/bfa26883e88261ef4b3e3cda7bde187c3156727a8677bc43dbfe21eae2c02faa3cc6c577698a7fc6b5f74e4cb0b896552d5a9ade62c2c6d13441538b50a04e50
+  languageName: node
+  linkType: hard
+
 "react-is@npm:^18.0.0":
   version: 18.2.0
   resolution: "react-is@npm:18.2.0"
@@ -8064,6 +8077,7 @@ __metadata:
     react-dom: "npm:^18.2.0"
     react-error-boundary: "npm:^4.0.11"
     react-hot-toast: "npm:^2.4.1"
+    react-intersection-observer: "npm:^9.8.1"
     react-router-dom: "npm:^6.18.0"
     sharp: "npm:^0.32.6"
     simple-git-hooks: "npm:^2.9.0"

@@ -110,7 +110,6 @@ const createOrGetWindow = (): BrowserWindow => {
     return window;
   }
   mainWindow = createWindow();
-  setTray();
   return mainWindow;
 };
 
