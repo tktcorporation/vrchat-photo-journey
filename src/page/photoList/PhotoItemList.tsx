@@ -26,17 +26,23 @@ const JoinInfoItem = ({ item }: { item: JoinInfo }) => {
       {inView ? (
         <>
           <WorldInfo vrcWorldId={item.worldId} datetime={item.joinDatetime} />
-          {item.photoList.map((photo) => (
-            <div
-              key={`photo-container-${photo.datetime.toISOString()}`}
-              className="col-span-1"
-            >
-              <VrcPhoto
-                photoPath={photo.path}
-                onClickPhoto={() => openPhotoPathMutation.mutate(photo.path)}
-              />
+          {item.photoList.length > 0 && (
+            <div className="flex flex-wrap gap-4 my-6">
+              {item.photoList.map((photo) => (
+                <div
+                  key={`photo-container-${photo.datetime.toISOString()}`}
+                  className="w-48"
+                >
+                  <VrcPhoto
+                    photoPath={photo.path}
+                    onClickPhoto={() =>
+                      openPhotoPathMutation.mutate(photo.path)
+                    }
+                  />
+                </div>
+              ))}
             </div>
-          ))}
+          )}
         </>
       ) : (
         <p className="font-medium">{item.worldId}</p>
@@ -50,14 +56,12 @@ interface JoinInfoListProps {
 }
 export const JoinInfoList = ({ joinInfoList }: JoinInfoListProps) => {
   return (
-    <div className="col-span-4">
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mt-5">
-        {joinInfoList?.map((item) => {
-          return (
-            <JoinInfoItem key={item.joinDatetime.toISOString()} item={item} />
-          );
-        })}
-      </div>
+    <div className="flex flex-col gap-7">
+      {joinInfoList?.map((item) => {
+        return (
+          <JoinInfoItem key={item.joinDatetime.toISOString()} item={item} />
+        );
+      })}
     </div>
   );
 };

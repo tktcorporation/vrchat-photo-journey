@@ -12,7 +12,7 @@ const t = initTRPC.create({
 });
 
 const logError = (err: Error | string) => {
-  eventEmitter.emit('toast', err);
+  eventEmitter.emit('toast', `${err}`);
   let error: Error;
   if (typeof err === 'string') {
     error = new Error(`TRPCErrorLogger: ${err}`);

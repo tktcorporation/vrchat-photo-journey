@@ -2,6 +2,29 @@ import * as neverthrow from 'neverthrow';
 import { getService } from './service';
 import { getSettingStore } from './settingStore';
 
+describe('getVrcWorldInfoByWorldId', () => {
+  it('正常系', async () => {
+    const service = getService(getSettingStore('test-settings'));
+    const result = await service.getVrcWorldInfoByWorldId(
+      'wrld_8e90c7e1-5ad5-4e1b-8ff6-9fa673a3d83b',
+    );
+    if (result.isErr()) {
+      throw result.error;
+    }
+    expect(result.value).toEqual({
+      name: 'first',
+    });
+  });
+  it('異常系', async () => {
+    const service = getService(getSettingStore('test-settings'));
+    const result = await service.getVrcWorldInfoByWorldId('wrld_0000');
+    if (result.isOk()) {
+      throw new Error('not error');
+    }
+    expect(result.error.message).toBe('getVrcWorldInfoByWorldId: Not Found');
+  });
+});
+
 describe('settingStore', () => {
   describe('removeAdjacentDuplicateWorldEntriesFlag', () => {
     it('should return default value', async () => {

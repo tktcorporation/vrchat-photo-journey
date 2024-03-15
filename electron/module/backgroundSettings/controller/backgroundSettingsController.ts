@@ -1,3 +1,4 @@
+import { app } from 'electron';
 import z from 'zod';
 import { procedure, router as trpcRouter } from './../../../trpc';
 import type { getSettingStore } from './../../settingStore';
@@ -20,6 +21,19 @@ const setIsBackgroundFileCreationEnabled =
     );
   };
 
+const getIsAppAutoStartEnabled = async (): Promise<boolean> => {
+  const loginItemSettings = app.getLoginItemSettings();
+  console.log('loginItemSettings', loginItemSettings);
+  return loginItemSettings.openAtLogin;
+};
+
+const setIsAppAutoStartEnabled = async (isEnabled: boolean) => {
+  console.log('isEnabled', isEnabled);
+  app.setLoginItemSettings({
+    openAtLogin: isEnabled,
+  });
+};
+
 export const backgroundSettingsRouter = (
   settingStore: ReturnType<typeof getSettingStore>,
 ) =>
@@ -32,5 +46,15 @@ export const backgroundSettingsRouter = (
       .input(z.boolean())
       .mutation(async (ctx) => {
         await setIsBackgroundFileCreationEnabled(settingStore)(ctx.input);
+      }),
+    getIsAppAutoStartEnabled: procedure.query(async () => {
+      const result = await getIsAppAutoStartEnabled();
+      return result;
+    }),
+    setIsAppAutoStartEnabled: procedure
+      .input(z.boolean())
+      .mutation(async (ctx) => {
+        const result = await setIsAppAutoStartEnabled(ctx.input);
+        return result;
       }),
   });
