@@ -4,6 +4,7 @@ import { Switch } from '@/components/ui/switch';
 import { trpcReact } from '@/trpc';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { SettingBreadcrumb } from './__setting/SettingsBreadcrumb';
 
 interface BackgroundFileCreateToggleProps {
   defaultChecked: boolean;
@@ -80,6 +81,7 @@ const BackGroundSettings = () => {
 
   return (
     <div className="flex-auto h-full">
+      <SettingBreadcrumb />
       <div className="flex flex-col justify-center items-center h-full">
         <div className="space-y-4 flex flex-col justify-center items-center">
           <h3 className="text-lg font-medium">バックグラウンド動作</h3>

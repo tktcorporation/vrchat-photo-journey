@@ -23,6 +23,7 @@ export const SettingBreadcrumb = () => {
     [ROUTER_PATHS.SETTING_VRCHAT_LOG_PATH]: 'VRChatログパス',
     [ROUTER_PATHS.SETTING_VRCHAT_PHOTO_PATH]: 'VRChat写真パス',
     [ROUTER_PATHS.SETTING_BACKGROUND_EXECUTION]: 'バックグラウンド実行',
+    [ROUTER_PATHS.SETTING_ABOUT_APP_LICENSE]: 'ライセンス',
   };
   const location = useLocation();
   const pathSnippets = location.pathname.split('/').filter((i) => i);
