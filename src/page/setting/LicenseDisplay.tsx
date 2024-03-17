@@ -31,13 +31,13 @@ export const LicenseDisplay = () => {
           <SettingBreadcrumb />
         </div>
         <p className="mt-6">以下のライブラリを使用しています。</p>
-        <ScrollArea className="my-3">
+        <ScrollArea className="my-6">
           <div className="flex-grow overflow-y">
-            <ul className="space-y-6">
+            <ul className="space-y-10">
               {libraries.map((library) => (
                 <li key={library.path}>
                   <h2 className="font-medium">{library.name}</h2>
-                  <div className="mt-1">
+                  <div className="mt-2">
                     <p>License: {library.licenses}</p>
                     {library.repository && (
                       <p>

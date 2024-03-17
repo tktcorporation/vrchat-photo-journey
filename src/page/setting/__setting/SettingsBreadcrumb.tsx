@@ -1,8 +1,3 @@
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { trpcReact } from '@/trpc';
-import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 import {
@@ -22,7 +17,7 @@ export const SettingBreadcrumb = () => {
     [ROUTER_PATHS.SETTING_ABOUT_APP]: 'アプリケーション情報',
     [ROUTER_PATHS.SETTING_VRCHAT_LOG_PATH]: 'VRChatログパス',
     [ROUTER_PATHS.SETTING_VRCHAT_PHOTO_PATH]: 'VRChat写真パス',
-    [ROUTER_PATHS.SETTING_BACKGROUND_EXECUTION]: 'バックグラウンド実行',
+    [ROUTER_PATHS.SETTING_BACKGROUND_EXECUTION]: 'バックグラウンド設定',
     [ROUTER_PATHS.SETTING_ABOUT_APP_LICENSE]: 'ライセンス',
   };
   const location = useLocation();

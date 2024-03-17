@@ -26,18 +26,20 @@ const BackgroundFileCreateToggle = ({
   const checked = enabledBackgroundExecution ?? defaultChecked;
   console.log('checked', checked);
 
-  return (
-    <div className="flex flex-row items-center justify-between space-x-4">
+  return {
+    Label: (
       <Label htmlFor="back-ground-execution">
         ウィンドウを閉じたあともJoinの記録を続ける
       </Label>
+    ),
+    Switch: (
       <Switch
         id="back-ground-execution"
         checked={checked}
         onCheckedChange={onChangeSwitch}
       />
-    </div>
-  );
+    ),
+  };
 };
 
 interface AutoStartToggleProps {
@@ -58,20 +60,21 @@ const AutoStartToggle = ({ defaultChecked }: AutoStartToggleProps) => {
 
   const checked = enabledAutoStart ?? defaultChecked;
 
-  return (
-    <div className="flex flex-row items-center justify-between space-x-4">
+  return {
+    Label: (
       <Label htmlFor="auto-start">PCログイン時に自動でAppを開始する</Label>
+    ),
+    Switch: (
       <Switch
         id="auto-start"
         checked={checked}
         onCheckedChange={onChangeSwitch}
       />
-    </div>
-  );
+    ),
+  };
 };
 
 const BackGroundSettings = () => {
-  const navigate = useNavigate();
   const enabledBackgroundExecution =
     trpcReact.backgroundSettings.getIsBackgroundFileCreationEnabled.useQuery()
       .data;
@@ -79,34 +82,55 @@ const BackGroundSettings = () => {
   const enabledAutoStart =
     trpcReact.backgroundSettings.getIsAppAutoStartEnabled.useQuery().data;
 
+  const AutoStart = () => {
+    const autoStartToggle =
+      enabledAutoStart !== undefined
+        ? AutoStartToggle({ defaultChecked: enabledAutoStart })
+        : null;
+    if (autoStartToggle === null) {
+      return <span>loading...</span>;
+    }
+    return (
+      <>
+        <div className="">{autoStartToggle.Label}</div>
+        <div className="">{autoStartToggle.Switch}</div>
+      </>
+    );
+  };
+
+  const BackgroundFileCreate = () => {
+    const backgroundFileCreateToggle =
+      enabledBackgroundExecution !== undefined
+        ? BackgroundFileCreateToggle({
+            defaultChecked: enabledBackgroundExecution,
+          })
+        : null;
+    if (backgroundFileCreateToggle === null) {
+      return <span>loading...</span>;
+    }
+    return (
+      <>
+        <div className="">{backgroundFileCreateToggle.Label}</div>
+        <div className="">{backgroundFileCreateToggle.Switch}</div>
+      </>
+    );
+  };
+
   return (
-    <div className="flex-auto h-full">
-      <SettingBreadcrumb />
-      <div className="flex flex-col justify-center items-center h-full">
-        <div className="space-y-4 flex flex-col justify-center items-center">
-          <h3 className="text-lg font-medium">バックグラウンド動作</h3>
-        </div>
-        <div className="space-y-4 my-10 flex flex-col justify-center items-center">
-          <div className="flex flex-row items-center justify-between space-x-4">
-            <div className="flex items-center gap-4 flex-col">
-              {enabledBackgroundExecution !== undefined ? (
-                <BackgroundFileCreateToggle
-                  defaultChecked={enabledBackgroundExecution}
-                />
-              ) : (
-                <div>loading...</div>
-              )}
-              {enabledAutoStart !== undefined ? (
-                <AutoStartToggle defaultChecked={enabledAutoStart} />
-              ) : (
-                <div>loading...</div>
-              )}
+    <div className="flex flex-col h-full justify-center items-center">
+      <div className="w-3/5 flex flex-col h-full mt-6">
+        <SettingBreadcrumb />
+        <div>
+          <div className="flex flex-col mt-10 divide-y *:py-7 first:*:pt-0 last:*:pb-0">
+            <div className="flex justify-between text-center">
+              <AutoStart />
+            </div>
+
+            <div className="flex justify-between text-center">
+              <BackgroundFileCreate />
             </div>
           </div>
         </div>
-        <Button variant="ghost" onClick={() => navigate(-1)} className="mt-4">
-          もどる
-        </Button>
       </div>
     </div>
   );

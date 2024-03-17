@@ -30,7 +30,7 @@ const MainNav = ({
               : 'text-muted-foreground',
           )}
         >
-          <ImageIcon className="w-7 h-7" />
+          <ImageIcon className="w-6 h-6" />
         </Link>
       </div>
       <div className="flex items-center space-x-4 lg:space-x-6 p-1">
@@ -52,7 +52,7 @@ const MainNav = ({
             currentPath === ROUTER_PATHS.SETTING ? '' : 'text-muted-foreground',
           )}
         >
-          <SettingsIcon className="w-7 h-7" />
+          <SettingsIcon className="w-6 h-6" />
           <span className="sr-only">設定画面へ</span>
         </Link>
       </div>

@@ -75,16 +75,12 @@ function Setting() {
               </Link>
             </div>
           </div>
-          {/* バックグラウンド実行 */}
           <div className="flex flex-row items-center justify-between p-5 space-x-4">
             <div>
               <Bed size={24} />
             </div>
             <div className="space-y-0.5">
-              <div className="text-base">バックグラウンド実行</div>
-              <div className="text-sm text-muted-foreground">
-                アプリを閉じたあとの動作設定
-              </div>
+              <div className="text-base">バックグラウンド設定</div>
             </div>
             <div>
               <Link to={ROUTER_PATHS.SETTING_BACKGROUND_EXECUTION}>
