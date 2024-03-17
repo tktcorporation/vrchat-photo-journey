@@ -10,6 +10,7 @@ import { electronUtilRouter } from './module/electronUtil/controller/electronUti
 import { joinInfoLogFileRouter } from './module/joinLogInfoFile/controller';
 import { getService } from './module/service';
 import { getSettingStore } from './module/settingStore';
+import { settingsRouter } from './module/settings/settingsController';
 import {
   eventEmitter as ee,
   logError,
@@ -26,6 +27,7 @@ const service = getService(settingStore);
 
 export const router = trpcRouter({
   backgroundSettings: backgroundSettingsRouter(settingStore),
+  settings: settingsRouter(),
   joinInfoLogFile: joinInfoLogFileRouter(settingStore),
   electronUtil: electronUtilRouter(),
   subscribeToast: procedure.subscription(() => {
@@ -69,7 +71,7 @@ export const router = trpcRouter({
       data:
         | null
         | {
-            world: {
+            world: null | {
               worldId: string;
               worldName: string;
               joinDatetime: string;
@@ -91,10 +93,12 @@ export const router = trpcRouter({
     result.match(
       (r) => {
         response.data = r.map((obj) => ({
-          world: {
-            ...obj.world,
-            joinDatetime: obj.world.joinDatetime.toISOString(),
-          },
+          world: obj.world
+            ? {
+                ...obj.world,
+                joinDatetime: obj.world.joinDatetime.toISOString(),
+              }
+            : null,
           tookPhotoList: obj.tookPhotoList.map((tookPhoto) => ({
             ...tookPhoto,
             tookDatetime: tookPhoto.tookDatetime.toISOString(),

@@ -1,0 +1,30 @@
+name: license-checker
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    # 1/1month
+    - cron: '0 0 1 * *'
+
+jobs:
+  license-checker:
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v4
+    
+        - name: setup node
+          uses: actions/setup-node@v3
+          with:
+            node-version-file: 'package.json'
+    
+        - run: npm i -g @antfu/ni
+        
+        - name: install dependencies
+          run: nci
+        
+        - name: run license-checker
+          run: |
+            nlx license-check:validate

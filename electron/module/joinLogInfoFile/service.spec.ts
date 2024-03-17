@@ -29,6 +29,82 @@ describe('groupingPhotoListByWorldJoinInfo', () => {
     ]);
   });
 
+  it('photo情報のみだった場合', () => {
+    const result = groupingPhotoListByWorldJoinInfo(
+      [],
+      [
+        {
+          photoPath: 'photoPath-1',
+          tookDatetime: new Date('2020-01-02'),
+        },
+        {
+          photoPath: 'photoPath-2',
+          tookDatetime: new Date('2020-01-03'),
+        },
+      ],
+    );
+    expect(result).toStrictEqual([
+      {
+        world: null,
+        tookPhotoList: [
+          {
+            photoPath: 'photoPath-1',
+            tookDatetime: new Date('2020-01-02'),
+          },
+          {
+            photoPath: 'photoPath-2',
+            tookDatetime: new Date('2020-01-03'),
+          },
+        ],
+      },
+    ]);
+  });
+
+  it('joinの前にphoto情報があった場合', () => {
+    const result = groupingPhotoListByWorldJoinInfo(
+      [
+        {
+          worldId: 'wrld_1234',
+          worldName: 'worldName',
+          joinDatetime: new Date('2020-01-03'),
+        },
+      ],
+      [
+        {
+          photoPath: 'photoPath-1',
+          tookDatetime: new Date('2020-01-02'),
+        },
+        {
+          photoPath: 'photoPath-2',
+          tookDatetime: new Date('2020-01-01'),
+        },
+      ],
+    );
+    expect(result).toStrictEqual([
+      {
+        world: {
+          worldId: 'wrld_1234',
+          worldName: 'worldName',
+          joinDatetime: new Date('2020-01-03'),
+        },
+        tookPhotoList: [],
+      },
+      {
+        world: null,
+        tookPhotoList: [
+          {
+            photoPath: 'photoPath-1',
+            tookDatetime: new Date('2020-01-02'),
+          },
+          {
+            photoPath: 'photoPath-2',
+            tookDatetime: new Date('2020-01-01'),
+          },
+        ],
+      },
+    ]);
+  });
+
   it('1対1でグルーピング', () => {
     const result = groupingPhotoListByWorldJoinInfo(
       [

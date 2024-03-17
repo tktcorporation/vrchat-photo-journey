@@ -45,7 +45,7 @@ const getWorldJoinInfoWithPhotoPath =
   async (): Promise<
     neverthrow.Result<
       {
-        world: {
+        world: null | {
           worldId: `wrld_${string}`;
           worldName: string;
           joinDatetime: Date;
@@ -323,9 +323,11 @@ const getVRChatPhotoWithWorldIdAndDate =
   };
 
 interface JoinInfo {
-  joinDatetime: Date;
-  worldId: string;
-  imgPath: string;
+  join: null | {
+    joinDatetime: Date;
+    worldId: string;
+    imgPath: string;
+  };
   photoList: {
     datetime: Date;
     path: string;
@@ -338,13 +340,10 @@ const getVRChatJoinInfoWithVRChatPhotoList =
       typeof getVRChatPhotoWithWorldIdAndDate
     >;
   }) =>
-  ({
-    year,
-    month,
-  }: { year: string; month: string }): neverthrow.Result<
-    GetVRChatJoinInfoWithVRChatPhotoListResult,
-    Error
-  > => {
+  (
+    { year, month }: { year: string; month: string },
+    sort: 'asc' | 'desc' = 'desc',
+  ): neverthrow.Result<GetVRChatJoinInfoWithVRChatPhotoListResult, Error> => {
     const result = props.getVRChatPhotoWithWorldIdAndDate({ year, month });
 
     if (result.isErr()) {
@@ -382,17 +381,59 @@ const getVRChatJoinInfoWithVRChatPhotoList =
           throw new Error('要ロジック修正 data[i].worldId === null');
         }
         joinData.push({
-          joinDatetime,
-          worldId,
-          imgPath: data[i].path,
+          join: {
+            joinDatetime,
+            worldId,
+            imgPath: data[i].path,
+          },
           photoList,
         });
       }
     }
 
-    // joinDataの順番を逆にする
-    joinData.reverse();
+    // グルーピングから外れたphotoを別でまとめる
+    const allPhoto = data
+      .filter((item) => item.type === 'PHOTO')
+      .map((photo) => ({
+        datetime: parseDateTime(photo.datetime),
+        path: photo.path,
+      }));
+    const alreadyJoinedPhoto = joinData.flatMap((item) => item.photoList);
+    const notJoinedPhoto = allPhoto.filter(
+      (photo) => !alreadyJoinedPhoto.some((item) => item.path === photo.path),
+    );
+    if (notJoinedPhoto.length > 0) {
+      joinData.push({
+        join: null,
+        photoList: notJoinedPhoto,
+      });
+    }
 
+    // sort にしたがって 処理
+    // join順のソート、photo順のソート、両方を行う
+    if (sort === 'asc') {
+      return neverthrow.ok(joinData);
+    }
+    if (sort === 'desc') {
+      joinData.sort((a, b) => {
+        if (a.join === null && b.join === null) {
+          return 0;
+        }
+        if (a.join === null) {
+          return 1;
+        }
+        if (b.join === null) {
+          return -1;
+        }
+        return datefns.compareDesc(a.join.joinDatetime, b.join.joinDatetime);
+      });
+
+      for (const item of joinData) {
+        item.photoList.sort((a, b) => {
+          return datefns.compareDesc(a.datetime, b.datetime);
+        });
+      }
+    }
     return neverthrow.ok(joinData);
   };
 

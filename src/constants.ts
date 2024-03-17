@@ -3,6 +3,8 @@ export const ROUTER_PATHS = {
   HOME: '/',
   PHOTO_LIST: '/photo-list',
   SETTING: '/setting',
+  SETTING_ABOUT_APP: '/setting/about-app',
+  SETTING_ABOUT_APP_LICENSE: '/setting/about-app/license',
   SETTING_VRCHAT_LOG_PATH: '/setting/vrchat-log-path',
   SETTING_VRCHAT_PHOTO_PATH: '/setting/vrchat-photo-path',
   SETTING_BACKGROUND_EXECUTION: '/setting/background-execution',
