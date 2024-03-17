@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { ROUTER_PATHS } from '@/constants';
 import { trpcReact } from '@/trpc';
-import { AlertTriangle, Bed, Check, ChevronRight } from 'lucide-react';
+import { AlertTriangle, Bed, Check, ChevronRight, Info } from 'lucide-react';
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -27,6 +27,21 @@ function Setting() {
       <div className="flex flex-col justify-center items-center h-full space-y-9">
         <h3 className="text-lg font-medium">設定</h3>
         <div className="divide-y *:py-7 first:*:pt-0 last:*:pb-0">
+          <div className="flex flex-row items-center justify-between p-5 space-x-4">
+            <div className="flex flex-row items-center space-x-4">
+              <Info size={24} />
+              <div className="space-y-0.5">
+                <div className="text-base">アプリケーション情報</div>
+              </div>
+            </div>
+            <div>
+              <Link to={ROUTER_PATHS.SETTING_ABOUT_APP}>
+                <Button variant="link">
+                  <ChevronRight size={24} />
+                </Button>
+              </Link>
+            </div>
+          </div>
           <div className="flex flex-row items-center justify-between p-5 space-x-4">
             <div>{statusIcon(logFilesDirError)}</div>
             <div className="space-y-0.5">

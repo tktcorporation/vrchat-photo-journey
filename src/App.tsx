@@ -13,6 +13,7 @@ import { ErrorFallback } from './ErrorBoundary';
 import DefaultLayout from './components/DefaultLayout';
 import { ROUTER_PATHS } from './constants';
 import CreatedResult from './page/CreatedResult';
+import { AboutApp } from './page/setting/AboutApp';
 import BackGroundSettings from './page/setting/BackGroundSettings';
 import VRChatLogPathSetting from './page/setting/VRChatLogPathSetting';
 import VRChatPhotoPathSetting from './page/setting/VRChatPhotoPathSetting';
@@ -43,6 +44,10 @@ function Router() {
                   element={<CreatedResult />}
                 />
                 <Route path={ROUTER_PATHS.SETTING} element={<Setting />} />
+                <Route
+                  path={ROUTER_PATHS.SETTING_ABOUT_APP}
+                  element={<AboutApp />}
+                />
                 <Route
                   path={ROUTER_PATHS.SETTING_VRCHAT_LOG_PATH}
                   element={<VRChatLogPathSetting />}

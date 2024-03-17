@@ -19,7 +19,8 @@ const logError = (err: Error | string) => {
   } else {
     error = new Error('TRPCErrorLogger', { cause: err });
   }
-  log.error(stackWithCauses(error));
+  const appVersion = process.env.npm_package_version;
+  log.error(`version: ${appVersion}`, stackWithCauses(error));
 };
 
 const errorHandler = t.middleware(async (opts) => {

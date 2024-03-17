@@ -10,6 +10,7 @@ import { electronUtilRouter } from './module/electronUtil/controller/electronUti
 import { joinInfoLogFileRouter } from './module/joinLogInfoFile/controller';
 import { getService } from './module/service';
 import { getSettingStore } from './module/settingStore';
+import { settingsRouter } from './module/settings/settingsController';
 import {
   eventEmitter as ee,
   logError,
@@ -26,6 +27,7 @@ const service = getService(settingStore);
 
 export const router = trpcRouter({
   backgroundSettings: backgroundSettingsRouter(settingStore),
+  settings: settingsRouter(),
   joinInfoLogFile: joinInfoLogFileRouter(settingStore),
   electronUtil: electronUtilRouter(),
   subscribeToast: procedure.subscription(() => {
