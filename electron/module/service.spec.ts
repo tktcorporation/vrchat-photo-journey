@@ -232,12 +232,12 @@ describe('getVRChatJoinInfoWithVRChatPhotoList', () => {
         },
         photoList: [
           {
-            datetime: new Date('2023-12-13T15:00:00.000Z'),
-            path: '2023-12/photo1',
-          },
-          {
             datetime: new Date('2023-12-13T16:00:00.000Z'),
             path: '2023-12/photo2',
+          },
+          {
+            datetime: new Date('2023-12-13T15:00:00.000Z'),
+            path: '2023-12/photo1',
           },
         ],
       },
@@ -282,12 +282,12 @@ describe('getVRChatJoinInfoWithVRChatPhotoList', () => {
         join: null,
         photoList: [
           {
-            datetime: new Date('2023-12-13T15:00:00.000Z'),
-            path: '2023-12/photo1',
-          },
-          {
             datetime: new Date('2023-12-13T16:00:00.000Z'),
             path: '2023-12/photo2',
+          },
+          {
+            datetime: new Date('2023-12-13T15:00:00.000Z'),
+            path: '2023-12/photo1',
           },
         ],
       },

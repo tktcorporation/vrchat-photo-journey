@@ -356,10 +356,7 @@ const getVRChatJoinInfoWithVRChatPhotoList =
     data.sort((a, b) => {
       const aDatetime = parseDateTime(a.datetime);
       const bDatetime = parseDateTime(b.datetime);
-      if (sort === 'asc') {
-        return datefns.compareAsc(aDatetime, bDatetime);
-      }
-      return datefns.compareDesc(aDatetime, bDatetime);
+      return datefns.compareAsc(aDatetime, bDatetime);
     });
 
     const joinData: JoinInfo[] = [];
@@ -412,6 +409,31 @@ const getVRChatJoinInfoWithVRChatPhotoList =
       });
     }
 
+    // sort にしたがって 処理
+    // join順のソート、photo順のソート、両方を行う
+    if (sort === 'asc') {
+      return neverthrow.ok(joinData);
+    }
+    if (sort === 'desc') {
+      joinData.sort((a, b) => {
+        if (a.join === null && b.join === null) {
+          return 0;
+        }
+        if (a.join === null) {
+          return 1;
+        }
+        if (b.join === null) {
+          return -1;
+        }
+        return datefns.compareDesc(a.join.joinDatetime, b.join.joinDatetime);
+      });
+
+      for (const item of joinData) {
+        item.photoList.sort((a, b) => {
+          return datefns.compareDesc(a.datetime, b.datetime);
+        });
+      }
+    }
     return neverthrow.ok(joinData);
   };
 
