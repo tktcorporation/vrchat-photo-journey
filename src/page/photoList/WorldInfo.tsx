@@ -1,5 +1,5 @@
 import { trpcReact } from '@/trpc';
-import React from 'react';
+import * as dateFns from 'date-fns';
 
 import { Button } from '@/components/ui/button';
 
@@ -21,12 +21,9 @@ export const WorldInfo = ({
 
   // join datetime
   const date = datetime;
-  const dateToDisplay =
-    (date &&
-      `${date.getUTCFullYear()}/${
-        date.getUTCMonth() + 1
-      }/${date.getUTCDate()} ${date.getUTCHours()}:${date.getUTCMinutes()}`) ??
-    'Unknown';
+  const dateToDisplay = date
+    ? dateFns.format(date, 'yyyy/MM/dd HH:mm')
+    : 'Unknown';
 
   const openUrlMutation =
     trpcReact.electronUtil.openUrlInDefaultBrowser.useMutation();

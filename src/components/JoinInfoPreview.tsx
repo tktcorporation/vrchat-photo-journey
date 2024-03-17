@@ -41,7 +41,6 @@ export function JoinInfoPreview({ className }: Props) {
   return (
     <div className={cn('space-y-4 flex flex-col h-full', className)}>
       <ScrollArea>
-        {JSON.stringify(sortedInfoMap)}
         <div className="flex-grow overflow-y space-y-8">
           {error ? (
             <div className="text-red-500">

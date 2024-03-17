@@ -340,13 +340,10 @@ const getVRChatJoinInfoWithVRChatPhotoList =
       typeof getVRChatPhotoWithWorldIdAndDate
     >;
   }) =>
-  ({
-    year,
-    month,
-  }: { year: string; month: string }): neverthrow.Result<
-    GetVRChatJoinInfoWithVRChatPhotoListResult,
-    Error
-  > => {
+  (
+    { year, month }: { year: string; month: string },
+    sort: 'asc' | 'desc' = 'desc',
+  ): neverthrow.Result<GetVRChatJoinInfoWithVRChatPhotoListResult, Error> => {
     const result = props.getVRChatPhotoWithWorldIdAndDate({ year, month });
 
     if (result.isErr()) {
@@ -359,7 +356,10 @@ const getVRChatJoinInfoWithVRChatPhotoList =
     data.sort((a, b) => {
       const aDatetime = parseDateTime(a.datetime);
       const bDatetime = parseDateTime(b.datetime);
-      return datefns.compareAsc(aDatetime, bDatetime);
+      if (sort === 'asc') {
+        return datefns.compareAsc(aDatetime, bDatetime);
+      }
+      return datefns.compareDesc(aDatetime, bDatetime);
     });
 
     const joinData: JoinInfo[] = [];
@@ -411,9 +411,6 @@ const getVRChatJoinInfoWithVRChatPhotoList =
         photoList: notJoinedPhoto,
       });
     }
-
-    // joinDataの順番を逆にする
-    joinData.reverse();
 
     return neverthrow.ok(joinData);
   };
