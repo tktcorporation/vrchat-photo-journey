@@ -27,4 +27,4 @@ jobs:
         
         - name: run license-checker
           run: |
-            nlx license-check:validate
+            nr license-check:validate
