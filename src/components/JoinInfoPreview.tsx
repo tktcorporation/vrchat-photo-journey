@@ -13,7 +13,7 @@ export function JoinInfoPreview({ className }: Props) {
 
   // join日時の降順で並び替え
   const sortedInfoMap = infoMap?.sort((a, b) => {
-    return a.world.joinDatetime > b.world.joinDatetime ? -1 : 1;
+    return (a.world?.joinDatetime ?? 0) > (b.world?.joinDatetime ?? 0) ? -1 : 1;
   });
 
   const error = data?.error;
@@ -41,23 +41,26 @@ export function JoinInfoPreview({ className }: Props) {
   return (
     <div className={cn('space-y-4 flex flex-col h-full', className)}>
       <ScrollArea>
+        {JSON.stringify(sortedInfoMap)}
         <div className="flex-grow overflow-y space-y-8">
           {error ? (
             <div className="text-red-500">
               {error.code} {error.message}
             </div>
           ) : (
-            sortedInfoMap?.map((item) => {
+            sortedInfoMap?.map((item, index) => {
               // if (item.tookPhotoList.length === 0) return null;
               return (
                 <div
                   className="space-y-3 basis-1/2"
-                  key={item.world.joinDatetime}
+                  key={`${item.world?.joinDatetime}-${index}`}
                 >
                   <div>
-                    <p className="text-lg">{item.world.worldName}</p>
+                    <p className="text-lg">
+                      {item.world?.worldName ?? 'Unknown'}
+                    </p>
                     <p className="text-sm text-gray-500">
-                      Join日時: {item.world.joinDatetime}
+                      Join日時: {item.world?.joinDatetime ?? 'Unknown'}
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-4">

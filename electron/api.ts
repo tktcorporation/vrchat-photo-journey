@@ -71,7 +71,7 @@ export const router = trpcRouter({
       data:
         | null
         | {
-            world: {
+            world: null | {
               worldId: string;
               worldName: string;
               joinDatetime: string;
@@ -93,10 +93,12 @@ export const router = trpcRouter({
     result.match(
       (r) => {
         response.data = r.map((obj) => ({
-          world: {
-            ...obj.world,
-            joinDatetime: obj.world.joinDatetime.toISOString(),
-          },
+          world: obj.world
+            ? {
+                ...obj.world,
+                joinDatetime: obj.world.joinDatetime.toISOString(),
+              }
+            : null,
           tookPhotoList: obj.tookPhotoList.map((tookPhoto) => ({
             ...tookPhoto,
             tookDatetime: tookPhoto.tookDatetime.toISOString(),

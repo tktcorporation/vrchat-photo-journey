@@ -143,9 +143,11 @@ describe('getVRChatJoinInfoWithVRChatPhotoList', () => {
     }
     expect(result.value).toEqual([
       {
-        joinDatetime: new Date('2023-12-13T14:00:00.000Z'),
-        worldId: 'wrld_1234567890',
-        imgPath: '2023-12/join',
+        join: {
+          joinDatetime: new Date('2023-12-13T14:00:00.000Z'),
+          imgPath: '2023-12/join',
+          worldId: 'wrld_1234567890',
+        },
         photoList: [
           {
             datetime: new Date('2023-12-13T15:00:00.000Z'),
@@ -210,9 +212,11 @@ describe('getVRChatJoinInfoWithVRChatPhotoList', () => {
 
     expect(result.value).toEqual([
       {
-        joinDatetime: new Date('2023-12-13T18:00:00.000Z'),
-        worldId: 'wrld_1234567890',
-        imgPath: '2023-12/join3',
+        join: {
+          joinDatetime: new Date('2023-12-13T18:00:00.000Z'),
+          imgPath: '2023-12/join3',
+          worldId: 'wrld_1234567890',
+        },
         photoList: [
           {
             datetime: new Date('2023-12-13T19:00:00.000Z'),
@@ -221,9 +225,11 @@ describe('getVRChatJoinInfoWithVRChatPhotoList', () => {
         ],
       },
       {
-        joinDatetime: new Date('2023-12-13T14:00:00.000Z'),
-        worldId: 'wrld_1234567890',
-        imgPath: '2023-12/join2',
+        join: {
+          joinDatetime: new Date('2023-12-13T14:00:00.000Z'),
+          imgPath: '2023-12/join2',
+          worldId: 'wrld_1234567890',
+        },
         photoList: [
           {
             datetime: new Date('2023-12-13T15:00:00.000Z'),
@@ -236,10 +242,54 @@ describe('getVRChatJoinInfoWithVRChatPhotoList', () => {
         ],
       },
       {
-        joinDatetime: new Date('2023-12-13T12:00:00.000Z'),
-        worldId: 'wrld_1234567890',
-        imgPath: '2023-12/join1',
+        join: {
+          joinDatetime: new Date('2023-12-13T12:00:00.000Z'),
+          imgPath: '2023-12/join1',
+          worldId: 'wrld_1234567890',
+        },
         photoList: [],
+      },
+    ]);
+  });
+  it('JOINがない場合はPHOTOだけがまとまる', () => {
+    const getVRChatPhotoWithWorldIdAndDate = ({
+      year,
+      month,
+    }: { year: string; month: string }): PhotoAndJoin => {
+      return neverthrow.ok([
+        {
+          type: 'PHOTO',
+          path: `${year}-${month}/photo1`,
+          worldId: null,
+          datetime: createDatetimeByDate(new Date('2023-12-13T15:00:00.000Z')),
+        },
+        {
+          type: 'PHOTO',
+          path: `${year}-${month}/photo2`,
+          worldId: null,
+          datetime: createDatetimeByDate(new Date('2023-12-13T16:00:00.000Z')),
+        },
+      ]);
+    };
+    const result = getVRChatJoinInfoWithVRChatPhotoList({
+      getVRChatPhotoWithWorldIdAndDate,
+    })({ year: '2023', month: '12' });
+    if (result.isErr()) {
+      throw result.error;
+    }
+    expect(result.value).toEqual([
+      {
+        join: null,
+        photoList: [
+          {
+            datetime: new Date('2023-12-13T15:00:00.000Z'),
+            path: '2023-12/photo1',
+          },
+          {
+            datetime: new Date('2023-12-13T16:00:00.000Z'),
+            path: '2023-12/photo2',
+          },
+        ],
       },
     ]);
   });

@@ -5,9 +5,11 @@ import VrcPhoto from '@/components/ui/VrcPhoto';
 import { WorldInfo } from './WorldInfo';
 
 interface JoinInfo {
-  joinDatetime: Date;
-  worldId: string;
-  imgPath: string;
+  join: null | {
+    joinDatetime: Date;
+    worldId: string;
+    imgPath: string;
+  };
   photoList: {
     datetime: Date;
     path: string;
@@ -25,7 +27,10 @@ const JoinInfoItem = ({ item }: { item: JoinInfo }) => {
     <div ref={ref} className="col-span-full">
       {inView ? (
         <>
-          <WorldInfo vrcWorldId={item.worldId} datetime={item.joinDatetime} />
+          <WorldInfo
+            vrcWorldId={item.join?.worldId ?? null}
+            datetime={item.join?.joinDatetime ?? null}
+          />
           {item.photoList.length > 0 && (
             <div className="flex flex-wrap gap-4 my-6">
               {item.photoList.map((photo) => (
@@ -45,7 +50,7 @@ const JoinInfoItem = ({ item }: { item: JoinInfo }) => {
           )}
         </>
       ) : (
-        <p className="font-medium">{item.worldId}</p>
+        <p className="font-medium">{item.join?.worldId ?? 'Unknown'}</p>
       )}
     </div>
   );
@@ -57,9 +62,12 @@ interface JoinInfoListProps {
 export const JoinInfoList = ({ joinInfoList }: JoinInfoListProps) => {
   return (
     <div className="flex flex-col gap-7">
-      {joinInfoList?.map((item) => {
+      {joinInfoList?.map((item, index) => {
         return (
-          <JoinInfoItem key={item.joinDatetime.toISOString()} item={item} />
+          <JoinInfoItem
+            key={`${item.join?.joinDatetime.toISOString()}-${index}`}
+            item={item}
+          />
         );
       })}
     </div>

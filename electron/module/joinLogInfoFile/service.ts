@@ -303,7 +303,7 @@ const groupingPhotoListByWorldJoinInfo = (
     worldId: `wrld_${string}`;
     worldName: string;
     joinDatetime: Date;
-  };
+  } | null;
   tookPhotoList: {
     photoPath: string;
     tookDatetime: Date;
@@ -312,7 +312,13 @@ const groupingPhotoListByWorldJoinInfo = (
   const sortedWorldJoinInfoList = [...worldJoinInfoList].sort((a, b) => {
     return datefns.compareAsc(a.joinDatetime, b.joinDatetime);
   });
-  return sortedWorldJoinInfoList.map((world, index) => {
+
+  const groupedPhotoList: {
+    photoPath: string;
+    tookDatetime: Date;
+  }[][] = [];
+
+  const results = sortedWorldJoinInfoList.map((world, index) => {
     const nextWorldJoinDate =
       index < sortedWorldJoinInfoList.length - 1
         ? datefns.subSeconds(
@@ -327,11 +333,39 @@ const groupingPhotoListByWorldJoinInfo = (
         datefns.isBefore(photo.tookDatetime, nextWorldJoinDate),
     );
 
+    // 使った写真を記録しておく
+    groupedPhotoList.push(
+      vrcPhotoList.filter((photo) => tookPhotoList.includes(photo)),
+    );
+
     return {
       world,
       tookPhotoList,
+    } as {
+      world: {
+        worldId: `wrld_${string}`;
+        worldName: string;
+        joinDatetime: Date;
+      } | null;
+      tookPhotoList: {
+        photoPath: string;
+        tookDatetime: Date;
+      }[];
     };
   });
+
+  // 残った写真を記録しておく
+  const remainingPhotoList = vrcPhotoList.filter(
+    (photo) => !groupedPhotoList.flat().includes(photo),
+  );
+  if (remainingPhotoList.length > 0) {
+    results.push({
+      world: null,
+      tookPhotoList: remainingPhotoList,
+    });
+  }
+
+  return results;
 };
 
 const getConfigAndValidateAndCreateFiles =

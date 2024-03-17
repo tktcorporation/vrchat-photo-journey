@@ -25,10 +25,12 @@ const JoinListComponent = ({ selectedFolderYearMonth }: JoinListProps) => {
 
   const openDirOnExplorerMutatation = trpcReact.openDirOnExplorer.useMutation();
   const handleOpenFolder = () => {
-    return (
-      photoItemList?.[0] &&
-      openDirOnExplorerMutatation.mutate(photoItemList[0].imgPath)
-    );
+    // photoItemList の中で imgPath を持つ最初の要素を取得し、それをエクスプローラで開く
+    const havingImgPathItem = photoItemList
+      ?.map((item) => item.join?.imgPath)
+      .find((item) => item);
+    if (!havingImgPathItem) return;
+    openDirOnExplorerMutatation.mutate(havingImgPathItem);
   };
 
   return (

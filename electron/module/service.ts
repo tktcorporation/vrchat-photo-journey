@@ -45,7 +45,7 @@ const getWorldJoinInfoWithPhotoPath =
   async (): Promise<
     neverthrow.Result<
       {
-        world: {
+        world: null | {
           worldId: `wrld_${string}`;
           worldName: string;
           joinDatetime: Date;
@@ -323,9 +323,11 @@ const getVRChatPhotoWithWorldIdAndDate =
   };
 
 interface JoinInfo {
-  joinDatetime: Date;
-  worldId: string;
-  imgPath: string;
+  join: null | {
+    joinDatetime: Date;
+    worldId: string;
+    imgPath: string;
+  };
   photoList: {
     datetime: Date;
     path: string;
@@ -382,12 +384,32 @@ const getVRChatJoinInfoWithVRChatPhotoList =
           throw new Error('要ロジック修正 data[i].worldId === null');
         }
         joinData.push({
-          joinDatetime,
-          worldId,
-          imgPath: data[i].path,
+          join: {
+            joinDatetime,
+            worldId,
+            imgPath: data[i].path,
+          },
           photoList,
         });
       }
+    }
+
+    // グルーピングから外れたphotoを別でまとめる
+    const allPhoto = data
+      .filter((item) => item.type === 'PHOTO')
+      .map((photo) => ({
+        datetime: parseDateTime(photo.datetime),
+        path: photo.path,
+      }));
+    const alreadyJoinedPhoto = joinData.flatMap((item) => item.photoList);
+    const notJoinedPhoto = allPhoto.filter(
+      (photo) => !alreadyJoinedPhoto.some((item) => item.path === photo.path),
+    );
+    if (notJoinedPhoto.length > 0) {
+      joinData.push({
+        join: null,
+        photoList: notJoinedPhoto,
+      });
     }
 
     // joinDataの順番を逆にする
