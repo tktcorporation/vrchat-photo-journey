@@ -1,6 +1,6 @@
 {
   "name": "vrchat-join-recorder",
-  "version": "0.0.1",
+  "version": "0.4.0",
   "main": "main/index.js",
   "author": {
     "name": "tktcorporation"
