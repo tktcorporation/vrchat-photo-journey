@@ -26,8 +26,8 @@
     "build": "nr build:vite && nr build:electron",
     "build:vite": "vite build",
     "build:electron": "tsc -p electron",
-    "dist": "nr build && electron-builder --publish never",
-    "pack": "nr build && electron-builder --dir",
+    "dist": "nr clean:build && nr build && electron-builder --publish never",
+    "pack": "nr clean:build && nr build && electron-builder --dir",
     "clean:build": "rimraf dist main src/out",
     "clean:debug": "bash debug/cleanDevFiles.sh",
     "type-check": "tsc --noEmit",
@@ -112,6 +112,7 @@
     "license-checker": "^25.0.1",
     "playwright": "^1.41.2",
     "postcss": "^8.4.31",
+    "rimraf": "^5.0.5",
     "simple-git-hooks": "^2.9.0",
     "ts-prune": "^0.10.3",
     "typescript": "^5.2.2"
