@@ -9,14 +9,33 @@ permissions:
   contents: write
 
 jobs:
+  vars:
+    name: setup vars
+    runs-on: ubuntu-latest
+    outputs:
+      app-version: ${{ steps.app-version.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: 'package.json'
+
+      - name: output version
+        id: app-version
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+    
   build:
     name: Build on ${{ matrix.os }}
+    needs: vars
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest]
-    outputs:
-      app-version: ${{ steps.app-version.outputs.version }}
     
     steps:
       - name: Checkout code
@@ -34,26 +53,24 @@ jobs:
       - name: Install dependencies
         run: nci
 
-      - name: output version
-        id: app-version
-        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
-
       - name: Build Electron app
         run: nr dist
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: app-${{ matrix.os }}-v${{ steps.app-version.outputs.version }}-
+          name: app-${{ matrix.os }}-v${{ needs.vars.outputs.app-version }}
           path: |
             dist/*
   
   release:
-    needs: build
+    needs:
+      - build
+      - vars
     runs-on: ubuntu-latest
     env:
-      WIN_ARTIFACT: app-windows-latest-v${{ needs.build.outputs.app-version }}
-      UBUNTU_ARTIFACT: app-ubuntu-latest-v${{ needs.build.outputs.app-version }}
+      WIN_ARTIFACT: app-windows-latest-v${{ needs.vars.outputs.app-version }}
+      UBUNTU_ARTIFACT: app-ubuntu-latest-v${{ needs.vars.outputs.app-version }}
 
     steps:
       - name: Download artifacts
