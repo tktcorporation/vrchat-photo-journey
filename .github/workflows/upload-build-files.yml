@@ -15,6 +15,8 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest]
+    outputs:
+      app-version: ${{ steps.app-version.outputs.version }}
     
     steps:
       - name: Checkout code
@@ -32,19 +34,26 @@ jobs:
       - name: Install dependencies
         run: nci
 
+      - name: output version
+        id: app-version
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
       - name: Build Electron app
         run: nr dist
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: app-${{ matrix.os }}
+          name: app-${{ matrix.os }}-v${{ steps.app-version.outputs.version }}-
           path: |
             dist/*
   
   release:
     needs: build
     runs-on: ubuntu-latest
+    env:
+      WIN_ARTIFACT: app-windows-latest-v${{ needs.build.outputs.app-version }}
+      UBUNTU_ARTIFACT: app-ubuntu-latest-v${{ needs.build.outputs.app-version }}
 
     steps:
       - name: Download artifacts
@@ -52,17 +61,17 @@ jobs:
 
       - name: Zip artifacts
         run: |
-          zip -r app-windows-latest.zip app-windows-latest
-          zip -r app-ubuntu-latest.zip app-ubuntu-latest
+          zip -r "${WIN_ARTIFACT}.zip" "${WIN_ARTIFACT}"
+          zip -r "${UBUNTU_ARTIFACT}.zip" "${UBUNTU_ARTIFACT}"
 
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            app-windows-latest.zip
-            app-ubuntu-latest.zip
+            ${{ env.WIN_ARTIFACT }}.zip
+            ${{ env.UBUNTU_ARTIFACT }}.zip
           tag_name: ${{ github.ref }}
           body: |
             Release for ${{ github.ref }}
-          draft: false
+          draft: true
           prerelease: false
