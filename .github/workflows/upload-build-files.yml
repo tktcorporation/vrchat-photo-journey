@@ -14,6 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       app-version: ${{ steps.app-version.outputs.version }}
+      is-semver-tag: ${{ steps.check-tag-format.outputs.is-semver }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -28,7 +29,16 @@ jobs:
       - name: output version
         id: app-version
         run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
-    
+
+      - name: Check tag format
+        id: check-tag-format
+        run: |
+          if [[ "${GITHUB_REF##*/}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "is-semver=true" >> $GITHUB_OUTPUT
+          else
+            echo "is-semver=false" >> $GITHUB_OUTPUT
+          fi
+
   build:
     name: Build on ${{ matrix.os }}
     needs: vars
@@ -90,5 +100,5 @@ jobs:
           tag_name: ${{ github.ref }}
           body: |
             Release for ${{ github.ref }}
-          draft: true
+          draft: ${{ needs.vars.outputs.is-semver-tag == 'false' }}
           prerelease: false
