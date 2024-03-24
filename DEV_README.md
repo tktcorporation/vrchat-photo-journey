@@ -1,37 +1,42 @@
-# Vite + React + Typescript + Electron - Starter
+# vrchat-join-recorder
 
-![Vite + React + Typescript + Tailwind + Electron Starter](Screenshot.jpg)
+## 確認済み 開発環境
+* Ubuntu focal (GitHub Codespaces)
+  * https://github.com/features/codespaces
+  * ref: [.devcontainer/devcontainer.json](.devcontainer/devcontainer.json)
+    * linux
+    * nodejs
 
-> It is a simple starter template without unnecessary packages.
+## 環境構築
+### 使用ツールの準備
+* `@antfu/ni`: https://github.com/antfu/ni
+```bash
+npm i -g @antfu/ni
+```
 
-This very simple Starter template, utilizes [Vite](https://github.com/vitejs/vite), [Tailwind](https://tailwindcss.com/), [React](https://reactjs.org/), [Typescript](https://www.typescriptlang.org/) and [Electron](https://electronjs.org/).
+### 依存関係のインストール
+```bash
+ni
+```
 
-By default, the React framework is used for the interface, but you can easily use any other framework such as Vue, Preact, Angular, Svelte or anything else.
+## Dev サーバーの起動
+```bash
+nr dev
+```
 
-> Vite is framework agnostic
+### GitHub Codespaces
 
-## Installation
+- **仮想デスクトップへのアクセス**
 
-Clone this repo and install all dependencies  
-`yarn` or `npm install`
+GitHub Codespacesを使用して開発する場合、通常デスクトップ環境にはアクセスできない。
+このプロジェクトでは、DesktopLiteを使用して仮想デスクトップ環境にアクセスできるようにしている。
+ブラウザで`localhost:6080`を開き、パスワード`vscode`を使用して仮想デスクトップにアクセスできる。
 
-## Development
+### 注意
+* electron background 側の hotreload が効かない
 
-`yarn dev` or `npm run dev`
-
-## Build
-
-`yarn build` or `npm run build`
-
-## Publish
-
-`yarn dist` or `npm run dist`
-
-## More advanced templates  
-
-If you are looking for more advanced templates than this, please go to one of the following links (these are some other links out of the **[awesome-vite](https://github.com/vitejs/awesome-vite)** repo) or you can help me make this template better 🙂  
-
-Links: 
-- [vite-react-electron](https://github.com/caoxiemeihao/vite-react-electron)
-- [electron-vite-react](https://github.com/twstyled/electron-vite-react)
-- [vite-electron-esbuild-starter](https://github.com/jctaoo/vite-electron-esbuild-starter)
+## Release
+* 自動タグ付け
+  * [.github/workflows/tag-on-push.yml](.github/workflows/tag-on-push.yml)
+* タグ付けにhookしてリリース
+  * [.github/workflows/upload-build-files.yml](.github/workflows/upload-build-files.yml)
