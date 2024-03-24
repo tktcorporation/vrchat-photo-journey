@@ -22,13 +22,13 @@
 * VRChat 上でワールド移動や写真の撮影を行う
 * **vrchat-join-recorder** を起動
 * New 画面で **保存する** を実行すると、Join したワールドの情報が保存される
-<img src="README-image/new-join-list.jpg" width="400px">
+  * <img src="README-image/new-join-list.jpg" width="400px">
   * **保存する** では、Join記録を VRChat で撮影した写真が保存される場所と同じ場所に画像ファイルとして保存する
   * 保存する を行わなった場合、古いJoin記録は一定期間で取得できなくなる
 
 ### オプション
 * 設定 > バックグラウンド設定 から
-<img src="playwright/previews/SETTING_BACKGROUND_EXECUTION.png" width="400px">
+  * <img src="playwright/previews/SETTING_BACKGROUND_EXECUTION.png" width="400px">
   * 保存する を手動で実行しなくても、Join したワールドの情報を自動で保存するように設定できる
 
 ### 活用例
