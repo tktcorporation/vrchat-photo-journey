@@ -1,10 +1,9 @@
 # vrchat-join-recorder
 
 ## 機能
-* 過去に訪れたワールドの名前を確認する、そこで撮られた写真を確認する
-  * <img src="README-image/join-list.jpg" width="400px">
-* GooglePhoto 等と共に使用することで、訪れたワールドの記録をクラウドサービス上で確認、検索できるようにする
-  * <img src="README-image/google-photo-screenshot.jpg" width="200px">
+| 過去に訪れたワールドの名前を確認する、そこで撮られた写真を確認する | GooglePhoto 等と共に使用することで、訪れたワールドの記録をクラウドサービス上で確認、検索できるようにする |
+| --- | --- |
+| <img src="README-image/join-list.jpg"> | <img src="README-image/google-photo-screenshot.jpg"> |
 
 ## 確認済み動作環境
 * Windows 11
@@ -21,15 +20,16 @@
 ## 使い方
 * VRChat 上でワールド移動や写真の撮影を行う
 * **vrchat-join-recorder** を起動
-* New 画面で **保存する** を実行すると、Join したワールドの情報が保存される
-  * <img src="README-image/new-join-list.jpg" width="400px">
-  * **保存する** では、Join記録を VRChat で撮影した写真が保存される場所と同じ場所に画像ファイルとして保存する
+* **保存する** を実行すると、Join したワールドの情報が保存される
   * 保存する を行わなった場合、古いJoin記録は一定期間で取得できなくなる
+
+| App | Win Explorer(保存後) |
+| --- | --- |
+| <img src="README-image/new-join-list.jpg" width="400px"> | <img src="README-image/explorer-result.jpg" width="400px"> |
 
 ### オプション
 * 設定 > バックグラウンド設定 から
   * <img src="playwright/previews/SETTING_BACKGROUND_EXECUTION.png" width="400px">
-  * 保存する を手動で実行しなくても、Join したワールドの情報を自動で保存するように設定できる
 
 ### 活用例
 * 過去に訪れたワールドの名前を確認する、そこで撮られた写真を確認する
