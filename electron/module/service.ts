@@ -8,7 +8,7 @@ import { getToCreateWorldJoinLogInfos } from './joinLogInfoFile/service';
 import { YearMonthPathNotFoundError } from './service/error';
 import { PhotoFileNameSchema, parsePhotoFileName } from './service/type';
 import * as utilsService from './service/utilsService';
-import type VRChatLogFileError from './service/vrchatLog/error';
+import type VRChatLogFileError from './vrchatLog/error';
 import * as vrchatLogService from './service/vrchatLog/vrchatLog';
 import type VRChatPhotoFileError from './service/vrchatPhoto/error';
 import * as vrchatPhotoService from './service/vrchatPhoto/service';
