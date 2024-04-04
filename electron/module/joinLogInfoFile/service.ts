@@ -6,10 +6,10 @@ import { match } from 'ts-pattern';
 import type { getSettingStore } from '../../module/settingStore';
 import * as fs from '../lib/wrappedFs';
 import { getService } from '../service';
-import VRChatLogFileError from '../vrchatLog/error';
 import * as vrchatLogService from '../service/vrchatLog/vrchatLog';
 import VRChatPhotoFileError from '../service/vrchatPhoto/error';
 import * as vrchatPhotoService from '../service/vrchatPhoto/service';
+import VRChatLogFileError from '../vrchatLog/error';
 import { generateOGPImageBuffer } from './service/createWorldNameImage';
 
 const removeAdjacentDuplicateWorldEntries = (

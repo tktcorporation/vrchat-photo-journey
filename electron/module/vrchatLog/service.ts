@@ -1,18 +1,20 @@
-import * as datefns from 'date-fns';
 import path from 'node:path';
 import readline from 'node:readline';
+import * as datefns from 'date-fns';
 import * as log from 'electron-log';
 import * as neverthrow from 'neverthrow';
 import { match } from 'ts-pattern';
-import * as fs from '../lib/wrappedFs'
 // import VRChatLogFileError from './error';
 // import type * as vrchatLogService from '../service/vrchatLog/vrchatLog';
 import * as z from 'zod';
+import * as fs from '../lib/wrappedFs';
 
+import type {
+  VRChatLogFilePath,
+  VRChatLogFilesDirPath,
+} from '../vrchatLogFileDir/model';
 import * as vrchatLogFileDirService from '../vrchatLogFileDir/service';
-import { VRChatLogFilePath, VRChatLogFilesDirPath } from '../vrchatLogFileDir/model';
 import { VRChatLogFileError } from './error';
-
 
 type WorldId = `wrld_${string}`;
 interface VRChatWorldJoinLog {
@@ -22,12 +24,16 @@ interface VRChatWorldJoinLog {
   worldName: string;
 }
 export const getVRChatWorldJoinLogFromLogPath = async (
-  logFilesDir: VRChatLogFilesDirPath
+  logFilesDir: VRChatLogFilesDirPath,
 ): Promise<neverthrow.Result<VRChatWorldJoinLog[], VRChatLogFileError>> => {
-  const logFilePathList = vrchatLogFileDirService.getVRChatLogFilePathList(logFilesDir);
+  const logFilePathList =
+    vrchatLogFileDirService.getVRChatLogFilePathList(logFilesDir);
   if (logFilePathList.isErr()) {
-    return neverthrow.err(match(logFilePathList.error)
-      .with('ENOENT', () => new VRChatLogFileError('LOG_FILE_DIR_NOT_FOUND')).exhaustive())
+    return neverthrow.err(
+      match(logFilePathList.error)
+        .with('ENOENT', () => new VRChatLogFileError('LOG_FILE_DIR_NOT_FOUND'))
+        .exhaustive(),
+    );
   }
 
   const worldJoinLogInfoList: VRChatWorldJoinLog[] = [];
@@ -39,7 +45,9 @@ export const getVRChatWorldJoinLogFromLogPath = async (
         errors.push(result.error);
         return;
       }
-      const worldJoinLogInfos = convertLogLinesToWorldJoinLogInfos(result.value);
+      const worldJoinLogInfos = convertLogLinesToWorldJoinLogInfos(
+        result.value,
+      );
       worldJoinLogInfoList.push(...worldJoinLogInfos);
     }),
   );
@@ -49,8 +57,7 @@ export const getVRChatWorldJoinLogFromLogPath = async (
   }
 
   return neverthrow.ok(worldJoinLogInfoList);
-}
-
+};
 
 const validateWorldId = (value: string): value is WorldId => {
   const regex = /^wrld_[a-f0-9-]+$/;
@@ -85,9 +92,10 @@ const getLogLinesFromLogFileName = async (props: {
 const getLogLinesFromDir = async (props: {
   vrChatLogFilesDirPath: VRChatLogFilesDirPath;
 }): Promise<neverthrow.Result<string[], VRChatLogFileError>> => {
-  const vrchatLogFilePathList = vrchatLogFileDirService.getVRChatLogFilePathList(
-    props.vrChatLogFilesDirPath
-  );
+  const vrchatLogFilePathList =
+    vrchatLogFileDirService.getVRChatLogFilePathList(
+      props.vrChatLogFilesDirPath,
+    );
   if (vrchatLogFilePathList.isErr()) {
     return neverthrow.err(vrchatLogFilePathList.error);
   }
@@ -111,7 +119,6 @@ const getLogLinesFromDir = async (props: {
   }
   return neverthrow.ok(logLines);
 };
-
 
 // TODO: or プレイヤーのjoin情報がとれそうなところ
 const extractWorldJoinInfoFromLogs = (
@@ -166,7 +173,7 @@ const extractWorldJoinInfoFromLogs = (
 };
 
 // TODO: joinlog をアプリ内の何処かのファイルに書き込む処理
-const writeLogToFile = () => {}
+const writeLogToFile = () => {};
 
 const convertLogLinesToWorldJoinLogInfos = (
   logLines: string[],
@@ -185,17 +192,11 @@ const convertLogLinesToWorldJoinLogInfos = (
   return worldJoinLogInfos;
 };
 
-
-
-
 const removeAdjacentDuplicateWorldEntries = (
   worldJoinLogInfoList: VRChatWorldJoinLog[],
 ): VRChatWorldJoinLog[] => {
   worldJoinLogInfoList.sort((a, b) => {
-    return datefns.compareAsc(
-      a.joinDate,
-      b.joinDate,
-    );
+    return datefns.compareAsc(a.joinDate, b.joinDate);
   });
 
   // 隣接する重複を削除

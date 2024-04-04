@@ -1,13 +1,18 @@
-import * as datefns from 'date-fns';
 import path from 'node:path';
 import readline from 'node:readline';
+import * as datefns from 'date-fns';
 import * as log from 'electron-log';
 import * as neverthrow from 'neverthrow';
 import { match } from 'ts-pattern';
-import * as fs from '../lib/wrappedFs'
 // import type * as vrchatLogService from '../service/vrchatLog/vrchatLog';
 import * as z from 'zod';
-import { VRChatLogFilePath, VRChatLogFilePathSchema, VRChatLogFilesDirPath, VRChatLogFilesDirPathSchema } from './model';
+import * as fs from '../lib/wrappedFs';
+import {
+  type VRChatLogFilePath,
+  VRChatLogFilePathSchema,
+  type VRChatLogFilesDirPath,
+  VRChatLogFilesDirPathSchema,
+} from './model';
 
 const getDefaultVRChatVRChatLogFilesDir = (): VRChatLogFilesDirPath => {
   let VRChatlogFilesDir = '';
@@ -42,14 +47,17 @@ export const getVRChatLogFilePathList = (
   }
 
   // output_log から始まるファイル名のみを取得
-  const logFilePathList = logFileNamesResult.value.map(
-    (fileName) => {
-        try {
-            return VRChatLogFilePathSchema.parse(`${path.join(vrChatlogFilesDir.value, fileName)}`);
-        } catch (e) {
-            return null
-        }
-    }).filter((fileName): fileName is VRChatLogFilePath => fileName !== null);
+  const logFilePathList = logFileNamesResult.value
+    .map((fileName) => {
+      try {
+        return VRChatLogFilePathSchema.parse(
+          `${path.join(vrChatlogFilesDir.value, fileName)}`,
+        );
+      } catch (e) {
+        return null;
+      }
+    })
+    .filter((fileName): fileName is VRChatLogFilePath => fileName !== null);
   return neverthrow.ok(logFilePathList);
 };
 
@@ -79,4 +87,3 @@ export const getValidVRChatLogFileDir = (props: {
   }
   return neverthrow.ok(vrChatlogFilesDir);
 };
-
