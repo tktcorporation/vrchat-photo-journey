@@ -54,6 +54,7 @@ export const getVRChatLogFilePathList = (
           `${path.join(vrChatlogFilesDir.value, fileName)}`,
         );
       } catch (e) {
+        log.warn(e);
         return null;
       }
     })

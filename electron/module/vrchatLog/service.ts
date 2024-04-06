@@ -1,12 +1,7 @@
-import path from 'node:path';
 import readline from 'node:readline';
 import * as datefns from 'date-fns';
-import * as log from 'electron-log';
 import * as neverthrow from 'neverthrow';
 import { match } from 'ts-pattern';
-// import VRChatLogFileError from './error';
-// import type * as vrchatLogService from '../service/vrchatLog/vrchatLog';
-import * as z from 'zod';
 import * as fs from '../lib/wrappedFs';
 
 import type {
@@ -18,14 +13,26 @@ import { VRChatLogFileError } from './error';
 
 type WorldId = `wrld_${string}`;
 interface VRChatWorldJoinLog {
+  logType: 'worldJoin';
   joinDate: Date;
   worldId: WorldId;
   worldInstanceId: string;
   worldName: string;
 }
-export const getVRChatWorldJoinLogFromLogPath = async (
+export interface VRChatPlayerJoinLog {
+  logType: 'playerJoin';
+  joinDate: Date;
+  playerName: string;
+}
+
+export const getVRChaLogInfoFromLogPath = async (
   logFilesDir: VRChatLogFilesDirPath,
-): Promise<neverthrow.Result<VRChatWorldJoinLog[], VRChatLogFileError>> => {
+): Promise<
+  neverthrow.Result<
+    (VRChatWorldJoinLog | VRChatPlayerJoinLog)[],
+    VRChatLogFileError
+  >
+> => {
   const logFilePathList =
     vrchatLogFileDirService.getVRChatLogFilePathList(logFilesDir);
   if (logFilePathList.isErr()) {
@@ -36,7 +43,7 @@ export const getVRChatWorldJoinLogFromLogPath = async (
     );
   }
 
-  const worldJoinLogInfoList: VRChatWorldJoinLog[] = [];
+  const logInfoList: (VRChatWorldJoinLog | VRChatPlayerJoinLog)[] = [];
   const errors: VRChatLogFileError[] = [];
   await Promise.all(
     logFilePathList.value.map(async (logFilePath) => {
@@ -45,10 +52,8 @@ export const getVRChatWorldJoinLogFromLogPath = async (
         errors.push(result.error);
         return;
       }
-      const worldJoinLogInfos = convertLogLinesToWorldJoinLogInfos(
-        result.value,
-      );
-      worldJoinLogInfoList.push(...worldJoinLogInfos);
+      const logList = convertLogLinesToWorldJoinLogInfos(result.value);
+      logInfoList.push(...logList);
     }),
   );
 
@@ -56,15 +61,9 @@ export const getVRChatWorldJoinLogFromLogPath = async (
     return neverthrow.err(errors[0]);
   }
 
-  return neverthrow.ok(worldJoinLogInfoList);
+  return neverthrow.ok(logInfoList);
 };
 
-const validateWorldId = (value: string): value is WorldId => {
-  const regex = /^wrld_[a-f0-9-]+$/;
-  return regex.test(value);
-};
-
-// TODO: Join 以外も取る
 const getLogLinesFromLogFileName = async (props: {
   logFilePath: VRChatLogFilePath;
 }): Promise<neverthrow.Result<string[], VRChatLogFileError>> => {
@@ -75,7 +74,8 @@ const getLogLinesFromLogFileName = async (props: {
   });
   const lines: string[] = [];
   reader.on('line', (line) => {
-    if (line.includes('Joining')) {
+    // worldJoin も playerJoin も含むログも Join が含まれる
+    if (line.includes('Join')) {
       lines.push(line);
     }
   });
@@ -89,45 +89,40 @@ const getLogLinesFromLogFileName = async (props: {
   return neverthrow.ok(lines);
 };
 
-const getLogLinesFromDir = async (props: {
-  vrChatLogFilesDirPath: VRChatLogFilesDirPath;
-}): Promise<neverthrow.Result<string[], VRChatLogFileError>> => {
-  const vrchatLogFilePathList =
-    vrchatLogFileDirService.getVRChatLogFilePathList(
-      props.vrChatLogFilesDirPath,
-    );
-  if (vrchatLogFilePathList.isErr()) {
-    return neverthrow.err(vrchatLogFilePathList.error);
+const convertLogLinesToWorldJoinLogInfos = (
+  logLines: string[],
+): (VRChatWorldJoinLog | VRChatPlayerJoinLog)[] => {
+  const logInfos: (VRChatWorldJoinLog | VRChatPlayerJoinLog)[] = [];
+  for (const [index, l] of logLines.entries()) {
+    if (l.includes('Joining wrld')) {
+      const info = extractWorldJoinInfoFromLogs(logLines, index);
+      if (info) {
+        logInfos.push(info);
+      }
+    }
+    if (l.includes('OnPlayerJoined')) {
+      const info = extractPlayerJoinInfoFromLog(l);
+      if (info) {
+        logInfos.push(info);
+      }
+    }
   }
 
-  const logLines: string[] = [];
-  const errors: VRChatLogFileError[] = [];
-  await Promise.all(
-    vrchatLogFilePathList.value.map(async (filePath) => {
-      const result = await getLogLinesFromLogFileName({
-        logFilePath: filePath,
-      });
-      if (result.isErr()) {
-        errors.push(result.error);
-        return;
-      }
-      logLines.push(...result.value);
-    }),
-  );
-  if (errors.length > 0) {
-    return neverthrow.err(errors[0]);
-  }
-  return neverthrow.ok(logLines);
+  return logInfos;
 };
 
-// TODO: or プレイヤーのjoin情報がとれそうなところ
 const extractWorldJoinInfoFromLogs = (
   logLines: string[],
   index: number,
 ): VRChatWorldJoinLog | null => {
+  const validateWorldId = (value: string): value is WorldId => {
+    const regex = /^wrld_[a-f0-9-]+$/;
+    return regex.test(value);
+  };
+
   const logEntry = logLines[index];
   const regex =
-    /(\d{4}\.\d{2}\.\d{2}) (\d{2}:\d{2}:\d{2}) .* \[Behaviour\] Joining (wrld_[a-f0-9-]+):.*/;
+    /(\d{4}\.\d{2}\.\d{2}) (\d{2}:\d{2}:\d{2}) .* \[Behaviour\] Joining (wrld_[a-f0-9-]+):(.*)/;
   const matches = logEntry.match(regex);
 
   if (!matches || matches.length < 4) {
@@ -136,6 +131,7 @@ const extractWorldJoinInfoFromLogs = (
   const date = matches[1].replace(/\./g, '-');
   const time = matches[2].replace(/:/g, '-');
   const worldId = matches[3];
+  const instanceId = matches[4];
 
   if (!validateWorldId(worldId)) {
     throw new Error('WorldId did not match the expected format');
@@ -160,8 +156,9 @@ const extractWorldJoinInfoFromLogs = (
       new Date(),
     );
     return {
+      logType: 'worldJoin',
       joinDate,
-      worldInstanceId: '',
+      worldInstanceId: instanceId,
       worldId,
       worldName: foundWorldName,
     };
@@ -172,42 +169,25 @@ const extractWorldJoinInfoFromLogs = (
   );
 };
 
-// TODO: joinlog をアプリ内の何処かのファイルに書き込む処理
-const writeLogToFile = () => {};
+const extractPlayerJoinInfoFromLog = (logLine: string): VRChatPlayerJoinLog => {
+  const regex =
+    /(\d{4}\.\d{2}\.\d{2}) (\d{2}:\d{2}:\d{2}).*\[Behaviour\] OnPlayerJoined (\S+)/;
+  const matches = logLine.match(regex);
 
-const convertLogLinesToWorldJoinLogInfos = (
-  logLines: string[],
-): VRChatWorldJoinLog[] => {
-  const worldJoinLogInfos: VRChatWorldJoinLog[] = [];
-  log.debug('convertLogLinesToWorldJoinLogInfos');
-  for (const [index, l] of logLines.entries()) {
-    if (l.includes('Joining wrld')) {
-      const info = extractWorldJoinInfoFromLogs(logLines, index);
-      if (info) {
-        worldJoinLogInfos.push(info);
-      }
-    }
+  if (!matches) {
+    throw new Error('Log line did not match the expected format');
   }
 
-  return worldJoinLogInfos;
+  const [date, time, playerName] = matches.slice(1);
+  const joinDateTime = datefns.parse(
+    `${date} ${time}`,
+    'yyyy.MM.dd HH:mm:ss',
+    new Date(),
+  );
+
+  return {
+    logType: 'playerJoin',
+    joinDate: joinDateTime,
+    playerName,
+  };
 };
-
-const removeAdjacentDuplicateWorldEntries = (
-  worldJoinLogInfoList: VRChatWorldJoinLog[],
-): VRChatWorldJoinLog[] => {
-  worldJoinLogInfoList.sort((a, b) => {
-    return datefns.compareAsc(a.joinDate, b.joinDate);
-  });
-
-  // 隣接する重複を削除
-  let previousWorldId: string | null = null;
-  return worldJoinLogInfoList.filter((info, index) => {
-    if (index === 0 || info.worldId !== previousWorldId) {
-      previousWorldId = info.worldId;
-      return true;
-    }
-    return false;
-  });
-};
-
-export { removeAdjacentDuplicateWorldEntries };
