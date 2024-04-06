@@ -319,6 +319,54 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@nodelib/fs.walk",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@nodelib/fs.walk/LICENSE"
   },
+  "@prisma/client@5.12.1": {
+    "licenses": "Apache-2.0",
+    "repository": "https://github.com/prisma/prisma",
+    "publisher": "Tim Suchanek",
+    "email": "suchanek@prisma.io",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/@prisma/client",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@prisma/client/LICENSE"
+  },
+  "@prisma/debug@5.12.1": {
+    "licenses": "Apache-2.0",
+    "repository": "https://github.com/prisma/prisma",
+    "publisher": "Tim Suchanek",
+    "email": "suchanek@prisma.io",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/@prisma/debug",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@prisma/debug/LICENSE"
+  },
+  "@prisma/engines-version@5.12.0-21.473ed3124229e22d881cb7addf559799debae1ab": {
+    "licenses": "Apache-2.0",
+    "repository": "https://github.com/prisma/engines-wrapper",
+    "publisher": "Tim Suchanek",
+    "email": "suchanek@prisma.io",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/@prisma/engines-version",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@prisma/engines-version/LICENSE"
+  },
+  "@prisma/engines@5.12.1": {
+    "licenses": "Apache-2.0",
+    "repository": "https://github.com/prisma/prisma",
+    "publisher": "Tim Suchanek",
+    "email": "suchanek@prisma.io",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/@prisma/engines",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@prisma/engines/LICENSE"
+  },
+  "@prisma/fetch-engine@5.12.1": {
+    "licenses": "Apache-2.0",
+    "repository": "https://github.com/prisma/prisma",
+    "publisher": "Tim Suchanek",
+    "email": "suchanek@prisma.io",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/@prisma/fetch-engine",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@prisma/fetch-engine/LICENSE"
+  },
+  "@prisma/get-platform@5.12.1": {
+    "licenses": "Apache-2.0",
+    "repository": "https://github.com/prisma/prisma",
+    "publisher": "Tim Suchanek",
+    "email": "suchanek@prisma.io",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/@prisma/get-platform",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@prisma/get-platform/LICENSE"
+  },
   "@radix-ui/number@1.0.1": {
     "licenses": "MIT",
     "repository": "https://github.com/radix-ui/primitives",
@@ -1559,6 +1607,15 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/http2-wrapper",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/http2-wrapper/LICENSE"
   },
+  "i@0.3.7": {
+    "licenses": "MIT",
+    "repository": "https://github.com/pksunkara/inflect",
+    "publisher": "Pavan Kumar Sunkara",
+    "email": "pavan.sss1991@gmail.com",
+    "url": "pksunkara.github.com",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/i",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/i/LICENSE"
+  },
   "ieee754@1.2.1": {
     "licenses": "BSD-3-Clause",
     "repository": "https://github.com/feross/ieee754",
@@ -2208,6 +2265,14 @@
     "url": "@mafintosh",
     "path": "/workspaces/vrchat-photo-journey/node_modules/prebuild-install",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/prebuild-install/LICENSE"
+  },
+  "prisma@5.12.1": {
+    "licenses": "Apache-2.0",
+    "repository": "https://github.com/prisma/prisma",
+    "publisher": "Tim Suchanek",
+    "email": "suchanek@prisma.io",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/prisma",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/prisma/LICENSE"
   },
   "progress@2.0.3": {
     "licenses": "MIT",

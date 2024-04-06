@@ -12,7 +12,7 @@ import * as vrchatLogFileDirService from '../vrchatLogFileDir/service';
 import { VRChatLogFileError } from './error';
 
 type WorldId = `wrld_${string}`;
-interface VRChatWorldJoinLog {
+export interface VRChatWorldJoinLog {
   logType: 'worldJoin';
   joinDate: Date;
   worldId: WorldId;
