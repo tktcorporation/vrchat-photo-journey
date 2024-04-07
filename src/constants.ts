@@ -9,7 +9,6 @@ export const ROUTER_PATHS = {
   SETTING_VRCHAT_PHOTO_PATH: '/setting/vrchat-photo-path',
   SETTING_BACKGROUND_EXECUTION: '/setting/background-execution',
   CLEAR_SETTINGS: '/clear-settings',
-  CREATED_RESULT: '/created-result',
 } as const;
 export type ROUTER_PATHS = (typeof ROUTER_PATHS)[keyof typeof ROUTER_PATHS];
 type KeyOfRouterPaths = keyof typeof ROUTER_PATHS;

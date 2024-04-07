@@ -14,6 +14,45 @@ import {
   VRChatLogFilesDirPathSchema,
 } from './model';
 
+export const getVRChatLogFileDir = (props: {
+  storedLogFilesDirPath: VRChatLogFilesDirPath | null;
+}): {
+  storedPath: string | null;
+  path: string;
+  error: null | 'logFilesNotFound' | 'logFileDirNotFound';
+} => {
+  let logFilesDirPath: VRChatLogFilesDirPath;
+  if (props.storedLogFilesDirPath === null) {
+    logFilesDirPath = getDefaultVRChatVRChatLogFilesDir();
+  } else {
+    logFilesDirPath = props.storedLogFilesDirPath;
+  }
+  const logFileNamesResult = fs.readDirSyncSafe(logFilesDirPath.value);
+  if (logFileNamesResult.isErr()) {
+    return match(logFileNamesResult.error)
+      .with('ENOENT', () => {
+        return {
+          storedPath: logFilesDirPath.value,
+          path: logFilesDirPath.value,
+          error: 'logFileDirNotFound' as const,
+        };
+      })
+      .exhaustive();
+  }
+  if (logFileNamesResult.value.length === 0) {
+    return {
+      storedPath: logFilesDirPath.value,
+      path: logFilesDirPath.value,
+      error: 'logFilesNotFound',
+    };
+  }
+  return {
+    storedPath: logFilesDirPath.value,
+    path: logFilesDirPath.value,
+    error: null,
+  };
+};
+
 const getDefaultVRChatVRChatLogFilesDir = (): VRChatLogFilesDirPath => {
   let VRChatlogFilesDir = '';
   if (process.platform === 'win32' && process.env.APPDATA) {

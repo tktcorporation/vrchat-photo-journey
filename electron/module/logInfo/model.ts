@@ -19,12 +19,12 @@ export const createVRChatWorldJoinLog = async (
     })),
   });
 
-  console.log(vrchatWorldJoinLog);
+  return vrchatWorldJoinLog;
 };
 
 export const findAllVRChatWorldJoinLogList = async () => {
   const vrchatWorldJoinLogList = await prisma.vRChatWorldJoinLog.findMany();
-  console.log(vrchatWorldJoinLogList);
+  return vrchatWorldJoinLogList;
 };
 
 // createVRChatWorldJoinLog()

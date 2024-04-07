@@ -6,7 +6,7 @@ import EventEmitter from 'node:events';
 import {
   BrowserWindow,
   Menu,
-  Notification,
+  // Notification,
   Tray,
   app,
   ipcMain,
@@ -15,7 +15,7 @@ import {
 import type { Event } from 'electron';
 import isDev from 'electron-is-dev';
 import * as log from 'electron-log';
-import * as joinLogInfoFileService from './module/joinLogInfoFile/service';
+// import * as joinLogInfoFileService from './module/joinLogInfoFile/service';
 
 const height = 600;
 const width = 800;
@@ -158,32 +158,32 @@ const setTimeEventEmitter = (
       log.info(`backgroundFileCreateFlag is false: ${now.toString()}`);
       return;
     }
-    const result =
-      await joinLogInfoFileService.getConfigAndValidateAndCreateFiles(
-        settingStore,
-      )();
+    // const result =
+    //   await joinLogInfoFileService.getConfigAndValidateAndCreateFiles(
+    //     settingStore,
+    //   )();
 
-    let notificationTitle = '';
-    let notificationBody = '';
+    // let notificationTitle = '';
+    // let notificationBody = '';
 
-    if (result.isErr()) {
-      log.error(result.error);
-      notificationTitle = 'エラーが発生しました。';
-      notificationBody = result.error;
-    } else {
-      log.info(result.value);
-      if (result.value.createdFilesLength === 0) {
-        return;
-      }
-      notificationTitle = 'joinの記録に成功しました';
-      notificationBody = JSON.stringify(result.value);
-    }
+    // if (result.isErr()) {
+    //   log.error(result.error);
+    //   notificationTitle = 'エラーが発生しました。';
+    //   notificationBody = result.error;
+    // } else {
+    //   log.info(result.value);
+    //   if (result.value.createdFilesLength === 0) {
+    //     return;
+    //   }
+    //   notificationTitle = 'joinの記録に成功しました';
+    //   notificationBody = JSON.stringify(result.value);
+    // }
 
-    const notification = new Notification({
-      title: notificationTitle,
-      body: `${notificationBody}: ${now.toString()}`,
-    });
-    notification.show();
+    // const notification = new Notification({
+    //   title: notificationTitle,
+    //   body: `${notificationBody}: ${now.toString()}`,
+    // });
+    // notification.show();
   });
 };
 

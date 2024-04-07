@@ -32,7 +32,6 @@ describe('module/logInfo/model', () => {
   });
   it('findAllVRChatWorldJoinLogList', async () => {
     const result = await model.findAllVRChatWorldJoinLogList();
-    console.log(result);
-    expect(result).toBeUndefined();
+    expect(result.length).toBeGreaterThan(0);
   });
 });

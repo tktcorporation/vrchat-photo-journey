@@ -38,7 +38,6 @@ describe('getVRChaLogInfoFromLogPath', () => {
     if (!result.isOk()) {
       throw new Error('Unexpected error');
     }
-    console.log(result.value);
     expect(result.value.length).toBeGreaterThan(0);
     for (const log of result.value) {
       expect(log.joinDate).toBeInstanceOf(Date);

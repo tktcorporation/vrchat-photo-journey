@@ -68,14 +68,7 @@ import * as type from './type';
 
 describe('viewer_api', () => {
   it('ワールド情報を取得する', async () => {
-    const infoFilePath =
-      '/workspaces/add-world-name-to-vrc-photo/debug/photos/VRChat/2023-11/VRChat_2023-11-08_15-11-32.000_wrld_6fecf18a-ab96-43f2-82dc-ccf79f17c34f.jpeg';
-    const infoFileNameWithoutExt = path
-      .basename(infoFilePath)
-      .replace(/\.[^/.]+$/, '');
-    const worldId = type
-      .parseJoinInfoFileName(infoFileNameWithoutExt)
-      ._unsafeUnwrap().worldId;
+    const worldId = 'wrld_6fecf18a-ab96-43f2-82dc-ccf79f17c34f';
     // api で world 情報を取得する
     const reqUrl = `https://api.vrchat.cloud/api/1/worlds/${worldId}`;
     const res = await fetch(reqUrl);
