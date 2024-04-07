@@ -10,6 +10,7 @@ import { ErrorFallback } from './ErrorBoundary';
 
 import DefaultLayout from './components/DefaultLayout';
 import { ROUTER_PATHS } from './constants';
+import PhotoSelector from './page/Photo';
 import { AboutApp } from './page/setting/AboutApp';
 import BackGroundSettings from './page/setting/BackGroundSettings';
 import { LicenseDisplay } from './page/setting/LicenseDisplay';
@@ -54,6 +55,7 @@ function Router() {
                   path={ROUTER_PATHS.CLEAR_SETTINGS}
                   element={<ClearSettings />}
                 />
+                <Route path={ROUTER_PATHS.HOME} element={<PhotoSelector />} />
               </Routes>
             </DefaultLayout>
           </HashRouter>

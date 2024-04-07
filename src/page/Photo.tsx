@@ -5,7 +5,7 @@ import { AlertTriangle, Bed, Check, ChevronRight, Info } from 'lucide-react';
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-function Setting() {
+function PhotoSelector() {
   return (
     <div className="flex-auto h-full">
       <div className="flex flex-col justify-center items-center h-full space-y-9">
@@ -15,4 +15,4 @@ function Setting() {
   );
 }
 
-export default Setting;
+export default PhotoSelector;

@@ -1,4 +1,3 @@
-import * as neverthrow from 'neverthrow';
 import * as z from 'zod';
 
 type WorldId = `wrld_${string}`;

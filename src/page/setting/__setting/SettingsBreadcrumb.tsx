@@ -16,7 +16,6 @@ export const SettingBreadcrumb = () => {
     [ROUTER_PATHS.SETTING]: '設定',
     [ROUTER_PATHS.SETTING_ABOUT_APP]: 'アプリケーション情報',
     [ROUTER_PATHS.SETTING_VRCHAT_LOG_PATH]: 'VRChatログパス',
-    [ROUTER_PATHS.SETTING_VRCHAT_PHOTO_PATH]: 'VRChat写真パス',
     [ROUTER_PATHS.SETTING_BACKGROUND_EXECUTION]: 'バックグラウンド設定',
     [ROUTER_PATHS.SETTING_ABOUT_APP_LICENSE]: 'ライセンス',
   };

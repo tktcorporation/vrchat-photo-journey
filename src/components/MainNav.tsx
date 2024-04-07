@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 
 import { ROUTER_PATHS } from '@/constants';
 import { cn } from '@/lib/utils';
-import { ImageIcon, SettingsIcon } from 'lucide-react';
+import { HomeIcon, SettingsIcon } from 'lucide-react';
 
 const MainNav = ({
   className,
@@ -22,15 +22,13 @@ const MainNav = ({
     >
       <div className="flex items-center space-x-4 lg:space-x-6 p-1">
         <Link
-          to={ROUTER_PATHS.PHOTO_LIST}
+          to={ROUTER_PATHS.HOME}
           className={cn(
             'text-sm font-medium transition-colors hover:text-primary px-2',
-            currentPath === ROUTER_PATHS.PHOTO_LIST
-              ? ''
-              : 'text-muted-foreground',
+            currentPath === ROUTER_PATHS.HOME ? '' : 'text-muted-foreground',
           )}
         >
-          <ImageIcon className="w-6 h-6" />
+          <HomeIcon className="w-6 h-6" />
         </Link>
       </div>
       <div className="flex items-center space-x-4 lg:space-x-6 p-1">
