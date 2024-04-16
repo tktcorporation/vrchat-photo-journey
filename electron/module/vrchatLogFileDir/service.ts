@@ -11,23 +11,25 @@ import {
   VRChatLogFilesDirPathSchema,
 } from './model';
 
-export const getVRChatLogFileDir = (props: {
+export const getVRChatLogFileDir = async (props: {
   storedLogFilesDirPath: VRChatLogFilesDirPath | null;
-}): {
+}): Promise<{
   storedPath: string | null;
   path: string;
   error: null | 'logFilesNotFound' | 'logFileDirNotFound';
-} => {
+}> => {
   let logFilesDirPath: VRChatLogFilesDirPath;
   if (props.storedLogFilesDirPath === null) {
     logFilesDirPath = getDefaultVRChatVRChatLogFilesDir();
   } else {
     logFilesDirPath = props.storedLogFilesDirPath;
   }
-  const logFileNamesResult = fs.readDirSyncSafe(logFilesDirPath.value);
+  const logFileNamesResult = await fs.readdirAsync(logFilesDirPath.value, {
+    withFileTypes: true,
+  });
   if (logFileNamesResult.isErr()) {
     return match(logFileNamesResult.error)
-      .with('ENOENT', () => {
+      .with({ code: 'ENOENT' }, () => {
         return {
           storedPath: logFilesDirPath.value,
           path: logFilesDirPath.value,
@@ -74,12 +76,18 @@ const getDefaultVRChatVRChatLogFilesDir = (): VRChatLogFilesDirPath => {
   return VRChatLogFilesDirPathSchema.parse(VRChatlogFilesDir);
 };
 
-export const getVRChatLogFilePathList = (
+export const getVRChatLogFilePathList = async (
   vrChatlogFilesDir: VRChatLogFilesDirPath,
-): neverthrow.Result<VRChatLogFilePath[], fs.FSError> => {
-  const logFileNamesResult = fs.readDirSyncSafe(vrChatlogFilesDir.value);
+): Promise<neverthrow.Result<VRChatLogFilePath[], fs.FSError>> => {
+  const logFileNamesResult = await fs.readdirAsync(vrChatlogFilesDir.value, {
+    withFileTypes: true,
+  });
   if (logFileNamesResult.isErr()) {
-    return neverthrow.err(logFileNamesResult.error);
+    return neverthrow.err(
+      match(logFileNamesResult.error)
+        .with({ code: 'ENOENT' }, () => 'ENOENT' as const)
+        .exhaustive(),
+    );
   }
 
   // output_log から始まるファイル名のみを取得
@@ -87,7 +95,7 @@ export const getVRChatLogFilePathList = (
     .map((fileName) => {
       try {
         return VRChatLogFilePathSchema.parse(
-          `${path.join(vrChatlogFilesDir.value, fileName)}`,
+          `${path.join(vrChatlogFilesDir.value, fileName.name)}`,
         );
       } catch (e) {
         log.warn(e);
@@ -98,11 +106,13 @@ export const getVRChatLogFilePathList = (
   return neverthrow.ok(logFilePathList);
 };
 
-export const getValidVRChatLogFileDir = (props: {
+export const getValidVRChatLogFileDir = async (props: {
   storedVRChatLogFilesDirPath: VRChatLogFilesDirPath | null;
-}): neverthrow.Result<
-  VRChatLogFilesDirPath,
-  'logFilesNotFound' | 'logFileDirNotFound'
+}): Promise<
+  neverthrow.Result<
+    VRChatLogFilesDirPath,
+    'logFilesNotFound' | 'logFileDirNotFound'
+  >
 > => {
   let vrChatlogFilesDir: VRChatLogFilesDirPath;
   if (props.storedVRChatLogFilesDirPath === null) {
@@ -110,14 +120,13 @@ export const getValidVRChatLogFileDir = (props: {
   } else {
     vrChatlogFilesDir = props.storedVRChatLogFilesDirPath;
   }
-  const logFileNamesResult = getVRChatLogFilePathList(vrChatlogFilesDir);
+  const logFileNamesResult = await getVRChatLogFilePathList(vrChatlogFilesDir);
   if (logFileNamesResult.isErr()) {
-    switch (logFileNamesResult.error) {
-      case 'ENOENT':
-        return neverthrow.err('logFileDirNotFound');
-      default:
-        throw logFileNamesResult.error;
-    }
+    return neverthrow.err(
+      match(logFileNamesResult.error)
+        .with('ENOENT', () => 'logFileDirNotFound' as const)
+        .exhaustive(),
+    );
   }
   if (logFileNamesResult.value.length === 0) {
     return neverthrow.err('logFilesNotFound');

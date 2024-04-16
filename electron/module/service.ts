@@ -18,11 +18,11 @@ import * as vrchatLogFileDirService from './vrchatLogFileDir/service';
 
 const getVRChatLogFilesDir =
   (settingStore: ReturnType<typeof getSettingStore>) =>
-  (): {
+  async (): Promise<{
     storedPath: string | null;
     path: string;
     error: null | 'logFilesNotFound' | 'logFileDirNotFound';
-  } => {
+  }> => {
     const storedLogFilesDirPath = match(settingStore.getLogFilesDir())
       .with(null, () => {
         return null;
@@ -31,7 +31,7 @@ const getVRChatLogFilesDir =
         return VRChatLogFilesDirPathSchema.parse(path);
       })
       .exhaustive();
-    return vrchatLogFileDirService.getVRChatLogFileDir({
+    return await vrchatLogFileDirService.getVRChatLogFileDir({
       storedLogFilesDirPath: storedLogFilesDirPath,
     });
   };

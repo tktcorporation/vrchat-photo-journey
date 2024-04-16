@@ -39,9 +39,32 @@ export type FSError = 'ENOENT';
 //   }
 // };
 
-export const readDirSyncSafe = (dirPath: string): Result<string[], FSError> => {
-  const dirNames = fs.readdirSync(dirPath);
-  return ok(dirNames);
+// export const readDirSyncSafe = (dirPath: string): Result<string[], FSError> => {
+//   const dirNames = fs.readdirSync(dirPath);
+//   return ok(dirNames);
+// };
+const readdirPromisified = promisify(fs.readdir);
+type ReaddirReturn = PromiseType<ReturnType<typeof readdirPromisified>>;
+export const readdirAsync = async (
+  ...args: Parameters<typeof readdirPromisified>
+): Promise<
+  Result<ReaddirReturn, { code: 'ENOENT'; error: NodeJS.ErrnoException }>
+> => {
+  try {
+    const data = await readdirPromisified(...args);
+    return ok(data);
+  } catch (e) {
+    if (!isNodeError(e)) {
+      throw e;
+    }
+    const error = match(e)
+      .with({ code: 'ENOENT' }, (ee) => err({ code: ee.code, error: ee }))
+      .otherwise(() => null);
+    if (error) {
+      return error;
+    }
+    throw e;
+  }
 };
 
 export const writeFileSyncSafe = (

@@ -5,7 +5,6 @@ import { P, match } from 'ts-pattern';
 import * as fs from '../lib/wrappedFs';
 
 import path from 'node:path';
-import { app } from 'electron';
 import type {
   VRChatLogFilePath,
   VRChatLogFilesDirPath,
@@ -36,7 +35,7 @@ export const getVRChaLogInfoFromLogPath = async (
   >
 > => {
   const logFilePathList =
-    vrchatLogFileDirService.getVRChatLogFilePathList(logFilesDir);
+    await vrchatLogFileDirService.getVRChatLogFilePathList(logFilesDir);
   if (logFilePathList.isErr()) {
     return neverthrow.err(
       match(logFilePathList.error)

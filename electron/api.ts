@@ -42,7 +42,7 @@ export const router = trpcRouter({
     return logFilesDir;
   }),
   getStatusToUseVRChatLogFilesDir: procedure.query(async () => {
-    const vrchatLogFilesDir = service.getVRChatLogFilesDir();
+    const vrchatLogFilesDir = await service.getVRChatLogFilesDir();
     let status:
       | 'ready'
       | 'logFilesDirNotSet'
