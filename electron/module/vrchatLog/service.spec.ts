@@ -1,5 +1,6 @@
 import path from 'node:path';
 import type * as neverthrow from 'neverthrow';
+import * as fs from '../lib/wrappedFs';
 import type { VRChatLogFilesDirPath } from '../vrchatLogFileDir/model';
 import type { VRChatLogFileError } from './error';
 import * as service from './service';
@@ -57,5 +58,87 @@ describe('getVRChaLogInfoFromLogPath', () => {
       }
       throw new Error('Unexpected log type');
     }
+  });
+});
+
+describe('appendLoglinesToFile', () => {
+  it('should-return-void', async () => {
+    const logStoreFilePath = path.join(
+      process.cwd(),
+      'debug',
+      'logs-store',
+      'test.log',
+    );
+    const unlinkResult = await fs.unlinkAsync(logStoreFilePath);
+    if (unlinkResult.isErr()) {
+      throw unlinkResult.error;
+    }
+
+    const appendLoglinesToFile = service.appendLoglinesToFile;
+
+    // Write log lines to file
+    const logLines = [
+      '2021.10.02 00:00:01 Log        -  Log message',
+      '2021.10.02 00:00:02 Log        -  Log message',
+      '2021.10.02 00:00:03 Log        -  Log message',
+      '2021.10.02 00:00:04 Log        -  Log message',
+    ];
+    const result = await appendLoglinesToFile({
+      logLines,
+      logStoreFilePath,
+    });
+
+    expect(result.isOk()).toBe(true);
+
+    const logStoreFileLines = fs.readFileSyncSafe(logStoreFilePath);
+    if (logStoreFileLines.isErr()) {
+      throw new Error('Unexpected error');
+    }
+    const loglineLength_1 = logStoreFileLines.value
+      .toString()
+      .split('\n').length;
+    expect(loglineLength_1).toBeGreaterThanOrEqual(logLines.length);
+
+    // Append log lines to file
+    const logLines_2 = [
+      '2021.10.03 00:00:01 Log        -  Log message 2',
+      '2021.10.03 00:00:02 Log        -  Log message 2',
+      '2021.10.03 00:00:03 Log        -  Log message 2',
+      '2021.10.03 00:00:04 Log        -  Log message 2',
+    ];
+    const result_2 = await appendLoglinesToFile({
+      logLines: logLines_2,
+      logStoreFilePath,
+    });
+
+    expect(result_2.isOk()).toBe(true);
+
+    const logStoreFileLines_2 = fs.readFileSyncSafe(logStoreFilePath);
+    if (logStoreFileLines_2.isErr()) {
+      throw new Error('Unexpected error');
+    }
+
+    const loglineLength_2 = logStoreFileLines_2.value
+      .toString()
+      .split('\n').length;
+    expect(loglineLength_2).toBe(loglineLength_1 + logLines_2.length);
+
+    // Append log lines to file duplicated
+    const result_3 = await appendLoglinesToFile({
+      logLines: logLines_2,
+      logStoreFilePath,
+    });
+
+    expect(result_3.isOk()).toBe(true);
+
+    const logStoreFileLines_3 = fs.readFileSyncSafe(logStoreFilePath);
+    if (logStoreFileLines_3.isErr()) {
+      throw new Error('Unexpected error');
+    }
+
+    const loglineLength_3 = logStoreFileLines_3.value
+      .toString()
+      .split('\n').length;
+    expect(loglineLength_3).toBe(loglineLength_2);
   });
 });

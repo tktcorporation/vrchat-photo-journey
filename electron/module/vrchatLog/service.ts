@@ -1,9 +1,11 @@
 import readline from 'node:readline';
 import * as datefns from 'date-fns';
 import * as neverthrow from 'neverthrow';
-import { match } from 'ts-pattern';
+import { P, match } from 'ts-pattern';
 import * as fs from '../lib/wrappedFs';
 
+import path from 'node:path';
+import { app } from 'electron';
 import type {
   VRChatLogFilePath,
   VRChatLogFilesDirPath,
@@ -43,17 +45,37 @@ export const getVRChaLogInfoFromLogPath = async (
     );
   }
 
-  const logInfoList: (VRChatWorldJoinLog | VRChatPlayerJoinLog)[] = [];
+  const logLineList = await getLogLinesByLogFilePathList({
+    logFilePathList: logFilePathList.value,
+    includes: 'Join',
+  });
+  if (logLineList.isErr()) {
+    return neverthrow.err(logLineList.error);
+  }
+
+  const logInfoList: (VRChatWorldJoinLog | VRChatPlayerJoinLog)[] =
+    convertLogLinesToWorldJoinLogInfos(logLineList.value);
+
+  return neverthrow.ok(logInfoList);
+};
+
+const getLogLinesByLogFilePathList = async (props: {
+  logFilePathList: VRChatLogFilePath[];
+  includes: string;
+}): Promise<neverthrow.Result<string[], VRChatLogFileError>> => {
+  const logLineList: string[] = [];
   const errors: VRChatLogFileError[] = [];
   await Promise.all(
-    logFilePathList.value.map(async (logFilePath) => {
-      const result = await getLogLinesFromLogFileName({ logFilePath });
+    props.logFilePathList.map(async (logFilePath) => {
+      const result = await getLogLinesFromLogFileName({
+        logFilePath,
+        includes: 'Join',
+      });
       if (result.isErr()) {
         errors.push(result.error);
         return;
       }
-      const logList = convertLogLinesToWorldJoinLogInfos(result.value);
-      logInfoList.push(...logList);
+      logLineList.push(...result.value);
     }),
   );
 
@@ -61,11 +83,12 @@ export const getVRChaLogInfoFromLogPath = async (
     return neverthrow.err(errors[0]);
   }
 
-  return neverthrow.ok(logInfoList);
+  return neverthrow.ok(logLineList);
 };
 
 const getLogLinesFromLogFileName = async (props: {
   logFilePath: VRChatLogFilePath;
+  includes: string;
 }): Promise<neverthrow.Result<string[], VRChatLogFileError>> => {
   const stream = fs.createReadStream(props.logFilePath.value);
   const reader = readline.createInterface({
@@ -75,7 +98,7 @@ const getLogLinesFromLogFileName = async (props: {
   const lines: string[] = [];
   reader.on('line', (line) => {
     // worldJoin も playerJoin も含むログも Join が含まれる
-    if (line.includes('Join')) {
+    if (line.includes(props.includes)) {
       lines.push(line);
     }
   });
@@ -190,4 +213,72 @@ const extractPlayerJoinInfoFromLog = (logLine: string): VRChatPlayerJoinLog => {
     joinDate: joinDateTime,
     playerName,
   };
+};
+
+/**
+ * 必要になるlog行を app 内のファイルに保存しておく
+ * 最後に保存した日時以降のログ行のみを日付順に保存する
+ * 最初は全部保存しようとして被ってたら辞めるでもいいかな
+ */
+export const appendLoglinesToFile = async (props: {
+  logLines: string[];
+  logStoreFilePath: string;
+}): Promise<neverthrow.Result<void, Error>> => {
+  const isExists = await fs.existsSyncSafe(props.logStoreFilePath);
+  if (isExists.isErr()) {
+    return neverthrow.err(
+      match(isExists.error)
+        .with(P.instanceOf(Error), () => isExists.error)
+        .exhaustive(),
+    );
+  }
+  // ファイルが存在しない場合は新規作成
+  if (!isExists.value) {
+    const mkdirResult = await fs.mkdirSyncSafe(
+      path.dirname(props.logStoreFilePath),
+    );
+    if (mkdirResult.isErr()) {
+      const error = match(mkdirResult.error)
+        .with({ code: 'EEXIST' }, () => null)
+        .otherwise(() => mkdirResult.error);
+      if (error) {
+        return neverthrow.err(error.error);
+      }
+    }
+  }
+
+  const existingLogsResult = await fs.readFileSyncSafe(props.logStoreFilePath);
+  let existingLogs: string;
+  if (existingLogsResult.isErr()) {
+    const error = match(existingLogsResult.error)
+      .with({ code: 'ENOENT' }, () => null)
+      .with({ code: P.string }, (ee) => ee)
+      .exhaustive();
+    if (error) {
+      return neverthrow.err(error.error);
+    }
+    existingLogs = '';
+  } else {
+    existingLogs = existingLogsResult.value.toString();
+  }
+  // 既存のログ行と重複している行は追加しない
+  const existingLines = existingLogs.split('\n');
+  const newLines = props.logLines.filter(
+    (line) => !existingLines.includes(line),
+  );
+  if (newLines.length === 0) {
+    return neverthrow.ok(undefined);
+  }
+  // 最終行には改行を追加
+  const newLog = `${newLines.join('\n')}\n`;
+  const writeResult = await fs.appendFileAsync(props.logStoreFilePath, newLog);
+  if (writeResult.isErr()) {
+    const error = match(writeResult.error)
+      .with({ code: 'ENOENT' }, () => new Error('appendFileAsync ENOENT'))
+      .exhaustive();
+    if (error) {
+      return neverthrow.err(error);
+    }
+  }
+  return neverthrow.ok(undefined);
 };

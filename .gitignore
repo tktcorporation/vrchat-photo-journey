@@ -19,6 +19,7 @@ debug/photos/**/*.html
 debug/photos/**/VRChat*wrld*
 debug/photos/**/VRChat_*x*.png
 debug/photos/**/*.txt
+debug/logs-store/*.log
 
 # local env files
 .env.local
