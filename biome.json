@@ -23,7 +23,16 @@
     "formatter": {
       "quoteStyle": "single"
     },
-    "globals": ["it", "describe", "expect", "jest", "beforeEach"]
+    "globals": [
+      "it",
+      "describe",
+      "expect",
+      "jest",
+      "beforeEach",
+      "beforeAll",
+      "afterEach",
+      "afterAll"
+    ]
   },
   "files": {
     "ignore": [

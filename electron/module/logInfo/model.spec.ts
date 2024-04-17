@@ -6,13 +6,20 @@ import {
 import type { VRChatLogFilesDirPath } from '../vrchatLogFileDir/model';
 import { getValidVRChatLogFileDir } from '../vrchatLogFileDir/service';
 import * as model from './model';
+import { resetDatabase } from './util';
+
+const dbPath = path.join(process.cwd(), 'debug', 'db', 'test.db');
 
 describe('module/logInfo/model', () => {
+  beforeAll(async () => {
+    // migrate prisma db
+    await resetDatabase(dbPath);
+  });
   it('has a model', async () => {
     const storedVRChatLogFilesDirPath = {
       value: path.join(process.cwd(), 'debug', 'logs'),
     };
-    const logFilesDirPath = getValidVRChatLogFileDir({
+    const logFilesDirPath = await getValidVRChatLogFileDir({
       storedVRChatLogFilesDirPath:
         storedVRChatLogFilesDirPath as unknown as VRChatLogFilesDirPath,
     });
@@ -28,10 +35,12 @@ describe('module/logInfo/model', () => {
         logInfo.logType === 'worldJoin',
     );
 
-    await model.createVRChatWorldJoinLog(worldJoinLogList);
+    const client = model.getRDBClient(dbPath);
+    await client.createVRChatWorldJoinLog(worldJoinLogList);
   });
   it('findAllVRChatWorldJoinLogList', async () => {
-    const result = await model.findAllVRChatWorldJoinLogList();
+    const client = model.getRDBClient(dbPath);
+    const result = await client.findAllVRChatWorldJoinLogList();
     expect(result.length).toBeGreaterThan(0);
   });
 });

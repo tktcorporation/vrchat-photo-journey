@@ -17,6 +17,8 @@ model VRChatWorldJoinLog {
   worldInstanceId String
   joinDateTime DateTime
 
+  @@unique(fields: [worldInstanceId, joinDateTime])
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -25,6 +27,8 @@ model VRChatPlayerJoinLog {
   id String @id @default(cuid())
   playerName String
   joinDateTime DateTime
+
+  @@unique(fields: [playerName, joinDateTime])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -10,6 +10,7 @@ function PhotoSelector() {
     <div className="flex-auto h-full">
       <div className="flex flex-col justify-center items-center h-full space-y-9">
         <h3 className="text-lg font-medium">Home</h3>
+        <Button>logの生成とそのデータからsqliteに流してIndexの作成</Button>
       </div>
     </div>
   );
