@@ -119,8 +119,28 @@ const clearStoredSetting =
     }
   };
 
-const getSettingStore = (name: storeName) => {
-  const settingStore = new Store({ name });
+import path from 'node:path';
+import * as log from 'electron-log';
+let settingStore: Store | null = null;
+const initSettingStore = (name: storeName) => {
+  if (settingStore !== null) {
+    const existsPath = settingStore.path;
+    const existsName = path.basename(existsPath, '.json');
+    log.info(
+      `SettingStore already initialized. existsName: ${existsName}, newName: ${name}`,
+    );
+    if (existsName === name) {
+      return getSettingStore();
+    }
+    throw new Error('SettingStore already initialized');
+  }
+  settingStore = new Store({ name });
+  return getSettingStore();
+};
+const getSettingStore = () => {
+  if (settingStore === null) {
+    throw new Error('SettingStore not initialized');
+  }
   const { get, set } = {
     get: getValue(settingStore),
     set: setValue(settingStore),
@@ -145,4 +165,4 @@ const getSettingStore = (name: storeName) => {
   };
 };
 
-export { getSettingStore };
+export { getSettingStore, initSettingStore };

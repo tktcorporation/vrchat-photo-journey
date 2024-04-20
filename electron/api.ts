@@ -3,9 +3,10 @@ import z from 'zod';
 
 import { backgroundSettingsRouter } from './module/backgroundSettings/controller/backgroundSettingsController';
 import { electronUtilRouter } from './module/electronUtil/controller/electronUtilController';
-import { getService } from './module/service';
-import { getSettingStore } from './module/settingStore';
+import * as service from './module/service';
+import { initSettingStore } from './module/settingStore';
 import { settingsRouter } from './module/settings/settingsController';
+import { vrchatLogRouter } from './module/vrchatLog/vrchatLogController';
 import {
   eventEmitter as ee,
   logError,
@@ -17,13 +18,13 @@ import {
 //   ? T
 //   : never;
 
-const settingStore = getSettingStore('v0-settings');
-const service = getService(settingStore);
+const settingStore = initSettingStore('v0-settings');
 
 export const router = trpcRouter({
   backgroundSettings: backgroundSettingsRouter(settingStore),
   settings: settingsRouter(),
   electronUtil: electronUtilRouter(),
+  vrchatLog: vrchatLogRouter(),
   subscribeToast: procedure.subscription(() => {
     return observable((emit) => {
       function onToast(text: string) {

@@ -5,6 +5,7 @@ import { P, match } from 'ts-pattern';
 import * as fs from '../lib/wrappedFs';
 
 import path from 'node:path';
+import { getAppUserDataPath } from '../lib/wrappedApp';
 import type {
   VRChatLogFilePath,
   VRChatLogFilesDirPath,
@@ -58,7 +59,7 @@ export const getVRChaLogInfoFromLogPath = async (
   return neverthrow.ok(logInfoList);
 };
 
-const getLogLinesByLogFilePathList = async (props: {
+export const getLogLinesByLogFilePathList = async (props: {
   logFilePathList: VRChatLogFilePath[];
   includes: string;
 }): Promise<neverthrow.Result<string[], VRChatLogFileError>> => {
@@ -212,6 +213,11 @@ const extractPlayerJoinInfoFromLog = (logLine: string): VRChatPlayerJoinLog => {
     joinDate: joinDateTime,
     playerName,
   };
+};
+
+export const getLogStoreFilePath = () => {
+  const userDataPath = getAppUserDataPath();
+  return path.join(userDataPath, 'logStore', 'logStore.txt');
 };
 
 /**

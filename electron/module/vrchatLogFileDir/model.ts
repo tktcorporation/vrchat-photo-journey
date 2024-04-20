@@ -16,8 +16,19 @@ export abstract class BaseValueObject<T extends string, K> {
   }
 }
 
+/**
+ * VRChatのログファイルが格納されているディレクトリのパス
+ */
 class VRChatLogFilesDirPath extends BaseValueObject<
   'VRChatLogFilesDirPath',
+  string
+> {}
+/**
+ * VRChatのログファイルが格納されているディレクトリのパス
+ * (settingStoreから取得)
+ */
+class NotValidatedVRChatLogFilesDirPath extends BaseValueObject<
+  'NotValidatedVRChatLogFilesDirPath',
   string
 > {}
 class VRChatLogFilePath extends BaseValueObject<
@@ -25,10 +36,19 @@ class VRChatLogFilePath extends BaseValueObject<
   string
 > {}
 
-export type { VRChatLogFilesDirPath, VRChatLogFilePath };
+export type {
+  VRChatLogFilesDirPath,
+  VRChatLogFilePath,
+  NotValidatedVRChatLogFilesDirPath,
+};
 export const VRChatLogFilesDirPathSchema = z.string().transform((value) => {
   return new VRChatLogFilesDirPath(value);
 });
+export const NotValidatedVRChatLogFilesDirPathSchema = z
+  .string()
+  .transform((value) => {
+    return new NotValidatedVRChatLogFilesDirPath(value);
+  });
 export const VRChatLogFilePathSchema = z
   .string()
   .includes('output_log')
