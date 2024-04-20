@@ -1,8 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { ROUTER_PATHS } from '@/constants';
 import { trpcReact } from '@/trpc';
-import { AlertTriangle, Bed, Check, ChevronRight, Info } from 'lucide-react';
-import React from 'react';
 import { Link } from 'react-router-dom';
 
 function PhotoSelector() {
