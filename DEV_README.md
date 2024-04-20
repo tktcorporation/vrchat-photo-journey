@@ -1,4 +1,4 @@
-# vrchat-join-recorder
+# vrchat-photo-journey
 
 ## 確認済み 開発環境
 * Ubuntu focal (GitHub Codespaces)

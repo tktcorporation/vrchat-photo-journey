@@ -8408,9 +8408,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vrchat-join-recorder@workspace:.":
+"vrchat-photo-journey@workspace:.":
   version: 0.0.0-use.local
-  resolution: "vrchat-join-recorder@workspace:."
+  resolution: "vrchat-photo-journey@workspace:."
   dependencies:
     "@biomejs/biome": "npm:^1.6.0"
     "@heroicons/react": "npm:^2.0.18"
