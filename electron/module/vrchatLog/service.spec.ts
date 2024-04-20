@@ -1,5 +1,6 @@
 import path from 'node:path';
 import type * as neverthrow from 'neverthrow';
+import { match } from 'ts-pattern';
 import * as fs from '../lib/wrappedFs';
 import type { VRChatLogFilesDirPath } from '../vrchatLogFileDir/model';
 import type { VRChatLogFileError } from './error';
@@ -71,7 +72,12 @@ describe('appendLoglinesToFile', () => {
     );
     const unlinkResult = await fs.unlinkAsync(logStoreFilePath);
     if (unlinkResult.isErr()) {
-      throw unlinkResult.error;
+      const isThrow = match(unlinkResult.error)
+        .with({ code: 'ENOENT' }, () => false)
+        .exhaustive();
+      if (isThrow) {
+        throw unlinkResult.error;
+      }
     }
 
     const appendLoglinesToFile = service.appendLoglinesToFile;
