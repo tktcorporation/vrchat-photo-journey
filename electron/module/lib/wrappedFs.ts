@@ -1,40 +1,69 @@
 import * as fs from 'node:fs';
+import { promisify } from 'node:util';
 import { type Result, err, ok } from 'neverthrow';
+import { P, match } from 'ts-pattern';
 
 export const readFileSyncSafe = (
   filePath: string,
   options?: { encoding?: null; flag?: string } | null,
-): Result<Buffer, Error> => {
+): Result<
+  Buffer,
+  { code: 'ENOENT' | string; message: string; error: Error }
+> => {
   try {
     const content = fs.readFileSync(filePath, options);
     return ok(content);
   } catch (e) {
-    if (e instanceof Error) {
-      return err(e);
+    if (!isNodeError(e)) {
+      throw e;
+    }
+    const error = match(e)
+      .with({ code: 'ENOENT', message: P.string }, (ee) =>
+        err({ code: 'ENOENT' as const, message: ee.message, error: ee }),
+      )
+      .otherwise(() => null);
+    if (error) {
+      return error;
     }
     throw e;
   }
 };
 
 export type FSError = 'ENOENT';
-const toFSError = (error: Error & { code?: string }): FSError => {
-  switch (error.code) {
-    case 'ENOENT':
-      return 'ENOENT';
-    default:
-      throw error;
-  }
-};
+// const toFSError = (error: Error & { code?: string }): FSError => {
+//   switch (error.code) {
+//     case 'ENOENT':
+//       return 'ENOENT';
+//     default:
+//       throw error;
+//   }
+// };
 
-export const readDirSyncSafe = (dirPath: string): Result<string[], FSError> => {
+// export const readDirSyncSafe = (dirPath: string): Result<string[], FSError> => {
+//   const dirNames = fs.readdirSync(dirPath);
+//   return ok(dirNames);
+// };
+const readdirPromisified = promisify(fs.readdir);
+type ReaddirReturn = PromiseType<ReturnType<typeof readdirPromisified>>;
+export const readdirAsync = async (
+  ...args: Parameters<typeof readdirPromisified>
+): Promise<
+  Result<ReaddirReturn, { code: 'ENOENT'; error: NodeJS.ErrnoException }>
+> => {
   try {
-    const dirNames = fs.readdirSync(dirPath);
-    return ok(dirNames);
-  } catch (error) {
-    if (error instanceof Error) {
-      return err(toFSError(error));
+    const data = await readdirPromisified(...args);
+    return ok(data);
+  } catch (e) {
+    if (!isNodeError(e)) {
+      throw e;
     }
-    throw error;
+    const error = match(e)
+      .with({ code: 'ENOENT' }, (ee) => err({ code: ee.code, error: ee }))
+      .otherwise(() => null);
+    if (error) {
+      return error;
+    }
+    throw e;
   }
 };
 
@@ -54,40 +83,103 @@ export const writeFileSyncSafe = (
   }
 };
 
-export const mkdirSyncSafe = (dirPath: string): Result<void, Error> => {
+import typeUtils from 'node:util/types';
+
+function isNodeError(error: unknown): error is NodeJS.ErrnoException {
+  return typeUtils.isNativeError(error);
+}
+
+export const mkdirSyncSafe = async (
+  dirPath: string,
+): Promise<Result<void, { code: 'EEXIST'; error: NodeJS.ErrnoException }>> => {
   try {
-    fs.mkdirSync(dirPath);
+    await promisify(fs.mkdir)(dirPath);
     return ok(undefined);
   } catch (e) {
-    if (e instanceof Error) {
-      return err(e);
+    if (!isNodeError(e)) {
+      throw e;
+    }
+    const error = match(e)
+      .with({ code: 'EEXIST' }, (ee) => err({ code: ee.code, error: ee }))
+      .otherwise(() => null);
+    if (error) {
+      return error;
     }
     throw e;
   }
 };
 
 export const existsSyncSafe = (path: string): Result<boolean, Error> => {
-  try {
-    const result = fs.existsSync(path);
-    return ok(result);
-  } catch (e) {
-    if (e instanceof Error) {
-      return err(e);
-    }
-    throw e;
-  }
+  const result = fs.existsSync(path);
+  return ok(result);
 };
 
 export const readFileSafe = (
   filePath: string,
   options?: { encoding?: null; flag?: string } | null,
 ): Result<Buffer, Error> => {
+  const content = fs.readFileSync(filePath, options);
+  return ok(content);
+};
+
+const readFilePromisified = promisify(fs.readFile);
+type PromiseType<T extends PromiseLike<unknown>> = T extends PromiseLike<
+  infer P
+>
+  ? P
+  : never;
+type ReadFileReturn = PromiseType<ReturnType<typeof readFilePromisified>>;
+export const readFileAsync = async (
+  ...args: Parameters<typeof readFilePromisified>
+): Promise<Result<ReadFileReturn, Error>> => {
+  const data = await readFilePromisified(...args);
+  return ok(data);
+};
+
+const appendFilePromisified = promisify(fs.appendFile);
+type AppendFileReturn = PromiseType<ReturnType<typeof appendFilePromisified>>;
+export const appendFileAsync = async (
+  ...args: Parameters<typeof appendFilePromisified>
+): Promise<
+  Result<AppendFileReturn, { code: 'ENOENT'; error: NodeJS.ErrnoException }>
+> => {
   try {
-    const content = fs.readFileSync(filePath, options);
-    return ok(content);
+    const data = await appendFilePromisified(...args);
+    return ok(data);
   } catch (e) {
-    if (e instanceof Error) {
-      return err(e);
+    if (!isNodeError(e)) {
+      throw e;
+    }
+    const error = match(e)
+      // .with({ code: 'EEXIST' }, (ee) => err({code: ee.code, error: ee}))
+      .otherwise(() => null);
+    if (error) {
+      return error;
+    }
+    throw e;
+  }
+};
+
+// delete file
+const unlinkPromisified = promisify(fs.unlink);
+type UnlinkReturn = PromiseType<ReturnType<typeof unlinkPromisified>>;
+export const unlinkAsync = async (
+  ...args: Parameters<typeof unlinkPromisified>
+): Promise<
+  Result<UnlinkReturn, { code: 'ENOENT'; error: NodeJS.ErrnoException }>
+> => {
+  try {
+    const data = await unlinkPromisified(...args);
+    return ok(data);
+  } catch (e) {
+    if (!isNodeError(e)) {
+      throw e;
+    }
+    const error = match(e)
+      .with({ code: 'ENOENT' }, (ee) => err({ code: ee.code, error: ee }))
+      .otherwise(() => null);
+    if (error) {
+      return error;
     }
     throw e;
   }

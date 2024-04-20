@@ -1,0 +1,35 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model VRChatWorldJoinLog {
+  id String @id @default(cuid())
+  worldId String
+  worldName String
+  worldInstanceId String
+  joinDateTime DateTime
+
+  @@unique(fields: [worldInstanceId, joinDateTime])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VRChatPlayerJoinLog {
+  id String @id @default(cuid())
+  playerName String
+  joinDateTime DateTime
+
+  @@unique(fields: [playerName, joinDateTime])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

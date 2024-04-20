@@ -1,16 +1,12 @@
 import { observable } from '@trpc/server/observable';
 import z from 'zod';
 
-// 呼び出し元は集約したい
-import path from 'node:path';
-import * as log from 'electron-log';
-import type { Result } from 'neverthrow';
 import { backgroundSettingsRouter } from './module/backgroundSettings/controller/backgroundSettingsController';
 import { electronUtilRouter } from './module/electronUtil/controller/electronUtilController';
-import { joinInfoLogFileRouter } from './module/joinLogInfoFile/controller';
-import { getService } from './module/service';
-import { getSettingStore } from './module/settingStore';
+import * as service from './module/service';
+import { initSettingStore } from './module/settingStore';
 import { settingsRouter } from './module/settings/settingsController';
+import { vrchatLogRouter } from './module/vrchatLog/vrchatLogController';
 import {
   eventEmitter as ee,
   logError,
@@ -18,18 +14,17 @@ import {
   router as trpcRouter,
 } from './trpc';
 
-type ExtractDataTypeFromResult<R> = R extends Result<infer T, unknown>
-  ? T
-  : never;
+// type ExtractDataTypeFromResult<R> = R extends Result<infer T, unknown>
+//   ? T
+//   : never;
 
-const settingStore = getSettingStore('v0-settings');
-const service = getService(settingStore);
+const settingStore = initSettingStore('v0-settings');
 
 export const router = trpcRouter({
   backgroundSettings: backgroundSettingsRouter(settingStore),
   settings: settingsRouter(),
-  joinInfoLogFile: joinInfoLogFileRouter(settingStore),
   electronUtil: electronUtilRouter(),
+  vrchatLog: vrchatLogRouter(),
   subscribeToast: procedure.subscription(() => {
     return observable((emit) => {
       function onToast(text: string) {
@@ -47,12 +42,8 @@ export const router = trpcRouter({
     const logFilesDir = service.getVRChatLogFilesDir();
     return logFilesDir;
   }),
-  getVRChatPhotoDir: procedure.query(async () => {
-    const vrchatPhotoDir = service.getVRChatPhotoDir();
-    return vrchatPhotoDir;
-  }),
   getStatusToUseVRChatLogFilesDir: procedure.query(async () => {
-    const vrchatLogFilesDir = service.getVRChatLogFilesDir();
+    const vrchatLogFilesDir = await service.getVRChatLogFilesDir();
     let status:
       | 'ready'
       | 'logFilesDirNotSet'
@@ -64,55 +55,6 @@ export const router = trpcRouter({
       status = vrchatLogFilesDir.error;
     }
     return status;
-  }),
-  getWorldJoinInfoWithPhotoPath: procedure.query(async () => {
-    const result = await service.getWorldJoinInfoWithPhotoPath();
-    interface Response {
-      data:
-        | null
-        | {
-            world: null | {
-              worldId: string;
-              worldName: string;
-              joinDatetime: string;
-            };
-            tookPhotoList: {
-              photoPath: string;
-              tookDatetime: string;
-            }[];
-          }[];
-      error: null | {
-        code: string;
-        message: string;
-      };
-    }
-    const response: Response = {
-      data: null,
-      error: null,
-    };
-    result.match(
-      (r) => {
-        response.data = r.map((obj) => ({
-          world: obj.world
-            ? {
-                ...obj.world,
-                joinDatetime: obj.world.joinDatetime.toISOString(),
-              }
-            : null,
-          tookPhotoList: obj.tookPhotoList.map((tookPhoto) => ({
-            ...tookPhoto,
-            tookDatetime: tookPhoto.tookDatetime.toISOString(),
-          })),
-        }));
-      },
-      (error) => {
-        response.error = {
-          code: error.name,
-          message: error.message,
-        };
-      },
-    );
-    return response;
   }),
   clearAllStoredSettings: procedure.mutation(async () => {
     service.clearAllStoredSettings();
@@ -170,19 +112,6 @@ export const router = trpcRouter({
       },
     );
   }),
-  setVRChatPhotoDirByDialog: procedure.mutation(async () => {
-    const result = await service.setVRChatPhotoDirByDialog();
-    return result.match(
-      () => {
-        ee.emit('toast', 'VRChatの写真の保存先を設定しました');
-        return true;
-      },
-      (error) => {
-        logError(error);
-        return false;
-      },
-    );
-  }),
   setVRChatLogFilesDirByDialog: procedure.mutation(async () => {
     const result = await service.setVRChatLogFilesDirByDialog();
     return result.match(
@@ -193,135 +122,6 @@ export const router = trpcRouter({
       (error) => {
         logError(error);
         return false;
-      },
-    );
-  }),
-  getVRChatPhotoItemDataListByYearMonth: procedure
-    .input(z.object({ year: z.string(), month: z.string() }))
-    .query(async (ctx) => {
-      const result = await service.getVRChatPhotoItemDataListByYearMonth(
-        ctx.input.year,
-        ctx.input.month,
-      );
-      return result.match(
-        (r) => {
-          return r.map((obj) => ({
-            path: obj.path,
-            dataImage: `data:image/${path
-              .extname(obj.path)
-              .replace('.', '')};base64,${obj.data.toString('base64')}`,
-          }));
-        },
-        (error) => {
-          logError(error);
-          return [];
-        },
-      );
-    }),
-  getVRChatPhotoFolderYearMonthList: procedure.query(async () => {
-    const result = await service.getVRChatPhotoFolderYearMonthList();
-    return result.match(
-      (r) => {
-        return r;
-      },
-      (error) => {
-        logError(error);
-        return [];
-      },
-    );
-  }),
-  getVRChatPhotoWithWorldIdAndDate: procedure
-    .input(z.object({ year: z.string(), month: z.string() }))
-    .query(async (ctx) => {
-      const result = await service.getVRChatPhotoWithWorldIdAndDate(ctx.input);
-      const response: {
-        data: null | ExtractDataTypeFromResult<typeof result>;
-        error: null | {
-          code: string;
-          message: string;
-        };
-      } = {
-        data: null,
-        error: null,
-      };
-      return result.match(
-        (r) => {
-          response.data = r;
-          return response;
-        },
-        (error) => {
-          logError(error);
-          return {
-            data: null,
-            error: {
-              code: error.name,
-              message: `写真の読み込みに失敗しました: ${error.message}`,
-            },
-          };
-        },
-      );
-    }),
-  getVRChatJoinInfoWithVRChatPhotoList: procedure
-    .input(z.object({ year: z.string(), month: z.string() }))
-    .query(async (ctx) => {
-      const result = await service.getVRChatJoinInfoWithVRChatPhotoList({
-        getVRChatPhotoWithWorldIdAndDate:
-          service.getVRChatPhotoWithWorldIdAndDate,
-      })({
-        year: ctx.input.year,
-        month: ctx.input.month,
-      });
-      const response: {
-        data: null | ExtractDataTypeFromResult<typeof result>;
-        error: null | {
-          code: string;
-          message: string;
-        };
-      } = {
-        data: null,
-        error: null,
-      };
-      return result.match(
-        (r) => {
-          response.data = r;
-          return response;
-        },
-        (error) => {
-          logError(error);
-          return {
-            data: null,
-            error: {
-              code: error.name,
-              message: `写真の読み込みに失敗しました: ${error.message}`,
-            },
-          };
-        },
-      );
-    }),
-  getVRChatPhotoItemData: procedure.input(z.string()).query(async (ctx) => {
-    const result = await service.getVRChatPhotoItemData(ctx.input);
-    return result.match(
-      (r) => {
-        return `data:image/${path
-          .extname(ctx.input)
-          .replace('.', '')};base64,${r.toString('base64')}`;
-      },
-      (error) => {
-        logError(error);
-        return '';
-      },
-    );
-  }),
-  getVrcWorldInfoByWorldId: procedure.input(z.string()).query(async (ctx) => {
-    log.debug('getVrcWorldInfoByWorldId', ctx.input);
-    const result = await service.getVrcWorldInfoByWorldId(ctx.input);
-    return result.match(
-      (r) => {
-        return r;
-      },
-      (error) => {
-        logError(error);
-        return null;
       },
     );
   }),

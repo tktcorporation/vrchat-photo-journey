@@ -1,14 +1,10 @@
 {
   "recommendations": [
     "github.copilot",
-    "donjayamanne.githistory",
-    "eamodio.gitlens",
     "mhutchie.git-graph",
     "steoates.autoimport",
-    "atishay-jain.all-autocomplete",
     "usernamehw.errorlens",
     "ofhumanbondage.react-proptypes-intellisense",
-    "mgmcdermott.vscode-language-babel",
     "wix.vscode-import-cost",
     "pflannery.vscode-versionlens",
     "editorconfig.editorconfig",

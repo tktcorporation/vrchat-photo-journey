@@ -119,17 +119,21 @@ const clearStoredSetting =
     }
   };
 
-const getSettingStore = (name: storeName) => {
-  const settingStore = new Store({ name });
+import path from 'node:path';
+import * as log from 'electron-log';
+let settingStore: ReturnType<typeof setSettingStore> | null = null;
+const setSettingStore = (name: storeName) => {
+  const store = new Store({ name });
   const { get, set } = {
-    get: getValue(settingStore),
-    set: setValue(settingStore),
+    get: getValue(store),
+    set: setValue(store),
   };
   const { getStr: getS, getBool: getB } = {
     getStr: getStr(get),
     getBool: getBool(get),
   };
-  return {
+  const _settingStore = {
+    __store: store,
     getLogFilesDir: getLogFilesDir(getS),
     setLogFilesDir: setLogFilesDir(set),
     getVRChatPhotoDir: getVRChatPhotoDir(getS),
@@ -140,9 +144,38 @@ const getSettingStore = (name: storeName) => {
       setRemoveAdjacentDuplicateWorldEntriesFlag(set),
     getBackgroundFileCreateFlag: getBackgroundFileCreateFlag(getB),
     setBackgroundFileCreateFlag: setBackgroundFileCreateFlag(set),
-    clearAllStoredSettings: clearAllStoredSettings(settingStore),
-    clearStoredSetting: clearStoredSetting(settingStore),
+    clearAllStoredSettings: clearAllStoredSettings(store),
+    clearStoredSetting: clearStoredSetting(store),
   };
+  settingStore = _settingStore;
+  return _settingStore;
 };
 
-export { getSettingStore };
+const initSettingStore = (name: storeName) => {
+  if (settingStore !== null) {
+    const existsPath = settingStore.__store.path;
+    const existsName = path.basename(existsPath, '.json');
+    log.info(
+      `SettingStore already initialized. existsName: ${existsName}, newName: ${name}`,
+    );
+    if (existsName === name) {
+      return getSettingStore();
+    }
+    throw new Error('SettingStore already initialized');
+  }
+  setSettingStore(name);
+  return getSettingStore();
+};
+const initSettingStoreForTest = (
+  settingStoreSpy: ReturnType<typeof getSettingStore>,
+) => {
+  settingStore = settingStoreSpy;
+};
+const getSettingStore = () => {
+  if (settingStore === null) {
+    throw new Error('SettingStore not initialized');
+  }
+  return settingStore;
+};
+
+export { getSettingStore, initSettingStore, initSettingStoreForTest };

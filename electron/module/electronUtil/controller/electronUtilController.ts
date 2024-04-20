@@ -1,7 +1,7 @@
 import z from 'zod';
 import { getWindow } from '../../../electronUtil';
-import * as utilsService from '../../service/utilsService';
 import { procedure, router as trpcRouter } from './../../../trpc';
+import * as utilsService from './../service';
 
 const reloadWindow = () => {
   const mainWindow = getWindow();

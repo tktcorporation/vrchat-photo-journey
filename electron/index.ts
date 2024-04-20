@@ -7,9 +7,9 @@ import { router } from './api';
 import * as electronUtil from './electronUtil';
 import { getBackgroundUsecase } from './module/backGroundUsecase';
 import { getController } from './module/controller';
-import { getSettingStore } from './module/settingStore';
+import { initSettingStore } from './module/settingStore';
 
-const settingStore = getSettingStore('v0-settings');
+const settingStore = initSettingStore('v0-settings');
 const controller = getController(settingStore);
 
 const CHANNELS = {
@@ -44,7 +44,7 @@ const registerIpcMainListeners = () => {
   });
 };
 
-const backgroundUsecase = getBackgroundUsecase(getSettingStore('v0-settings'));
+const backgroundUsecase = getBackgroundUsecase(settingStore);
 
 const createOrGetMainWindow = async (): Promise<BrowserWindow> => {
   const mainWindow = electronUtil.createOrGetWindow();

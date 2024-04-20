@@ -4,7 +4,7 @@ type Code =
   | 'LOG_FILES_NOT_FOUND'
   | 'UNKNOWN';
 
-class VRChatLogFileError extends Error {
+export class VRChatLogFileError extends Error {
   code: Code | string;
 
   constructor(codeOrError: Code | (Error & { code?: string })) {
@@ -22,5 +22,3 @@ class VRChatLogFileError extends Error {
     this.name = this.constructor.name;
   }
 }
-
-export default VRChatLogFileError;

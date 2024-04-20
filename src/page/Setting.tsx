@@ -9,8 +9,6 @@ function Setting() {
   // 初期表示時に log-files-dir を取得する
   const logFilesDirError =
     trpcReact.getVRChatLogFilesDir.useQuery().data?.error;
-  const vrchatPhotoDirError =
-    trpcReact.getVRChatPhotoDir.useQuery().data?.error;
 
   const statusIcon = (err: string | undefined | null) => {
     if (err) {
@@ -53,22 +51,6 @@ function Setting() {
             </div>
             <div>
               <Link to={ROUTER_PATHS.SETTING_VRCHAT_LOG_PATH}>
-                <Button variant="link">
-                  <ChevronRight size={24} />
-                </Button>
-              </Link>
-            </div>
-          </div>
-          <div className="flex flex-row items-center justify-between p-5 space-x-4">
-            <div>{statusIcon(vrchatPhotoDirError)}</div>
-            <div className="space-y-0.5">
-              <div className="text-base">写真ファイルの場所</div>
-              <div className="text-sm text-muted-foreground">
-                カメラで取った写真が保存される
-              </div>
-            </div>
-            <div>
-              <Link to={ROUTER_PATHS.SETTING_VRCHAT_PHOTO_PATH}>
                 <Button variant="link">
                   <ChevronRight size={24} />
                 </Button>
