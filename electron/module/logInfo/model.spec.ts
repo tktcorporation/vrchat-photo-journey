@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { type getSettingStore, initSettingStoreForTest } from '../settingStore';
 import {
   type VRChatWorldJoinLog,
   getVRChaLogInfoFromLogPath,
@@ -14,19 +15,21 @@ describe('module/logInfo/model', () => {
   beforeAll(async () => {
     // migrate prisma db
     await resetDatabase(dbPath);
-  });
+  }, 10000);
   it('has a model', async () => {
     const storedVRChatLogFilesDirPath = {
       value: path.join(process.cwd(), 'debug', 'logs'),
     };
-    const logFilesDirPath = await getValidVRChatLogFileDir({
-      storedVRChatLogFilesDirPath:
-        storedVRChatLogFilesDirPath as unknown as VRChatLogFilesDirPath,
-    });
+    initSettingStoreForTest({
+      getLogFilesDir: () => storedVRChatLogFilesDirPath.value,
+    } as unknown as ReturnType<typeof getSettingStore>);
+    const logFilesDirPath = await getValidVRChatLogFileDir();
     if (logFilesDirPath.isErr()) {
       throw new Error('Unexpected error');
     }
-    const logInfoList = await getVRChaLogInfoFromLogPath(logFilesDirPath.value);
+    const logInfoList = await getVRChaLogInfoFromLogPath(
+      logFilesDirPath.value.path,
+    );
     if (logInfoList.isErr()) {
       throw new Error('Unexpected error');
     }
