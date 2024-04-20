@@ -2904,8 +2904,8 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/vite",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/vite/LICENSE.md"
   },
-  "vrchat-join-recorder@0.4.0": {
-    "licenses": "Custom: https://github.com/tktcorporation/vrchat-join-recorder/releases",
+  "vrchat-photo-journey@0.1.0": {
+    "licenses": "UNKNOWN",
     "repository": "https://github.com/tktcorporation/add-world-name-to-vrc-photo",
     "publisher": "tktcorporation",
     "path": "/workspaces/vrchat-photo-journey",

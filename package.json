@@ -1,6 +1,6 @@
 {
-  "name": "vrchat-join-recorder",
-  "version": "0.4.0",
+  "name": "vrchat-photo-journey",
+  "version": "0.1.0",
   "main": "main/index.js",
   "author": {
     "name": "tktcorporation"
@@ -15,7 +15,7 @@
   "repository": {
     "url": "https://github.com/tktcorporation/add-world-name-to-vrc-photo"
   },
-  "productName": "vrchat-join-recorder",
+  "productName": "vrchat-photo-journey",
   "scripts": {
     "preinstall": "nlx only-allow yarn",
     "postinstall": "simple-git-hooks && nr license-check:generate",
