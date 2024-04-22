@@ -3,6 +3,7 @@ import z from 'zod';
 
 import { backgroundSettingsRouter } from './module/backgroundSettings/controller/backgroundSettingsController';
 import { electronUtilRouter } from './module/electronUtil/controller/electronUtilController';
+import { logInfoRouter } from './module/logInfo/logInfoCointroller';
 import * as service from './module/service';
 import { initSettingStore } from './module/settingStore';
 import { settingsRouter } from './module/settings/settingsController';
@@ -25,6 +26,7 @@ export const router = trpcRouter({
   settings: settingsRouter(),
   electronUtil: electronUtilRouter(),
   vrchatLog: vrchatLogRouter(),
+  logInfo: logInfoRouter(),
   subscribeToast: procedure.subscription(() => {
     return observable((emit) => {
       function onToast(text: string) {

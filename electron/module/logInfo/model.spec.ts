@@ -4,7 +4,6 @@ import {
   type VRChatWorldJoinLog,
   getVRChaLogInfoFromLogPath,
 } from '../vrchatLog/service';
-import type { VRChatLogFilesDirPath } from '../vrchatLogFileDir/model';
 import { getValidVRChatLogFileDir } from '../vrchatLogFileDir/service';
 import * as model from './model';
 import { resetDatabase } from './util';

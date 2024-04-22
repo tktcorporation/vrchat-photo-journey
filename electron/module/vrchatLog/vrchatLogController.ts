@@ -40,7 +40,7 @@ const appendLoglinesToFileFromLogFilePathList = async (): Promise<
   }
   const logLineList = await vrchatLogService.getLogLinesByLogFilePathList({
     logFilePathList: logFilePathList.value,
-    includes: 'Join',
+    includesList: ['[Behaviour] OnPlayerJoinComplete', '[Behaviour] Joining '],
   });
   if (logLineList.isErr()) {
     return neverthrow.err(logLineList.error);
@@ -60,6 +60,10 @@ const appendLoglinesToFileFromLogFilePathList = async (): Promise<
 export const vrchatLogRouter = () =>
   trpcRouter({
     appendLoglinesToFileFromLogFilePathList: procedure.mutation(async () => {
-      await appendLoglinesToFileFromLogFilePathList();
+      const result = await appendLoglinesToFileFromLogFilePathList();
+      if (result.isErr()) {
+        throw result.error;
+      }
+      return result.value;
     }),
   });
