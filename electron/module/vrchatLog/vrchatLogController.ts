@@ -60,6 +60,10 @@ const appendLoglinesToFileFromLogFilePathList = async (): Promise<
 export const vrchatLogRouter = () =>
   trpcRouter({
     appendLoglinesToFileFromLogFilePathList: procedure.mutation(async () => {
-      await appendLoglinesToFileFromLogFilePathList();
+      const result = await appendLoglinesToFileFromLogFilePathList();
+      if (result.isErr()) {
+        throw result.error;
+      }
+      return result.value;
     }),
   });

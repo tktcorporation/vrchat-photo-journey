@@ -6,6 +6,9 @@ import { Link } from 'react-router-dom';
 function PhotoSelector() {
   const storeLogsMutation =
     trpcReact.vrchatLog.appendLoglinesToFileFromLogFilePathList.useMutation();
+  const loadLogInfoIndexMutation =
+    trpcReact.logInfo.loadLogInfoIndex.useMutation();
+  const resetDbMutation = trpcReact.logInfo.resetDatabase.useMutation();
   return (
     <div className="flex-auto h-full">
       <div className="flex flex-col justify-center items-center h-full space-y-9">
@@ -17,6 +20,22 @@ function PhotoSelector() {
           disabled={storeLogsMutation.isLoading}
         >
           logの生成とそのデータからsqliteに流してIndexの作成
+        </Button>
+        <Button
+          onClick={() => {
+            resetDbMutation.mutate();
+          }}
+          disabled={resetDbMutation.isLoading}
+        >
+          DBのリセット
+        </Button>
+        <Button
+          onClick={() => {
+            loadLogInfoIndexMutation.mutate();
+          }}
+          disabled={loadLogInfoIndexMutation.isLoading}
+        >
+          Indexの読み込み
         </Button>
       </div>
     </div>

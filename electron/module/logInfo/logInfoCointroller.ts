@@ -1,16 +1,17 @@
 import path from 'node:path';
 import * as neverthrow from 'neverthrow';
-import { match } from 'ts-pattern';
 import { getAppUserDataPath } from '../lib/wrappedApp';
 import {
   type VRChatPlayerJoinLog,
   type VRChatWorldJoinLog,
   getLogStoreFilePath,
   getVRChaLogInfoByLogFilePathList,
-  getVRChaLogInfoFromLogPath,
 } from '../vrchatLog/service';
 import { procedure, router as trpcRouter } from './../../trpc';
 import { getRDBClient } from './model';
+import { resetDatabase } from './util';
+
+const dbPath = path.join([getAppUserDataPath(), 'db', 'log.db'].join(path.sep));
 
 export const loadIndex = async () => {
   const logStoreFilePath = getLogStoreFilePath();
@@ -28,17 +29,24 @@ export const loadIndex = async () => {
   );
 
   // TODO: singleton にするのが良さそう
-  const client = getRDBClient(
-    path.join([getAppUserDataPath(), 'db', 'log.db'].join(path.sep)),
-  );
+  const client = getRDBClient(dbPath);
   await client.createVRChatWorldJoinLog(worldJoinLogList);
   // await client.createVRChatPlayerJoinLog(playerJoinLogList);
   console.log(playerJoinLogList);
+  return neverthrow.ok(undefined);
 };
 
 export const logInfoRouter = () =>
   trpcRouter({
     loadLogInfoIndex: procedure.mutation(async () => {
-      await loadIndex();
+      const result = await loadIndex();
+      if (result.isErr()) {
+        return neverthrow.err(result.error);
+      }
+      return neverthrow.ok(result.value);
+    }),
+    resetDatabase: procedure.mutation(async () => {
+      await resetDatabase(dbPath);
+      return neverthrow.ok(undefined);
     }),
   });
