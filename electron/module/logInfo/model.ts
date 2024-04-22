@@ -26,8 +26,6 @@ import type { VRChatWorldJoinLog } from '../vrchatLog/service';
 const createVRChatWorldJoinLog =
   (prisma: PrismaClient) =>
   async (vrchatWorldJoinLogList: VRChatWorldJoinLog[]) => {
-    console.log('vrchatWorldJoinLogList', vrchatWorldJoinLogList);
-
     // すべての joinDateTime と worldInstanceId を取得
     const existingLogs = await prisma.vRChatWorldJoinLog.findMany({
       select: {
@@ -35,8 +33,6 @@ const createVRChatWorldJoinLog =
         worldInstanceId: true,
       },
     });
-
-    console.log('existingLogs', existingLogs);
 
     // Set を使用して重複チェック用のデータ構造を構築
     const existingSet = new Set(

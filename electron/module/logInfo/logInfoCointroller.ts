@@ -32,7 +32,7 @@ export const loadIndex = async () => {
   const client = getRDBClient(dbPath);
   await client.createVRChatWorldJoinLog(worldJoinLogList);
   // await client.createVRChatPlayerJoinLog(playerJoinLogList);
-  console.log(playerJoinLogList);
+  console.log('playerJoinLogList', playerJoinLogList);
   return neverthrow.ok(undefined);
 };
 

@@ -307,7 +307,7 @@ export const appendLoglinesToFile = async (props: {
     return neverthrow.ok(undefined);
   }
   // 最終行には改行を追加
-  const newLog = `${newLines.join('\n')}\n`;
+  const newLog = `${newLines.map((l) => l.value).join('\n')}\n`;
   const writeResult = await fs.appendFileAsync(
     props.logStoreFilePath.value,
     newLog,
