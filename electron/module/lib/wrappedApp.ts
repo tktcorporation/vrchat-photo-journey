@@ -7,3 +7,11 @@ import { app } from 'electron';
 export const getAppUserDataPath = () => {
   return app.getPath('userData');
 };
+
+// /**
+//  * Get the path to the app directory.
+//  * ex. C:\Program Files\app-name
+//  */
+// export const getAppPath = () => {
+//   return app.getAppPath();
+// };

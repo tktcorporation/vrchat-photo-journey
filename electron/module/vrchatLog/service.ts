@@ -12,6 +12,12 @@ import type {
 } from '../vrchatLogFileDir/model';
 import * as vrchatLogFileDirService from '../vrchatLogFileDir/service';
 import { VRChatLogFileError } from './error';
+import {
+  type VRChatLogLine,
+  VRChatLogLineSchema,
+  type VRChatLogStoreFilePath,
+  VRChatLogStoreFilePathSchema,
+} from './model';
 
 type WorldId = `wrld_${string}`;
 export interface VRChatWorldJoinLog {
@@ -45,8 +51,25 @@ export const getVRChaLogInfoFromLogPath = async (
     );
   }
 
+  const logInfoList = await getVRChaLogInfoByLogFilePathList(
+    logFilePathList.value,
+  );
+  if (logInfoList.isErr()) {
+    return neverthrow.err(logInfoList.error);
+  }
+  return neverthrow.ok(logInfoList.value);
+};
+
+export const getVRChaLogInfoByLogFilePathList = async (
+  logFilePathList: (VRChatLogFilePath | VRChatLogStoreFilePath)[],
+): Promise<
+  neverthrow.Result<
+    (VRChatWorldJoinLog | VRChatPlayerJoinLog)[],
+    VRChatLogFileError
+  >
+> => {
   const logLineList = await getLogLinesByLogFilePathList({
-    logFilePathList: logFilePathList.value,
+    logFilePathList,
     includesList: ['[Behaviour] OnPlayerJoinComplete', '[Behaviour] Joining '],
   });
   if (logLineList.isErr()) {
@@ -54,16 +77,16 @@ export const getVRChaLogInfoFromLogPath = async (
   }
 
   const logInfoList: (VRChatWorldJoinLog | VRChatPlayerJoinLog)[] =
-    convertLogLinesToWorldJoinLogInfos(logLineList.value);
+    convertLogLinesToWorldAndPlayerJoinLogInfos(logLineList.value);
 
   return neverthrow.ok(logInfoList);
 };
 
 export const getLogLinesByLogFilePathList = async (props: {
-  logFilePathList: VRChatLogFilePath[];
+  logFilePathList: (VRChatLogFilePath | VRChatLogStoreFilePath)[];
   includesList: string[];
-}): Promise<neverthrow.Result<string[], VRChatLogFileError>> => {
-  const logLineList: string[] = [];
+}): Promise<neverthrow.Result<VRChatLogLine[], VRChatLogFileError>> => {
+  const logLineList: VRChatLogLine[] = [];
   const errors: VRChatLogFileError[] = [];
   await Promise.all(
     props.logFilePathList.map(async (logFilePath) => {
@@ -75,7 +98,9 @@ export const getLogLinesByLogFilePathList = async (props: {
         errors.push(result.error);
         return;
       }
-      logLineList.push(...result.value);
+      logLineList.push(
+        ...result.value.map((line) => VRChatLogLineSchema.parse(line)),
+      );
     }),
   );
 
@@ -87,7 +112,7 @@ export const getLogLinesByLogFilePathList = async (props: {
 };
 
 const getLogLinesFromLogFileName = async (props: {
-  logFilePath: VRChatLogFilePath;
+  logFilePath: VRChatLogFilePath | VRChatLogStoreFilePath;
   includesList: string[];
 }): Promise<neverthrow.Result<string[], VRChatLogFileError>> => {
   const stream = fs.createReadStream(props.logFilePath.value);
@@ -113,18 +138,18 @@ const getLogLinesFromLogFileName = async (props: {
   return neverthrow.ok(lines);
 };
 
-const convertLogLinesToWorldJoinLogInfos = (
-  logLines: string[],
+const convertLogLinesToWorldAndPlayerJoinLogInfos = (
+  logLines: VRChatLogLine[],
 ): (VRChatWorldJoinLog | VRChatPlayerJoinLog)[] => {
   const logInfos: (VRChatWorldJoinLog | VRChatPlayerJoinLog)[] = [];
   for (const [index, l] of logLines.entries()) {
-    if (l.includes('Joining wrld')) {
+    if (l.value.includes('Joining wrld')) {
       const info = extractWorldJoinInfoFromLogs(logLines, index);
       if (info) {
         logInfos.push(info);
       }
     }
-    if (l.includes('OnPlayerJoined')) {
+    if (l.value.includes('OnPlayerJoined')) {
       const info = extractPlayerJoinInfoFromLog(l);
       if (info) {
         logInfos.push(info);
@@ -136,7 +161,7 @@ const convertLogLinesToWorldJoinLogInfos = (
 };
 
 const extractWorldJoinInfoFromLogs = (
-  logLines: string[],
+  logLines: VRChatLogLine[],
   index: number,
 ): VRChatWorldJoinLog | null => {
   const validateWorldId = (value: string): value is WorldId => {
@@ -147,7 +172,7 @@ const extractWorldJoinInfoFromLogs = (
   const logEntry = logLines[index];
   const regex =
     /(\d{4}\.\d{2}\.\d{2}) (\d{2}:\d{2}:\d{2}) .* \[Behaviour\] Joining (wrld_[a-f0-9-]+):(.*)/;
-  const matches = logEntry.match(regex);
+  const matches = logEntry.value.match(regex);
 
   if (!matches || matches.length < 4) {
     return null;
@@ -167,7 +192,7 @@ const extractWorldJoinInfoFromLogs = (
   // Extracting world name from the subsequent lines
   for (const l of logLines.slice(index + 1)) {
     const worldNameRegex = /\[Behaviour\] Joining or Creating Room: (.+)/;
-    const [, worldName] = l.match(worldNameRegex) || [];
+    const [, worldName] = l.value.match(worldNameRegex) || [];
     if (worldName && !foundWorldName) {
       foundWorldName = worldName;
     }
@@ -193,10 +218,12 @@ const extractWorldJoinInfoFromLogs = (
   );
 };
 
-const extractPlayerJoinInfoFromLog = (logLine: string): VRChatPlayerJoinLog => {
+const extractPlayerJoinInfoFromLog = (
+  logLine: VRChatLogLine,
+): VRChatPlayerJoinLog => {
   const regex =
     /(\d{4}\.\d{2}\.\d{2}) (\d{2}:\d{2}:\d{2}).*\[Behaviour\] OnPlayerJoined (\S+)/;
-  const matches = logLine.match(regex);
+  const matches = logLine.value.match(regex);
 
   if (!matches) {
     throw new Error('Log line did not match the expected format');
@@ -216,9 +243,11 @@ const extractPlayerJoinInfoFromLog = (logLine: string): VRChatPlayerJoinLog => {
   };
 };
 
-export const getLogStoreFilePath = () => {
+export const getLogStoreFilePath = (): VRChatLogStoreFilePath => {
   const userDataPath = getAppUserDataPath();
-  return path.join(userDataPath, 'logStore', 'logStore.txt');
+  return VRChatLogStoreFilePathSchema.parse(
+    path.join(userDataPath, 'logStore', 'logStore.txt'),
+  );
 };
 
 /**
@@ -227,10 +256,10 @@ export const getLogStoreFilePath = () => {
  * 最初は全部保存しようとして被ってたら辞めるでもいいかな
  */
 export const appendLoglinesToFile = async (props: {
-  logLines: string[];
-  logStoreFilePath: string;
+  logLines: VRChatLogLine[];
+  logStoreFilePath: VRChatLogStoreFilePath;
 }): Promise<neverthrow.Result<void, Error>> => {
-  const isExists = await fs.existsSyncSafe(props.logStoreFilePath);
+  const isExists = await fs.existsSyncSafe(props.logStoreFilePath.value);
   if (isExists.isErr()) {
     return neverthrow.err(
       match(isExists.error)
@@ -241,7 +270,7 @@ export const appendLoglinesToFile = async (props: {
   // ファイルが存在しない場合は新規作成
   if (!isExists.value) {
     const mkdirResult = await fs.mkdirSyncSafe(
-      path.dirname(props.logStoreFilePath),
+      path.dirname(props.logStoreFilePath.value),
     );
     if (mkdirResult.isErr()) {
       const error = match(mkdirResult.error)
@@ -253,7 +282,9 @@ export const appendLoglinesToFile = async (props: {
     }
   }
 
-  const existingLogsResult = await fs.readFileSyncSafe(props.logStoreFilePath);
+  const existingLogsResult = await fs.readFileSyncSafe(
+    props.logStoreFilePath.value,
+  );
   let existingLogs: string;
   if (existingLogsResult.isErr()) {
     const error = match(existingLogsResult.error)
@@ -270,14 +301,17 @@ export const appendLoglinesToFile = async (props: {
   // 既存のログ行と重複している行は追加しない
   const existingLines = existingLogs.split('\n');
   const newLines = props.logLines.filter(
-    (line) => !existingLines.includes(line),
+    (line) => !existingLines.includes(line.value),
   );
   if (newLines.length === 0) {
     return neverthrow.ok(undefined);
   }
   // 最終行には改行を追加
   const newLog = `${newLines.join('\n')}\n`;
-  const writeResult = await fs.appendFileAsync(props.logStoreFilePath, newLog);
+  const writeResult = await fs.appendFileAsync(
+    props.logStoreFilePath.value,
+    newLog,
+  );
   if (writeResult.isErr()) {
     const error = match(writeResult.error)
       .with({ code: 'ENOENT' }, () => new Error('appendFileAsync ENOENT'))

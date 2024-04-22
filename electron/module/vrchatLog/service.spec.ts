@@ -4,6 +4,11 @@ import { match } from 'ts-pattern';
 import * as fs from '../lib/wrappedFs';
 import type { VRChatLogFilesDirPath } from '../vrchatLogFileDir/model';
 import type { VRChatLogFileError } from './error';
+import {
+  VRChatLogLine,
+  VRChatLogLineSchema,
+  VRChatLogStoreFilePathSchema,
+} from './model';
 import * as service from './service';
 
 describe('getVRChaLogInfoFromLogPath', () => {
@@ -64,13 +69,10 @@ describe('getVRChaLogInfoFromLogPath', () => {
 
 describe('appendLoglinesToFile', () => {
   it('should-return-void', async () => {
-    const logStoreFilePath = path.join(
-      process.cwd(),
-      'debug',
-      'logs-store',
-      'test.log',
+    const logStoreFilePath = VRChatLogStoreFilePathSchema.parse(
+      path.join(process.cwd(), 'debug', 'logs-store', 'test.log'),
     );
-    const unlinkResult = await fs.unlinkAsync(logStoreFilePath);
+    const unlinkResult = await fs.unlinkAsync(logStoreFilePath.value);
     if (unlinkResult.isErr()) {
       const isThrow = match(unlinkResult.error)
         .with({ code: 'ENOENT' }, () => false)
@@ -88,7 +90,7 @@ describe('appendLoglinesToFile', () => {
       '2021.10.02 00:00:02 Log        -  Log message',
       '2021.10.02 00:00:03 Log        -  Log message',
       '2021.10.02 00:00:04 Log        -  Log message',
-    ];
+    ].map((line) => VRChatLogLineSchema.parse(line));
     const result = await appendLoglinesToFile({
       logLines,
       logStoreFilePath,
@@ -96,7 +98,7 @@ describe('appendLoglinesToFile', () => {
 
     expect(result.isOk()).toBe(true);
 
-    const logStoreFileLines = fs.readFileSyncSafe(logStoreFilePath);
+    const logStoreFileLines = fs.readFileSyncSafe(logStoreFilePath.value);
     if (logStoreFileLines.isErr()) {
       throw new Error('Unexpected error');
     }
@@ -111,7 +113,7 @@ describe('appendLoglinesToFile', () => {
       '2021.10.03 00:00:02 Log        -  Log message 2',
       '2021.10.03 00:00:03 Log        -  Log message 2',
       '2021.10.03 00:00:04 Log        -  Log message 2',
-    ];
+    ].map((line) => VRChatLogLineSchema.parse(line));
     const result_2 = await appendLoglinesToFile({
       logLines: logLines_2,
       logStoreFilePath,
@@ -119,7 +121,7 @@ describe('appendLoglinesToFile', () => {
 
     expect(result_2.isOk()).toBe(true);
 
-    const logStoreFileLines_2 = fs.readFileSyncSafe(logStoreFilePath);
+    const logStoreFileLines_2 = fs.readFileSyncSafe(logStoreFilePath.value);
     if (logStoreFileLines_2.isErr()) {
       throw new Error('Unexpected error');
     }
@@ -137,7 +139,7 @@ describe('appendLoglinesToFile', () => {
 
     expect(result_3.isOk()).toBe(true);
 
-    const logStoreFileLines_3 = fs.readFileSyncSafe(logStoreFilePath);
+    const logStoreFileLines_3 = fs.readFileSyncSafe(logStoreFilePath.value);
     if (logStoreFileLines_3.isErr()) {
       throw new Error('Unexpected error');
     }
