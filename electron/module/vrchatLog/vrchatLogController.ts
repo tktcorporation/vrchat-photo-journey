@@ -40,7 +40,7 @@ const appendLoglinesToFileFromLogFilePathList = async (): Promise<
   }
   const logLineList = await vrchatLogService.getLogLinesByLogFilePathList({
     logFilePathList: logFilePathList.value,
-    includes: 'Join',
+    includesList: ['[Behaviour] OnPlayerJoinComplete', '[Behaviour] Joining '],
   });
   if (logLineList.isErr()) {
     return neverthrow.err(logLineList.error);

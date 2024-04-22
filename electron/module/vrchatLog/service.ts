@@ -47,7 +47,7 @@ export const getVRChaLogInfoFromLogPath = async (
 
   const logLineList = await getLogLinesByLogFilePathList({
     logFilePathList: logFilePathList.value,
-    includes: 'Join',
+    includesList: ['[Behaviour] OnPlayerJoinComplete', '[Behaviour] Joining '],
   });
   if (logLineList.isErr()) {
     return neverthrow.err(logLineList.error);
@@ -61,7 +61,7 @@ export const getVRChaLogInfoFromLogPath = async (
 
 export const getLogLinesByLogFilePathList = async (props: {
   logFilePathList: VRChatLogFilePath[];
-  includes: string;
+  includesList: string[];
 }): Promise<neverthrow.Result<string[], VRChatLogFileError>> => {
   const logLineList: string[] = [];
   const errors: VRChatLogFileError[] = [];
@@ -69,7 +69,7 @@ export const getLogLinesByLogFilePathList = async (props: {
     props.logFilePathList.map(async (logFilePath) => {
       const result = await getLogLinesFromLogFileName({
         logFilePath,
-        includes: 'Join',
+        includesList: props.includesList,
       });
       if (result.isErr()) {
         errors.push(result.error);
@@ -88,7 +88,7 @@ export const getLogLinesByLogFilePathList = async (props: {
 
 const getLogLinesFromLogFileName = async (props: {
   logFilePath: VRChatLogFilePath;
-  includes: string;
+  includesList: string[];
 }): Promise<neverthrow.Result<string[], VRChatLogFileError>> => {
   const stream = fs.createReadStream(props.logFilePath.value);
   const reader = readline.createInterface({
@@ -98,7 +98,8 @@ const getLogLinesFromLogFileName = async (props: {
   const lines: string[] = [];
   reader.on('line', (line) => {
     // worldJoin も playerJoin も含むログも Join が含まれる
-    if (line.includes(props.includes)) {
+    // includesList の配列の中のどれかと一致したら追加
+    if (props.includesList.some((include) => line.includes(include))) {
       lines.push(line);
     }
   });
