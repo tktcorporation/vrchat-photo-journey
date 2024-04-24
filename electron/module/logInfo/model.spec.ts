@@ -8,12 +8,15 @@ import { getValidVRChatLogFileDir } from '../vrchatLogFileDir/service';
 import * as model from './model';
 import { resetDatabase } from './util';
 
-const dbPath = path.join(process.cwd(), 'debug', 'db', 'test.db');
+const dbPath = path.join('file://', process.cwd(), 'debug', 'db', 'test.db');
 
 describe('module/logInfo/model', () => {
   beforeAll(async () => {
+    model.initRDBClient({
+      db_url: dbPath,
+    });
     // migrate prisma db
-    await resetDatabase(dbPath);
+    await resetDatabase();
   }, 10000);
   it('has a model', async () => {
     const storedVRChatLogFilesDirPath = {
@@ -37,11 +40,11 @@ describe('module/logInfo/model', () => {
         logInfo.logType === 'worldJoin',
     );
 
-    const client = model.getRDBClient(dbPath);
+    const client = model.getRDBClient();
     await client.createVRChatWorldJoinLog(worldJoinLogList);
   });
   it('findAllVRChatWorldJoinLogList', async () => {
-    const client = model.getRDBClient(dbPath);
+    const client = model.getRDBClient();
     const result = await client.findAllVRChatWorldJoinLogList();
     expect(result.length).toBeGreaterThan(0);
   });

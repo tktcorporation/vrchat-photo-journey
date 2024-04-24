@@ -5,6 +5,7 @@ export const ROUTER_PATHS = {
   SETTING_ABOUT_APP_LICENSE: '/setting/about-app/license',
   SETTING_VRCHAT_LOG_PATH: '/setting/vrchat-log-path',
   SETTING_BACKGROUND_EXECUTION: '/setting/background-execution',
+  SETTING_DEV_DEBUG: '/setting/dev-debug',
   CLEAR_SETTINGS: '/clear-settings',
 } as const;
 export type ROUTER_PATHS = (typeof ROUTER_PATHS)[keyof typeof ROUTER_PATHS];
