@@ -2,8 +2,11 @@ import { Button } from '@/components/ui/button';
 import { ROUTER_PATHS } from '@/constants';
 import { trpcReact } from '@/trpc';
 import * as datefns from 'date-fns';
+import type React from 'react';
 import { Link } from 'react-router-dom';
 
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Table,
   TableBody,
@@ -13,6 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { useState } from 'react';
 
 function PhotoSelector() {
   const { data } = trpcReact.logInfo.getVRCWorldJoinLogList.useQuery();
@@ -45,9 +49,36 @@ function PhotoSelector() {
     );
   };
 
+  const [inputValue, setInputValue] = useState<null | string>(null);
+  const { data: recentJoinWorldData } =
+    trpcReact.logInfo.getRecentVRChatWorldJoinLogByVRChatPhotoName.useQuery(
+      inputValue || '',
+      {
+        enabled: inputValue !== null,
+      },
+    );
+
+  const onChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const fileName = e.target.value.split('\\').pop();
+    setInputValue(fileName || null);
+  };
+
   return (
     <div className="flex-auto h-full">
       <div className="flex flex-col justify-center items-center h-full space-y-9">
+        <div className="grid w-full max-w-sm items-center gap-1.5">
+          <Label htmlFor="picture">Picture</Label>
+          <Input
+            id="picture"
+            type="file"
+            content="Upload VRC Photo File"
+            onChange={onChangeInput}
+          />
+          <span>value: {inputValue}</span>
+          <span>
+            recentJoinWorldData: {JSON.stringify(recentJoinWorldData)}
+          </span>
+        </div>
         <DataTable />
       </div>
     </div>

@@ -1,28 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import type { VRChatWorldJoinLog } from '../vrchatLog/service';
 
-// const prisma = new PrismaClient({
-//   datasources: {
-//     db: {
-//       url: process.env.DATABASE_URL,
-//     },
-//   },
-// });
-
-// export const createVRChatWorldJoinLog = async (
-//   vrchatWorldJoinLogList: VRChatWorldJoinLog[],
-// ) => {
-//   const vrchatWorldJoinLog = await prisma.vRChatWorldJoinLog.createMany({
-//     data: vrchatWorldJoinLogList.map((logInfo) => ({
-//       joinDateTime: logInfo.joinDate,
-//       worldId: logInfo.worldId,
-//       worldInstanceId: logInfo.worldInstanceId,
-//       worldName: logInfo.worldName,
-//     })),
-//   });
-
-//   return vrchatWorldJoinLog;
-// };
 const createVRChatWorldJoinLog =
   (prisma: PrismaClient) =>
   async (vrchatWorldJoinLogList: VRChatWorldJoinLog[]) => {
@@ -79,23 +57,21 @@ export const findAllVRChatWorldJoinLogList =
 /**
  * 指定した日時の直前にjoinしたワールドの情報を取得する
  */
-export const findRecentVRChatWorldJoinLog = async (
-  prisma: PrismaClient,
-  dateTime: Date,
-) => {
-  const vrchatWorldJoinLog = await prisma.vRChatWorldJoinLog.findFirst({
-    where: {
-      joinDateTime: {
-        lte: dateTime,
+export const findRecentVRChatWorldJoinLog =
+  (prisma: PrismaClient) => async (dateTime: Date) => {
+    const vrchatWorldJoinLog = await prisma.vRChatWorldJoinLog.findFirst({
+      where: {
+        joinDateTime: {
+          lte: dateTime,
+        },
       },
-    },
-    orderBy: {
-      joinDateTime: 'desc',
-    },
-  });
+      orderBy: {
+        joinDateTime: 'desc',
+      },
+    });
 
-  return vrchatWorldJoinLog;
-};
+    return vrchatWorldJoinLog;
+  };
 
 let rdbClient: ReturnType<typeof _getRDBClient> | null = null;
 const _getRDBClient = (props: { db_url: string }) => {
@@ -111,6 +87,7 @@ const _getRDBClient = (props: { db_url: string }) => {
     __client: client,
     createVRChatWorldJoinLog: createVRChatWorldJoinLog(client),
     findAllVRChatWorldJoinLogList: findAllVRChatWorldJoinLogList(client),
+    findRecentVRChatWorldJoinLog: findRecentVRChatWorldJoinLog(client),
   };
 };
 export const initRDBClient = (props: { db_url: string }) => {

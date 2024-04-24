@@ -8,8 +8,12 @@ import {
 import { procedure, router as trpcRouter } from './../../trpc';
 import { getRDBClient } from './model';
 import { resetDatabase } from './util';
+import {
+  type VRChatPhotoFileNameWithExt,
+  VRChatPhotoFileNameWithExtSchema,
+} from './valueObjects';
 
-export const loadIndex = async () => {
+const loadIndex = async () => {
   const logStoreFilePath = getLogStoreFilePath();
   const logInfoList = await getVRChaLogInfoByLogFilePathList([
     logStoreFilePath,
@@ -31,10 +35,36 @@ export const loadIndex = async () => {
   return neverthrow.ok(undefined);
 };
 
-export const getVRCWorldJoinLogList = async () => {
+const getVRCWorldJoinLogList = async () => {
   const client = getRDBClient();
   const joinLogList = await client.findAllVRChatWorldJoinLogList();
   return joinLogList;
+};
+
+export const getRecentVRChatWorldJoinLogByVRChatPhotoName = async (
+  vrchatPhotoName: VRChatPhotoFileNameWithExt,
+): Promise<
+  neverthrow.Result<
+    {
+      id: string;
+      worldId: string;
+      worldName: string;
+      worldInstanceId: string;
+      joinDateTime: Date;
+      createdAt: Date;
+      updatedAt: Date;
+    },
+    'RECENT_JOIN_LOG_NOT_FOUND'
+  >
+> => {
+  const client = getRDBClient();
+  const joinLogList = await client.findRecentVRChatWorldJoinLog(
+    vrchatPhotoName.photoTakenDateTime,
+  );
+  if (joinLogList === null) {
+    return neverthrow.err('RECENT_JOIN_LOG_NOT_FOUND' as const);
+  }
+  return neverthrow.ok(joinLogList);
 };
 
 export const logInfoRouter = () =>
@@ -49,6 +79,20 @@ export const logInfoRouter = () =>
       const joinLogList = await getVRCWorldJoinLogList();
       return joinLogList;
     }),
+    getRecentVRChatWorldJoinLogByVRChatPhotoName: procedure
+      .input(VRChatPhotoFileNameWithExtSchema)
+      .query(async (ctx) => {
+        const joinLogResult =
+          await getRecentVRChatWorldJoinLogByVRChatPhotoName(ctx.input);
+        return joinLogResult.match(
+          (value) => {
+            return value;
+          },
+          (error) => {
+            throw error;
+          },
+        );
+      }),
     resetDatabase: procedure.mutation(async () => {
       await resetDatabase();
     }),
