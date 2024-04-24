@@ -13,6 +13,7 @@ import { ROUTER_PATHS } from './constants';
 import PhotoSelector from './page/Photo';
 import { AboutApp } from './page/setting/AboutApp';
 import BackGroundSettings from './page/setting/BackGroundSettings';
+import Debug from './page/setting/Debug';
 import { LicenseDisplay } from './page/setting/LicenseDisplay';
 import VRChatLogPathSetting from './page/setting/VRChatLogPathSetting';
 import TrpcWrapper from './trpcWrapper';
@@ -50,6 +51,10 @@ function Router() {
                 <Route
                   path={ROUTER_PATHS.SETTING_BACKGROUND_EXECUTION}
                   element={<BackGroundSettings />}
+                />
+                <Route
+                  path={ROUTER_PATHS.SETTING_DEV_DEBUG}
+                  element={<Debug />}
                 />
                 <Route
                   path={ROUTER_PATHS.CLEAR_SETTINGS}

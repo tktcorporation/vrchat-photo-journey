@@ -80,6 +80,9 @@ function Setting() {
           >
             アプリログを開く
           </Button>
+          <Link to={ROUTER_PATHS.SETTING_DEV_DEBUG}>
+            <Button variant="ghost">開発者向け設定</Button>
+          </Link>
         </div>
       </div>
     </div>

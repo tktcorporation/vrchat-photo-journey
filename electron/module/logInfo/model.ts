@@ -68,7 +68,11 @@ const createVRChatWorldJoinLog =
 
 export const findAllVRChatWorldJoinLogList =
   (prisma: PrismaClient) => async () => {
-    const vrchatWorldJoinLogList = await prisma.vRChatWorldJoinLog.findMany();
+    const vrchatWorldJoinLogList = await prisma.vRChatWorldJoinLog.findMany({
+      orderBy: {
+        joinDateTime: 'desc',
+      },
+    });
     return vrchatWorldJoinLogList;
   };
 

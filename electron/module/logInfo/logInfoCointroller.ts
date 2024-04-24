@@ -1,6 +1,4 @@
-import path from 'node:path';
 import * as neverthrow from 'neverthrow';
-import { getAppUserDataPath } from '../lib/wrappedApp';
 import {
   type VRChatPlayerJoinLog,
   type VRChatWorldJoinLog,
@@ -33,6 +31,12 @@ export const loadIndex = async () => {
   return neverthrow.ok(undefined);
 };
 
+export const getVRCWorldJoinLogList = async () => {
+  const client = getRDBClient();
+  const joinLogList = await client.findAllVRChatWorldJoinLogList();
+  return joinLogList;
+};
+
 export const logInfoRouter = () =>
   trpcRouter({
     loadLogInfoIndex: procedure.mutation(async () => {
@@ -40,10 +44,12 @@ export const logInfoRouter = () =>
       if (result.isErr()) {
         return neverthrow.err(result.error);
       }
-      return neverthrow.ok(result.value);
+    }),
+    getVRCWorldJoinLogList: procedure.query(async () => {
+      const joinLogList = await getVRCWorldJoinLogList();
+      return joinLogList;
     }),
     resetDatabase: procedure.mutation(async () => {
       await resetDatabase();
-      return neverthrow.ok(undefined);
     }),
   });
