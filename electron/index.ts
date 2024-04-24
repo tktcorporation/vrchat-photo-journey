@@ -1,3 +1,4 @@
+import path from 'node:path';
 // Packages
 import { type BrowserWindow, app, ipcMain } from 'electron';
 import * as log from 'electron-log';
@@ -7,9 +8,16 @@ import { router } from './api';
 import * as electronUtil from './electronUtil';
 import { getBackgroundUsecase } from './module/backGroundUsecase';
 import { getController } from './module/controller';
+import { getAppUserDataPath } from './module/lib/wrappedApp';
+import { initRDBClient } from './module/logInfo/model';
 import { initSettingStore } from './module/settingStore';
 
 const settingStore = initSettingStore('v0-settings');
+initRDBClient({
+  db_url: path.join(
+    ['file://', getAppUserDataPath(), 'db', 'log.db'].join(path.sep),
+  ),
+});
 const controller = getController(settingStore);
 
 const CHANNELS = {

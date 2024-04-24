@@ -72,18 +72,62 @@ export const findAllVRChatWorldJoinLogList =
     return vrchatWorldJoinLogList;
   };
 
-export const getRDBClient = (db_file_path: string) => {
+/**
+ * 指定した日時の直前にjoinしたワールドの情報を取得する
+ */
+export const findRecentVRChatWorldJoinLog = async (
+  prisma: PrismaClient,
+  dateTime: Date,
+) => {
+  const vrchatWorldJoinLog = await prisma.vRChatWorldJoinLog.findFirst({
+    where: {
+      joinDateTime: {
+        lte: dateTime,
+      },
+    },
+    orderBy: {
+      joinDateTime: 'desc',
+    },
+  });
+
+  return vrchatWorldJoinLog;
+};
+
+let rdbClient: ReturnType<typeof _getRDBClient> | null = null;
+const _getRDBClient = (props: { db_url: string }) => {
   const client = new PrismaClient({
     datasources: {
       db: {
-        url: `file:${db_file_path}`,
+        url: props.db_url,
       },
     },
   });
   return {
+    __db_url: props.db_url,
+    __client: client,
     createVRChatWorldJoinLog: createVRChatWorldJoinLog(client),
     findAllVRChatWorldJoinLogList: findAllVRChatWorldJoinLogList(client),
   };
+};
+export const initRDBClient = (props: { db_url: string }) => {
+  if (rdbClient !== null) {
+    if (rdbClient.__db_url !== props.db_url) {
+      throw new Error(
+        `rdbClient is already initialized with ${rdbClient.__db_url}`,
+      );
+    }
+    return rdbClient;
+  }
+  rdbClient = _getRDBClient({
+    db_url: props.db_url,
+  });
+  return rdbClient;
+};
+export const getRDBClient = () => {
+  if (rdbClient === null) {
+    throw new Error('rdbClient is not initialized');
+  }
+  return rdbClient;
 };
 
 // createVRChatWorldJoinLog()

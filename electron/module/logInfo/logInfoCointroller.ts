@@ -11,8 +11,6 @@ import { procedure, router as trpcRouter } from './../../trpc';
 import { getRDBClient } from './model';
 import { resetDatabase } from './util';
 
-const dbPath = path.join([getAppUserDataPath(), 'db', 'log.db'].join(path.sep));
-
 export const loadIndex = async () => {
   const logStoreFilePath = getLogStoreFilePath();
   const logInfoList = await getVRChaLogInfoByLogFilePathList([
@@ -28,8 +26,7 @@ export const loadIndex = async () => {
     (log): log is VRChatPlayerJoinLog => log.logType === 'playerJoin',
   );
 
-  // TODO: singleton にするのが良さそう
-  const client = getRDBClient(dbPath);
+  const client = getRDBClient();
   await client.createVRChatWorldJoinLog(worldJoinLogList);
   // await client.createVRChatPlayerJoinLog(playerJoinLogList);
   console.log('playerJoinLogList', playerJoinLogList);
@@ -46,7 +43,7 @@ export const logInfoRouter = () =>
       return neverthrow.ok(result.value);
     }),
     resetDatabase: procedure.mutation(async () => {
-      await resetDatabase(dbPath);
+      await resetDatabase();
       return neverthrow.ok(undefined);
     }),
   });
