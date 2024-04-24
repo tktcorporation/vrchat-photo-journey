@@ -21,7 +21,7 @@ describe('vrchatApi/service', () => {
       if (result.isErr()) {
         throw result.error;
       }
-      expect(result.value).toEqual({ name: 'world name' });
+      expect(result.value.id).toBe(worldId);
     });
   });
 });

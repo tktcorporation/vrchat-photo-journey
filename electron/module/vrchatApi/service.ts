@@ -106,7 +106,6 @@ export const getVrcWorldInfoByWorldId = async (
     );
   }
   const json = await response.json();
-  console.log(json);
   const result = VRChatWorldInfoFromApiSchema.safeParse(json);
   if (!result.success) {
     return neverthrow.err(
