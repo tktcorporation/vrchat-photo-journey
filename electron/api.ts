@@ -10,6 +10,7 @@ import { initRDBClient } from './module/logInfo/model';
 import * as service from './module/service';
 import { initSettingStore } from './module/settingStore';
 import { settingsRouter } from './module/settings/settingsController';
+import { vrchatApiRouter } from './module/vrchatApi/vrchatApiController';
 import { vrchatLogRouter } from './module/vrchatLog/vrchatLogController';
 import {
   eventEmitter as ee,
@@ -35,6 +36,7 @@ export const router = trpcRouter({
   electronUtil: electronUtilRouter(),
   vrchatLog: vrchatLogRouter(),
   logInfo: logInfoRouter(),
+  vrchatApi: vrchatApiRouter,
   subscribeToast: procedure.subscription(() => {
     return observable((emit) => {
       function onToast(text: string) {

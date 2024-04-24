@@ -18,6 +18,32 @@ import {
 } from '@/components/ui/table';
 import { useState } from 'react';
 
+const VRChatWorldJoinDataView = ({ vrcWorldId }: { vrcWorldId: string }) => {
+  const { data } =
+    trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery(vrcWorldId);
+  return (
+    <div>
+      {data ? (
+        <div>
+          <div>World Name: {data.name}</div>
+          {/* 画像 */}
+          <img src={data.imageUrl} alt={data.name} />
+          <div>World ID: {data.id}</div>
+          <div>World Description: {data.description}</div>
+          <div>World Capacity: {data.capacity}</div>
+          <div>World Occupants: {data.occupants}</div>
+          <div>World Author Name: {data.authorName}</div>
+          <div>World Author ID: {data.authorId}</div>
+          <div>World Tags: {data.tags.join(', ')}</div>
+          <div>World Release Status: {data.releaseStatus}</div>
+        </div>
+      ) : (
+        <div>Not Found</div>
+      )}
+    </div>
+  );
+};
+
 function PhotoSelector() {
   const { data } = trpcReact.logInfo.getVRCWorldJoinLogList.useQuery();
 
@@ -79,6 +105,9 @@ function PhotoSelector() {
             recentJoinWorldData: {JSON.stringify(recentJoinWorldData)}
           </span>
         </div>
+        {recentJoinWorldData && (
+          <VRChatWorldJoinDataView vrcWorldId={recentJoinWorldData.worldId} />
+        )}
         <DataTable />
       </div>
     </div>
