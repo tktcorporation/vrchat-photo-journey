@@ -10,7 +10,6 @@ import { getBackgroundUsecase } from './module/backGroundUsecase';
 import { getController } from './module/controller';
 import { getAppUserDataPath } from './module/lib/wrappedApp';
 import { initRDBClient } from './module/logInfo/model';
-import { resetDatabase } from './module/logInfo/util';
 import { initSettingStore } from './module/settingStore';
 
 const settingStore = initSettingStore('v0-settings');
@@ -57,14 +56,11 @@ const createOrGetMainWindow = async (): Promise<BrowserWindow> => {
 };
 
 const initializeRDBClient = async () => {
-  // TODO: db が存在するか確認
   initRDBClient({
     db_url: path.join(
       ['file://', getAppUserDataPath(), 'db', 'log.db'].join(path.sep),
     ),
   });
-  // migrate prisma db
-  await resetDatabase();
 };
 
 const initializeApp = async () => {
