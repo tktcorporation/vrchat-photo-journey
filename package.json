@@ -133,7 +133,10 @@
       {
         "from": "./assets/",
         "to": "assets"
-      }
+      },
+      "prisma/**/*",
+      "node_modules/.prisma/**/*",
+      "node_modules/@prisma/client/**/*"
     ]
   },
   "packageManager": "yarn@4.1.0"
