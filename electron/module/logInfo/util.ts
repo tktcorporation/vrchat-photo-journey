@@ -16,3 +16,16 @@ export const resetDatabase = async () => {
     ),
   );
 };
+
+export const migrateDatabase = async () => {
+  const rdbClient = getRDBClient();
+  process.env.DATABASE_URL = rdbClient.__db_url;
+  console.log('process.env.DATABASE_URL', process.env.DATABASE_URL);
+  const prismaBinary = './node_modules/.bin/prisma';
+  console.log(
+    'migrateDatabase',
+    await exec(
+      `DATABASE_URL=${process.env.DATABASE_URL} ${prismaBinary} migrate deploy`,
+    ),
+  );
+};

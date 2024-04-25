@@ -1,5 +1,6 @@
 export const ROUTER_PATHS = {
-  HOME: '/',
+  HOME: '/home',
+  START: '/',
   SETTING: '/setting',
   SETTING_ABOUT_APP: '/setting/about-app',
   SETTING_ABOUT_APP_LICENSE: '/setting/about-app/license',
