@@ -1264,15 +1264,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@prisma/client@npm:5.12.1":
-  version: 5.12.1
-  resolution: "@prisma/client@npm:5.12.1"
+"@prisma/client@npm:^5.13.0":
+  version: 5.13.0
+  resolution: "@prisma/client@npm:5.13.0"
   peerDependencies:
     prisma: "*"
   peerDependenciesMeta:
     prisma:
       optional: true
-  checksum: 10c0/ceb9dd2cf87b2d648bfda543bfd3e8ae18c575a6b4d90133c4f584ed93f9be0aa65ef47c269b234629a5f89a7b761ad971a8a8dae48ff30f2822630e8359312a
+  checksum: 10c0/19a0d08237fd7bae6009417476dc3588df77102131e3c8df01a024e5dee78417a8079d5a3dbbb3ffee7b4117067a9c10912f5084a3a40884de8fde5314fb1227
   languageName: node
   linkType: hard
 
@@ -8415,7 +8415,7 @@ __metadata:
     "@biomejs/biome": "npm:^1.6.0"
     "@heroicons/react": "npm:^2.0.18"
     "@playwright/test": "npm:^1.41.2"
-    "@prisma/client": "npm:5.12.1"
+    "@prisma/client": "npm:^5.13.0"
     "@radix-ui/react-alert-dialog": "npm:^1.0.5"
     "@radix-ui/react-label": "npm:^2.0.2"
     "@radix-ui/react-progress": "npm:^1.0.3"

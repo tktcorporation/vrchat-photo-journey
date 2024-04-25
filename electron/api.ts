@@ -1,12 +1,9 @@
 import { observable } from '@trpc/server/observable';
 import z from 'zod';
 
-import path from 'node:path';
 import { backgroundSettingsRouter } from './module/backgroundSettings/controller/backgroundSettingsController';
 import { electronUtilRouter } from './module/electronUtil/controller/electronUtilController';
-import { getAppUserDataPath } from './module/lib/wrappedApp';
 import { logInfoRouter } from './module/logInfo/logInfoCointroller';
-import { initRDBClient } from './module/logInfo/model';
 import * as service from './module/service';
 import { initSettingStore } from './module/settingStore';
 import { settingsRouter } from './module/settings/settingsController';
@@ -24,11 +21,6 @@ import {
 //   : never;
 
 const settingStore = initSettingStore('v0-settings');
-initRDBClient({
-  db_url: path.join(
-    ['file://', getAppUserDataPath(), 'db', 'log.db'].join(path.sep),
-  ),
-});
 
 export const router = trpcRouter({
   backgroundSettings: backgroundSettingsRouter(settingStore),
