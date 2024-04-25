@@ -11,6 +11,7 @@ import { ErrorFallback } from './ErrorBoundary';
 import DefaultLayout from './components/DefaultLayout';
 import { ROUTER_PATHS } from './constants';
 import PhotoSelector from './page/Photo';
+import { Start } from './page/Start';
 import { AboutApp } from './page/setting/AboutApp';
 import BackGroundSettings from './page/setting/BackGroundSettings';
 import Debug from './page/setting/Debug';
@@ -36,6 +37,7 @@ function Router() {
             <DefaultLayout>
               <Routes>
                 <Route path={ROUTER_PATHS.SETTING} element={<Setting />} />
+                <Route path={ROUTER_PATHS.START} element={<Start />} />
                 <Route
                   path={ROUTER_PATHS.SETTING_ABOUT_APP}
                   element={<AboutApp />}
