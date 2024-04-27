@@ -8,19 +8,19 @@ import { getRDBClient } from './model';
 
 const prismaBinary = './node_modules/.bin/prisma';
 
-type BufferEncoding =
-  | 'ascii'
-  | 'utf8'
-  | 'utf-8'
-  | 'utf16le'
-  | 'utf-16le'
-  | 'ucs2'
-  | 'ucs-2'
-  | 'base64'
-  | 'base64url'
-  | 'latin1'
-  | 'binary'
-  | 'hex';
+// type BufferEncoding =
+//   | 'ascii'
+//   | 'utf8'
+//   | 'utf-8'
+//   | 'utf16le'
+//   | 'utf-16le'
+//   | 'ucs2'
+//   | 'ucs-2'
+//   | 'base64'
+//   | 'base64url'
+//   | 'latin1'
+//   | 'binary'
+//   | 'hex';
 
 const execCommand = async (
   command: string,
@@ -42,17 +42,11 @@ const execCommand = async (
         }))
         .otherwise((d) => d);
 
-      if (detected.confidence > 0.2) {
-        // 確信度が高い場合のみ
-        const messageBuffer = Buffer.from(
-          error.message,
-          detected.encoding as BufferEncoding,
-        );
-        const utf8Message = iconv.decode(messageBuffer, detected.encoding);
+      const messageBuffer = Buffer.from(error.message);
+      const utf8Message = iconv.decode(messageBuffer, detected.encoding);
 
-        // UTF-8でデコードされたメッセージでエラーを再スロー
-        throw new Error(utf8Message, { cause: error });
-      }
+      // UTF-8でデコードされたメッセージでエラーを再スロー
+      throw new Error(utf8Message, { cause: error });
     }
     throw error;
   }
