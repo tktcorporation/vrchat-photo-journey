@@ -136,7 +136,8 @@
       },
       "prisma/**/*",
       "node_modules/.prisma/**/*",
-      "node_modules/@prisma/client/**/*"
+      "node_modules/@prisma/client/**/*",
+      "node_modules/.bin/prisma"
     ]
   },
   "packageManager": "yarn@4.1.0"
