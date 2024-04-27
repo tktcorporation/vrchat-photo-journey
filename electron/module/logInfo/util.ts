@@ -1,35 +1,39 @@
-import util from 'node:util';
+import { execSync } from 'node:child_process';
 import { getRDBClient } from './model';
-const exec = util.promisify(require('node:child_process').exec);
 
 // https://zenn.dev/susiyaki/articles/36a11cddd38e3a
 
-export const resetDatabase = async () => {
+const prismaBinary = './node_modules/.bin/prisma';
+
+const validatePrismaBinaryExists = () => {
+  execSync(`${prismaBinary} -v`);
+};
+
+const execPrismaCommand = async (command: string) => {
+  validatePrismaBinaryExists();
+
   const rdbClient = getRDBClient();
+  process.env.DATABASE_URL = rdbClient.__db_url;
   const execOptions = {
     env: {
-      DATABASE_URL: rdbClient.__db_url,
+      ...process.env,
     },
   };
   console.log('execOptions', execOptions);
-  const prismaBinary = './node_modules/.bin/prisma';
+
+  console.log(
+    'execPrismaCommand',
+    await execSync(`${prismaBinary} ${command}`, execOptions),
+  );
+};
+
+export const resetDatabase = async () => {
   console.log(
     'resetDatabase',
-    await exec(`${prismaBinary} migrate reset --force`, execOptions),
+    await execPrismaCommand('migrate reset --force'),
   );
 };
 
 export const migrateDatabase = async () => {
-  const rdbClient = getRDBClient();
-  const execOptions = {
-    env: {
-      DATABASE_URL: rdbClient.__db_url,
-    },
-  };
-  console.log('execOptions', execOptions);
-  const prismaBinary = './node_modules/.bin/prisma';
-  console.log(
-    'migrateDatabase',
-    await exec(`${prismaBinary} migrate deploy`, execOptions),
-  );
+  console.log('resetDatabase', await execPrismaCommand('migrate deploy'));
 };
