@@ -8,7 +8,7 @@ import { getValidVRChatLogFileDir } from '../vrchatLogFileDir/service';
 import * as model from './model';
 import { resetDatabase } from './util';
 
-const dbPath = path.join('file://', process.cwd(), 'debug', 'db', 'test.db');
+const dbPath = path.join('file:', process.cwd(), 'debug', 'db', 'test.db');
 
 describe('module/logInfo/model', () => {
   beforeAll(async () => {
