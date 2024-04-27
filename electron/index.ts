@@ -57,9 +57,7 @@ const createOrGetMainWindow = async (): Promise<BrowserWindow> => {
 
 const initializeRDBClient = async () => {
   initRDBClient({
-    db_url: path.join(
-      ['file://', getAppUserDataPath(), 'db', 'log.db'].join(path.sep),
-    ),
+    db_url: path.posix.join('file:', getAppUserDataPath(), 'db', 'log.db'),
   });
 };
 

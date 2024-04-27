@@ -14,7 +14,7 @@ export const Start = () => {
     },
   });
 
-  // 初回のみ実行
+  // TODO: 初回のみ実行するようにbackendで制御しておく？
   useEffect(() => {
     resetRdbMutation.mutate();
   }, []);
