@@ -4846,7 +4846,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"iconv-lite@npm:^0.6.2":
+"iconv-lite@npm:0.6.3, iconv-lite@npm:^0.6.2":
   version: 0.6.3
   resolution: "iconv-lite@npm:0.6.3"
   dependencies:
@@ -8455,6 +8455,7 @@ __metadata:
     electron-trpc: "npm:^0.5.2"
     electron-unhandled: "npm:^4.0.1"
     i: "npm:^0.3.7"
+    iconv-lite: "npm:0.6.3"
     jest: "npm:^29.7.0"
     license-checker: "npm:^25.0.1"
     lucide-react: "npm:^0.292.0"
