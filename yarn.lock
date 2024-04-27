@@ -5644,6 +5644,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"jschardet@npm:^3.1.2":
+  version: 3.1.2
+  resolution: "jschardet@npm:3.1.2"
+  checksum: 10c0/dd45be21cfac964fd634ffe17a251a92f1ca8bcdd517821f8aec380f32930c1548bd60a5d664b5ba601b5f838ce8419b852a3aad1ff915ae98c3209fbc9a460c
+  languageName: node
+  linkType: hard
+
 "jsesc@npm:^2.5.1":
   version: 2.5.2
   resolution: "jsesc@npm:2.5.2"
@@ -8457,6 +8464,7 @@ __metadata:
     i: "npm:^0.3.7"
     iconv-lite: "npm:0.6.3"
     jest: "npm:^29.7.0"
+    jschardet: "npm:^3.1.2"
     license-checker: "npm:^25.0.1"
     lucide-react: "npm:^0.292.0"
     neverthrow: "npm:^6.1.0"

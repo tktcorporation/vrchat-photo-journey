@@ -1743,6 +1743,13 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/js-tokens",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/js-tokens/LICENSE"
   },
+  "jschardet@3.1.2": {
+    "licenses": "LGPL-2.1+",
+    "repository": "https://github.com/aadsm/jschardet",
+    "publisher": "António Afonso",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/jschardet",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/jschardet/LICENSE"
+  },
   "jsesc@2.5.2": {
     "licenses": "MIT",
     "repository": "https://github.com/mathiasbynens/jsesc",
