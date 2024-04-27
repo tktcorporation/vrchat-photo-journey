@@ -1616,6 +1616,14 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/i",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/i/LICENSE"
   },
+  "iconv-lite@0.6.3": {
+    "licenses": "MIT",
+    "repository": "https://github.com/ashtuchkin/iconv-lite",
+    "publisher": "Alexander Shtuchkin",
+    "email": "ashtuchkin@gmail.com",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/iconv-lite",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/iconv-lite/LICENSE"
+  },
   "ieee754@1.2.1": {
     "licenses": "BSD-3-Clause",
     "repository": "https://github.com/feross/ieee754",
@@ -2516,6 +2524,15 @@
     "url": "https://feross.org",
     "path": "/workspaces/vrchat-photo-journey/node_modules/safe-buffer",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/safe-buffer/LICENSE"
+  },
+  "safer-buffer@2.1.2": {
+    "licenses": "MIT",
+    "repository": "https://github.com/ChALkeR/safer-buffer",
+    "publisher": "Nikita Skovoroda",
+    "email": "chalkerx@gmail.com",
+    "url": "https://github.com/ChALkeR",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/safer-buffer",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/safer-buffer/LICENSE"
   },
   "scheduler@0.23.0": {
     "licenses": "MIT",

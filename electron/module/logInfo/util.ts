@@ -1,12 +1,27 @@
 import { execSync } from 'node:child_process';
+import * as iconv from 'iconv-lite';
 import { getRDBClient } from './model';
 
 // https://zenn.dev/susiyaki/articles/36a11cddd38e3a
 
 const prismaBinary = './node_modules/.bin/prisma';
 
+const execCommand = async (
+  command: string,
+  options: {
+    env: { [key: string]: string | undefined };
+  },
+) => {
+  const result = execSync(command, options);
+  return iconv.decode(result, 'UTF-8');
+};
+
 const validatePrismaBinaryExists = () => {
-  execSync(`${prismaBinary} -v`);
+  execCommand(`${prismaBinary} -v`, {
+    env: {
+      ...process.env,
+    },
+  });
 };
 
 const execPrismaCommand = async (command: string) => {
@@ -23,7 +38,7 @@ const execPrismaCommand = async (command: string) => {
 
   console.log(
     'execPrismaCommand',
-    await execSync(`${prismaBinary} ${command}`, execOptions),
+    await execCommand(`${prismaBinary} ${command}`, execOptions),
   );
 };
 
