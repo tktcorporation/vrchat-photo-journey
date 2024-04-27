@@ -1,4 +1,5 @@
 import { execSync } from 'node:child_process';
+import * as log from 'electron-log';
 import * as iconv from 'iconv-lite';
 import * as jschardet from 'jschardet';
 import { match } from 'ts-pattern';
@@ -43,6 +44,11 @@ const execCommand = async (
         .otherwise((d) => d);
 
       const messageBuffer = Buffer.from(error.message);
+
+      // byte列を raw log出力
+      log.warn(`messageBuffer: ${messageBuffer}`);
+      log.warn(`raw log: ${messageBuffer.toString('hex')}`);
+
       const utf8Message = iconv.decode(messageBuffer, detected.encoding);
 
       // UTF-8でデコードされたメッセージでエラーを再スロー
