@@ -1,6 +1,7 @@
 import { execSync } from 'node:child_process';
 import * as iconv from 'iconv-lite';
 import * as jschardet from 'jschardet';
+import { match } from 'ts-pattern';
 import { getRDBClient } from './model';
 
 // https://zenn.dev/susiyaki/articles/36a11cddd38e3a
@@ -33,7 +34,14 @@ const execCommand = async (
   } catch (error) {
     if (error instanceof Error) {
       // エンコーディングを推測する
-      const detected = jschardet.detect(error.message);
+      const detected = match(jschardet.detect(error.message))
+        .with({ encoding: 'ISO-8859-2' }, (d) => ({
+          ...d,
+          encoding: 'Shift_JIS',
+          confidence: 0.3,
+        }))
+        .otherwise((d) => d);
+
       if (detected.confidence > 0.2) {
         // 確信度が高い場合のみ
         const messageBuffer = Buffer.from(
