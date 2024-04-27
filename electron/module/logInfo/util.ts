@@ -1,4 +1,4 @@
-import { execSync } from 'node:child_process';
+import { exec, execSync } from 'node:child_process';
 import * as log from 'electron-log';
 import * as iconv from 'iconv-lite';
 import * as jschardet from 'jschardet';
@@ -27,11 +27,21 @@ const execCommand = async (
   command: string,
   options: {
     env: { [key: string]: string | undefined };
+    encoding: 'utf8';
   },
 ) => {
   try {
+    exec(command, options, (error, stdout, stderr) => {
+      if (error) {
+        log.error(`exec error: ${error}`);
+        return;
+      }
+      log.info(`stdout: ${stdout}`);
+      log.info(`stderr: ${stderr}`);
+    });
+
     const result = execSync(command, options);
-    return iconv.decode(result, 'UTF-8');
+    return result.toString();
   } catch (error) {
     if (error instanceof Error) {
       // エンコーディングを推測する
@@ -63,6 +73,7 @@ const validatePrismaBinaryExists = () => {
     env: {
       ...process.env,
     },
+    encoding: 'utf8',
   });
 };
 
@@ -75,6 +86,7 @@ const execPrismaCommand = async (command: string) => {
     env: {
       ...process.env,
     },
+    encoding: 'utf8' as const,
   };
   console.log('execOptions', execOptions);
 
