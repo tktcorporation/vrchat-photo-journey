@@ -3,7 +3,7 @@ import * as log from 'electron-log';
 import * as neverthrow from 'neverthrow';
 import { P, match } from 'ts-pattern';
 // import type * as vrchatLogService from '../service/vrchatLog/vrchatLog';
-import * as fs from '../lib/wrappedFs';
+import * as fs from '../../lib/wrappedFs';
 import { getSettingStore } from '../settingStore';
 import {
   type NotValidatedVRChatLogFilesDirPath,

@@ -6,9 +6,9 @@ import { createIPCHandler } from 'electron-trpc/main';
 import unhandled from 'electron-unhandled';
 import { router } from './api';
 import * as electronUtil from './electronUtil';
+import { getAppUserDataPath } from './lib/wrappedApp';
 import { getBackgroundUsecase } from './module/backGroundUsecase';
 import { getController } from './module/controller';
-import { getAppUserDataPath } from './module/lib/wrappedApp';
 import { initRDBClient } from './module/logInfo/model';
 import { initSettingStore } from './module/settingStore';
 
