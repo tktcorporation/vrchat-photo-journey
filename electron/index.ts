@@ -57,15 +57,10 @@ const createOrGetMainWindow = async (): Promise<BrowserWindow> => {
 };
 
 const initializeRDBClient = async () => {
-  const fileURL = new URL('file://');
   const filePath = path
-    .join(getAppUserDataPath(), 'db', 'log.db')
+    .join(getAppUserDataPath(), 'db.sqlite')
     .split(path.sep)
     .join(path.posix.sep);
-  fileURL.pathname = filePath;
-  // initRDBClient({
-  //   db_url: fileURL.href,
-  // });
   sequelizeClient.initRDBClient({
     db_url: filePath,
   });

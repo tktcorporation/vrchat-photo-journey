@@ -9,7 +9,7 @@ import * as model from './s_model';
 
 import * as client from './../../lib/sequelize';
 
-const dbPath = path.join(process.cwd(), 'debug', 'db', 'test.db');
+const dbPath = path.join(process.cwd(), 'debug', 'db', 'test.sqlite');
 
 describe('module/logInfo/s_model', () => {
   beforeAll(async () => {
