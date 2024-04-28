@@ -75,5 +75,5 @@ describe('viewer_api', () => {
     const worldInfo = await res.json();
     expect(worldInfo.id).toBe(worldId);
     expect(typeof worldInfo.name).toBe('string');
-  });
+  }, 1000);
 });

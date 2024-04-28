@@ -3,7 +3,6 @@ import * as log from 'electron-log';
 import * as iconv from 'iconv-lite';
 import * as jschardet from 'jschardet';
 import { match } from 'ts-pattern';
-import { syncForceRDBClient } from '../../lib/sequelize';
 import { getRDBClient } from './model';
 
 // https://zenn.dev/susiyaki/articles/36a11cddd38e3a
@@ -100,8 +99,7 @@ const execPrismaCommand = async (command: string) => {
 export const resetDatabase = async () => {
   console.log(
     'resetDatabase',
-    // await execPrismaCommand('migrate reset --force'),
-    await syncForceRDBClient(),
+    await execPrismaCommand('migrate reset --force'),
   );
 };
 
