@@ -1,4 +1,5 @@
 import * as neverthrow from 'neverthrow';
+import { syncForceRDBClient } from '../../lib/sequelize';
 import {
   type VRChatPlayerJoinLog,
   type VRChatWorldJoinLog,
@@ -6,8 +7,9 @@ import {
   getVRChaLogInfoByLogFilePathList,
 } from '../vrchatLog/service';
 import { procedure, router as trpcRouter } from './../../trpc';
-import { getRDBClient } from './model';
-import { resetDatabase } from './util';
+import * as model from './s_model';
+// import { getRDBClient } from './model';
+// import { resetDatabase } from './util';
 import {
   type VRChatPhotoFileNameWithExt,
   VRChatPhotoFileNameWithExtSchema,
@@ -28,17 +30,25 @@ const loadIndex = async () => {
     (log): log is VRChatPlayerJoinLog => log.logType === 'playerJoin',
   );
 
-  const client = getRDBClient();
-  await client.createVRChatWorldJoinLog(worldJoinLogList);
+  await model.createVRChatWorldJoinLog(worldJoinLogList);
   // await client.createVRChatPlayerJoinLog(playerJoinLogList);
   console.log('playerJoinLogList', playerJoinLogList);
   return neverthrow.ok(undefined);
 };
 
 const getVRCWorldJoinLogList = async () => {
-  const client = getRDBClient();
-  const joinLogList = await client.findAllVRChatWorldJoinLogList();
-  return joinLogList;
+  const joinLogList = await model.findAllVRChatWorldJoinLogList();
+  return joinLogList.map((joinLog) => {
+    return {
+      id: joinLog.id as string,
+      worldId: joinLog.worldId,
+      worldName: joinLog.worldName,
+      worldInstanceId: joinLog.worldInstanceId,
+      joinDateTime: joinLog.joinDateTime,
+      createdAt: joinLog.createdAt as Date,
+      updatedAt: joinLog.updatedAt as Date,
+    };
+  });
 };
 
 export const getRecentVRChatWorldJoinLogByVRChatPhotoName = async (
@@ -57,14 +67,21 @@ export const getRecentVRChatWorldJoinLogByVRChatPhotoName = async (
     'RECENT_JOIN_LOG_NOT_FOUND'
   >
 > => {
-  const client = getRDBClient();
-  const joinLogList = await client.findRecentVRChatWorldJoinLog(
+  const joinLog = await model.findRecentVRChatWorldJoinLog(
     vrchatPhotoName.photoTakenDateTime,
   );
-  if (joinLogList === null) {
+  if (joinLog === null) {
     return neverthrow.err('RECENT_JOIN_LOG_NOT_FOUND' as const);
   }
-  return neverthrow.ok(joinLogList);
+  return neverthrow.ok({
+    id: joinLog.id as string,
+    worldId: joinLog.worldId,
+    worldName: joinLog.worldName,
+    worldInstanceId: joinLog.worldInstanceId,
+    joinDateTime: joinLog.joinDateTime,
+    createdAt: joinLog.createdAt as Date,
+    updatedAt: joinLog.updatedAt as Date,
+  });
 };
 
 export const logInfoRouter = () =>
@@ -94,6 +111,6 @@ export const logInfoRouter = () =>
         );
       }),
     resetDatabase: procedure.mutation(async () => {
-      await resetDatabase();
+      await syncForceRDBClient();
     }),
   });

@@ -5,18 +5,19 @@ import {
   getVRChaLogInfoFromLogPath,
 } from '../vrchatLog/service';
 import { getValidVRChatLogFileDir } from '../vrchatLogFileDir/service';
-import * as model from './model';
-import { resetDatabase } from './util';
+import * as model from './s_model';
 
-const dbPath = path.join('file://', process.cwd(), 'debug', 'db', 'test.db');
+import * as client from './../../lib/sequelize';
 
-describe('module/logInfo/model', () => {
+const dbPath = path.join(process.cwd(), 'debug', 'db', 'test.db');
+
+describe('module/logInfo/s_model', () => {
   beforeAll(async () => {
-    model.initRDBClient({
+    client.initRDBClient({
       db_url: dbPath,
     });
     // migrate prisma db
-    await resetDatabase();
+    await client.syncForceRDBClient();
   }, 10000);
   it('has a model', async () => {
     const storedVRChatLogFilesDirPath = {
@@ -40,12 +41,14 @@ describe('module/logInfo/model', () => {
         logInfo.logType === 'worldJoin',
     );
 
-    const client = model.getRDBClient();
-    await client.createVRChatWorldJoinLog(worldJoinLogList);
+    await model.createVRChatWorldJoinLog(worldJoinLogList);
   });
   it('findAllVRChatWorldJoinLogList', async () => {
-    const client = model.getRDBClient();
-    const result = await client.findAllVRChatWorldJoinLogList();
+    const result = await model.findAllVRChatWorldJoinLogList();
     expect(result.length).toBeGreaterThan(0);
+  });
+
+  afterAll(async () => {
+    await client.getRDBClient().__client.close();
   });
 });
