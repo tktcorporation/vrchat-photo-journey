@@ -30,13 +30,15 @@
     "pack": "nr clean:build && nr build && electron-builder --dir",
     "clean:build": "rimraf dist main src/out",
     "clean:debug": "bash debug/cleanDevFiles.sh",
-    "type-check": "tsc --noEmit",
     "find-deadcode": "ts-prune",
     "license-check:generate": "license-checker --production --json --out src/assets/licenses.json",
     "license-check:validate": "license-checker --production --failOn 'GPL;GPL-2.0;GPL-3.0;LGPL;LGPL-3.0;AGPL;AGPL-3.0;AGPL-3.0-only;'",
     "test": "jest",
     "test:playwright": "playwright install --with-deps && playwright test",
-    "lint": "nr biome check . && nr type-check",
+    "lint": "nr biome check . && nr lint:type-check",
+    "lint:type-check": "nr lint:type-check:electron && nr lint:type-check:src",
+    "lint:type-check:electron": "tsc --noEmit -p electron",
+    "lint:type-check:src": "tsc --noEmit",
     "lint:fix": "nr biome check --apply ."
   },
   "simple-git-hooks": {

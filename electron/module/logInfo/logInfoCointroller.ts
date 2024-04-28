@@ -8,8 +8,6 @@ import {
 } from '../vrchatLog/service';
 import { procedure, router as trpcRouter } from './../../trpc';
 import * as model from './s_model';
-// import { getRDBClient } from './model';
-// import { resetDatabase } from './util';
 import {
   type VRChatPhotoFileNameWithExt,
   VRChatPhotoFileNameWithExtSchema,
