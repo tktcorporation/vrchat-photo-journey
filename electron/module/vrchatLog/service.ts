@@ -2,10 +2,10 @@ import readline from 'node:readline';
 import * as datefns from 'date-fns';
 import * as neverthrow from 'neverthrow';
 import { P, match } from 'ts-pattern';
-import * as fs from '../lib/wrappedFs';
+import * as fs from '../../lib/wrappedFs';
 
 import path from 'node:path';
-import { getAppUserDataPath } from '../lib/wrappedApp';
+import { getAppUserDataPath } from '../../lib/wrappedApp';
 import type {
   VRChatLogFilePath,
   VRChatLogFilesDirPath,

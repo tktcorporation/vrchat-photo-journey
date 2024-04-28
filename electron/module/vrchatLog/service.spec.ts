@@ -1,7 +1,7 @@
 import path from 'node:path';
 import type * as neverthrow from 'neverthrow';
 import { match } from 'ts-pattern';
-import * as fs from '../lib/wrappedFs';
+import * as fs from '../../lib/wrappedFs';
 import type { VRChatLogFilesDirPath } from '../vrchatLogFileDir/model';
 import type { VRChatLogFileError } from './error';
 import {

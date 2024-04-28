@@ -20,7 +20,8 @@ debug/photos/**/VRChat*wrld*
 debug/photos/**/VRChat_*x*.png
 debug/photos/**/*.txt
 debug/logs-store/*.log
-debug/db/*.db
+debug/db/*
+!debug/db/.gitkeep
 
 # local env files
 .env.local

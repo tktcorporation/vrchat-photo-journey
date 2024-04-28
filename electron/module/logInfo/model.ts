@@ -110,13 +110,3 @@ export const getRDBClient = () => {
   }
   return rdbClient;
 };
-
-// createVRChatWorldJoinLog()
-//   .then(async () => {
-//     await prisma.$disconnect()
-//   })
-//   .catch(async (e) => {
-//     console.error(e)
-//     await prisma.$disconnect()
-//     process.exit(1)
-//   })

@@ -6,10 +6,11 @@ import { createIPCHandler } from 'electron-trpc/main';
 import unhandled from 'electron-unhandled';
 import { router } from './api';
 import * as electronUtil from './electronUtil';
+// import { initRDBClient } from './module/logInfo/model';
+import * as sequelizeClient from './lib/sequelize';
+import { getAppUserDataPath } from './lib/wrappedApp';
 import { getBackgroundUsecase } from './module/backGroundUsecase';
 import { getController } from './module/controller';
-import { getAppUserDataPath } from './module/lib/wrappedApp';
-import { initRDBClient } from './module/logInfo/model';
 import { initSettingStore } from './module/settingStore';
 
 const settingStore = initSettingStore('v0-settings');
@@ -56,14 +57,12 @@ const createOrGetMainWindow = async (): Promise<BrowserWindow> => {
 };
 
 const initializeRDBClient = async () => {
-  const fileURL = new URL('file://');
   const filePath = path
-    .join(getAppUserDataPath(), 'db', 'log.db')
+    .join(getAppUserDataPath(), 'db.sqlite')
     .split(path.sep)
     .join(path.posix.sep);
-  fileURL.pathname = filePath;
-  initRDBClient({
-    db_url: fileURL.href,
+  sequelizeClient.initRDBClient({
+    db_url: filePath,
   });
 };
 
