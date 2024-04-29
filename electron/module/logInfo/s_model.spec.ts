@@ -17,7 +17,9 @@ describe('module/logInfo/s_model', () => {
       db_url: dbPath,
     });
     // migrate prisma db
-    await client.syncForceRDBClient();
+    await client.syncRDBClient({
+      checkRequired: false,
+    });
   }, 10000);
   it('has a model', async () => {
     const storedVRChatLogFilesDirPath = {

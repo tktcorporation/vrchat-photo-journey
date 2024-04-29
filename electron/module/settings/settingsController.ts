@@ -1,15 +1,19 @@
-import path from 'node:path';
-import { app } from 'electron';
+import * as sequelizeLib from '../../lib/sequelize';
 import { procedure, router as trpcRouter } from './../../trpc';
+import { getAppVersion } from './service';
 
 export const settingsRouter = () =>
   trpcRouter({
     getAppVersion: procedure.query(async () => {
-      const packageJsonPath = path.join(app.getAppPath(), 'package.json');
-      const { version } = await import(packageJsonPath);
-      if (version === undefined) {
-        throw new Error('version is undefined');
-      }
+      const version = await getAppVersion();
       return version;
+    }),
+    forceResetDatabase: procedure.mutation(async () => {
+      await sequelizeLib.syncRDBClient({
+        checkRequired: false,
+      });
+    }),
+    syncDatabase: procedure.mutation(async () => {
+      await sequelizeLib.syncRDBClient();
     }),
   });
