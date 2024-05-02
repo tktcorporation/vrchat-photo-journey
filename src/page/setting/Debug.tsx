@@ -8,7 +8,7 @@ function Debug() {
     trpcReact.vrchatLog.appendLoglinesToFileFromLogFilePathList.useMutation();
   const loadLogInfoIndexMutation =
     trpcReact.logInfo.loadLogInfoIndex.useMutation();
-  const resetDbMutation = trpcReact.logInfo.resetDatabase.useMutation();
+  const resetDbMutation = trpcReact.settings.forceResetDatabase.useMutation();
   return (
     <div className="flex-auto h-full">
       <div className="flex flex-col justify-center items-center h-full space-y-9">

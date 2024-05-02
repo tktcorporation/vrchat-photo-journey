@@ -1,5 +1,4 @@
 import * as neverthrow from 'neverthrow';
-import { syncForceRDBClient } from '../../lib/sequelize';
 import {
   type VRChatPlayerJoinLog,
   type VRChatWorldJoinLog,
@@ -108,7 +107,4 @@ export const logInfoRouter = () =>
           },
         );
       }),
-    resetDatabase: procedure.mutation(async () => {
-      await syncForceRDBClient();
-    }),
   });

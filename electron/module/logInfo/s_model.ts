@@ -17,19 +17,6 @@ import {
 
 import type { VRChatWorldJoinLog } from '../vrchatLog/service';
 
-// model VRChatWorldJoinLog {
-//   id String @id @default(cuid())
-//   worldId String
-//   worldName String
-//   worldInstanceId String
-//   joinDateTime DateTime
-
-//   @@unique(fields: [worldInstanceId, joinDateTime])
-
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-// }
-
 const WorldInstanceIdJoinDateTimeIndex = createIndexDecorator(
   'WorldInstanceIdJoinDateTimeIndex',
   {

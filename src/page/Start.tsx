@@ -10,7 +10,7 @@ import { useEffect } from 'react';
 
 export const Start = () => {
   const navigate = useNavigate();
-  const resetRdbMutation = trpcReact.logInfo.resetDatabase.useMutation({
+  const syncRdbMutation = trpcReact.settings.syncDatabase.useMutation({
     onSuccess: () => {
       navigate(ROUTER_PATHS.HOME);
     },
@@ -22,24 +22,24 @@ export const Start = () => {
   return (
     <div className="flex-auto h-full flex flex-col space-y-9">
       <div className="w-3/5 mx-auto mt-6">
-        {resetRdbMutation.isLoading ? (
-          <div className="flex items-center justify-center h-64">
-            <Loader className="w-8 h-8" />
-          </div>
-        ) : (
-          <card.Card>
-            <card.CardHeader>
-              <card.CardTitle>sync db</card.CardTitle>
-            </card.CardHeader>
-            <card.CardContent>
-              データ構成に変更が検出されました。
-              データを初期化して同期を行います。
-            </card.CardContent>
-            <card.CardFooter>
-              <Button onClick={() => resetRdbMutation.mutate()}>開始</Button>
-            </card.CardFooter>
-          </card.Card>
-        )}
+        <card.Card>
+          <card.CardHeader>
+            <card.CardTitle>sync db</card.CardTitle>
+          </card.CardHeader>
+          <card.CardContent>
+            データ構成に変更が検出されました。
+            データを初期化して同期を行います。
+          </card.CardContent>
+          <card.CardFooter>
+            {syncRdbMutation.isLoading ? (
+              <div className="flex items-center justify-center h-64">
+                <Loader className="w-8 h-8" />
+              </div>
+            ) : (
+              <Button onClick={() => syncRdbMutation.mutate()}>開始</Button>
+            )}
+          </card.CardFooter>
+        </card.Card>
       </div>
     </div>
   );
