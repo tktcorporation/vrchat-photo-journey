@@ -1846,7 +1846,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-dialog@npm:1.0.5":
+"@radix-ui/react-dialog@npm:1.0.5, @radix-ui/react-dialog@npm:^1.0.4":
   version: 1.0.5
   resolution: "@radix-ui/react-dialog@npm:1.0.5"
   dependencies:
@@ -9641,6 +9641,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"vaul@npm:^0.9.0":
+  version: 0.9.0
+  resolution: "vaul@npm:0.9.0"
+  dependencies:
+    "@radix-ui/react-dialog": "npm:^1.0.4"
+  peerDependencies:
+    react: ^16.8 || ^17.0 || ^18.0
+    react-dom: ^16.8 || ^17.0 || ^18.0
+  checksum: 10c0/3b4290f7bbc984c7ab3784e6b5a16f6cd2f380798d8c0d1a01818f215f473ecefc6a3f5ccf6724107282a9ceb1a7f8fce8f841ae3eb70cc63b23776bd42fd9e7
+  languageName: node
+  linkType: hard
+
 "verror@npm:^1.10.0":
   version: 1.10.1
   resolution: "verror@npm:1.10.1"
@@ -9701,6 +9713,7 @@ __metadata:
     "@playwright/test": "npm:1.43.1"
     "@prisma/client": "npm:5.13.0"
     "@radix-ui/react-alert-dialog": "npm:1.0.5"
+    "@radix-ui/react-dialog": "npm:1.0.5"
     "@radix-ui/react-label": "npm:2.0.2"
     "@radix-ui/react-progress": "npm:1.0.3"
     "@radix-ui/react-scroll-area": "npm:1.0.5"
@@ -9768,6 +9781,7 @@ __metadata:
     ts-pattern: "npm:5.1.1"
     ts-prune: "npm:0.10.3"
     typescript: "npm:5.4.5"
+    vaul: "npm:^0.9.0"
     vite: "npm:5.2.10"
     zod: "npm:3.23.4"
   languageName: unknown

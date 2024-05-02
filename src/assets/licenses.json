@@ -3770,6 +3770,14 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/validator",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/validator/LICENSE"
   },
+  "vaul@0.9.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/emilkowalski/vaul",
+    "publisher": "Emil Kowalski",
+    "email": "e@emilkowal.ski",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/vaul",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/vaul/LICENSE.md"
+  },
   "vite@5.2.10": {
     "licenses": "MIT",
     "repository": "https://github.com/vitejs/vite",
@@ -3777,7 +3785,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/vite",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/vite/LICENSE.md"
   },
-  "vrchat-photo-journey@0.1.0": {
+  "vrchat-photo-journey@0.1.0-alpha.1": {
     "licenses": "UNKNOWN",
     "repository": "https://github.com/tktcorporation/add-world-name-to-vrc-photo",
     "publisher": "tktcorporation",
