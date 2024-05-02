@@ -1,5 +1,4 @@
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
 import { app } from 'electron';
 
 export const getAppVersion = async (): Promise<string> => {
@@ -8,13 +7,9 @@ export const getAppVersion = async (): Promise<string> => {
   if (appVersionDev !== undefined) {
     return appVersionDev;
   }
+  // Construct path to package.json within the asar archive
   const packageJsonPath = path.join(app.getAppPath(), 'package.json');
-  // Convert the file path to a URL format
-  const packageJsonUrl = pathToFileURL(packageJsonPath);
-  const packageJson = await import(packageJsonUrl.href, {
-    assert: { type: 'json' },
-  });
-  const version = packageJson.default.version;
+  const { version } = await import(packageJsonPath);
   if (version === undefined) {
     throw new Error('version is undefined');
   }
