@@ -11,7 +11,7 @@ permissions:
 jobs:
   vars:
     name: setup vars
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     outputs:
       app-version: ${{ steps.app-version.outputs.version }}
       is-semver-tag: ${{ steps.check-tag-format.outputs.is-semver }}
@@ -33,7 +33,7 @@ jobs:
       - name: Check tag format
         id: check-tag-format
         run: |
-          if [[ "${GITHUB_REF##*/}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          if [[ "${GITHUB_REF##*/}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+.+ ]]; then
             echo "is-semver=true" >> $GITHUB_OUTPUT
           else
             echo "is-semver=false" >> $GITHUB_OUTPUT
@@ -45,7 +45,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest]
+        os: [windows-latest, ubuntu-22.04]
     
     steps:
       - name: Checkout code
@@ -77,10 +77,10 @@ jobs:
     needs:
       - build
       - vars
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       WIN_ARTIFACT: app-windows-latest-v${{ needs.vars.outputs.app-version }}
-      UBUNTU_ARTIFACT: app-ubuntu-latest-v${{ needs.vars.outputs.app-version }}
+      UBUNTU_ARTIFACT: app-ubuntu-22.04-v${{ needs.vars.outputs.app-version }}
 
     steps:
       - name: Download artifacts
