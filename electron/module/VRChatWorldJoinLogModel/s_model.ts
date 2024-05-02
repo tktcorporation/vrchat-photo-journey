@@ -123,7 +123,7 @@ export const findNextVRChatWorldJoinLog = async (dateTime: Date) => {
   const vrchatWorldJoinLog = await VRChatWorldJoinLogModel.findOne({
     where: {
       joinDateTime: {
-        [Op.gte]: dateTime,
+        [Op.gt]: dateTime,
       },
     },
     order: [['joinDateTime', 'ASC']],
