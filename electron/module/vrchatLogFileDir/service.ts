@@ -143,7 +143,7 @@ export const getVRChatLogFilePathList = async (
           `${path.join(vrChatlogFilesDir.value, fileName.name)}`,
         );
       } catch (e) {
-        log.warn(e);
+        log.debug('generally ignore this log', e);
         return null;
       }
     })
