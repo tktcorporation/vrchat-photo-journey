@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { app } from 'electron';
 
 export const getAppVersion = async (): Promise<string> => {
@@ -8,7 +9,9 @@ export const getAppVersion = async (): Promise<string> => {
     return appVersionDev;
   }
   const packageJsonPath = path.join(app.getAppPath(), 'package.json');
-  const packageJson = await import(packageJsonPath, {
+  // Convert the file path to a URL format
+  const packageJsonUrl = pathToFileURL(packageJsonPath);
+  const packageJson = await import(packageJsonUrl.href, {
     assert: { type: 'json' },
   });
   const version = packageJson.default.version;
@@ -16,7 +19,7 @@ export const getAppVersion = async (): Promise<string> => {
     throw new Error('version is undefined');
   }
   if (typeof version !== 'string') {
-    throw new Error('version is not string');
+    throw new Error('version is not a string');
   }
   return version;
 };
