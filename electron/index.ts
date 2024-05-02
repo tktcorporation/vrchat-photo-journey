@@ -15,6 +15,13 @@ import { initSettingStore } from './module/settingStore';
 
 const settingStore = initSettingStore('v0-settings');
 const controller = getController(settingStore);
+if (process.env.NODE_ENV === 'production') {
+  log.transports.file.level = 'warn';
+  log.transports.console.level = 'warn';
+} else {
+  log.transports.file.level = 'debug';
+  log.transports.console.level = 'debug';
+}
 
 const CHANNELS = {
   CLEAR_ALL_STORED_SETTINGS: 'clear-all-stored-settings',
