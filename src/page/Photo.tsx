@@ -78,9 +78,11 @@ const VRChatWorldJoinDataView = ({
     <div>
       {data ? (
         <div>
-          <div>World Name: {data.name}</div>
           {/* 画像 */}
-          <img src={data.imageUrl} alt={data.name} />
+          <div className="w-64">
+            <img src={data.imageUrl} alt={data.name} />
+          </div>
+          <div className="text-lg">{data.name}</div>
           <div>World ID: {data.id}</div>
           <div>World Description: {data.description}</div>
           <div>World Capacity: {data.capacity}</div>
