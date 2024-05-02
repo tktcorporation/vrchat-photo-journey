@@ -100,6 +100,9 @@ export const findAllVRChatWorldJoinLogList = async () => {
   return vrchatWorldJoinLogList;
 };
 
+/**
+ * 指定した日時から計算して直前にjoinしたワールドの情報を取得する
+ */
 export const findRecentVRChatWorldJoinLog = async (dateTime: Date) => {
   const vrchatWorldJoinLog = await VRChatWorldJoinLogModel.findOne({
     where: {
@@ -108,6 +111,22 @@ export const findRecentVRChatWorldJoinLog = async (dateTime: Date) => {
       },
     },
     order: [['joinDateTime', 'DESC']],
+  });
+
+  return vrchatWorldJoinLog;
+};
+
+/**
+ * 指定した日時から計算して直後にjoinしたワールドの情報を取得する
+ */
+export const findNextVRChatWorldJoinLog = async (dateTime: Date) => {
+  const vrchatWorldJoinLog = await VRChatWorldJoinLogModel.findOne({
+    where: {
+      joinDateTime: {
+        [Op.gte]: dateTime,
+      },
+    },
+    order: [['joinDateTime', 'ASC']],
   });
 
   return vrchatWorldJoinLog;

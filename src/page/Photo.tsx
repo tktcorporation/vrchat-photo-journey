@@ -17,8 +17,61 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useState } from 'react';
+import { P, match } from 'ts-pattern';
 
-const VRChatWorldJoinDataView = ({ vrcWorldId }: { vrcWorldId: string }) => {
+const PlayerJoinData = ({
+  joinDateTime,
+}: { joinDateTime: Date }): React.ReactElement => {
+  const playerJoinQueryResult =
+    trpcReact.logInfo.getPlayerListInSameWorld.useQuery(joinDateTime);
+
+  return match(playerJoinQueryResult)
+    .with({ status: 'loading' }, () => <div>Loading...</div>)
+    .with({ status: 'error' }, (result) => (
+      <div>
+        <div>Error: {result.error.message}</div>
+      </div>
+    ))
+    .with({ status: 'success', error: null }, (successResult) =>
+      match(successResult.data)
+        .with({ errorMessage: P.string }, (error) => (
+          <div>Error: {error.errorMessage}</div>
+        ))
+        .with(P.array(), (playerData) => (
+          <div>
+            <Table>
+              <TableCaption>Player List</TableCaption>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Player Name</TableHead>
+                  <TableHead>Join Date</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {playerData.map((player) => (
+                  <TableRow key={player.id}>
+                    <TableCell>{player.playerName}</TableCell>
+                    <TableCell>
+                      {datefns.format(
+                        player.joinDateTime,
+                        'yyyy-MM-dd HH:mm:ss',
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        ))
+        .exhaustive(),
+    )
+    .exhaustive();
+};
+
+const VRChatWorldJoinDataView = ({
+  vrcWorldId,
+  joinDateTime,
+}: { vrcWorldId: string; joinDateTime: Date }) => {
   const { data } =
     trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery(vrcWorldId);
   return (
@@ -36,6 +89,9 @@ const VRChatWorldJoinDataView = ({ vrcWorldId }: { vrcWorldId: string }) => {
           <div>World Author ID: {data.authorId}</div>
           <div>World Tags: {data.tags.join(', ')}</div>
           <div>World Release Status: {data.releaseStatus}</div>
+
+          {/* 一緒にいたplayer */}
+          <PlayerJoinData joinDateTime={joinDateTime} />
         </div>
       ) : (
         <div>Not Found</div>
@@ -106,7 +162,10 @@ function PhotoSelector() {
           </span>
         </div>
         {recentJoinWorldData && (
-          <VRChatWorldJoinDataView vrcWorldId={recentJoinWorldData.worldId} />
+          <VRChatWorldJoinDataView
+            vrcWorldId={recentJoinWorldData.worldId}
+            joinDateTime={recentJoinWorldData.joinDateTime}
+          />
         )}
         <DataTable />
       </div>
