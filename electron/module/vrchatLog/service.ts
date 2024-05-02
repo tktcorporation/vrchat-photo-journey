@@ -149,7 +149,7 @@ const convertLogLinesToWorldAndPlayerJoinLogInfos = (
         logInfos.push(info);
       }
     }
-    if (l.value.includes('OnPlayerJoined')) {
+    if (l.value.includes('OnPlayerJoinComplete')) {
       const info = extractPlayerJoinInfoFromLog(l);
       if (info) {
         logInfos.push(info);
@@ -222,7 +222,7 @@ const extractPlayerJoinInfoFromLog = (
   logLine: VRChatLogLine,
 ): VRChatPlayerJoinLog => {
   const regex =
-    /(\d{4}\.\d{2}\.\d{2}) (\d{2}:\d{2}:\d{2}).*\[Behaviour\] OnPlayerJoined (\S+)/;
+    /(\d{4}\.\d{2}\.\d{2}) (\d{2}:\d{2}:\d{2}).*\[Behaviour\] OnPlayerJoinComplete (\S+)/;
   const matches = logLine.value.match(regex);
 
   if (!matches) {

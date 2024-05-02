@@ -42,6 +42,7 @@ export class VRChatPlayerJoinLogModel extends Model<
 
   @Attribute(DataTypes.STRING)
   @NotNull
+  @PlayerNameJoinDateTimeIndex
   declare playerName: string;
 
   @Attribute(DataTypes.DATE)
@@ -56,17 +57,29 @@ export class VRChatPlayerJoinLogModel extends Model<
 export const createVRChatPlayerJoinLog = async (
   playerJoinLogList: VRChatPlayerJoinLog[],
 ): Promise<void> => {
-  await VRChatPlayerJoinLogModel.bulkCreate(
-    playerJoinLogList.map((playerJoinLog) => {
-      return {
-        playerName: playerJoinLog.playerName,
-        joinDateTime: playerJoinLog.joinDate,
-      };
-    }),
-    {
-      updateOnDuplicate: ['joinDateTime', 'playerName'],
-    },
+  const existingLogs = await VRChatPlayerJoinLogModel.findAll({
+    attributes: ['joinDateTime', 'playerName'],
+  });
+
+  const existingSet = new Set(
+    existingLogs.map(
+      (log) => `${log.joinDateTime.toISOString()}|${log.playerName}`,
+    ),
   );
+
+  const newLogs = playerJoinLogList
+    .filter((logInfo) => {
+      const key = `${logInfo.joinDate.toISOString()}|${logInfo.playerName}`;
+      return !existingSet.has(key);
+    })
+    .map((logInfo) => ({
+      joinDateTime: logInfo.joinDate,
+      playerName: logInfo.playerName,
+    }));
+
+  if (newLogs.length > 0) {
+    await VRChatPlayerJoinLogModel.bulkCreate(newLogs);
+  }
 };
 
 /**
