@@ -1,4 +1,7 @@
 import * as neverthrow from 'neverthrow';
+import z from 'zod';
+import * as playerJoinLogService from '../VRChatPlayerJoinLogModel/playerJoinLog.service';
+import * as worldJoinLogService from '../VRChatWorldJoinLogModel/service';
 import {
   type VRChatPlayerJoinLog,
   type VRChatWorldJoinLog,
@@ -6,7 +9,6 @@ import {
   getVRChaLogInfoByLogFilePathList,
 } from '../vrchatLog/service';
 import { procedure, router as trpcRouter } from './../../trpc';
-import * as model from './s_model';
 import {
   type VRChatPhotoFileNameWithExt,
   VRChatPhotoFileNameWithExtSchema,
@@ -27,14 +29,14 @@ const loadIndex = async () => {
     (log): log is VRChatPlayerJoinLog => log.logType === 'playerJoin',
   );
 
-  await model.createVRChatWorldJoinLog(worldJoinLogList);
-  // await client.createVRChatPlayerJoinLog(playerJoinLogList);
-  console.log('playerJoinLogList', playerJoinLogList);
+  await worldJoinLogService.createVRChatWorldJoinLogModel(worldJoinLogList);
+  await playerJoinLogService.createVRChatPlayerJoinLogModel(playerJoinLogList);
+
   return neverthrow.ok(undefined);
 };
 
 const getVRCWorldJoinLogList = async () => {
-  const joinLogList = await model.findAllVRChatWorldJoinLogList();
+  const joinLogList = await worldJoinLogService.findAllVRChatWorldJoinLogList();
   return joinLogList.map((joinLog) => {
     return {
       id: joinLog.id as string,
@@ -64,7 +66,7 @@ export const getRecentVRChatWorldJoinLogByVRChatPhotoName = async (
     'RECENT_JOIN_LOG_NOT_FOUND'
   >
 > => {
-  const joinLog = await model.findRecentVRChatWorldJoinLog(
+  const joinLog = await worldJoinLogService.findRecentVRChatWorldJoinLog(
     vrchatPhotoName.photoTakenDateTime,
   );
   if (joinLog === null) {
@@ -79,6 +81,50 @@ export const getRecentVRChatWorldJoinLogByVRChatPhotoName = async (
     createdAt: joinLog.createdAt as Date,
     updatedAt: joinLog.updatedAt as Date,
   });
+};
+
+const getPlayerJoinListInSameWorld = async (
+  datetime: Date,
+): Promise<
+  neverthrow.Result<
+    {
+      id: string;
+      playerId: string | null;
+      playerName: string;
+      joinDateTime: Date;
+      createdAt: Date;
+      updatedAt: Date;
+    }[],
+    'RECENT_JOIN_LOG_NOT_FOUND'
+  >
+> => {
+  const recentWorldJoin =
+    await worldJoinLogService.findRecentVRChatWorldJoinLog(datetime);
+  if (recentWorldJoin === null) {
+    return neverthrow.err('RECENT_JOIN_LOG_NOT_FOUND' as const);
+  }
+
+  const nextWorldJoin =
+    await worldJoinLogService.findNextVRChatWorldJoinLog(datetime);
+
+  const playerJoinLogList =
+    await playerJoinLogService.getVRChatPlayerJoinLogListByJoinDateTime({
+      startJoinDateTime: recentWorldJoin.joinDateTime,
+      endJoinDateTime: nextWorldJoin?.joinDateTime ?? null,
+    });
+
+  return neverthrow.ok(
+    playerJoinLogList.map((playerJoinLog) => {
+      return {
+        id: playerJoinLog.id as string,
+        playerId: playerJoinLog.playerId,
+        playerName: playerJoinLog.playerName,
+        joinDateTime: playerJoinLog.joinDateTime,
+        createdAt: playerJoinLog.createdAt as Date,
+        updatedAt: playerJoinLog.updatedAt as Date,
+      };
+    }),
+  );
 };
 
 export const logInfoRouter = () =>
@@ -107,4 +153,15 @@ export const logInfoRouter = () =>
           },
         );
       }),
+    getPlayerListInSameWorld: procedure.input(z.date()).query(async (ctx) => {
+      const playerJoinLogListResult = await getPlayerJoinListInSameWorld(
+        ctx.input,
+      );
+      if (playerJoinLogListResult.isErr()) {
+        return {
+          errorMessage: playerJoinLogListResult.error,
+        };
+      }
+      return playerJoinLogListResult.value;
+    }),
   });

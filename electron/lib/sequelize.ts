@@ -2,7 +2,8 @@ import { Sequelize } from '@sequelize/core';
 import { SqliteDialect } from '@sequelize/sqlite3';
 import * as log from 'electron-log';
 import { match } from 'ts-pattern';
-import { VRChatWorldJoinLogModel } from '../module/logInfo/s_model';
+import { VRChatPlayerJoinLogModel } from '../module/VRChatPlayerJoinLogModel/playerJoinInfoLog.model';
+import { VRChatWorldJoinLogModel } from '../module/VRChatWorldJoinLogModel/s_model';
 import * as settingService from './../module/settings/service';
 import { Migrations } from './sequelize/migrations.model';
 
@@ -12,7 +13,7 @@ const _getRDBClient = (props: { db_url: string }) => {
   const sequelizeOptions = {
     dialect: SqliteDialect,
     storage: props.db_url,
-    models: [VRChatWorldJoinLogModel, Migrations],
+    models: [VRChatWorldJoinLogModel, VRChatPlayerJoinLogModel, Migrations],
   };
   log.info(`sequelizeOptions: ${JSON.stringify(sequelizeOptions)}`);
   const client = new Sequelize(sequelizeOptions);
@@ -66,10 +67,11 @@ export const syncRDBClient = async (options?: {
 
 const resetRDB = async (appVersion: string) => {
   // migration 実行
-  await getRDBClient().__client.sync({
+  const result = await getRDBClient().__client.sync({
     force: true,
     alter: true,
   });
+  log.info('forceSyncRDB', result.options);
 
   // migration のバージョンを保存
   await Migrations.create({
