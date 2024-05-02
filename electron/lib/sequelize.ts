@@ -67,13 +67,11 @@ export const syncRDBClient = async (options?: {
 
 const resetRDB = async (appVersion: string) => {
   // migration 実行
-  log.info(
-    'forceSyncRDB',
-    await getRDBClient().__client.sync({
-      force: true,
-      alter: true,
-    }),
-  );
+  const result = await getRDBClient().__client.sync({
+    force: true,
+    alter: true,
+  });
+  log.info('forceSyncRDB', result.options);
 
   // migration のバージョンを保存
   await Migrations.create({
