@@ -16,7 +16,7 @@ describe('module/logInfo/s_model', () => {
     client.initRDBClient({
       db_url: dbPath,
     });
-    // migrate prisma db
+    // migrate db
     await client.syncRDBClient({
       checkRequired: false,
     });
