@@ -120,7 +120,7 @@ const clearStoredSetting =
   };
 
 import path from 'node:path';
-import * as log from 'electron-log';
+import * as log from './../lib/logger';
 let settingStore: ReturnType<typeof setSettingStore> | null = null;
 const setSettingStore = (name: storeName) => {
   const store = new Store({ name });

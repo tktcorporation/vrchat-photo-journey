@@ -1,11 +1,11 @@
 import path from 'node:path';
 // Packages
 import { type BrowserWindow, app, ipcMain } from 'electron';
-import * as log from 'electron-log';
 import { createIPCHandler } from 'electron-trpc/main';
 import unhandled from 'electron-unhandled';
 import { router } from './api';
 import * as electronUtil from './electronUtil';
+import * as log from './lib/logger';
 // import { initRDBClient } from './module/logInfo/model';
 import * as sequelizeClient from './lib/sequelize';
 import { getAppUserDataPath } from './lib/wrappedApp';
@@ -15,13 +15,6 @@ import { initSettingStore } from './module/settingStore';
 
 const settingStore = initSettingStore('v0-settings');
 const controller = getController(settingStore);
-if (process.env.NODE_ENV === 'production') {
-  log.transports.file.level = 'warn';
-  log.transports.console.level = 'warn';
-} else {
-  log.transports.file.level = 'debug';
-  log.transports.console.level = 'debug';
-}
 
 const CHANNELS = {
   CLEAR_ALL_STORED_SETTINGS: 'clear-all-stored-settings',

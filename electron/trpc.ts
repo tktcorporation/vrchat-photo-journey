@@ -1,8 +1,8 @@
 import { EventEmitter } from 'node:events';
 import { initTRPC } from '@trpc/server';
-import * as log from 'electron-log';
 import { stackWithCauses } from 'pony-cause';
 import superjson from 'superjson';
+import * as log from './lib/logger';
 
 const eventEmitter = new EventEmitter();
 

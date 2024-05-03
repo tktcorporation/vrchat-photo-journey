@@ -1,7 +1,7 @@
 import type * as neverthrow from 'neverthrow';
 
 import path from 'node:path';
-import * as log from 'electron-log';
+import * as log from './../lib/logger';
 // import * as infoFileService from './joinLogInfoFile/service';
 // import { getToCreateWorldJoinLogInfos } from './joinLogInfoFile/service';
 // import { YearMonthPathNotFoundError } from './service/error';
@@ -44,7 +44,7 @@ export const openPathOnExplorer = (filePath: string) => {
 };
 
 export const openElectronLogOnExplorer = async () => {
-  const electronLogPath = log.transports.file.getFile().path;
+  const electronLogPath = log.electronLogFilePath;
   log.debug(`electronLogPath ${electronLogPath}`);
   return utilsService.openPathInExplorer(electronLogPath);
 };
