@@ -1,10 +1,10 @@
 import { Sequelize } from '@sequelize/core';
 import { SqliteDialect } from '@sequelize/sqlite3';
-import * as log from 'electron-log';
 import { match } from 'ts-pattern';
 import { VRChatPlayerJoinLogModel } from '../module/VRChatPlayerJoinLogModel/playerJoinInfoLog.model';
 import { VRChatWorldJoinLogModel } from '../module/VRChatWorldJoinLogModel/s_model';
 import * as settingService from './../module/settings/service';
+import * as log from './logger';
 import { Migrations } from './sequelize/migrations.model';
 
 let rdbClient: ReturnType<typeof _getRDBClient> | null = null;

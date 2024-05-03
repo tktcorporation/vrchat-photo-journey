@@ -14,7 +14,7 @@ import {
 } from 'electron';
 import type { Event } from 'electron';
 import isDev from 'electron-is-dev';
-import * as log from 'electron-log';
+import * as log from './lib/logger';
 // import * as joinLogInfoFileService from './module/joinLogInfoFile/service';
 
 const height = 600;

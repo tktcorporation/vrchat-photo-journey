@@ -1,10 +1,10 @@
 import path from 'node:path';
-import * as log from 'electron-log';
 import * as neverthrow from 'neverthrow';
 import { P, match } from 'ts-pattern';
 // import type * as vrchatLogService from '../service/vrchatLog/vrchatLog';
 import * as fs from '../../lib/wrappedFs';
 import { getSettingStore } from '../settingStore';
+import * as log from './../../lib/logger';
 import {
   type NotValidatedVRChatLogFilesDirPath,
   NotValidatedVRChatLogFilesDirPathSchema,
