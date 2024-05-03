@@ -18,7 +18,7 @@
   "productName": "vrchat-photo-journey",
   "scripts": {
     "preinstall": "nlx only-allow yarn",
-    "postinstall": "prisma generate && simple-git-hooks && nr license-check:generate",
+    "postinstall": "simple-git-hooks && nr license-check:generate",
     "setup:debug": "bash debug/genDevFiles.sh",
     "dev": "./scripts/dev.sh",
     "dev:vite": "vite",
@@ -50,7 +50,6 @@
   },
   "dependencies": {
     "@heroicons/react": "2.1.3",
-    "@prisma/client": "5.13.0",
     "@radix-ui/react-alert-dialog": "1.0.5",
     "@radix-ui/react-dialog": "1.0.5",
     "@radix-ui/react-label": "2.0.2",
@@ -83,7 +82,6 @@
     "neverthrow": "6.2.1",
     "opentype.js": "1.3.4",
     "pony-cause": "2.1.11",
-    "prisma": "5.13.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-error-boundary": "4.0.13",
@@ -141,11 +139,7 @@
       {
         "from": "./assets/",
         "to": "assets"
-      },
-      "prisma/**/*",
-      "node_modules/.prisma/**/*",
-      "node_modules/@prisma/client/**/*",
-      "node_modules/.bin/prisma"
+      }
     ]
   },
   "packageManager": "yarn@4.1.0"
