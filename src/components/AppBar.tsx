@@ -1,4 +1,8 @@
+import { ROUTER_PATHS } from '@/constants';
+import { cn } from '@/lib/utils';
+import { Maximize, Minus, SettingsIcon, X } from 'lucide-react';
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 function AppBar() {
   const [isMaximize, setMaximize] = useState(false);
@@ -13,28 +17,34 @@ function AppBar() {
   };
 
   return (
-    <div className="py-0.5 flex justify-end draggable">
+    <div className="py-1 flex justify-between draggable bg-background text-sm justify-items-center">
+      <div className="undraggable ml-4">
+        <Link to={ROUTER_PATHS.SETTING} className={cn('')}>
+          <SettingsIcon strokeWidth={1} size={20} />
+          <span className="sr-only">設定画面へ</span>
+        </Link>
+      </div>
       <div className="inline-flex -mt-1">
         <button
           onClick={window.Main.Minimize}
-          className="undraggable md:px-4 lg:px-3 pt-1 hover:bg-gray-300"
+          className="undraggable pt-1 hover:bg-muted"
           type="button"
         >
-          &#8211;
+          <Minus strokeWidth={1} size={20} />
         </button>
         <button
           onClick={handleToggle}
-          className="undraggable px-6 lg:px-5 pt-1 hover:bg-gray-300"
+          className="undraggable px-6 lg:px-5 pt-1 hover:bg-muted"
           type="button"
         >
-          {isMaximize ? '\u2752' : '\u2750'}
+          {isMaximize ? '\u2752' : <Maximize strokeWidth={1} size={20} />}
         </button>
         <button
           onClick={window.Main.Close}
-          className="undraggable px-4 pt-1 hover:bg-red-500 hover:text-white"
+          className="undraggable hover:bg-red-500 hover:text-white py-1 px-2"
           type="button"
         >
-          &#10005;
+          <X strokeWidth={1} size={20} />
         </button>
       </div>
     </div>

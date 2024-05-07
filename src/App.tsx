@@ -74,12 +74,7 @@ function Router() {
 
 function App() {
   return (
-    <div className="flex flex-col h-screen font-sans">
-      <div className="shadow-sm z-10">{window.Main && <AppBar />}</div>
-      <div className="overflow-hidden flex-grow">
-        {window.Main && <Router />}
-      </div>
-    </div>
+    <div className="flex flex-col h-screen">{window.Main && <Router />}</div>
   );
 }
 

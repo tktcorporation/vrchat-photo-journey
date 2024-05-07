@@ -30,7 +30,7 @@ function createWindow(): BrowserWindow {
     show: true,
     resizable: true,
     fullscreenable: true,
-    backgroundColor: '#fff',
+    backgroundColor: '#f6f6f6',
     webPreferences: {
       preload: join(__dirname, 'preload.js'),
     },
