@@ -15,7 +15,7 @@ const MainNav = ({
   return (
     <nav
       className={cn(
-        'flex items-center space-x-4 lg:space-x-6 bg-muted py-2 justify-between',
+        'flex items-center space-x-4 lg:space-x-6 bg-background py-2 justify-between',
         className,
       )}
       {...props}

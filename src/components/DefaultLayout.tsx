@@ -1,4 +1,5 @@
 import type React from 'react';
+import AppBar from './AppBar';
 import MainNav from './MainNav';
 
 type Props = {
@@ -6,12 +7,14 @@ type Props = {
 };
 function DefaultLayout({ children }: Props) {
   return (
-    <div className="flex flex-col h-full">
-      <div>
-        <MainNav />
+    <>
+      <div className="z-10">{window.Main && <AppBar />}</div>
+      <div className="overflow-hidden flex-grow">
+        <div className="flex flex-col h-full rounded">
+          <div className="overflow-auto flex-grow">{children}</div>
+        </div>
       </div>
-      <div className="overflow-auto flex-grow">{children}</div>
-    </div>
+    </>
   );
 }
 

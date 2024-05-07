@@ -26,6 +26,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Globe, Image } from 'lucide-react';
 import { useState } from 'react';
 import { P, match } from 'ts-pattern';
 
@@ -173,36 +174,52 @@ function PhotoSelector() {
   };
 
   return (
-    <div className="flex-auto h-full">
-      <Drawer
-        open={isOpened}
-        onClose={() => setIsOpened(false)}
-        onOpenChange={(open) => setIsOpened(open)}
-        onRelease={(_, open) => setIsOpened(open)}
-      >
-        <div className="flex flex-col justify-center items-center h-full space-y-9">
-          <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor="picture">Picture</Label>
-            <Input
-              id="picture"
-              type="file"
-              content="Upload VRC Photo File"
-              onChange={onChangeInput}
-            />
-
-            <DrawerTrigger>Open</DrawerTrigger>
+    <div className="flex flex-auto h-full p-5 space-x-4">
+      <div className="space-x-2 flex">
+        <Button
+          variant="secondary"
+          onClick={() => setIsOpened(true)}
+          className="rounded-lg"
+        >
+          <Globe strokeWidth={1} size={20} />
+        </Button>
+        <Button
+          variant="secondary"
+          onClick={() => setIsOpened(true)}
+          className="rounded-lg"
+        >
+          <Image strokeWidth={1} size={20} />
+        </Button>
+      </div>
+      <div className="flex-auto bg-card rounded-lg">
+        <Drawer
+          open={isOpened}
+          onClose={() => setIsOpened(false)}
+          onOpenChange={(open) => setIsOpened(open)}
+          onRelease={(_, open) => setIsOpened(open)}
+        >
+          <div className="flex flex-col justify-center items-center h-full space-y-9">
+            <div className="grid w-full max-w-sm items-center gap-1.5">
+              <Label htmlFor="picture">Picture</Label>
+              <Input
+                id="picture"
+                type="file"
+                content="Upload VRC Photo File"
+                onChange={onChangeInput}
+              />
+            </div>
+            <DataTable />
           </div>
-          <DataTable />
-        </div>
-        <DrawerContent>
-          {recentJoinWorldData && (
-            <VRChatWorldJoinDataView
-              vrcWorldId={recentJoinWorldData.worldId}
-              joinDateTime={recentJoinWorldData.joinDateTime}
-            />
-          )}
-        </DrawerContent>
-      </Drawer>
+          <DrawerContent>
+            {recentJoinWorldData && (
+              <VRChatWorldJoinDataView
+                vrcWorldId={recentJoinWorldData.worldId}
+                joinDateTime={recentJoinWorldData.joinDateTime}
+              />
+            )}
+          </DrawerContent>
+        </Drawer>
+      </div>
     </div>
   );
 }
