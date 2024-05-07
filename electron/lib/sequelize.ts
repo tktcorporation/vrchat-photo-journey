@@ -8,6 +8,7 @@ import * as log from './logger';
 import { Migrations } from './sequelize/migrations.model';
 
 let rdbClient: ReturnType<typeof _getRDBClient> | null = null;
+let migrationProgeress = false;
 
 const _getRDBClient = (props: { db_url: string }) => {
   const sequelizeOptions = {
@@ -51,6 +52,12 @@ export const syncRDBClient = async (options?: {
 }) => {
   const appVersion = await settingService.getAppVersion();
 
+  // 実行中は何もしない
+  if (migrationProgeress) {
+    log.info('migrationProgeress');
+    return;
+  }
+
   // デフォルトは確認してから実行
   const checkRequired = options?.checkRequired ?? true;
 
@@ -66,18 +73,24 @@ export const syncRDBClient = async (options?: {
 };
 
 const resetRDB = async (appVersion: string) => {
-  // migration 実行
-  const result = await getRDBClient().__client.sync({
-    force: true,
-    alter: true,
-  });
-  log.info('forceSyncRDB', result.options);
+  migrationProgeress = true;
+  try {
+    // migration 実行
+    const result = await getRDBClient().__client.sync({
+      force: true,
+      alter: true,
+    });
+    log.info('forceSyncRDB', result.options);
 
-  // migration のバージョンを保存
-  await Migrations.create({
-    version: appVersion,
-    migratedAt: new Date(),
-  });
+    // migration のバージョンを保存
+    const now = new Date();
+    await Migrations.create({
+      version: appVersion,
+      migratedAt: now,
+    });
+  } finally {
+    migrationProgeress = false;
+  }
 };
 
 /**
@@ -85,7 +98,7 @@ const resetRDB = async (appVersion: string) => {
  * true: migration が必要
  * false: migration が不要
  */
-const checkMigrationRDBClient = async (appVersion: string) => {
+export const checkMigrationRDBClient = async (appVersion: string) => {
   // Migrations テーブルが存在しない場合は migration が必要
   const migrationsTableExists = await isExistsMigrationTable();
   if (!migrationsTableExists) {

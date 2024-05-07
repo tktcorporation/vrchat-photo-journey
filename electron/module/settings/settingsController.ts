@@ -16,4 +16,8 @@ export const settingsRouter = () =>
     syncDatabase: procedure.mutation(async () => {
       await sequelizeLib.syncRDBClient();
     }),
+    isDatabaseReady: procedure.query(async () => {
+      const appVersion = await getAppVersion();
+      return sequelizeLib.checkMigrationRDBClient(appVersion);
+    }),
   });
