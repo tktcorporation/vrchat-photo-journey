@@ -22,6 +22,9 @@ function Setting() {
 
   return (
     <div className="flex-auto h-full">
+      <Button variant="link">
+        <Link to={ROUTER_PATHS.HOME}>もどる</Link>
+      </Button>
       <div className="flex flex-col justify-center items-center h-full space-y-9">
         <h3 className="text-lg font-medium">設定</h3>
         <div className="divide-y *:py-7 first:*:pt-0 last:*:pb-0">
