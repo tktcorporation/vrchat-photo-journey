@@ -25,32 +25,40 @@ const libraries: LibraryMetadata[] = Object.keys(licenseFileRawData).map(
 
 export const LicenseDisplay = () => {
   return (
+    <>
+      <p className="mt-6">以下のライブラリを使用しています。</p>
+      <ScrollArea className="my-6">
+        <div className="flex-grow overflow-y">
+          <ul className="space-y-10">
+            {libraries.map((library) => (
+              <li key={library.path}>
+                <h2 className="font-medium">{library.name}</h2>
+                <div className="mt-2">
+                  <p>License: {library.licenses}</p>
+                  {library.repository && (
+                    <p>
+                      <span>Repository: </span>
+                      <span>{library.repository}</span>
+                    </p>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </ScrollArea>
+    </>
+  );
+};
+
+export const LicenseDisplayPage = () => {
+  return (
     <div className="flex flex-col h-full justify-center items-center">
       <div className="w-3/5 flex flex-col h-full">
         <div className="mt-6">
           <SettingBreadcrumb />
         </div>
-        <p className="mt-6">以下のライブラリを使用しています。</p>
-        <ScrollArea className="my-6">
-          <div className="flex-grow overflow-y">
-            <ul className="space-y-10">
-              {libraries.map((library) => (
-                <li key={library.path}>
-                  <h2 className="font-medium">{library.name}</h2>
-                  <div className="mt-2">
-                    <p>License: {library.licenses}</p>
-                    {library.repository && (
-                      <p>
-                        <span>Repository: </span>
-                        <span>{library.repository}</span>
-                      </p>
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </ScrollArea>
+        <LicenseDisplay />
       </div>
     </div>
   );

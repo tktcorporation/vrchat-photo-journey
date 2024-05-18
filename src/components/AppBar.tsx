@@ -1,5 +1,17 @@
+import { Button } from '@/components/ui/button';
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 import { ROUTER_PATHS } from '@/constants';
 import { cn } from '@/lib/utils';
+import SettingSheet from '@/page/SettingSheet';
 import { Maximize, Minus, SettingsIcon, X } from 'lucide-react';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -19,10 +31,15 @@ function AppBar() {
   return (
     <div className="py-1 flex justify-between draggable bg-background text-sm justify-items-center">
       <div className="undraggable ml-4">
-        <Link to={ROUTER_PATHS.SETTING} className={cn('')}>
-          <SettingsIcon strokeWidth={1} size={20} />
-          <span className="sr-only">設定画面へ</span>
-        </Link>
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="ghost">
+              <SettingsIcon strokeWidth={1} size={20} />
+              <span className="sr-only">設定画面へ</span>
+            </Button>
+          </SheetTrigger>
+          <SettingSheet />
+        </Sheet>
       </div>
       <div className="inline-flex -mt-1">
         <button
