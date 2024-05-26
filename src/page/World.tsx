@@ -191,7 +191,7 @@ function PhotoSelector() {
           <Image strokeWidth={1} size={20} />
         </Button>
       </div>
-      <div className="flex-auto bg-card rounded-lg">
+      <div className="flex-auto rounded-lg">
         <Drawer
           open={isOpened}
           onClose={() => setIsOpened(false)}

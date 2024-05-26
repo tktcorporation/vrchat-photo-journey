@@ -30,7 +30,7 @@ nr dev
 
 GitHub Codespacesを使用して開発する場合、通常デスクトップ環境にはアクセスできない。
 このプロジェクトでは、DesktopLiteを使用して仮想デスクトップ環境にアクセスできるようにしている。
-ブラウザで`localhost:6080`を開き、パスワード`vscode`を使用して仮想デスクトップにアクセスできる。
+ブラウザで`localhost:6080?resize=scale`を開き、パスワード`vscode`を使用して仮想デスクトップにアクセスできる。
 
 ### 注意
 * electron background 側の hotreload が効かない

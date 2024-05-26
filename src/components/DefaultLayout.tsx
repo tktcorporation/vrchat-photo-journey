@@ -7,14 +7,14 @@ type Props = {
 };
 function DefaultLayout({ children }: Props) {
   return (
-    <>
-      <div className="z-10">{window.Main && <AppBar />}</div>
-      <div className="overflow-hidden flex-grow">
-        <div className="flex flex-col h-full rounded">
-          <div className="overflow-auto flex-grow">{children}</div>
+    <div className="flex flex-col h-screen">
+      <div>{window.Main && <AppBar />}</div>
+      <div className="overflow-hidden flex-grow flex">
+        <div className="flex flex-col flex-1">
+          <div className="overflow-auto flex-grow flex">{children}</div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 

@@ -1,6 +1,18 @@
+import { Button } from '@/components/ui/button';
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 import { ROUTER_PATHS } from '@/constants';
 import { cn } from '@/lib/utils';
-import { Maximize, Minus, SettingsIcon, X } from 'lucide-react';
+import SettingSheet from '@/page/SettingSheet';
+import { Maximize, Minimize, Minus, SettingsIcon, X } from 'lucide-react';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -17,31 +29,42 @@ function AppBar() {
   };
 
   return (
-    <div className="py-1 flex justify-between draggable bg-background text-sm justify-items-center">
-      <div className="undraggable ml-4">
-        <Link to={ROUTER_PATHS.SETTING} className={cn('')}>
-          <SettingsIcon strokeWidth={1} size={20} />
-          <span className="sr-only">設定画面へ</span>
-        </Link>
+    <div className="flex justify-between draggable bg-background text-sm justify-items-center">
+      <div className="undraggable">
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="icon" size="icon" className="hover:bg-muted">
+              <SettingsIcon strokeWidth={1} size={20} />
+              <span className="sr-only">設定画面へ</span>
+            </Button>
+          </SheetTrigger>
+          <SettingSheet />
+        </Sheet>
       </div>
-      <div className="inline-flex -mt-1">
-        <button
+      <div className="inline-flex">
+        <Button
+          variant="icon"
+          size="icon"
           onClick={window.Main.Minimize}
-          className="undraggable pt-1 hover:bg-muted"
-          type="button"
+          className="undraggable hover:bg-muted"
         >
           <Minus strokeWidth={1} size={20} />
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="icon"
+          size="icon"
           onClick={handleToggle}
-          className="undraggable px-6 lg:px-5 pt-1 hover:bg-muted"
-          type="button"
+          className="undraggable hover:bg-muted"
         >
-          {isMaximize ? '\u2752' : <Maximize strokeWidth={1} size={20} />}
-        </button>
+          {isMaximize ? (
+            <Minimize strokeWidth={1} size={20} />
+          ) : (
+            <Maximize strokeWidth={1} size={20} />
+          )}
+        </Button>
         <button
           onClick={window.Main.Close}
-          className="undraggable hover:bg-red-500 hover:text-white py-1 px-2"
+          className="undraggable hover:bg-red-500 hover:text-white px-3"
           type="button"
         >
           <X strokeWidth={1} size={20} />
