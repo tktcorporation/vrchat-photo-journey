@@ -1,14 +1,5 @@
 import { Button } from '@/components/ui/button';
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from '@/components/ui/drawer';
+import { ImageUpload } from '@/components/ui/image-upload';
 import { ROUTER_PATHS } from '@/constants';
 import { trpcReact } from '@/trpc';
 import * as datefns from 'date-fns';
@@ -54,8 +45,8 @@ const PlayerJoinData = ({
             <p>Play with</p>
             {playerData.map((player) => (
               <Badge>
-                {player.playerName} :{' '}
-                {datefns.format(player.joinDateTime, 'yyyy-MM-dd HH:mm:ss')}
+                {player.playerName}
+                {/* {datefns.format(player.joinDateTime, 'yyyy-MM-dd HH:mm:ss')} */}
               </Badge>
             ))}
           </div>
@@ -72,19 +63,16 @@ const VRChatWorldJoinDataView = ({
   const { data } =
     trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery(vrcWorldId);
   return (
-    <div className="w-full h-full">
+    <div className="w-full ">
       {data ? (
         <>
-          <DrawerHeader>
-            <DrawerTitle>{data.name}</DrawerTitle>
-            <DrawerDescription>
-              Join Date: {datefns.format(
-                joinDateTime,
-                'yyyy-MM-dd HH:mm:ss',
-              )}{' '}
-            </DrawerDescription>
-          </DrawerHeader>
-
+          <div>
+            <p>{data.name}</p>
+            Join Date: {datefns.format(
+              joinDateTime,
+              'yyyy-MM-dd HH:mm:ss',
+            )}{' '}
+          </div>
           <div className="p-4 space-y-4">
             <div className="flex gap-4 h-1/3 overflow-auto">
               <div>
@@ -95,7 +83,7 @@ const VRChatWorldJoinDataView = ({
                   </p>
                 </div>
               </div>
-              <div className="h-full overflow-auto space-y-4">
+              <div className=" overflow-auto space-y-4">
                 <div>
                   <span className="text-sm text-muted-foreground">
                     World Author:{' '}
@@ -126,6 +114,7 @@ const VRChatWorldJoinDataView = ({
 
 function PhotoSelector() {
   const [inputValue, setInputValue] = useState<null | string>(null);
+
   const { data: recentJoinWorldData } =
     trpcReact.logInfo.getRecentVRChatWorldJoinLogByVRChatPhotoName.useQuery(
       inputValue || '',
@@ -134,59 +123,40 @@ function PhotoSelector() {
       },
     );
 
-  const [isOpened, setIsOpened] = useState(false);
-
   const onChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const fileName = e.target.value.split('\\').pop();
     setInputValue(fileName || null);
-    setIsOpened(true);
   };
 
   return (
-    <div className="flex flex-auto h-full p-5 space-x-4">
+    <div className="flex flex-1 space-x-4 box-border m-3">
       <div className="space-x-2 flex">
-        <Button
-          variant="secondary"
-          onClick={() => setIsOpened(true)}
-          className="rounded-lg"
-        >
+        <Button variant="secondary" className="rounded">
           <Globe strokeWidth={1} size={20} />
         </Button>
-        <Button
-          variant="secondary"
-          onClick={() => setIsOpened(true)}
-          className="rounded-lg"
-        >
+        <Button variant="secondary" className="rounded">
           <Image strokeWidth={1} size={20} />
         </Button>
       </div>
-      <div className="flex-auto bg-card rounded-lg">
-        <Drawer
-          open={isOpened}
-          onClose={() => setIsOpened(false)}
-          onOpenChange={(open) => setIsOpened(open)}
-          onRelease={(_, open) => setIsOpened(open)}
+      <div className="flex flex-1 space-y-5">
+        <div
+          className="flex-1 rounded bg-card p-5"
+          style={{ filter: 'drop-shadow(0 0 5px rgba(0, 0, 0, 0.1))' }}
         >
-          <div className="flex flex-col justify-center items-center h-full space-y-9">
-            <div className="grid w-full max-w-sm items-center gap-3">
-              <Label htmlFor="picture">撮影した写真を選択してね</Label>
-              <Input
-                id="picture"
-                type="file"
-                content="Upload VRC Photo File"
-                onChange={onChangeInput}
-              />
-            </div>
-          </div>
-          <DrawerContent>
-            {recentJoinWorldData && (
-              <VRChatWorldJoinDataView
-                vrcWorldId={recentJoinWorldData.worldId}
-                joinDateTime={recentJoinWorldData.joinDateTime}
-              />
-            )}
-          </DrawerContent>
-        </Drawer>
+          <ImageUpload
+            id="picture"
+            type="file"
+            content="Upload VRC Photo File"
+            className="p-3"
+            onChange={onChangeInput}
+          />
+          {recentJoinWorldData && (
+            <VRChatWorldJoinDataView
+              vrcWorldId={recentJoinWorldData.worldId}
+              joinDateTime={recentJoinWorldData.joinDateTime}
+            />
+          )}
+        </div>
       </div>
     </div>
   );

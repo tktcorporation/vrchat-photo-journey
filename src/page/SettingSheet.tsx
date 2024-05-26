@@ -24,6 +24,7 @@ import { LicenseDisplay } from './setting/LicenseDisplay';
 import VRChatLogPathSetting from './setting/VRChatLogPathSetting';
 
 const TAB_KEY_LIST = [
+  'none',
   'aboutApp',
   'vrcLogPathSetting',
   'backGround',
@@ -31,6 +32,7 @@ const TAB_KEY_LIST = [
   'debug',
 ] as const;
 const TAB_KEYS = {
+  none: 'none',
   backGround: 'backGround',
   lisence: 'lisence',
   aboutApp: 'aboutApp',
@@ -39,6 +41,7 @@ const TAB_KEYS = {
 } as { [type in (typeof TAB_KEY_LIST)[number]]: type };
 const getTabLabel = (key: (typeof TAB_KEY_LIST)[number]) =>
   match(key)
+    .with('none', () => null)
     .with('backGround', () => 'backGround')
     .with('lisence', () => 'lisence')
     .with('aboutApp', () => 'About')
@@ -47,6 +50,7 @@ const getTabLabel = (key: (typeof TAB_KEY_LIST)[number]) =>
     .exhaustive();
 const getTabContent = (key: (typeof TAB_KEY_LIST)[number]) =>
   match(key)
+    .with('none', () => null)
     .with('backGround', () => <BackGroundSettings />)
     .with('lisence', () => <LicenseDisplay />)
     .with('aboutApp', () => <AboutApp />)
@@ -57,35 +61,65 @@ const getTabContent = (key: (typeof TAB_KEY_LIST)[number]) =>
 const SettingSheet = () => {
   const [activeTab, setActiveTab] =
     React.useState<(typeof TAB_KEY_LIST)[number]>('aboutApp');
+
+  const Content = ({ content }: { content?: React.ReactNode }) => {
+    if (content === null) {
+      return (
+        <TabsList className="flex flex-col space-y-3 content-start justify-start justify-items-start">
+          {TAB_KEY_LIST.map((key) => {
+            const tabLabel = getTabLabel(key);
+            if (tabLabel === null) return null;
+            return (
+              <div>
+                <TabsTrigger
+                  value={TAB_KEYS[key]}
+                  key={`trigger-${key}`}
+                  className="w-full bg-secondary text-start p-4"
+                >
+                  {getTabLabel(key)}
+                </TabsTrigger>
+              </div>
+            );
+          })}
+        </TabsList>
+      );
+    }
+    return content;
+  };
+
+  const activeTabLabel = getTabLabel(activeTab);
+
   return (
-    <SheetContent side="bottom" className="h-2/3">
+    <SheetContent side="bottom" className="h-2/3 bg-popover rounded-t-lg">
       <Tabs
-        defaultValue={TAB_KEYS.aboutApp}
         className="h-full"
+        value={activeTab}
         onValueChange={(value) =>
           setActiveTab(value as (typeof TAB_KEY_LIST)[number])
         }
       >
         <div className="flex h-full">
-          <TabsList>
-            {/* <TabsTrigger value="account">Account</TabsTrigger>
-          <TabsTrigger value="password">Password</TabsTrigger>
-          <TabsTrigger value="about-app">About</TabsTrigger> */}
-            {TAB_KEY_LIST.map((key) => (
-              <TabsTrigger value={TAB_KEYS[key]} key={key}>
-                {getTabLabel(key)}
-              </TabsTrigger>
-            ))}
-          </TabsList>
           <div className="flex-1 h-full">
             <div className="text-lg">
-              <span className="font-bold">Settings</span>
-              <span> / {activeTab}</span>
+              <span className="transition-all">
+                {activeTabLabel ? (
+                  <Button
+                    variant="link"
+                    className="rounded-lg"
+                    onClick={() => setActiveTab('none')}
+                  >
+                    <span>Settings</span>
+                  </Button>
+                ) : (
+                  <span className="font-bold">Settings</span>
+                )}
+              </span>
+              {activeTabLabel && <span> / {activeTabLabel}</span>}
             </div>
             {TAB_KEY_LIST.map((key) => (
-              <TabsContent value={TAB_KEYS[key]} key={key}>
-                <div className="flex flex-col h-full flex-grow overflow-y">
-                  {getTabContent(key)}
+              <TabsContent value={TAB_KEYS[key]} key={key} className="h-full">
+                <div className="h-full flex-grow overflow-y">
+                  <Content content={getTabContent(key)} />
                 </div>
               </TabsContent>
             ))}

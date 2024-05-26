@@ -73,9 +73,7 @@ function Router() {
 }
 
 function App() {
-  return (
-    <div className="flex flex-col h-screen">{window.Main && <Router />}</div>
-  );
+  return <div>{window.Main && <Router />}</div>;
 }
 
 export default App;

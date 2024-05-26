@@ -1788,7 +1788,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-dialog@npm:1.0.5, @radix-ui/react-dialog@npm:^1.0.4":
+"@radix-ui/react-dialog@npm:1.0.5, @radix-ui/react-dialog@npm:^1.0.4, @radix-ui/react-dialog@npm:^1.0.5":
   version: 1.0.5
   resolution: "@radix-ui/react-dialog@npm:1.0.5"
   dependencies:
@@ -5117,6 +5117,26 @@ __metadata:
   version: 4.3.7
   resolution: "fraction.js@npm:4.3.7"
   checksum: 10c0/df291391beea9ab4c263487ffd9d17fed162dbb736982dee1379b2a8cc94e4e24e46ed508c6d278aded9080ba51872f1bc5f3a5fd8d7c74e5f105b508ac28711
+  languageName: node
+  linkType: hard
+
+"framer-motion@npm:^11.2.4":
+  version: 11.2.4
+  resolution: "framer-motion@npm:11.2.4"
+  dependencies:
+    tslib: "npm:^2.4.0"
+  peerDependencies:
+    "@emotion/is-prop-valid": "*"
+    react: ^18.0.0
+    react-dom: ^18.0.0
+  peerDependenciesMeta:
+    "@emotion/is-prop-valid":
+      optional: true
+    react:
+      optional: true
+    react-dom:
+      optional: true
+  checksum: 10c0/0588d254ffbc7a125b6d4a52b9cc61d0f64c17f2e0c916be7ec9c3a72c8536b9a4f1fec5ba27c2aae5e63b93abf4a5a0c29f3346fe0257ed7163dfd43e05375f
   languageName: node
   linkType: hard
 
@@ -9643,7 +9663,7 @@ __metadata:
     "@heroicons/react": "npm:2.1.3"
     "@playwright/test": "npm:1.43.1"
     "@radix-ui/react-alert-dialog": "npm:1.0.5"
-    "@radix-ui/react-dialog": "npm:1.0.5"
+    "@radix-ui/react-dialog": "npm:^1.0.5"
     "@radix-ui/react-label": "npm:2.0.2"
     "@radix-ui/react-progress": "npm:1.0.3"
     "@radix-ui/react-scroll-area": "npm:1.0.5"
@@ -9683,6 +9703,7 @@ __metadata:
     electron-store: "npm:8.2.0"
     electron-trpc: "npm:0.5.2"
     electron-unhandled: "npm:4.0.1"
+    framer-motion: "npm:^11.2.4"
     i: "npm:0.3.7"
     iconv-lite: "npm:0.6.3"
     jest: "npm:29.7.0"

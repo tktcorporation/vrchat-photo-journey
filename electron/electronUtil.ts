@@ -28,9 +28,8 @@ function createWindow(): BrowserWindow {
     //  change to false to use AppBar
     frame: false,
     show: true,
-    resizable: true,
     fullscreenable: true,
-    backgroundColor: '#f6f6f6',
+    transparent: true,
     webPreferences: {
       preload: join(__dirname, 'preload.js'),
     },
