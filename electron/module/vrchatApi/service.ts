@@ -33,37 +33,7 @@ import type { VRChatWorldId } from './valueObject';
  * created_at: '2023-06-21T13:30:58.720Z',
  * updated_at: '2024-03-20T05:59:42.558Z'
  */
-interface VRChatWorldInfoFromApi {
-  id: string;
-  name: string;
-  description: string;
-  authorId: string;
-  authorName: string;
-  releaseStatus: string;
-  featured: boolean;
-  capacity: number;
-  recommendedCapacity: number;
-  imageUrl: string;
-  thumbnailImageUrl: string;
-  version: number;
-  organization: string;
-  previewYoutubeId: string | null;
-  udonProducts: string[];
-  favorites: number;
-  visits: number;
-  popularity: number;
-  heat: number;
-  publicationDate: string;
-  labsPublicationDate: string;
-  instances: string[];
-  publicOccupants: number;
-  privateOccupants: number;
-  occupants: number;
-  unityPackages: string[];
-  tags: string[];
-  created_at: string;
-  updated_at: string;
-}
+type VRChatWorldInfoFromApi = z.infer<typeof VRChatWorldInfoFromApiSchema>;
 const VRChatWorldInfoFromApiSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -113,4 +83,79 @@ export const getVrcWorldInfoByWorldId = async (
     );
   }
   return neverthrow.ok(result.data);
+};
+
+export const UserSchema = z.object({
+  bio: z.string().optional(),
+  bioLinks: z.array(z.string()).optional(),
+  currentAvatarImageUrl: z.string(),
+  currentAvatarTags: z.array(z.string()),
+  currentAvatarThumbnailImageUrl: z.string(),
+  developerType: z.string(),
+  displayName: z.string(),
+  friendKey: z.string().optional(),
+  id: z.string(),
+  isFriend: z.boolean(),
+  last_login: z.string().optional(),
+  last_platform: z.string(),
+  profilePicOverride: z.string().optional(),
+  pronouns: z.string().optional(),
+  status: z.string(),
+  statusDescription: z.string().optional(),
+  tags: z.array(z.string()),
+  userIcon: z.string().optional(),
+});
+const UsersSchema = z.array(UserSchema);
+
+const requestQueue: (() => Promise<void>)[] = [];
+let isProcessingQueue = false;
+
+const processQueue = async () => {
+  if (isProcessingQueue) return;
+  isProcessingQueue = true;
+  while (requestQueue.length > 0) {
+    const request = requestQueue.shift();
+    if (request) {
+      console.log('processQueue', requestQueue.length);
+      await request();
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Delay of 1 second
+    }
+  }
+  isProcessingQueue = false;
+};
+
+/**
+ * Auth してからじゃないと使えなさそう
+ */
+export const getVrcUserInfoByUserName = async (
+  userName: string,
+): Promise<
+  neverthrow.Result<z.infer<typeof UserSchema>, Error | 'USER_NOT_FOUND'>
+> => {
+  return new Promise((resolve) => {
+    requestQueue.push(async () => {
+      const reqUrl = `https://vrchat.com/api/1/users?sort=relevance&fuzzy=false&search=${userName}`;
+      const response = await fetch(reqUrl);
+      if (!response.ok) {
+        throw new Error(`getVrcUserInfoByUserName: ${response.statusText}`);
+        // resolve(neverthrow.err(new Error(`getVrcUserInfoByUserName: ${response.statusText}`)));
+        // return;
+      }
+      const json = await response.json();
+      const result = UsersSchema.safeParse(json);
+      if (!result.success) {
+        throw new Error(`fail to parse UsersSchema: ${result.error.errors}`);
+        // resolve(neverthrow.err(new Error(`fail to parse UsersSchema: ${result.error.errors}`)));
+        // return;
+      }
+      if (result.data.length === 0 || result.data[0].displayName !== userName) {
+        resolve(neverthrow.err('USER_NOT_FOUND' as const));
+        return;
+      }
+      resolve(neverthrow.ok(result.data[0]));
+    });
+    if (!isProcessingQueue) {
+      processQueue();
+    }
+  });
 };
