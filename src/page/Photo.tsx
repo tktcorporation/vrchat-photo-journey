@@ -68,25 +68,27 @@ const VRChatWorldJoinDataView = ({
                 alt={data.name}
                 className="object-cover w-full rounded"
               />
-              <h1 className="mt-2 text-2xl font-bold">{data.name}</h1>
+              <h1 className="mt-2 text-lg font-bold">{data.name}</h1>
               <div className="mt-4 flex">
-                <div className="text-lg text-muted-foreground">Created by</div>
-                <div className="text-lg ml-2">{data.authorName}</div>
+                <div className="text-md text-muted-foreground">Created by</div>
+                <div className="text-md ml-2">{data.authorName}</div>
               </div>
-              <p className="text-muted-foreground mt-2">{data.description}</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                {data.description}
+              </p>
             </>
           </div>
           <div className="basis-2/3 space-y-3 h-full relative overflow-y-auto">
             <div className="absolute">
               <div className="rounded bg-card p-4 min-h-0">
                 <div className="max-h-full">
-                  <div className="text-lg text-muted-foreground">Join Date</div>
-                  <div className="text-2xl">
+                  <div className="text-md text-muted-foreground">Join Date</div>
+                  <div className="text-lg">
                     {datefns.format(joinDateTime, 'yyyy-MM-dd HH:mm:ss')}{' '}
                   </div>
                 </div>
                 <div className="mt-4">
-                  <div className="text-lg text-muted-foreground">With</div>{' '}
+                  <div className="text-md text-muted-foreground">With</div>{' '}
                   <div className="text-lg">
                     <PlayerJoinData joinDateTime={joinDateTime} />
                   </div>
@@ -94,7 +96,7 @@ const VRChatWorldJoinDataView = ({
               </div>
               <div className="rounded bg-card p-4">
                 <div className="mt-4">
-                  <div className="text-lg text-muted-foreground">Photos</div>
+                  <div className="text-md text-muted-foreground">Photos</div>
                   <div className="flex-wrap flex gap-3 text-wrap">
                     <Skeleton className="w-60 h-32" />
                     <Skeleton className="w-60 h-32" />
