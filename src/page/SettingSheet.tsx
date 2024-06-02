@@ -60,7 +60,7 @@ const getTabContent = (key: (typeof TAB_KEY_LIST)[number]) =>
 
 const SettingSheet = () => {
   const [activeTab, setActiveTab] =
-    React.useState<(typeof TAB_KEY_LIST)[number]>('aboutApp');
+    React.useState<(typeof TAB_KEY_LIST)[number]>('none');
 
   const Content = ({ content }: { content?: React.ReactNode }) => {
     if (content === null) {
@@ -74,7 +74,7 @@ const SettingSheet = () => {
                 <TabsTrigger
                   value={TAB_KEYS[key]}
                   key={`trigger-${key}`}
-                  className="w-full bg-secondary text-start p-4"
+                  className="w-full bg-muted-foreground text-start p-4 rounded"
                 >
                   {getTabLabel(key)}
                 </TabsTrigger>

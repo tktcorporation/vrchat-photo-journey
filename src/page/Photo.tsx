@@ -80,63 +80,55 @@ const VRChatWorldJoinDataView = ({
           </div>
           <div className="basis-2/3 h-full relative">
             <div className="h-full absolute">
-              <ScrollArea className="bg-card h-full absolute overflow-y-auto">
+              <ScrollArea className="h-full absolute overflow-y-auto">
                 <div className="space-y-3 h-full">
-                  <div className="">
-                    <div className="rounded bg-card p-4 min-h-0">
-                      <div className="max-h-full">
-                        <div className="text-md text-muted-foreground">
-                          Join Date
-                        </div>
-                        <div className="text-lg">
-                          {datefns.format(
-                            joinDateTime,
-                            'yyyy-MM-dd HH:mm:ss',
-                          )}{' '}
-                        </div>
+                  <div className="rounded bg-card p-4 min-h-0">
+                    <div className="max-h-full">
+                      <div className="text-md text-muted-foreground">
+                        Join Date
                       </div>
-                      <div className="mt-4">
-                        <div className="text-md text-muted-foreground">
-                          With
-                        </div>{' '}
-                        <div className="text-lg">
-                          <PlayerJoinData joinDateTime={joinDateTime} />
-                        </div>
+                      <div className="text-lg">
+                        {datefns.format(
+                          joinDateTime,
+                          'yyyy-MM-dd HH:mm:ss',
+                        )}{' '}
                       </div>
                     </div>
-                    <div className="rounded bg-card p-4">
-                      <div className="mt-4">
-                        <div className="text-md text-muted-foreground">
-                          Photos
-                        </div>
-                        <div className="flex-wrap flex gap-3 text-wrap">
-                          <Skeleton className="w-60 h-32" />
-                          <Skeleton className="w-60 h-32" />
-                          <Skeleton className="w-60 h-32" />
-                          <Skeleton className="w-60 h-32" />
-                          <Skeleton className="w-60 h-32" />
-                          <Skeleton className="w-60 h-32" />
-                          <Skeleton className="w-60 h-32" />
-                          <Skeleton className="w-60 h-32" />
-                          <Skeleton className="w-60 h-32" />
-                        </div>
+                    <div className="mt-4">
+                      <div className="text-md text-muted-foreground">With</div>{' '}
+                      <div className="text-lg">
+                        <PlayerJoinData joinDateTime={joinDateTime} />
                       </div>
-                      <div className="mt-4">
-                        <div className="text-lg text-muted-foreground">
-                          このワールドへの他のJoinLog
-                        </div>
-                        <div className="flex-wrap flex gap-3 text-wrap">
-                          <Skeleton className="w-60 h-32" />
-                          <Skeleton className="w-60 h-32" />
-                          <Skeleton className="w-60 h-32" />
-                          <Skeleton className="w-60 h-32" />
-                          <Skeleton className="w-60 h-32" />
-                          <Skeleton className="w-60 h-32" />
-                          <Skeleton className="w-60 h-32" />
-                          <Skeleton className="w-60 h-32" />
-                          <Skeleton className="w-60 h-32" />
-                        </div>
-                      </div>
+                    </div>
+                  </div>
+                  <div className="rounded bg-card p-4">
+                    <div className="text-md text-muted-foreground">Photos</div>
+                    <div className="mt-3 flex-wrap flex gap-3 text-wrap">
+                      <Skeleton className="w-60 h-32" />
+                      <Skeleton className="w-60 h-32" />
+                      <Skeleton className="w-60 h-32" />
+                      <Skeleton className="w-60 h-32" />
+                      <Skeleton className="w-60 h-32" />
+                      <Skeleton className="w-60 h-32" />
+                      <Skeleton className="w-60 h-32" />
+                      <Skeleton className="w-60 h-32" />
+                      <Skeleton className="w-60 h-32" />
+                    </div>
+                  </div>
+                  <div className="rounded bg-card p-4">
+                    <div className="text-lg text-muted-foreground">
+                      このワールドへの他のJoinLog
+                    </div>
+                    <div className="flex-wrap flex mt-3 gap-3 text-wrap">
+                      <Skeleton className="w-60 h-32" />
+                      <Skeleton className="w-60 h-32" />
+                      <Skeleton className="w-60 h-32" />
+                      <Skeleton className="w-60 h-32" />
+                      <Skeleton className="w-60 h-32" />
+                      <Skeleton className="w-60 h-32" />
+                      <Skeleton className="w-60 h-32" />
+                      <Skeleton className="w-60 h-32" />
+                      <Skeleton className="w-60 h-32" />
                     </div>
                   </div>
                 </div>
