@@ -11,8 +11,7 @@ function Debug() {
   const resetDbMutation = trpcReact.settings.forceResetDatabase.useMutation();
   return (
     <div className="flex-auto h-full">
-      <div className="flex flex-col justify-center items-center h-full space-y-9">
-        <h3 className="text-lg font-medium">Home</h3>
+      <div className="inline-flex flex-col h-full space-y-9">
         <Button
           onClick={() => {
             storeLogsMutation.mutate();
