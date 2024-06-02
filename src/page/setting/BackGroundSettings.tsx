@@ -117,9 +117,8 @@ const BackGroundSettings = () => {
   };
 
   return (
-    <div className="flex flex-col h-full justify-center items-center">
+    <div className="flex flex-col h-full">
       <div className="w-3/5 flex flex-col h-full mt-6">
-        <SettingBreadcrumb />
         <div>
           <div className="flex flex-col mt-10 divide-y *:py-7 first:*:pt-0 last:*:pb-0">
             <div className="flex justify-between text-center">
