@@ -73,7 +73,7 @@ function Router() {
 }
 
 function App() {
-  return <div>{window.Main && <Router />}</div>;
+  return <div className="rounded-md">{window.Main && <Router />}</div>;
 }
 
 export default App;

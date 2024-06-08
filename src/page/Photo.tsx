@@ -38,7 +38,7 @@ const PlayerJoinData = ({
             {playerData.map((player) => (
               <Badge
                 key={`${player.playerId}-${player.playerName}`}
-                variant="secondary"
+                variant="accent"
               >
                 {player.playerName}
               </Badge>
@@ -61,16 +61,16 @@ const VRChatWorldJoinDataView = ({
       {data ? (
         <>
           {' '}
-          <div className="basis-1/3 rounded bg-card p-4 flex flex-col h-full">
+          <div className="basis-1/3 rounded-md bg-card p-4 flex flex-col h-full">
             <>
               <img
                 src={data.imageUrl}
                 alt={data.name}
-                className="object-cover w-full rounded"
+                className="object-cover w-full rounded-md"
               />
               <h1 className="mt-2 text-lg font-bold">{data.name}</h1>
               <div className="mt-4 flex">
-                <div className="text-md text-muted-foreground">Created by</div>
+                <div className="text-md text-card-foreground">Created by</div>
                 <div className="text-md ml-2">{data.authorName}</div>
               </div>
               <p className="text-sm text-muted-foreground mt-2">
@@ -82,9 +82,9 @@ const VRChatWorldJoinDataView = ({
             <div className="h-full absolute">
               <ScrollArea className="h-full absolute overflow-y-auto">
                 <div className="space-y-3 h-full">
-                  <div className="rounded bg-card p-4 min-h-0">
+                  <div className="rounded-md bg-card p-4 min-h-0">
                     <div className="max-h-full">
-                      <div className="text-md text-muted-foreground">
+                      <div className="text-sm text-muted-foreground">
                         Join Date
                       </div>
                       <div className="text-lg">
@@ -95,14 +95,13 @@ const VRChatWorldJoinDataView = ({
                       </div>
                     </div>
                     <div className="mt-4">
-                      <div className="text-md text-muted-foreground">With</div>{' '}
-                      <div className="text-lg">
+                      <div className="text-lg mt-3">
                         <PlayerJoinData joinDateTime={joinDateTime} />
                       </div>
                     </div>
                   </div>
-                  <div className="rounded bg-card p-4">
-                    <div className="text-md text-muted-foreground">Photos</div>
+                  <div className="rounded-md bg-card p-4">
+                    <div className="text-md text-card-foreground">Photos</div>
                     <div className="mt-3 flex-wrap flex gap-3 text-wrap">
                       <Skeleton className="w-60 h-32" />
                       <Skeleton className="w-60 h-32" />
@@ -115,8 +114,8 @@ const VRChatWorldJoinDataView = ({
                       <Skeleton className="w-60 h-32" />
                     </div>
                   </div>
-                  <div className="rounded bg-card p-4">
-                    <div className="text-lg text-muted-foreground">
+                  <div className="rounded-md bg-card p-4">
+                    <div className="text-lg text-card-foreground">
                       このワールドへの他のJoinLog
                     </div>
                     <div className="flex-wrap flex mt-3 gap-3 text-wrap">
@@ -171,7 +170,7 @@ function PhotoSelector() {
             size={20}
             className="absolute left-3 h-5 w-5 text-muted-foreground"
           />
-          <div className="flex h-10 w-full rounded-md bg-muted px-3 py-2 pl-10 text-sm ring-offset-background text-muted-foreground">
+          <div className="flex h-10 w-full rounded-md bg-card px-3 py-2 pl-10 text-sm ring-offset-background text-muted-foreground">
             写真で検索
           </div>
         </Label>
