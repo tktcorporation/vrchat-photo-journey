@@ -61,22 +61,30 @@ const VRChatWorldJoinDataView = ({
       {data ? (
         <>
           {' '}
-          <div className="basis-1/3 rounded-md bg-card p-4 flex flex-col h-full">
-            <>
+          <div className="basis-1/3 relative rounded-md bg-card p-4 flex flex-col h-full shadow-lg overflow-hidden">
+            <div className="absolute inset-0 z-10">
               <img
                 src={data.imageUrl}
                 alt={data.name}
-                className="object-cover w-full rounded-md"
+                className="object-cover w-full"
               />
-              <h1 className="mt-2 text-lg font-bold">{data.name}</h1>
-              <div className="mt-4 flex">
-                <div className="text-md text-card-foreground">Created by</div>
-                <div className="text-md ml-2">{data.authorName}</div>
+            </div>
+            <div className="absolute inset-0">
+              <img
+                src={data.imageUrl}
+                alt={data.name}
+                className="object-cover w-full h-full"
+              />
+              <div className="absolute inset-0 bg-black bg-opacity-50 backdrop-filter backdrop-blur-md"></div>
+            </div>
+            <div className="relative z-10 p-4 justify-self-end bg-black bg-opacity-50 backdrop-filter backdrop-blur-md top-64">
+              <h1 className="mt-2 text-lg font-bold text-white">{data.name}</h1>
+              <div className="mt-4 flex items-center">
+                <div className="text-md text-gray-400">Created by</div>
+                <div className="text-md ml-2 text-white">{data.authorName}</div>
               </div>
-              <p className="text-sm text-muted-foreground mt-2">
-                {data.description}
-              </p>
-            </>
+              <p className="text-sm text-gray-300 mt-2">{data.description}</p>
+            </div>
           </div>
           <div className="basis-2/3 h-full relative">
             <div className="h-full absolute">

@@ -1,7 +1,7 @@
 {
   "features": {
     "ghcr.io/devcontainers/features/desktop-lite:1": {
-      "resolution": "2560x1440"
+      "resolution": "3840×2160"
     }
   },
   "forwardPorts": [6080],
@@ -11,5 +11,5 @@
     }
   },
   "runArgs": ["--shm-size=2g"],
-  "postCreateCommand": "npm i -g @antfu/ni && xrandr --output VNC-0 --mode 2560x1440"
+  "postCreateCommand": "npm i -g @antfu/ni && xrandr --output VNC-0 --mode 3840×2160"
 }
