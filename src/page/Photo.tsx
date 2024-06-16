@@ -4,7 +4,12 @@ import { ROUTER_PATHS } from '@/constants';
 import { trpcReact } from '@/trpc';
 import * as datefns from 'date-fns';
 import type React from 'react';
-import { Link } from 'react-router-dom';
+import {
+  Link,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from 'react-router-dom';
 
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -37,7 +42,7 @@ const PlayerJoinData = ({
           <div className="flex flex-wrap gap-2">
             {playerData.map((player) => (
               <Badge
-                key={`${player.playerId}-${player.playerName}`}
+                key={`${player.playerName}-${player.joinDateTime}`}
                 variant="accent"
               >
                 {player.playerName}
@@ -63,62 +68,41 @@ const VRChatWorldJoinDataView = ({
           <div className="flex-1 h-full relative">
             <div className="h-full absolute">
               <ScrollArea className="h-full absolute overflow-y-auto">
-                <div className="relative rounded-md bg-card p-4 flex flex-col h-64 shadow-lg overflow-hidden">
-                  <div className="absolute inset-0">
-                    <img
-                      src={data.imageUrl}
-                      alt={data.name}
-                      className="object-cover w-full h-full"
-                    />
-                    <div className="absolute inset-0 bg-black bg-opacity-50 backdrop-filter backdrop-blur-md" />
+                <div className="relative rounded-md bg-card p-4 flex flex-col shadow-lg overflow-hidden">
+                  <div className="max-h-full">
+                    <div className="text-sm text-muted-foreground">
+                      Join Date
+                    </div>
+                    <div className="text-xl">
+                      {datefns.format(
+                        joinDateTime,
+                        'yyyy年MM月dd HH時mm分',
+                      )}{' '}
+                    </div>
                   </div>
-                  <div className="absolute inset-0 z-10 flex">
+                  <div className="flex items-center mt-4">
                     <div className="">
                       <img
                         src={data.imageUrl}
                         alt={data.name}
-                        className="h-full"
+                        className="h-full w-48 rounded-md"
                       />
                     </div>
-                    <div className="flex-1 m-5 flex flex-col justify-center">
-                      <div className="p-4 bg-black bg-opacity-50 backdrop-filter backdrop-blur-md rounded-md">
-                        <h1 className="mt-2 text-lg font-bold text-white">
-                          {data.name}
-                        </h1>
-                        <div className="mt-4 flex items-center">
-                          <div className="text-md text-gray-400">
-                            Created by
-                          </div>
-                          <div className="text-md ml-2 text-white">
-                            {data.authorName}
-                          </div>
-                        </div>
-                        <p className="text-sm text-gray-300 mt-2">
-                          {data.description}
-                        </p>
+                    <div className="ml-8">
+                      <h1 className="text-lg">{data.name}</h1>
+                      <div className="mt-4 flex items-center">
+                        <div className="text-md text-gray-400">Created by</div>
+                        <div className="text-md ml-2">{data.authorName}</div>
                       </div>
+                    </div>
+                  </div>
+                  <div className="mt-4">
+                    <div className="text-lg mt-3">
+                      <PlayerJoinData joinDateTime={joinDateTime} />
                     </div>
                   </div>
                 </div>
                 <div className="space-y-3 h-full">
-                  <div className="rounded-md bg-card p-4 min-h-0">
-                    <div className="max-h-full">
-                      <div className="text-sm text-muted-foreground">
-                        Join Date
-                      </div>
-                      <div className="text-lg">
-                        {datefns.format(
-                          joinDateTime,
-                          'yyyy-MM-dd HH:mm:ss',
-                        )}{' '}
-                      </div>
-                    </div>
-                    <div className="mt-4">
-                      <div className="text-lg mt-3">
-                        <PlayerJoinData joinDateTime={joinDateTime} />
-                      </div>
-                    </div>
-                  </div>
                   <div className="rounded-md bg-card p-4">
                     <div className="text-md text-card-foreground">Photos</div>
                     <div className="mt-3 flex-wrap flex gap-3 text-wrap">
@@ -162,9 +146,11 @@ const VRChatWorldJoinDataView = ({
 };
 
 function PhotoSelector() {
-  const [inputValue, setInputValue] = useState<null | string>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const { data: recentJoinWorldData } =
+  const inputValue = searchParams.get('photoFileName');
+
+  const { data: recentJoinWorldData, refetch } =
     trpcReact.logInfo.getRecentVRChatWorldJoinLogByVRChatPhotoName.useQuery(
       inputValue || '',
       {
@@ -173,8 +159,12 @@ function PhotoSelector() {
     );
 
   const onChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const fileName = e.target.value.split('\\').pop();
-    setInputValue(fileName || null);
+    // set input value to query string
+    const fileName = e.target.value.split('\\').pop() ?? '';
+
+    const params = new URLSearchParams({ photoFileName: fileName });
+    setSearchParams(params);
+    refetch();
   };
 
   return (
@@ -190,7 +180,7 @@ function PhotoSelector() {
             className="absolute left-3 h-5 w-5 text-muted-foreground"
           />
           <div className="flex h-10 w-full rounded-md bg-card px-3 py-2 pl-10 text-sm ring-offset-background text-muted-foreground">
-            写真で検索
+            写真で検索 {inputValue}
           </div>
         </Label>
         <Input
