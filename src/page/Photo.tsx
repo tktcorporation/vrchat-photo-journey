@@ -60,35 +60,46 @@ const VRChatWorldJoinDataView = ({
     <div className="flex flex-1 flex-row space-x-3 items-start h-full relative">
       {data ? (
         <>
-          {' '}
-          <div className="basis-1/3 relative rounded-md bg-card p-4 flex flex-col h-full shadow-lg overflow-hidden">
-            <div className="absolute inset-0 z-10">
-              <img
-                src={data.imageUrl}
-                alt={data.name}
-                className="object-cover w-full"
-              />
-            </div>
-            <div className="absolute inset-0">
-              <img
-                src={data.imageUrl}
-                alt={data.name}
-                className="object-cover w-full h-full"
-              />
-              <div className="absolute inset-0 bg-black bg-opacity-50 backdrop-filter backdrop-blur-md"></div>
-            </div>
-            <div className="relative z-10 p-4 justify-self-end bg-black bg-opacity-50 backdrop-filter backdrop-blur-md top-64">
-              <h1 className="mt-2 text-lg font-bold text-white">{data.name}</h1>
-              <div className="mt-4 flex items-center">
-                <div className="text-md text-gray-400">Created by</div>
-                <div className="text-md ml-2 text-white">{data.authorName}</div>
-              </div>
-              <p className="text-sm text-gray-300 mt-2">{data.description}</p>
-            </div>
-          </div>
-          <div className="basis-2/3 h-full relative">
+          <div className="flex-1 h-full relative">
             <div className="h-full absolute">
               <ScrollArea className="h-full absolute overflow-y-auto">
+                <div className="relative rounded-md bg-card p-4 flex flex-col h-64 shadow-lg overflow-hidden">
+                  <div className="absolute inset-0">
+                    <img
+                      src={data.imageUrl}
+                      alt={data.name}
+                      className="object-cover w-full h-full"
+                    />
+                    <div className="absolute inset-0 bg-black bg-opacity-50 backdrop-filter backdrop-blur-md" />
+                  </div>
+                  <div className="absolute inset-0 z-10 flex">
+                    <div className="">
+                      <img
+                        src={data.imageUrl}
+                        alt={data.name}
+                        className="h-full"
+                      />
+                    </div>
+                    <div className="flex-1 m-5 flex flex-col justify-center">
+                      <div className="p-4 bg-black bg-opacity-50 backdrop-filter backdrop-blur-md rounded-md">
+                        <h1 className="mt-2 text-lg font-bold text-white">
+                          {data.name}
+                        </h1>
+                        <div className="mt-4 flex items-center">
+                          <div className="text-md text-gray-400">
+                            Created by
+                          </div>
+                          <div className="text-md ml-2 text-white">
+                            {data.authorName}
+                          </div>
+                        </div>
+                        <p className="text-sm text-gray-300 mt-2">
+                          {data.description}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 <div className="space-y-3 h-full">
                   <div className="rounded-md bg-card p-4 min-h-0">
                     <div className="max-h-full">

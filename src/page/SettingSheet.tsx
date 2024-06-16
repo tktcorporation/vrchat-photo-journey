@@ -119,14 +119,14 @@ const SettingSheet = () => {
               </span>
               {activeTabLabel && <span> / {activeTabLabel}</span>}
             </div>
-            <div className='mt-5'>
-            {TAB_KEY_LIST.map((key) => (
-              <TabsContent value={TAB_KEYS[key]} key={key} className="h-full">
-                <div className="h-full flex-grow overflow-y">
-                  <Content content={getTabContent(key)} />
-                </div>
-              </TabsContent>
-            ))}
+            <div className="mt-5">
+              {TAB_KEY_LIST.map((key) => (
+                <TabsContent value={TAB_KEYS[key]} key={key} className="h-full">
+                  <div className="h-full flex-grow overflow-y">
+                    <Content content={getTabContent(key)} />
+                  </div>
+                </TabsContent>
+              ))}
             </div>
           </div>
         </div>
