@@ -74,7 +74,7 @@ const SettingSheet = () => {
                 <TabsTrigger
                   value={TAB_KEYS[key]}
                   key={`trigger-${key}`}
-                  className="w-full bg-secondary text-start p-4 rounded"
+                  className="w-full bg-secondary/50 text-start p-4 rounded"
                 >
                   {getTabLabel(key)}
                 </TabsTrigger>
@@ -92,7 +92,7 @@ const SettingSheet = () => {
   return (
     <SheetContent
       side="bottom"
-      className="h-2/3 bg-popover rounded-t-lg text-popover-foreground"
+      className="h-2/3 bg-popover/90 rounded-t-lg text-popover-foreground backdrop-filter backdrop-blur-lg"
     >
       <Tabs
         className="h-full"
@@ -119,13 +119,15 @@ const SettingSheet = () => {
               </span>
               {activeTabLabel && <span> / {activeTabLabel}</span>}
             </div>
-            {TAB_KEY_LIST.map((key) => (
-              <TabsContent value={TAB_KEYS[key]} key={key} className="h-full">
-                <div className="h-full flex-grow overflow-y">
-                  <Content content={getTabContent(key)} />
-                </div>
-              </TabsContent>
-            ))}
+            <div className="mt-5">
+              {TAB_KEY_LIST.map((key) => (
+                <TabsContent value={TAB_KEYS[key]} key={key} className="h-full">
+                  <div className="h-full flex-grow overflow-y">
+                    <Content content={getTabContent(key)} />
+                  </div>
+                </TabsContent>
+              ))}
+            </div>
           </div>
         </div>
       </Tabs>

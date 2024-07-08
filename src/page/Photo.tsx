@@ -4,14 +4,21 @@ import { ROUTER_PATHS } from '@/constants';
 import { trpcReact } from '@/trpc';
 import * as datefns from 'date-fns';
 import type React from 'react';
-import { Link } from 'react-router-dom';
+import {
+  Link,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from 'react-router-dom';
 
+import { PhotoByPath } from '@/components/ui/PhotoByPath';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Globe, Image, Search } from 'lucide-react';
+import * as path from 'pathe';
 import { useState } from 'react';
 import { P, match } from 'ts-pattern';
 
@@ -37,8 +44,8 @@ const PlayerJoinData = ({
           <div className="flex flex-wrap gap-2">
             {playerData.map((player) => (
               <Badge
-                key={`${player.playerId}-${player.playerName}`}
-                variant="secondary"
+                key={`${player.playerName}-${player.joinDateTime}`}
+                variant="accent"
               >
                 {player.playerName}
               </Badge>
@@ -53,82 +60,69 @@ const PlayerJoinData = ({
 const VRChatWorldJoinDataView = ({
   vrcWorldId,
   joinDateTime,
-}: { vrcWorldId: string; joinDateTime: Date }) => {
+  nextJoinDateTime,
+}: { vrcWorldId: string; joinDateTime: Date; nextJoinDateTime?: Date }) => {
   const { data } =
     trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery(vrcWorldId);
+
+  const { data: vrchatPhotoPathListData } =
+    trpcReact.vrchatPhoto.getVrchatPhotoPathList.useQuery({
+      gtJoinDateTime: joinDateTime,
+      ltJoinDateTime: nextJoinDateTime,
+    });
+
   return (
     <div className="flex flex-1 flex-row space-x-3 items-start h-full relative">
       {data ? (
         <>
-          {' '}
-          <div className="basis-1/3 rounded bg-card p-4 flex flex-col h-full">
-            <>
-              <img
-                src={data.imageUrl}
-                alt={data.name}
-                className="object-cover w-full rounded"
-              />
-              <h1 className="mt-2 text-lg font-bold">{data.name}</h1>
-              <div className="mt-4 flex">
-                <div className="text-md text-muted-foreground">Created by</div>
-                <div className="text-md ml-2">{data.authorName}</div>
-              </div>
-              <p className="text-sm text-muted-foreground mt-2">
-                {data.description}
-              </p>
-            </>
-          </div>
-          <div className="basis-2/3 h-full relative">
+          <div className="flex-1 h-full relative">
             <div className="h-full absolute">
               <ScrollArea className="h-full absolute overflow-y-auto">
-                <div className="space-y-3 h-full">
-                  <div className="rounded bg-card p-4 min-h-0">
-                    <div className="max-h-full">
-                      <div className="text-md text-muted-foreground">
-                        Join Date
-                      </div>
-                      <div className="text-lg">
-                        {datefns.format(
-                          joinDateTime,
-                          'yyyy-MM-dd HH:mm:ss',
-                        )}{' '}
-                      </div>
+                <div className="relative rounded-md bg-card p-4 flex flex-col overflow-hidden">
+                  <div className="max-h-full">
+                    <div className="text-sm text-muted-foreground">
+                      Join Date
                     </div>
-                    <div className="mt-4">
-                      <div className="text-md text-muted-foreground">With</div>{' '}
-                      <div className="text-lg">
-                        <PlayerJoinData joinDateTime={joinDateTime} />
+                    <div className="text-xl">
+                      {datefns.format(
+                        joinDateTime,
+                        'yyyy年MM月dd日 HH時mm分',
+                      )}{' '}
+                    </div>
+                  </div>
+                  <div className="flex items-center mt-4">
+                    <div className="">
+                      <img
+                        src={data.imageUrl}
+                        alt={data.name}
+                        className="h-full w-48 rounded-md"
+                      />
+                    </div>
+                    <div className="ml-8">
+                      <h1 className="text-lg">{data.name}</h1>
+                      <div className="mt-4 flex items-center">
+                        <div className="text-md text-gray-400">Created by</div>
+                        <div className="text-md ml-2">{data.authorName}</div>
                       </div>
                     </div>
                   </div>
-                  <div className="rounded bg-card p-4">
-                    <div className="text-md text-muted-foreground">Photos</div>
+                  <div className="mt-4">
+                    <div className="text-lg mt-3">
+                      <PlayerJoinData joinDateTime={joinDateTime} />
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-3 h-full mt-3">
+                  <div className="rounded-md bg-card p-4">
+                    <div className="text-md text-card-foreground">Photos</div>
                     <div className="mt-3 flex-wrap flex gap-3 text-wrap">
-                      <Skeleton className="w-60 h-32" />
-                      <Skeleton className="w-60 h-32" />
-                      <Skeleton className="w-60 h-32" />
-                      <Skeleton className="w-60 h-32" />
-                      <Skeleton className="w-60 h-32" />
-                      <Skeleton className="w-60 h-32" />
-                      <Skeleton className="w-60 h-32" />
-                      <Skeleton className="w-60 h-32" />
-                      <Skeleton className="w-60 h-32" />
-                    </div>
-                  </div>
-                  <div className="rounded bg-card p-4">
-                    <div className="text-lg text-muted-foreground">
-                      このワールドへの他のJoinLog
-                    </div>
-                    <div className="flex-wrap flex mt-3 gap-3 text-wrap">
-                      <Skeleton className="w-60 h-32" />
-                      <Skeleton className="w-60 h-32" />
-                      <Skeleton className="w-60 h-32" />
-                      <Skeleton className="w-60 h-32" />
-                      <Skeleton className="w-60 h-32" />
-                      <Skeleton className="w-60 h-32" />
-                      <Skeleton className="w-60 h-32" />
-                      <Skeleton className="w-60 h-32" />
-                      <Skeleton className="w-60 h-32" />
+                      {vrchatPhotoPathListData?.map((photoPath) => (
+                        <PhotoByPath
+                          key={photoPath}
+                          className="w-60"
+                          photoPath={photoPath}
+                        />
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -144,20 +138,47 @@ const VRChatWorldJoinDataView = ({
 };
 
 function PhotoSelector() {
-  const [inputValue, setInputValue] = useState<null | string>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const { data: recentJoinWorldData } =
-    trpcReact.logInfo.getRecentVRChatWorldJoinLogByVRChatPhotoName.useQuery(
-      inputValue || '',
-      {
-        enabled: inputValue !== null,
-      },
-    );
+  const inputPhotoFileNameValue = searchParams.get('photoFileName');
+  // TODO: param から取得する
+  const inputLimitValue = 100;
+
+  const {
+    data: recentJoinWorldData,
+    refetch,
+    remove,
+  } = trpcReact.logInfo.getRecentVRChatWorldJoinLogByVRChatPhotoName.useQuery(
+    inputPhotoFileNameValue || '',
+    {
+      enabled: inputPhotoFileNameValue !== null,
+    },
+  );
 
   const onChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const fileName = e.target.value.split('\\').pop();
-    setInputValue(fileName || null);
+    // set input value to query string
+    const fileName = path.basename(e.target.value) ?? '';
+
+    onSelectPhotoFileName(fileName);
   };
+
+  const onSelectPhotoFileName = (fileNameOrPath: string) => {
+    // const fileName = fileNameOrPath.split('/').pop() ?? fileNameOrPath;
+    console.log(fileNameOrPath);
+    const fileName = path.basename(fileNameOrPath);
+    const params = new URLSearchParams({ photoFileName: fileName });
+    setSearchParams(params);
+    if (inputPhotoFileNameValue !== null) {
+      refetch();
+    } else {
+      remove();
+    }
+  };
+
+  const { data: photoData } =
+    trpcReact.vrchatPhoto.getVrchatPhotoPathList.useQuery({
+      limit: inputLimitValue,
+    });
 
   return (
     <div className="flex flex-col flex-1">
@@ -171,8 +192,10 @@ function PhotoSelector() {
             size={20}
             className="absolute left-3 h-5 w-5 text-muted-foreground"
           />
-          <div className="flex h-10 w-full rounded-md bg-muted px-3 py-2 pl-10 text-sm ring-offset-background text-muted-foreground">
-            写真で検索
+          <div className="flex h-10 w-full rounded-md bg-card px-3 py-2 pl-10 text-sm ring-offset-background text-muted-foreground">
+            {inputPhotoFileNameValue
+              ? `PhotoPath:${inputPhotoFileNameValue}`
+              : '写真で検索'}
           </div>
         </Label>
         <Input
@@ -182,17 +205,38 @@ function PhotoSelector() {
           className="hidden"
         />
       </div>
-      <div
-        className="m-3 flex-1"
-        style={{ filter: 'drop-shadow(0 0 5px rgba(0, 0, 0, 0.1))' }}
-      >
-        {recentJoinWorldData && (
-          <VRChatWorldJoinDataView
-            vrcWorldId={recentJoinWorldData.worldId}
-            joinDateTime={recentJoinWorldData.joinDateTime}
-          />
-        )}
-      </div>
+      {inputPhotoFileNameValue ? (
+        <div
+          className="m-3 flex-1"
+          style={{ filter: 'drop-shadow(0 0 5px rgba(0, 0, 0, 0.1))' }}
+        >
+          {recentJoinWorldData && (
+            <VRChatWorldJoinDataView
+              vrcWorldId={recentJoinWorldData.worldId}
+              joinDateTime={recentJoinWorldData.joinDateTime}
+            />
+          )}
+        </div>
+      ) : (
+        <div className="m-3 flex flex-1 flex-row space-x-3 items-start h-full relative">
+          <div className="flex-1 h-full relative">
+            <div className="h-full absolute">
+              <ScrollArea className="h-full absolute overflow-y-auto">
+                <div className="relative overflow-hidden flex flex-wrap gap-4 my-6">
+                  {photoData?.map((pathStr) => (
+                    <PhotoByPath
+                      onClick={() => onSelectPhotoFileName(pathStr)}
+                      className="w-48 cursor-pointer hover:brightness-105"
+                      key={pathStr}
+                      photoPath={pathStr}
+                    />
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -22,6 +22,7 @@ debug/photos/**/*.txt
 debug/logs-store/*.log
 debug/db/*
 !debug/db/.gitkeep
+debug/sequelize.sqlite
 
 # local env files
 .env.local

@@ -3,6 +3,7 @@ import { SqliteDialect } from '@sequelize/sqlite3';
 import { match } from 'ts-pattern';
 import { VRChatPlayerJoinLogModel } from '../module/VRChatPlayerJoinLogModel/playerJoinInfoLog.model';
 import { VRChatWorldJoinLogModel } from '../module/VRChatWorldJoinLogModel/s_model';
+import { VRChatPhotoPathModel } from '../module/vrchatPhoto/model/vrchatPhotoPath.model';
 import * as settingService from './../module/settings/service';
 import * as log from './logger';
 import { Migrations } from './sequelize/migrations.model';
@@ -14,7 +15,12 @@ const _getRDBClient = (props: { db_url: string }) => {
   const sequelizeOptions = {
     dialect: SqliteDialect,
     storage: props.db_url,
-    models: [VRChatWorldJoinLogModel, VRChatPlayerJoinLogModel, Migrations],
+    models: [
+      VRChatWorldJoinLogModel,
+      VRChatPlayerJoinLogModel,
+      VRChatPhotoPathModel,
+      Migrations,
+    ],
   };
   log.info(`sequelizeOptions: ${JSON.stringify(sequelizeOptions)}`);
   const client = new Sequelize(sequelizeOptions);
@@ -76,6 +82,7 @@ const resetRDB = async (appVersion: string) => {
   migrationProgeress = true;
   try {
     // migration 実行
+    // TODO: forceTrue にしなくて良い場合はしない
     const result = await getRDBClient().__client.sync({
       force: true,
       alter: true,

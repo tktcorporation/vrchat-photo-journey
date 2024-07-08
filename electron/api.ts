@@ -9,6 +9,7 @@ import { initSettingStore } from './module/settingStore';
 import { settingsRouter } from './module/settings/settingsController';
 import { vrchatApiRouter } from './module/vrchatApi/vrchatApiController';
 import { vrchatLogRouter } from './module/vrchatLog/vrchatLogController';
+import { vrchatPhotoRouter } from './module/vrchatPhoto/vrchatPhoto.controller';
 import {
   eventEmitter as ee,
   logError,
@@ -26,6 +27,7 @@ export const router = trpcRouter({
   backgroundSettings: backgroundSettingsRouter(settingStore),
   settings: settingsRouter(),
   electronUtil: electronUtilRouter(),
+  vrchatPhoto: vrchatPhotoRouter(),
   vrchatLog: vrchatLogRouter(),
   logInfo: logInfoRouter(),
   vrchatApi: vrchatApiRouter,

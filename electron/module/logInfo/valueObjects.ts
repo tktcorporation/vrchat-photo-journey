@@ -32,7 +32,7 @@ class VRChatPhotoFileNameWithExt extends BaseValueObject<
       /\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.\d{3}/,
     );
     if (dateTimeStr === null) {
-      throw new Error('Invalid VRChat photo file name');
+      throw new Error(`Invalid VRChat photo file name: ${this.value}`);
     }
     return datefns.parse(dateTimeStr[0], 'yyyy-MM-dd_HH-mm-ss.SSS', new Date());
   }

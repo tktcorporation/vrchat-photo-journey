@@ -1,4 +1,5 @@
 import * as neverthrow from 'neverthrow';
+import { P, match } from 'ts-pattern';
 import z from 'zod';
 import * as playerJoinLogService from '../VRChatPlayerJoinLogModel/playerJoinLog.service';
 import * as worldJoinLogService from '../VRChatWorldJoinLogModel/service';
@@ -8,6 +9,8 @@ import {
   getLogStoreFilePath,
   getVRChaLogInfoByLogFilePathList,
 } from '../vrchatLog/service';
+import * as vrchatPhotoService from '../vrchatPhoto/vrchatPhoto.service';
+import * as log from './../../lib/logger';
 import { procedure, router as trpcRouter } from './../../trpc';
 import {
   type VRChatPhotoFileNameWithExt,
@@ -31,6 +34,8 @@ const loadIndex = async () => {
 
   await worldJoinLogService.createVRChatWorldJoinLogModel(worldJoinLogList);
   await playerJoinLogService.createVRChatPlayerJoinLogModel(playerJoinLogList);
+
+  await vrchatPhotoService.createVRChatPhotoPathIndex();
 
   return neverthrow.ok(undefined);
 };
@@ -72,6 +77,11 @@ export const getRecentVRChatWorldJoinLogByVRChatPhotoName = async (
   if (joinLog === null) {
     return neverthrow.err('RECENT_JOIN_LOG_NOT_FOUND' as const);
   }
+
+  const nextJoinLog = await worldJoinLogService.findNextVRChatWorldJoinLog(
+    joinLog.joinDateTime,
+  );
+
   return neverthrow.ok({
     id: joinLog.id as string,
     worldId: joinLog.worldId,
@@ -80,6 +90,20 @@ export const getRecentVRChatWorldJoinLogByVRChatPhotoName = async (
     joinDateTime: joinLog.joinDateTime,
     createdAt: joinLog.createdAt as Date,
     updatedAt: joinLog.updatedAt as Date,
+    nextJoinLog: match(nextJoinLog)
+      .with(P.nullish, () => null)
+      .with(P.nonNullable, (value) => {
+        return {
+          id: value.id as string,
+          worldId: value.worldId,
+          worldName: value.worldName,
+          worldInstanceId: value.worldInstanceId,
+          joinDateTime: value.joinDateTime,
+          createdAt: value.createdAt as Date,
+          updatedAt: value.updatedAt as Date,
+        };
+      })
+      .exhaustive(),
   });
 };
 
@@ -142,6 +166,7 @@ export const logInfoRouter = () =>
     getRecentVRChatWorldJoinLogByVRChatPhotoName: procedure
       .input(VRChatPhotoFileNameWithExtSchema)
       .query(async (ctx) => {
+        log.info('getRecentVRChatWorldJoinLogByVRChatPhotoName', ctx.input);
         const joinLogResult =
           await getRecentVRChatWorldJoinLogByVRChatPhotoName(ctx.input);
         return joinLogResult.match(
