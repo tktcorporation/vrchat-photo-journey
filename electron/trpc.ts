@@ -29,10 +29,12 @@ const logError = (err: Error | string, requestInfo?: string) => {
 const errorHandler = t.middleware(async (opts) => {
   const resp = await opts.next(opts);
 
+  const requestInput = JSON.stringify(opts.input);
+
   if (!resp.ok) {
     logError(
       new Error('Caught error in TRPC middleware', { cause: resp.error }),
-      `${opts.type} ${opts.path}`,
+      `${opts.type} ${opts.path} ${requestInput}`,
     );
     throw resp.error;
   }

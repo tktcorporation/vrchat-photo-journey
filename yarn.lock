@@ -7589,7 +7589,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pathe@npm:^1.1.2":
+"pathe@npm:1.1.2":
   version: 1.1.2
   resolution: "pathe@npm:1.1.2"
   checksum: 10c0/64ee0a4e587fb0f208d9777a6c56e4f9050039268faaaaecd50e959ef01bf847b7872785c36483fa5cdcdbdfdb31fef2ff222684d4fc21c330ab60395c681897
@@ -9789,7 +9789,7 @@ __metadata:
     lucide-react: "npm:0.376.0"
     neverthrow: "npm:6.2.1"
     opentype.js: "npm:1.3.4"
-    pathe: "npm:^1.1.2"
+    pathe: "npm:1.1.2"
     playwright: "npm:1.43.1"
     pony-cause: "npm:2.1.11"
     postcss: "npm:8.4.38"

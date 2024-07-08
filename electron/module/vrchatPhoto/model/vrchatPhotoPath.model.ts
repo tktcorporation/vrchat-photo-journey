@@ -4,6 +4,7 @@ import {
   type InferAttributes,
   type InferCreationAttributes,
   Model,
+  Op,
   sql,
 } from '@sequelize/core';
 import {
@@ -60,10 +61,20 @@ export const createOrUpdateListVRChatPlayerJoinLog = async (
   );
 };
 
-export const getVRChatPhotoPathList = async (): Promise<
-  VRChatPhotoPathModel[]
-> => {
+/**
+ * VRChatの写真の保存pathを取得する
+ */
+export const getVRChatPhotoPathList = async (query?: {
+  gtJoinDateTime?: Date;
+  ltJoinDateTime?: Date;
+}): Promise<VRChatPhotoPathModel[]> => {
   const photoPathList = await VRChatPhotoPathModel.findAll({
+    where: {
+      photoTakenAt: {
+        ...(query?.gtJoinDateTime && { [Op.gt]: query.gtJoinDateTime }),
+        ...(query?.ltJoinDateTime && { [Op.lt]: query.ltJoinDateTime }),
+      },
+    },
     attributes: ['photoPath', 'photoTakenAt'],
   });
 

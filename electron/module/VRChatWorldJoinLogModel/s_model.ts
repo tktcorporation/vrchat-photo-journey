@@ -103,11 +103,13 @@ export const findAllVRChatWorldJoinLogList = async () => {
 /**
  * 指定した日時から計算して直前にjoinしたワールドの情報を取得する
  */
-export const findRecentVRChatWorldJoinLog = async (dateTime: Date) => {
+export const findRecentVRChatWorldJoinLog = async (props: {
+  dateTime: Date;
+}) => {
   const vrchatWorldJoinLog = await VRChatWorldJoinLogModel.findOne({
     where: {
       joinDateTime: {
-        [Op.lte]: dateTime,
+        [Op.lte]: props.dateTime,
       },
     },
     order: [['joinDateTime', 'DESC']],

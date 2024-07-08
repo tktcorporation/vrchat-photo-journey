@@ -16,7 +16,9 @@ export const findAllVRChatWorldJoinLogList = async (): Promise<
 export const findRecentVRChatWorldJoinLog = async (
   joinDateTime: Date,
 ): Promise<model.VRChatWorldJoinLogModel | null> => {
-  return model.findRecentVRChatWorldJoinLog(joinDateTime);
+  return model.findRecentVRChatWorldJoinLog({
+    dateTime: joinDateTime,
+  });
 };
 
 export const findNextVRChatWorldJoinLog = async (

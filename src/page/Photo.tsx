@@ -60,9 +60,16 @@ const PlayerJoinData = ({
 const VRChatWorldJoinDataView = ({
   vrcWorldId,
   joinDateTime,
-}: { vrcWorldId: string; joinDateTime: Date }) => {
+  nextJoinDateTime,
+}: { vrcWorldId: string; joinDateTime: Date; nextJoinDateTime?: Date }) => {
   const { data } =
     trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery(vrcWorldId);
+
+  const { data: vrchatPhotoPathListData } =
+    trpcReact.vrchatPhoto.getVrchatPhotoPathList.useQuery({
+      gtJoinDateTime: joinDateTime,
+      ltJoinDateTime: nextJoinDateTime,
+    });
 
   return (
     <div className="flex flex-1 flex-row space-x-3 items-start h-full relative">
@@ -109,15 +116,13 @@ const VRChatWorldJoinDataView = ({
                   <div className="rounded-md bg-card p-4">
                     <div className="text-md text-card-foreground">Photos</div>
                     <div className="mt-3 flex-wrap flex gap-3 text-wrap">
-                      <Skeleton className="w-60 h-32" />
-                      <Skeleton className="w-60 h-32" />
-                      <Skeleton className="w-60 h-32" />
-                      <Skeleton className="w-60 h-32" />
-                      <Skeleton className="w-60 h-32" />
-                      <Skeleton className="w-60 h-32" />
-                      <Skeleton className="w-60 h-32" />
-                      <Skeleton className="w-60 h-32" />
-                      <Skeleton className="w-60 h-32" />
+                      {vrchatPhotoPathListData?.map((photoPath) => (
+                        <PhotoByPath
+                          key={photoPath}
+                          className="w-60"
+                          photoPath={photoPath}
+                        />
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -136,14 +141,19 @@ function PhotoSelector() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const inputPhotoFileNameValue = searchParams.get('photoFileName');
+  // TODO: param から取得する
+  const inputLimitValue = 100;
 
-  const { data: recentJoinWorldData, refetch } =
-    trpcReact.logInfo.getRecentVRChatWorldJoinLogByVRChatPhotoName.useQuery(
-      inputPhotoFileNameValue || '',
-      {
-        enabled: inputPhotoFileNameValue !== null,
-      },
-    );
+  const {
+    data: recentJoinWorldData,
+    refetch,
+    remove,
+  } = trpcReact.logInfo.getRecentVRChatWorldJoinLogByVRChatPhotoName.useQuery(
+    inputPhotoFileNameValue || '',
+    {
+      enabled: inputPhotoFileNameValue !== null,
+    },
+  );
 
   const onChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     // set input value to query string
@@ -158,11 +168,17 @@ function PhotoSelector() {
     const fileName = path.basename(fileNameOrPath);
     const params = new URLSearchParams({ photoFileName: fileName });
     setSearchParams(params);
-    refetch();
+    if (inputPhotoFileNameValue !== null) {
+      refetch();
+    } else {
+      remove();
+    }
   };
 
   const { data: photoData } =
-    trpcReact.vrchatPhoto.getVrchatPhotoPathList.useQuery();
+    trpcReact.vrchatPhoto.getVrchatPhotoPathList.useQuery({
+      limit: inputLimitValue,
+    });
 
   return (
     <div className="flex flex-col flex-1">
@@ -177,10 +193,9 @@ function PhotoSelector() {
             className="absolute left-3 h-5 w-5 text-muted-foreground"
           />
           <div className="flex h-10 w-full rounded-md bg-card px-3 py-2 pl-10 text-sm ring-offset-background text-muted-foreground">
-            写真で検索{' '}
             {inputPhotoFileNameValue
               ? `PhotoPath:${inputPhotoFileNameValue}`
-              : ''}
+              : '写真で検索'}
           </div>
         </Label>
         <Input
@@ -211,8 +226,7 @@ function PhotoSelector() {
                   {photoData?.map((pathStr) => (
                     <PhotoByPath
                       onClick={() => onSelectPhotoFileName(pathStr)}
-                      // clickable css
-                      className="w-48 cursor-pointer"
+                      className="w-48 cursor-pointer hover:brightness-105"
                       key={pathStr}
                       photoPath={pathStr}
                     />

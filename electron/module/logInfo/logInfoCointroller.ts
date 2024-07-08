@@ -1,4 +1,5 @@
 import * as neverthrow from 'neverthrow';
+import { P, match } from 'ts-pattern';
 import z from 'zod';
 import * as playerJoinLogService from '../VRChatPlayerJoinLogModel/playerJoinLog.service';
 import * as worldJoinLogService from '../VRChatWorldJoinLogModel/service';
@@ -76,6 +77,11 @@ export const getRecentVRChatWorldJoinLogByVRChatPhotoName = async (
   if (joinLog === null) {
     return neverthrow.err('RECENT_JOIN_LOG_NOT_FOUND' as const);
   }
+
+  const nextJoinLog = await worldJoinLogService.findNextVRChatWorldJoinLog(
+    joinLog.joinDateTime,
+  );
+
   return neverthrow.ok({
     id: joinLog.id as string,
     worldId: joinLog.worldId,
@@ -84,6 +90,20 @@ export const getRecentVRChatWorldJoinLogByVRChatPhotoName = async (
     joinDateTime: joinLog.joinDateTime,
     createdAt: joinLog.createdAt as Date,
     updatedAt: joinLog.updatedAt as Date,
+    nextJoinLog: match(nextJoinLog)
+      .with(P.nullish, () => null)
+      .with(P.nonNullable, (value) => {
+        return {
+          id: value.id as string,
+          worldId: value.worldId,
+          worldName: value.worldName,
+          worldInstanceId: value.worldInstanceId,
+          joinDateTime: value.joinDateTime,
+          createdAt: value.createdAt as Date,
+          updatedAt: value.updatedAt as Date,
+        };
+      })
+      .exhaustive(),
   });
 };
 

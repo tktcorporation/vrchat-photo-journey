@@ -78,6 +78,9 @@ export const createVRChatPhotoPathIndex = async () => {
   await model.createOrUpdateListVRChatPlayerJoinLog(photoList);
 };
 
-export const getVRChatPhotoPathList = async () => {
-  return model.getVRChatPhotoPathList();
+export const getVRChatPhotoPathList = async (query?: {
+  gtJoinDateTime?: Date;
+  ltJoinDateTime?: Date;
+}) => {
+  return model.getVRChatPhotoPathList(query);
 };
