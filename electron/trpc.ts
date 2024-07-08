@@ -11,7 +11,7 @@ const t = initTRPC.create({
   transformer: superjson,
 });
 
-const logError = (err: Error | string) => {
+const logError = (err: Error | string, requestInfo?: string) => {
   eventEmitter.emit('toast', `${err}`);
   let error: Error;
   if (typeof err === 'string') {
@@ -20,7 +20,10 @@ const logError = (err: Error | string) => {
     error = new Error('TRPCErrorLogger', { cause: err });
   }
   const appVersion = process.env.npm_package_version;
-  log.error(`version: ${appVersion}`, stackWithCauses(error));
+  log.error(
+    `version: ${appVersion}, request: ${requestInfo}`,
+    stackWithCauses(error),
+  );
 };
 
 const errorHandler = t.middleware(async (opts) => {
@@ -29,6 +32,7 @@ const errorHandler = t.middleware(async (opts) => {
   if (!resp.ok) {
     logError(
       new Error('Caught error in TRPC middleware', { cause: resp.error }),
+      `${opts.type} ${opts.path}`,
     );
     throw resp.error;
   }
@@ -36,9 +40,15 @@ const errorHandler = t.middleware(async (opts) => {
   return resp;
 });
 
+const logRequest = t.middleware(async (opts) => {
+  const { path, type } = opts;
+  log.debug(`Incoming request: ${type} ${path}`);
+  return opts.next();
+});
+
 const { procedure: p } = t;
 
-const procedure = p.use(errorHandler);
+const procedure = p.use(logRequest).use(errorHandler);
 const router = t.router;
 
 export { procedure, router, eventEmitter, logError };

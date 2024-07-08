@@ -8,6 +8,8 @@ import {
   getLogStoreFilePath,
   getVRChaLogInfoByLogFilePathList,
 } from '../vrchatLog/service';
+import * as vrchatPhotoService from '../vrchatPhoto/vrchatPhoto.service';
+import * as log from './../../lib/logger';
 import { procedure, router as trpcRouter } from './../../trpc';
 import {
   type VRChatPhotoFileNameWithExt,
@@ -31,6 +33,8 @@ const loadIndex = async () => {
 
   await worldJoinLogService.createVRChatWorldJoinLogModel(worldJoinLogList);
   await playerJoinLogService.createVRChatPlayerJoinLogModel(playerJoinLogList);
+
+  await vrchatPhotoService.createVRChatPhotoPathIndex();
 
   return neverthrow.ok(undefined);
 };
@@ -142,6 +146,7 @@ export const logInfoRouter = () =>
     getRecentVRChatWorldJoinLogByVRChatPhotoName: procedure
       .input(VRChatPhotoFileNameWithExtSchema)
       .query(async (ctx) => {
+        log.info('getRecentVRChatWorldJoinLogByVRChatPhotoName', ctx.input);
         const joinLogResult =
           await getRecentVRChatWorldJoinLogByVRChatPhotoName(ctx.input);
         return joinLogResult.match(

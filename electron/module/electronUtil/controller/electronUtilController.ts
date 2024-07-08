@@ -1,3 +1,5 @@
+import path from 'node:path';
+import sharp from 'sharp';
 import z from 'zod';
 import { getWindow } from '../../../electronUtil';
 import { procedure, router as trpcRouter } from './../../../trpc';
@@ -21,5 +23,11 @@ export const electronUtilRouter = () =>
     reloadWindow: procedure.mutation(async () => {
       console.log('reloadWindow');
       await reloadWindow();
+    }),
+    getVRChatPhotoItemData: procedure.input(z.string()).query(async (ctx) => {
+      const photoBuf = await sharp(ctx.input).resize(256).toBuffer();
+      return `data:image/${path
+        .extname(ctx.input)
+        .replace('.', '')};base64,${photoBuf.toString('base64')}`;
     }),
   });
