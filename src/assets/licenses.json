@@ -717,6 +717,20 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@tanstack/react-query",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@tanstack/react-query/LICENSE"
   },
+  "@tanstack/react-virtual@3.8.3": {
+    "licenses": "MIT",
+    "repository": "https://github.com/TanStack/virtual",
+    "publisher": "Tanner Linsley",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/@tanstack/react-virtual",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@tanstack/react-virtual/LICENSE"
+  },
+  "@tanstack/virtual-core@3.8.3": {
+    "licenses": "MIT",
+    "repository": "https://github.com/TanStack/virtual",
+    "publisher": "Tanner Linsley",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/@tanstack/virtual-core",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@tanstack/virtual-core/LICENSE"
+  },
   "@tootallnate/once@1.1.2": {
     "licenses": "MIT",
     "repository": "https://github.com/TooTallNate/once",

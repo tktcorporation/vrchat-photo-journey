@@ -118,6 +118,7 @@ export const VRChatWorldJoinDataView = ({
                     <div className="mt-3 flex-wrap flex gap-3 text-wrap">
                       {vrchatPhotoPathListData?.map((photoPath) => (
                         <PhotoByPath
+                          alt={photoPath}
                           key={photoPath}
                           className="w-60"
                           photoPath={photoPath}

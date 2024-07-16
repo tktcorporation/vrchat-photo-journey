@@ -6,9 +6,16 @@ import { cn } from '@/lib/utils';
 
 export interface PhotoProps extends React.HTMLAttributes<HTMLDivElement> {
   photoPath: string;
+  alt: string;
+  objectFit?: 'cover' | 'contain';
 }
 
-export function PhotoByPath({ photoPath, ...props }: PhotoProps) {
+export function PhotoByPath({
+  photoPath,
+  alt,
+  objectFit = 'cover',
+  ...props
+}: PhotoProps) {
   const query =
     trpcReact.electronUtil.getVRChatPhotoItemData.useQuery(photoPath);
   const { data, isLoading } = query;
@@ -31,7 +38,7 @@ export function PhotoByPath({ photoPath, ...props }: PhotoProps) {
         props.className,
       )}
     >
-      <img src={data} className="w-full h-full" alt="" />
+      <img src={data} className={cn('object-cover w-full h-full')} alt={alt} />
     </div>
   );
 }
