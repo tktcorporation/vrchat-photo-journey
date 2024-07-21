@@ -3,7 +3,7 @@ import { ImageUpload } from '@/components/ui/image-upload';
 import { ROUTER_PATHS } from '@/constants';
 import { trpcReact } from '@/trpc';
 import * as datefns from 'date-fns';
-import React from 'react';
+import type React from 'react';
 import {
   Link,
   useLocation,
@@ -22,65 +22,15 @@ import { Globe, Image, Search } from 'lucide-react';
 import * as path from 'pathe';
 import { useState } from 'react';
 import { P, match } from 'ts-pattern';
+import { PhotoListAll } from './__Photo/PhotoList';
 import { RenderInView } from './__Photo/RenderInView';
 import { VRChatWorldJoinDataView } from './__Photo/VRChatJoinDataView';
 
-interface PhotoListProps {
-  photoData: string[];
-  onSelectPhotoFileName: (fileName: string) => void;
-}
-const PhotoList = ({ photoData, onSelectPhotoFileName }: PhotoListProps) => {
-  const parentRef = React.useRef(null);
-
-  const rowVirtualizer = useVirtualizer({
-    count: photoData.length,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => 144, // 写真の高さを推定各アイテムの高さを指定
-  });
-
-  return (
-    <ScrollArea className="h-full absolute overflow-y-auto">
-      <div
-        ref={parentRef}
-        style={{
-          height: `${rowVirtualizer.getTotalSize()}px`,
-        }}
-        className="flex flex-wrap absolute w-full"
-      >
-        {rowVirtualizer.getVirtualItems().map((virtualItem) => {
-          const pathStr = photoData[virtualItem.index];
-          return (
-            <div
-              key={virtualItem.key}
-              className="absolute"
-              style={{
-                height: `${virtualItem.size}px`,
-                transform: `translateY(${virtualItem.start}px)`,
-              }}
-            >
-              <RenderInView>
-                <PhotoByPath
-                  alt={pathStr}
-                  objectFit="cover"
-                  onClick={() => onSelectPhotoFileName(pathStr)}
-                  className="h-36 w-36 cursor-pointer hover:brightness-105"
-                  photoPath={pathStr}
-                />
-              </RenderInView>
-            </div>
-          );
-        })}
-      </div>
-    </ScrollArea>
-  );
-};
-
 function PhotoSelector() {
+  console.log('PhotoSelector');
   const [searchParams, setSearchParams] = useSearchParams();
 
   const inputPhotoFileNameValue = searchParams.get('photoFileName');
-  // TODO: param から取得する
-  const inputLimitValue = 100;
 
   const {
     data: recentJoinWorldData,
@@ -112,11 +62,6 @@ function PhotoSelector() {
       remove();
     }
   };
-
-  const { data: photoData } =
-    trpcReact.vrchatPhoto.getVrchatPhotoPathList.useQuery({
-      limit: inputLimitValue,
-    });
 
   return (
     <div className="flex flex-col flex-1">
@@ -159,10 +104,7 @@ function PhotoSelector() {
         <div className="m-3 flex flex-1 flex-row space-x-3 items-start h-full relative">
           <div className="flex-1 h-full relative">
             <div className="h-full relative">
-              <PhotoList
-                photoData={photoData ?? []}
-                onSelectPhotoFileName={onSelectPhotoFileName}
-              />
+              <PhotoListAll onSelectPhotoFileName={onSelectPhotoFileName} />
             </div>
           </div>
         </div>

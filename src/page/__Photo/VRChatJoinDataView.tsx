@@ -67,8 +67,8 @@ export const VRChatWorldJoinDataView = ({
 
   const { data: vrchatPhotoPathListData } =
     trpcReact.vrchatPhoto.getVrchatPhotoPathList.useQuery({
-      gtJoinDateTime: joinDateTime,
-      ltJoinDateTime: nextJoinDateTime,
+      gtPhotoTakenAt: joinDateTime,
+      ltPhotoTakenAt: nextJoinDateTime,
     });
 
   return (
