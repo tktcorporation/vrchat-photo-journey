@@ -17,19 +17,20 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { Globe, Image, Search } from 'lucide-react';
 import * as path from 'pathe';
 import { useState } from 'react';
 import { P, match } from 'ts-pattern';
+import { PhotoListAll } from './__Photo/PhotoList';
 import { RenderInView } from './__Photo/RenderInView';
 import { VRChatWorldJoinDataView } from './__Photo/VRChatJoinDataView';
 
 function PhotoSelector() {
+  console.log('PhotoSelector');
   const [searchParams, setSearchParams] = useSearchParams();
 
   const inputPhotoFileNameValue = searchParams.get('photoFileName');
-  // TODO: param から取得する
-  const inputLimitValue = 100;
 
   const {
     data: recentJoinWorldData,
@@ -61,11 +62,6 @@ function PhotoSelector() {
       remove();
     }
   };
-
-  const { data: photoData } =
-    trpcReact.vrchatPhoto.getVrchatPhotoPathList.useQuery({
-      limit: inputLimitValue,
-    });
 
   return (
     <div className="flex flex-col flex-1">
@@ -107,21 +103,8 @@ function PhotoSelector() {
       ) : (
         <div className="m-3 flex flex-1 flex-row space-x-3 items-start h-full relative">
           <div className="flex-1 h-full relative">
-            <div className="h-full absolute">
-              <ScrollArea className="h-full absolute overflow-y-auto">
-                <div className="relative overflow-hidden flex flex-wrap gap-4 my-6">
-                  {photoData?.map((pathStr) => (
-                    <RenderInView key={pathStr}>
-                      <PhotoByPath
-                        onClick={() => onSelectPhotoFileName(pathStr)}
-                        className="w-48 cursor-pointer hover:brightness-105"
-                        key={pathStr}
-                        photoPath={pathStr}
-                      />
-                    </RenderInView>
-                  ))}
-                </div>
-              </ScrollArea>
+            <div className="h-full relative">
+              <PhotoListAll onSelectPhotoFileName={onSelectPhotoFileName} />
             </div>
           </div>
         </div>

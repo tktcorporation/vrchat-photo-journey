@@ -79,8 +79,12 @@ export const createVRChatPhotoPathIndex = async () => {
 };
 
 export const getVRChatPhotoPathList = async (query?: {
-  gtJoinDateTime?: Date;
-  ltJoinDateTime?: Date;
+  gtPhotoTakenAt?: Date;
+  ltPhotoTakenAt?: Date;
 }) => {
   return model.getVRChatPhotoPathList(query);
+};
+
+export const getCountByYearMonthList = async () => {
+  return model.getCountByYearMonthList();
 };

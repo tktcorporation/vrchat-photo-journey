@@ -7,9 +7,9 @@ import * as vrchatPhotoService from './../vrchatPhoto/vrchatPhoto.service';
  * index 済みの写真ファイルのpath一覧を取得する
  * TODO: pagination
  */
-export const getVRChatLogFilePathList = async (query?: {
-  gtJoinDateTime?: Date;
-  ltJoinDateTime?: Date;
+const getVRChatLogFilePathList = async (query?: {
+  gtPhotoTakenAt?: Date;
+  ltPhotoTakenAt?: Date;
 }): Promise<neverthrow.Result<string[], Error>> => {
   const vrchatPhotoPathList =
     await vrchatPhotoService.getVRChatPhotoPathList(query);
@@ -18,14 +18,29 @@ export const getVRChatLogFilePathList = async (query?: {
   );
 };
 
+const getCountByYearMonthList = async (): Promise<
+  neverthrow.Result<
+    {
+      photoTakenYear: number;
+      photoTakenMonth: number;
+      photoCount: number;
+    }[],
+    never
+  >
+> => {
+  const countByYearMonthList =
+    await vrchatPhotoService.getCountByYearMonthList();
+  return neverthrow.ok(countByYearMonthList);
+};
+
 export const vrchatPhotoRouter = () =>
   trpcRouter({
     getVrchatPhotoPathList: procedure
       .input(
         z
           .object({
-            gtJoinDateTime: z.date().optional(),
-            ltJoinDateTime: z.date().optional(),
+            gtPhotoTakenAt: z.date().optional(),
+            ltPhotoTakenAt: z.date().optional(),
             limit: z.number().optional(),
           })
           .optional(),
@@ -37,4 +52,12 @@ export const vrchatPhotoRouter = () =>
         }
         return result.value;
       }),
+    getCountByYearMonthList: procedure.query(async () => {
+      const result = await getCountByYearMonthList();
+      if (result.isErr()) {
+        throw result.error;
+      }
+      console.log(result.value);
+      return result.value;
+    }),
   });
