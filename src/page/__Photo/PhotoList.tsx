@@ -224,13 +224,15 @@ const PhotoListYearMonth = (props: {
               height: props.photoWidth,
             }}
           >
-            <PhotoByPath
-              alt={photoPath}
-              objectFit="cover"
-              className="h-full w-full cursor-pointer hover:brightness-105"
-              photoPath={photoPath}
-              onClick={() => props.onSelectPhotoFileName(photoPath)}
-            />
+            <RenderInView className="h-full w-full">
+              <PhotoByPath
+                alt={photoPath}
+                objectFit="cover"
+                className="h-full w-full cursor-pointer hover:brightness-105"
+                photoPath={photoPath}
+                onClick={() => props.onSelectPhotoFileName(photoPath)}
+              />
+            </RenderInView>
           </div>
         );
       })}

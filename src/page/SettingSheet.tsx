@@ -22,11 +22,13 @@ import BackGroundSettings from './setting/BackGroundSettings';
 import Debug from './setting/Debug';
 import { LicenseDisplay } from './setting/LicenseDisplay';
 import VRChatLogPathSetting from './setting/VRChatLogPathSetting';
+import { VRChatPhotoDirPathSetting } from './setting/VRChatPhotoDirPathSetting';
 
 const TAB_KEY_LIST = [
   'none',
   'aboutApp',
   'vrcLogPathSetting',
+  'vrchatPhotoDirPathSetting',
   'backGround',
   'lisence',
   'debug',
@@ -37,6 +39,7 @@ const TAB_KEYS = {
   lisence: 'lisence',
   aboutApp: 'aboutApp',
   vrcLogPathSetting: 'vrcLogPathSetting',
+  vrchatPhotoDirPathSetting: 'vrchatPhotoDirPathSetting',
   debug: 'debug',
 } as { [type in (typeof TAB_KEY_LIST)[number]]: type };
 const getTabLabel = (key: (typeof TAB_KEY_LIST)[number]) =>
@@ -47,6 +50,7 @@ const getTabLabel = (key: (typeof TAB_KEY_LIST)[number]) =>
     .with('aboutApp', () => 'About')
     .with('debug', () => 'Debug')
     .with('vrcLogPathSetting', () => 'vrcLogPathSetting')
+    .with('vrchatPhotoDirPathSetting', () => 'vrchatPhotoDirPathSetting')
     .exhaustive();
 const getTabContent = (key: (typeof TAB_KEY_LIST)[number]) =>
   match(key)
@@ -56,6 +60,7 @@ const getTabContent = (key: (typeof TAB_KEY_LIST)[number]) =>
     .with('aboutApp', () => <AboutApp />)
     .with('debug', () => <Debug />)
     .with('vrcLogPathSetting', () => <VRChatLogPathSetting />)
+    .with('vrchatPhotoDirPathSetting', () => <VRChatPhotoDirPathSetting />)
     .exhaustive();
 
 const SettingSheet = () => {

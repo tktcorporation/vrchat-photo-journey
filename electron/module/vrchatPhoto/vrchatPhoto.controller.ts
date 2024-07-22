@@ -1,7 +1,9 @@
 import * as neverthrow from 'neverthrow';
 import z from 'zod';
-import { procedure, router as trpcRouter } from './../../trpc';
+import { eventEmitter, procedure, router as trpcRouter } from './../../trpc';
+import * as utilsService from './../electronUtil/service';
 import * as vrchatPhotoService from './../vrchatPhoto/vrchatPhoto.service';
+import { VRChatPhotoDirPathSchema } from './valueObjects';
 
 /**
  * index 済みの写真ファイルのpath一覧を取得する
@@ -33,8 +35,41 @@ const getCountByYearMonthList = async (): Promise<
   return neverthrow.ok(countByYearMonthList);
 };
 
+export const setVRChatPhotoDirPathByDialog = async (): Promise<
+  neverthrow.Result<void, 'canceled'>
+> => {
+  return (await utilsService.openGetDirDialog()).map((dirPath) => {
+    vrchatPhotoService.setVRChatPhotoDirPathToSettingStore(
+      VRChatPhotoDirPathSchema.parse(dirPath),
+    );
+    return undefined;
+  });
+};
+
 export const vrchatPhotoRouter = () =>
   trpcRouter({
+    getVRChatPhotoDirPath: procedure.query(async () => {
+      const result = await vrchatPhotoService.getVRChatPhotoDirPath();
+      return result;
+    }),
+    setVRChatPhotoDirPathToSettingStore: procedure.mutation(async () => {
+      const result = await setVRChatPhotoDirPathByDialog();
+      return result.match(
+        () => {
+          eventEmitter.emit('toast', 'VRChatの写真の保存先を設定しました');
+          return true;
+        },
+        (error) => {
+          eventEmitter.emit('toast', error);
+          return false;
+        },
+      );
+    }),
+    clearVRChatPhotoDirPathInSettingStore: procedure.mutation(async () => {
+      const result =
+        await vrchatPhotoService.clearVRChatPhotoDirPathInSettingStore();
+      return result;
+    }),
     getVrchatPhotoPathList: procedure
       .input(
         z
