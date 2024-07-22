@@ -17,7 +17,7 @@ const openPathInExplorer = async (
 };
 
 const openGetDirDialog = async (): Promise<
-  neverthrow.Result<string, Error | 'canceled'>
+  neverthrow.Result<string, 'canceled'>
 > => {
   return dialog
     .showOpenDialog({
@@ -30,9 +30,6 @@ const openGetDirDialog = async (): Promise<
       return neverthrow.err('canceled' as const);
     })
     .catch((err) => {
-      if (err instanceof Error) {
-        return neverthrow.err(err);
-      }
       throw err;
     });
 };
