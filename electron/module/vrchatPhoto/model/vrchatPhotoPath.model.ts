@@ -68,6 +68,7 @@ export const createOrUpdateListVRChatPlayerJoinLog = async (
 export const getVRChatPhotoPathList = async (query?: {
   gtPhotoTakenAt?: Date;
   ltPhotoTakenAt?: Date;
+  orderByPhotoTakenAt: 'asc' | 'desc';
 }): Promise<VRChatPhotoPathModel[]> => {
   const photoPathList = await VRChatPhotoPathModel.findAll({
     where: {
@@ -77,6 +78,7 @@ export const getVRChatPhotoPathList = async (query?: {
       },
     },
     attributes: ['photoPath', 'photoTakenAt'],
+    order: [['photoTakenAt', query?.orderByPhotoTakenAt ?? 'asc']],
   });
 
   return photoPathList;

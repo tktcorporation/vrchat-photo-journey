@@ -12,6 +12,7 @@ import { VRChatPhotoDirPathSchema } from './valueObjects';
 const getVRChatLogFilePathList = async (query?: {
   gtPhotoTakenAt?: Date;
   ltPhotoTakenAt?: Date;
+  orderByPhotoTakenAt: 'asc' | 'desc';
 }): Promise<neverthrow.Result<string[], Error>> => {
   const vrchatPhotoPathList =
     await vrchatPhotoService.getVRChatPhotoPathList(query);
@@ -76,7 +77,7 @@ export const vrchatPhotoRouter = () =>
           .object({
             gtPhotoTakenAt: z.date().optional(),
             ltPhotoTakenAt: z.date().optional(),
-            limit: z.number().optional(),
+            orderByPhotoTakenAt: z.enum(['asc', 'desc']),
           })
           .optional(),
       )

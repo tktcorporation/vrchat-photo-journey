@@ -104,6 +104,7 @@ export const createVRChatPhotoPathIndex = async () => {
 export const getVRChatPhotoPathList = async (query?: {
   gtPhotoTakenAt?: Date;
   ltPhotoTakenAt?: Date;
+  orderByPhotoTakenAt: 'asc' | 'desc';
 }) => {
   return model.getVRChatPhotoPathList(query);
 };
