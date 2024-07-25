@@ -93,7 +93,6 @@ const usePhotoArea = (componentWidth: number | undefined) => {
 
 const PhotoList = (props: {
   onSelectPhotoFileName: (fileName: string) => void;
-  parentRef: React.RefObject<HTMLDivElement>;
   len: number;
   countByYearMonthList: {
     photoTakenYear: number;
@@ -107,14 +106,22 @@ const PhotoList = (props: {
 }) => {
   console.log('PhotoList');
   console.log(props);
+  const currentRef = React.useRef<HTMLDivElement | null>(null);
   const rowVirtualizer = useVirtualizer({
     count: props.len,
-    getScrollElement: () => props.parentRef.current,
-    estimateSize: (index) => props.countByYearMonthList[index].areaHeight,
+    getScrollElement: () => currentRef.current,
+    estimateSize: (index) => props.countByYearMonthList[index].areaHeight + 56,
     overscan: 2,
   });
+
+  useMemo(() => {
+    // countByYearMonthList の変更をトリガーに再レンダリングを促す
+    rowVirtualizer.measure();
+  }, [props.countByYearMonthList]);
+
   return (
     <div
+      ref={currentRef}
       style={{
         height: `${rowVirtualizer.getTotalSize()}px`,
         width: '100%',
@@ -156,30 +163,13 @@ const PhotoList = (props: {
                 <div className="flex items-center justify-between px-3 py-2">
                   <div className="flex items-center space-x-2">
                     <Globe size={20} />
-                    <Badge>{`${photoTakenYear}年${photoTakenMonth}月 ${virtualRow.start}`}</Badge>
+                    <Badge>{`${photoTakenYear}年${photoTakenMonth}月`}</Badge>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Image size={20} />
                     <Badge>{`${photoCount}枚`}</Badge>
                   </div>
                 </div>
-                {/* dummy */}
-                {/* <div className="flex flex-wrap">
-                  {Array.from({ length: photoCount }).map((_, index) => {
-                    return (
-                      <div
-                        key={`${photoTakenYear}-${photoTakenMonth}-${index}`}
-                        className="w-full h-full"
-                        style={{
-                          width: photoWidth,
-                          height: photoWidth,
-                        }}
-                      >
-                        <Skeleton className="w-full h-full" />
-                      </div>
-                    );
-                  })}
-                </div> */}
                 <PhotoListYearMonth
                   onSelectPhotoFileName={props.onSelectPhotoFileName}
                   photoTakenYear={photoTakenYear}
@@ -211,9 +201,11 @@ const PhotoListYearMonth = (props: {
     trpcReact.vrchatPhoto.getVrchatPhotoPathList.useQuery({
       gtPhotoTakenAt: startOfMonth,
       ltPhotoTakenAt: endOfMonth,
+      orderByPhotoTakenAt: 'desc',
     });
   return (
     <div className="flex flex-wrap">
+      {/* TODO: 日付ごとにグルーピング */}
       {photoPathList?.map((photoPath) => {
         return (
           <div
@@ -224,7 +216,7 @@ const PhotoListYearMonth = (props: {
               height: props.photoWidth,
             }}
           >
-            <RenderInView className="h-full w-full">
+            <RenderInView className="h-full w-full" delay={200}>
               <PhotoByPath
                 alt={photoPath}
                 objectFit="cover"
@@ -245,9 +237,9 @@ export const PhotoListAll = (props: {
 }) => {
   console.log('PhotoListAll');
   // component の横幅
-  const ref = React.useRef<HTMLDivElement>(null);
+  const currentRef = React.useRef<HTMLDivElement | null>(null);
   // component の横幅
-  const componentWidth = useComponentWidth(ref);
+  const componentWidth = useComponentWidth(currentRef);
   console.log(`componentWidth: ${componentWidth}`);
   const photoAreaList = usePhotoArea(componentWidth);
 
@@ -260,7 +252,6 @@ export const PhotoListAll = (props: {
       <ScrollArea className="h-full absolute overflow-y-auto">
         <PhotoList
           onSelectPhotoFileName={props.onSelectPhotoFileName}
-          parentRef={ref}
           len={photoAreaList.len}
           countByYearMonthList={photoAreaList.countByYearMonthList}
         />
@@ -269,84 +260,8 @@ export const PhotoListAll = (props: {
   };
 
   return (
-    <div ref={ref} className="h-full w-full relative">
+    <div className="h-full w-full relative" ref={currentRef}>
       {renderContent()}
     </div>
   );
 };
-
-// interface PhotoListProps {
-//     photoPathList: string[];
-//     onSelectPhotoFileName: (fileName: string) => void;
-//   }
-//   export const OldPhotoList = ({ photoPathList, onSelectPhotoFileName }: PhotoListProps) => {
-//     const parentRef = React.useRef<HTMLDivElement>(null);
-//     const [containerWidth, setContainerWidth] = React.useState(0);
-//     React.useEffect(() => {
-//       if (parentRef.current) {
-//         setContainerWidth(parentRef.current.offsetWidth);
-//       }
-//     }, []);
-
-//     const columnCount = Math.floor(containerWidth / photoWidth);
-//     const rowCounts = Math.ceil(photoPathList.length / columnCount);
-
-//     const rowVirtualizer = useVirtualizer({
-//       count: rowCounts,
-//       getScrollElement: () => parentRef.current,
-//       estimateSize: () => photoHeight,
-//       overscan: 2,
-//     });
-
-//     return (
-//       <ScrollArea className="h-full absolute overflow-y-auto">
-//         <div
-//           ref={parentRef}
-//           style={{
-//             height: `${rowVirtualizer.getTotalSize()}px`,
-//             width: '100%',
-//             position: 'absolute',
-//           }}
-//         >
-//           {rowVirtualizer.getVirtualItems().map((virtualRow) => (
-//             <div
-//               key={virtualRow.key}
-//               style={{
-//                 position: 'absolute',
-//                 top: 0,
-//                 left: 0,
-//                 width: '100%',
-//                 height: `${virtualRow.size}px`,
-//                 transform: `translateY(${virtualRow.start}px)`,
-//                 justifyContent: 'flex-start',
-//               }}
-//               className="flex-wrap flex"
-//             >
-//               {Array.from({ length: columnCount }).map((_, columnIndex) => {
-//                 const itemIndex = virtualRow.index * columnCount + columnIndex;
-//                 const pathStr = photoPathList[itemIndex];
-
-//                 if (!pathStr) return null;
-
-//                 return (
-//                   <RenderInView key={itemIndex}>
-//                     <PhotoByPath
-//                       alt={pathStr}
-//                       objectFit="cover"
-//                       onClick={() => onSelectPhotoFileName(pathStr)}
-//                       className="h-full w-full cursor-pointer hover:brightness-105"
-//                       photoPath={pathStr}
-//                       style={{
-//                         width: photoWidth,
-//                         height: photoHeight,
-//                       }}
-//                     />
-//                   </RenderInView>
-//                 );
-//               })}
-//             </div>
-//           ))}
-//         </div>
-//       </ScrollArea>
-//     );
-//   };
