@@ -18,15 +18,55 @@ import { VRChatWorldJoinDataView } from './VRChatJoinDataView';
 import { useComponentWidth } from './hooks';
 
 // 各セクションの領域の高さ、写真の幅、高さを計算するhook
-const usePhotoArea = (componentWidth: number | undefined) => {
+const usePhotoArea = (props: {
+  componentWidth: number | undefined;
+  gapWidth: number;
+}) => {
   const { data: countByYearMonthList } =
     trpcReact.vrchatPhoto.getCountByYearMonthList.useQuery();
 
-  // 写真のサイズもコンポーネントの横幅によって動的に決定する
-  const photoWidth = match(componentWidth)
-    .with(P.number.lte(400), () => 100)
-    .with(P.number.lte(800), () => 200)
-    .otherwise(() => 300);
+  const getPhotoWidth = (componentWidth: number, gapWidth: number) => {
+    // 写真のサイズもコンポーネントの横幅によって動的に決定する
+    const photoWidthMax = match(componentWidth)
+      .with(P.number.lte(400), () => 100)
+      .with(P.number.lte(800), () => 150)
+      .otherwise(() => 200);
+
+    // そのままおいたときに最大何枚写真が並ぶか
+    const columnCountMax = Math.floor(
+      componentWidth / (photoWidthMax + gapWidth),
+    );
+
+    // カラム数が0にならないようにエラーハンドリング
+    if (columnCountMax === 0) {
+      return photoWidthMax;
+    }
+
+    // 残りの幅
+    const restWidth =
+      componentWidth - columnCountMax * (photoWidthMax + gapWidth);
+
+    // 残りの幅を埋めるために必要な写真の幅
+    const photoWidthAdditional = restWidth / columnCountMax;
+
+    // 合計幅がcomponentWidthになるように調整された写真の幅
+    let adjustedPhotoWidth = photoWidthMax + photoWidthAdditional;
+
+    // 調整後の写真幅を使用して計算された合計幅
+    const totalWidth = columnCountMax * (adjustedPhotoWidth + gapWidth);
+
+    // 調整後の写真幅が合計幅と一致しない場合、調整を再計算
+    if (totalWidth !== componentWidth) {
+      adjustedPhotoWidth =
+        (componentWidth - gapWidth * (columnCountMax - 1)) / columnCountMax;
+    }
+
+    return adjustedPhotoWidth;
+  };
+
+  const photoWidth = props.componentWidth
+    ? getPhotoWidth(props.componentWidth, props.gapWidth)
+    : 100;
 
   const [resultByYearMonth, setResultByYearMonth] = useState<{
     len: number;
@@ -56,7 +96,7 @@ const usePhotoArea = (componentWidth: number | undefined) => {
       setResultByYearMonth(null);
       return null;
     }
-    if (componentWidth === undefined) {
+    if (props.componentWidth === undefined) {
       setResultByYearMonth(null);
       return null;
     }
@@ -64,19 +104,19 @@ const usePhotoArea = (componentWidth: number | undefined) => {
       len: countByYearMonthList.length,
       countByYearMonthList: result,
     });
-  }, [countByYearMonthList, componentWidth, photoWidth]);
+  }, [countByYearMonthList, props.componentWidth, photoWidth]);
 
-  console.log(`componentWidth: ${componentWidth}`);
+  console.log(`componentWidth: ${props.componentWidth}`);
 
   if (countByYearMonthList === undefined) {
     return null;
   }
-  if (componentWidth === undefined) {
+  if (props.componentWidth === undefined) {
     return null;
   }
 
   for (const countByYearMonth of countByYearMonthList) {
-    const columnCount = Math.floor(componentWidth / photoWidth);
+    const columnCount = Math.floor(props.componentWidth / photoWidth);
     const rowCount = Math.ceil(countByYearMonth.photoCount / columnCount);
     const areaHeight = rowCount * photoWidth;
     result.push({
@@ -94,6 +134,7 @@ const usePhotoArea = (componentWidth: number | undefined) => {
 const PhotoList = (props: {
   onSelectPhotoFileName: (fileName: string) => void;
   len: number;
+  gapWidth: number;
   countByYearMonthList: {
     photoTakenYear: number;
     photoTakenMonth: number;
@@ -175,6 +216,7 @@ const PhotoList = (props: {
                   photoTakenYear={photoTakenYear}
                   photoTakenMonth={photoTakenMonth}
                   photoWidth={photoWidth}
+                  gapWidth={props.gapWidth}
                 />
               </div>
             );
@@ -190,6 +232,7 @@ const PhotoListYearMonth = (props: {
   photoTakenYear: number;
   photoTakenMonth: number;
   photoWidth: number;
+  gapWidth: number;
 }) => {
   // 月初
   const startOfMonth = dateFns.startOfMonth(
@@ -204,7 +247,7 @@ const PhotoListYearMonth = (props: {
       orderByPhotoTakenAt: 'desc',
     });
   return (
-    <div className="flex flex-wrap">
+    <div className="flex flex-wrap" style={{ gap: `${props.gapWidth}px` }}>
       {/* TODO: 日付ごとにグルーピング */}
       {photoPathList?.map((photoPath) => {
         return (
@@ -241,7 +284,11 @@ export const PhotoListAll = (props: {
   // component の横幅
   const componentWidth = useComponentWidth(currentRef);
   console.log(`componentWidth: ${componentWidth}`);
-  const photoAreaList = usePhotoArea(componentWidth);
+  const gapWidth = 4;
+  const photoAreaList = usePhotoArea({
+    componentWidth,
+    gapWidth,
+  });
 
   const renderContent = () => {
     if (photoAreaList === null) {
@@ -249,19 +296,20 @@ export const PhotoListAll = (props: {
     }
 
     return (
-      <ScrollArea className="h-full absolute overflow-y-auto">
-        <PhotoList
-          onSelectPhotoFileName={props.onSelectPhotoFileName}
-          len={photoAreaList.len}
-          countByYearMonthList={photoAreaList.countByYearMonthList}
-        />
-      </ScrollArea>
+      <PhotoList
+        onSelectPhotoFileName={props.onSelectPhotoFileName}
+        len={photoAreaList.len}
+        countByYearMonthList={photoAreaList.countByYearMonthList}
+        gapWidth={gapWidth}
+      />
     );
   };
 
   return (
-    <div className="h-full w-full relative" ref={currentRef}>
-      {renderContent()}
+    <div className="h-full w-full relative">
+      <ScrollArea className="h-full absolute overflow-y-auto" ref={currentRef}>
+        {renderContent()}
+      </ScrollArea>
     </div>
   );
 };

@@ -27,7 +27,4 @@ class VRChatPhotoDirPath extends BaseValueObject<
 export type { VRChatPhotoDirPath };
 export const VRChatPhotoDirPathSchema = z
   .string()
-  .regex(/^\/[a-zA-Z0-9_\-\/]+$/, 'Invalid VRChat photo directory path')
-  .transform((value) => {
-    return new VRChatPhotoDirPath(value);
-  });
+  .transform((value) => new VRChatPhotoDirPath(value));

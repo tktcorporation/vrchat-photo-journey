@@ -1,34 +1,11 @@
+import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 import { trpcReact } from '@/trpc';
 import { Ban, Loader } from 'lucide-react';
 import type React from 'react';
 
-import { cn } from '@/lib/utils';
-
-export interface PhotoProps extends React.HTMLAttributes<HTMLDivElement> {
-  photoPath: string;
-  alt: string;
-  objectFit?: 'cover' | 'contain';
-}
-
-export function PhotoByPath({
-  photoPath,
-  alt,
-  objectFit = 'cover',
-  ...props
-}: PhotoProps) {
-  const query =
-    trpcReact.electronUtil.getVRChatPhotoItemData.useQuery(photoPath);
-  const { data, isLoading } = query;
-  // 条件レンダリングを適切に修正します
-  if (isLoading) {
-    return <Loader className="w-8 h-8" />;
-  }
-
-  if (!data) {
-    // icon
-    return <Ban className="w-8 h-8" />;
-  }
-
+interface WrapperProps extends React.HTMLAttributes<HTMLDivElement> {}
+const Wrapper = ({ children, ...props }: WrapperProps): React.ReactElement => {
   // dataがオブジェクトで、その中の画像URLを指定するプロパティが `url` だと仮定
   return (
     <div
@@ -38,7 +15,47 @@ export function PhotoByPath({
         props.className,
       )}
     >
-      <img src={data} className={cn('object-cover w-full h-full')} alt={alt} />
+      {children}
     </div>
+  );
+};
+
+export interface PhotoProps extends React.HTMLAttributes<HTMLDivElement> {
+  photoPath: string;
+  alt: string;
+  objectFit?: 'cover' | 'contain';
+}
+export function PhotoByPath({
+  photoPath,
+  alt,
+  objectFit = 'cover',
+  ...props
+}: PhotoProps) {
+  const query =
+    trpcReact.electronUtil.getVRChatPhotoItemData.useQuery(photoPath);
+  const { data, isLoading } = query;
+
+  // 条件レンダリングを適切に修正します
+  if (isLoading) {
+    return (
+      <Wrapper {...props}>
+        <Skeleton className="w-full h-full" />
+      </Wrapper>
+    );
+  }
+
+  if (!data) {
+    // icon
+    return (
+      <Wrapper {...props}>
+        <Ban size={48} />
+      </Wrapper>
+    );
+  }
+
+  return (
+    <Wrapper {...props}>
+      <img src={data} className={cn('object-cover w-full h-full')} alt={alt} />
+    </Wrapper>
   );
 }
