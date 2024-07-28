@@ -1,7 +1,10 @@
-import path from 'node:path';
 import * as dateFns from 'date-fns';
 import { app } from 'electron';
 import { glob } from 'glob';
+import * as neverthrow from 'neverthrow';
+import * as path from 'pathe';
+import sharp from 'sharp';
+import { P, match } from 'ts-pattern';
 import { getSettingStore } from '../settingStore';
 import * as model from './model/vrchatPhotoPath.model';
 import {
@@ -97,6 +100,8 @@ export const createVRChatPhotoPathIndex = async () => {
     });
   }
 
+  console.log(`photoList.length: ${photoList.length}`);
+
   // DBに保存
   await model.createOrUpdateListVRChatPlayerJoinLog(photoList);
 };
@@ -111,4 +116,32 @@ export const getVRChatPhotoPathList = async (query?: {
 
 export const getCountByYearMonthList = async () => {
   return model.getCountByYearMonthList();
+};
+
+export const getVRChatPhotoItemData = async (
+  input: string,
+): Promise<neverthrow.Result<string, 'InputFileIsMissing'>> => {
+  try {
+    const photoBuf = await sharp(input).resize(256).toBuffer();
+    return neverthrow.ok(
+      `data:image/${path
+        .extname(input)
+        .replace('.', '')};base64,${photoBuf.toString('base64')}`,
+    );
+  } catch (error) {
+    if (!(error instanceof Error)) {
+      throw new Error(JSON.stringify(error));
+    }
+    return neverthrow.err(
+      match(error.message)
+        .with(
+          P.string.includes('Input file is missing'),
+          () => 'InputFileIsMissing' as const,
+        )
+        .with(P.string, () => {
+          throw error;
+        })
+        .exhaustive(),
+    );
+  }
 };
