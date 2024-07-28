@@ -96,4 +96,23 @@ export const vrchatPhotoRouter = () =>
       console.log(result.value);
       return result.value;
     }),
+    getVRChatPhotoItemData: procedure.input(z.string()).query(async (ctx) => {
+      const result = await vrchatPhotoService.getVRChatPhotoItemData(ctx.input);
+      if (result.isErr()) {
+        return {
+          data: null,
+          error: result.error,
+        };
+      }
+      return {
+        data: result.value,
+        error: null,
+      };
+    }),
+    validateVRChatPhotoPath: procedure
+      .input(z.string())
+      .mutation(async (ctx) => {
+        console.log('validateVRChatPhotoPath', ctx.input);
+        // TODO: 画像が存在するか確認して、存在しなかった場合はDBから消す
+      }),
   });

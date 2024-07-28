@@ -3,6 +3,8 @@ import { cn } from '@/lib/utils';
 import { trpcReact } from '@/trpc';
 import { Ban, Loader } from 'lucide-react';
 import type React from 'react';
+import { useMemo } from 'react';
+import { P, match } from 'ts-pattern';
 
 interface WrapperProps extends React.HTMLAttributes<HTMLDivElement> {}
 const Wrapper = ({ children, ...props }: WrapperProps): React.ReactElement => {
@@ -23,39 +25,49 @@ const Wrapper = ({ children, ...props }: WrapperProps): React.ReactElement => {
 export interface PhotoProps extends React.HTMLAttributes<HTMLDivElement> {
   photoPath: string;
   alt: string;
+  onPathNotFound?: () => void;
   objectFit?: 'cover' | 'contain';
 }
 export function PhotoByPath({
   photoPath,
   alt,
   objectFit = 'cover',
+  onPathNotFound,
   ...props
 }: PhotoProps) {
   const query =
-    trpcReact.electronUtil.getVRChatPhotoItemData.useQuery(photoPath);
+    trpcReact.vrchatPhoto.getVRChatPhotoItemData.useQuery(photoPath);
   const { data, isLoading } = query;
 
-  // 条件レンダリングを適切に修正します
-  if (isLoading) {
-    return (
-      <Wrapper {...props}>
-        <Skeleton className="w-full h-full" />
-      </Wrapper>
-    );
-  }
+  useMemo(() => {
+    match(data?.error)
+      .with(P.nullish, () => {
+        // 何もしない
+      })
+      .with('InputFileIsMissing', () => {
+        onPathNotFound?.();
+      })
+      .exhaustive();
+  }, [data]);
 
-  if (!data) {
-    // icon
+  const getContent = (): React.ReactElement => {
+    if (isLoading) {
+      return <Skeleton className="w-full h-full" />;
+    }
+    if (!data) {
+      return <Ban size={48} />;
+    }
+    if (data.error) {
+      return <Ban size={48} />;
+    }
     return (
-      <Wrapper {...props}>
-        <Ban size={48} />
-      </Wrapper>
+      <img
+        src={data.data}
+        className={cn('object-cover w-full h-full')}
+        alt={alt}
+      />
     );
-  }
+  };
 
-  return (
-    <Wrapper {...props}>
-      <img src={data} className={cn('object-cover w-full h-full')} alt={alt} />
-    </Wrapper>
-  );
+  return <Wrapper {...props}>{getContent()}</Wrapper>;
 }

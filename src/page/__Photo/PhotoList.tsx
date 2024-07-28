@@ -21,7 +21,18 @@ import { useComponentWidth } from './hooks';
 const usePhotoArea = (props: {
   componentWidth: number | undefined;
   gapWidth: number;
-}) => {
+}): {
+  len: number;
+  countByYearMonthList: {
+    photoTakenYear: number;
+    photoTakenMonth: number;
+    photoCount: number;
+    areaHeight: number;
+    columnCount: number;
+    rowCount: number;
+    photoWidth: number;
+  }[];
+} | null => {
   const { data: countByYearMonthList } =
     trpcReact.vrchatPhoto.getCountByYearMonthList.useQuery();
 
@@ -118,7 +129,7 @@ const usePhotoArea = (props: {
   for (const countByYearMonth of countByYearMonthList) {
     const columnCount = Math.floor(props.componentWidth / photoWidth);
     const rowCount = Math.ceil(countByYearMonth.photoCount / columnCount);
-    const areaHeight = rowCount * photoWidth;
+    const areaHeight = rowCount * photoWidth + (rowCount - 1) * props.gapWidth;
     result.push({
       ...countByYearMonth,
       areaHeight,
@@ -227,6 +238,27 @@ const PhotoList = (props: {
   );
 };
 
+const PhotoByPathRevalidateOnPathNotFound = (props: {
+  photoPath: string;
+  className?: string;
+  onClick: () => void;
+}) => {
+  const mutation = trpcReact.vrchatPhoto.validateVRChatPhotoPath.useMutation();
+  const onVRChatPhotoPathNotFound = () => {
+    mutation.mutate(props.photoPath);
+  };
+  return (
+    <PhotoByPath
+      alt={props.photoPath}
+      objectFit="cover"
+      className={props.className}
+      photoPath={props.photoPath}
+      onPathNotFound={onVRChatPhotoPathNotFound}
+      onClick={props.onClick}
+    />
+  );
+};
+
 const PhotoListYearMonth = (props: {
   onSelectPhotoFileName: (fileName: string) => void;
   photoTakenYear: number;
@@ -260,9 +292,7 @@ const PhotoListYearMonth = (props: {
             }}
           >
             <RenderInView className="h-full w-full" delay={200}>
-              <PhotoByPath
-                alt={photoPath}
-                objectFit="cover"
+              <PhotoByPathRevalidateOnPathNotFound
                 className="h-full w-full cursor-pointer hover:brightness-105"
                 photoPath={photoPath}
                 onClick={() => props.onSelectPhotoFileName(photoPath)}
