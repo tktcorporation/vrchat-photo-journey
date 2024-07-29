@@ -19,25 +19,24 @@ import * as hooks from './hooks';
 
 const PhotoList = (props: {
   onSelectPhotoFileName: (fileName: string) => void;
-  len: number;
-  gapWidth: number;
-  countByYearMonthList: {
-    photoTakenYear: number;
-    photoTakenMonth: number;
-    photoCount: number;
-    areaHeight: number;
-    columnCount: number;
-    rowCount: number;
-    photoWidth: number;
-  }[];
 }) => {
   console.log('PhotoList');
-  console.log(props);
+
+  const scrollAreaContentRef = React.useRef<HTMLDivElement | null>(null);
+  const componentWidth = hooks.useComponentWidth(scrollAreaContentRef);
+  console.log(`componentWidth: ${componentWidth}`);
+  const gapWidth = 4;
+  const photoAreaList = hooks.usePhotoArea({
+    componentWidth,
+    gapWidth,
+  });
+
   const parentRef = React.useRef<HTMLDivElement | null>(null);
   const rowVirtualizer = useVirtualizer({
-    count: props.len,
+    count: photoAreaList?.len || 0,
     getScrollElement: () => parentRef.current,
-    estimateSize: (index) => props.countByYearMonthList[index].areaHeight + 56,
+    estimateSize: (index) =>
+      (photoAreaList?.countByYearMonthList[index].areaHeight || 0) + 56,
     overscan: 0,
   });
 
@@ -45,17 +44,14 @@ const PhotoList = (props: {
     // countByYearMonthList の変更をトリガーに再レンダリングを促す
     console.log('measure');
     rowVirtualizer.measure();
-  }, [props.countByYearMonthList]);
+  }, [photoAreaList?.countByYearMonthList]);
 
-  return (
-    <div ref={parentRef} className="h-full overflow-y-auto">
-      <div
-        style={{
-          height: `${rowVirtualizer.getTotalSize()}px`,
-          width: '100%',
-          position: 'relative',
-        }}
-      >
+  const content = () => {
+    if (photoAreaList === null) {
+      return null;
+    }
+    return (
+      <>
         {rowVirtualizer.getVirtualItems().map((virtualRow) => (
           <div
             key={virtualRow.key}
@@ -72,7 +68,7 @@ const PhotoList = (props: {
           >
             {(() => {
               const countByYearMonth =
-                props.countByYearMonthList[virtualRow.index];
+                photoAreaList.countByYearMonthList[virtualRow.index];
               const {
                 photoTakenYear,
                 photoTakenMonth,
@@ -103,13 +99,28 @@ const PhotoList = (props: {
                     photoTakenYear={photoTakenYear}
                     photoTakenMonth={photoTakenMonth}
                     photoWidth={photoWidth}
-                    gapWidth={props.gapWidth}
+                    gapWidth={gapWidth}
                   />
                 </div>
               );
             })()}
           </div>
         ))}
+      </>
+    );
+  };
+
+  return (
+    <div ref={parentRef} className="h-full overflow-y-auto relative">
+      <div
+        ref={scrollAreaContentRef}
+        style={{
+          height: `${rowVirtualizer.getTotalSize()}px`,
+          width: '100%',
+          position: 'absolute',
+        }}
+      >
+        {content()}
       </div>
     </div>
   );
@@ -188,36 +199,11 @@ export const PhotoListAll = (props: {
   onSelectPhotoFileName: (fileName: string) => void;
 }) => {
   console.log('PhotoListAll');
-  // component の横幅
-  const currentRef = React.useRef<HTMLDivElement | null>(null);
-  // component の横幅
-  const componentWidth = hooks.useComponentWidth(currentRef);
-  console.log(`componentWidth: ${componentWidth}`);
-  const gapWidth = 4;
-  const photoAreaList = hooks.usePhotoArea({
-    componentWidth,
-    gapWidth,
-  });
 
   const renderContent = () => {
     console.log('renderContent');
-    if (photoAreaList === null) {
-      return null;
-    }
-
-    return (
-      <PhotoList
-        onSelectPhotoFileName={props.onSelectPhotoFileName}
-        len={photoAreaList.len}
-        countByYearMonthList={photoAreaList.countByYearMonthList}
-        gapWidth={gapWidth}
-      />
-    );
+    return <PhotoList onSelectPhotoFileName={props.onSelectPhotoFileName} />;
   };
 
-  return (
-    <div className="h-full w-full relative" ref={currentRef}>
-      {renderContent()}
-    </div>
-  );
+  return <div className="h-full w-full relative">{renderContent()}</div>;
 };

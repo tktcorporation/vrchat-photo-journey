@@ -35,8 +35,11 @@ export function PhotoByPath({
   onPathNotFound,
   ...props
 }: PhotoProps) {
-  const query =
-    trpcReact.vrchatPhoto.getVRChatPhotoItemData.useQuery(photoPath);
+  const query = trpcReact.vrchatPhoto.getVRChatPhotoItemData.useQuery(
+    photoPath,
+    // 10秒はcache
+    { staleTime: 10000 },
+  );
   const { data, isLoading } = query;
 
   useMemo(() => {
