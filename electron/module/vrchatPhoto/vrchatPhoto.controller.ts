@@ -1,5 +1,6 @@
 import * as neverthrow from 'neverthrow';
 import z from 'zod';
+import * as log from './../../lib/logger';
 import { eventEmitter, procedure, router as trpcRouter } from './../../trpc';
 import * as utilsService from './../electronUtil/service';
 import * as vrchatPhotoService from './../vrchatPhoto/vrchatPhoto.service';
@@ -112,7 +113,12 @@ export const vrchatPhotoRouter = () =>
     validateVRChatPhotoPath: procedure
       .input(z.string())
       .mutation(async (ctx) => {
-        console.log('validateVRChatPhotoPath', ctx.input);
-        // TODO: 画像が存在するか確認して、存在しなかった場合はDBから消す
+        const result = await vrchatPhotoService.validateVRChatPhotoPathModel({
+          fullpath: ctx.input,
+        });
+        log.debug('validateVRChatPhotoPath', ctx.input, result);
+        return {
+          result,
+        };
       }),
   });

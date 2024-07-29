@@ -84,6 +84,23 @@ export const getVRChatPhotoPathList = async (query?: {
   return photoPathList;
 };
 
+/**
+ * photoPath の完全一致でレコードを取得する
+ */
+export const getVRChatPhotoPathByPhotoPath = async (
+  photoPath: string,
+): Promise<VRChatPhotoPathModel | null> => {
+  return VRChatPhotoPathModel.findOne({
+    where: { photoPath },
+  });
+};
+
+export const deleteVRChatPhotoPathModel = async (
+  photoPathModel: VRChatPhotoPathModel,
+): Promise<void> => {
+  await photoPathModel.destroy();
+};
+
 export const getCountByYearMonthList = async (): Promise<
   {
     photoTakenYear: number;

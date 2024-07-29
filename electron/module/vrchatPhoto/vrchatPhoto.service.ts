@@ -5,6 +5,7 @@ import * as neverthrow from 'neverthrow';
 import * as path from 'pathe';
 import sharp from 'sharp';
 import { P, match } from 'ts-pattern';
+import * as fs from '../../lib/wrappedFs';
 import { getSettingStore } from '../settingStore';
 import * as model from './model/vrchatPhotoPath.model';
 import {
@@ -116,6 +117,26 @@ export const getVRChatPhotoPathList = async (query?: {
 
 export const getCountByYearMonthList = async () => {
   return model.getCountByYearMonthList();
+};
+
+/**
+ * VRChat の写真のパスが有効かどうかを検証する
+ * 無効な場合は削除する
+ */
+export const validateVRChatPhotoPathModel = async ({
+  fullpath,
+}: { fullpath: string }): Promise<
+  'MODEL_NOT_FOUND' | 'VALID' | 'FILE_NOT_FOUND_MODEL_DELETED'
+> => {
+  const pathModel = await model.getVRChatPhotoPathByPhotoPath(fullpath);
+  if (!pathModel) {
+    return 'MODEL_NOT_FOUND';
+  }
+  if (!fs.existsSyncSafe(pathModel.photoPath)) {
+    await model.deleteVRChatPhotoPathModel(pathModel);
+    return 'FILE_NOT_FOUND_MODEL_DELETED';
+  }
+  return 'VALID';
 };
 
 export const getVRChatPhotoItemData = async (
