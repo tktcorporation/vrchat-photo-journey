@@ -260,15 +260,8 @@ export const appendLoglinesToFile = async (props: {
   logStoreFilePath: VRChatLogStoreFilePath;
 }): Promise<neverthrow.Result<void, Error>> => {
   const isExists = await fs.existsSyncSafe(props.logStoreFilePath.value);
-  if (isExists.isErr()) {
-    return neverthrow.err(
-      match(isExists.error)
-        .with(P.instanceOf(Error), () => isExists.error)
-        .exhaustive(),
-    );
-  }
   // ファイルが存在しない場合は新規作成
-  if (!isExists.value) {
+  if (!isExists) {
     const mkdirResult = await fs.mkdirSyncSafe(
       path.dirname(props.logStoreFilePath.value),
     );

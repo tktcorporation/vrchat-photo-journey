@@ -109,9 +109,8 @@ export const mkdirSyncSafe = async (
   }
 };
 
-export const existsSyncSafe = (path: string): Result<boolean, Error> => {
-  const result = fs.existsSync(path);
-  return ok(result);
+export const existsSyncSafe = (path: string): boolean => {
+  return fs.existsSync(path);
 };
 
 export const readFileSafe = (

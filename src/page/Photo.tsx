@@ -85,9 +85,7 @@ function PhotoSelector() {
       ) : (
         <div className="m-3 flex flex-1 flex-row space-x-3 items-start h-full relative">
           <div className="flex-1 h-full relative">
-            <div className="h-full relative">
-              <PhotoListAll onSelectPhotoFileName={onSelectPhotoFileName} />
-            </div>
+            <PhotoListAll onSelectPhotoFileName={onSelectPhotoFileName} />
           </div>
         </div>
       )}
