@@ -58,6 +58,37 @@ export const useComponentWidth = (
   return width;
 };
 
+export const useComponentHeight = (
+  ref: React.RefObject<HTMLDivElement>,
+): number | undefined => {
+  const [height, setHeight] = useState<number>();
+  const observer = useRef<ResizeObserver | null>(null);
+
+  const handleResize = useDebouncedCallback(
+    (entries: ReadonlyArray<ResizeObserverEntry>) => {
+      if (entries[0]?.contentRect) {
+        setHeight(entries[0].contentRect.height);
+      }
+    },
+    100,
+  );
+
+  useMemo(() => {
+    if (ref.current) {
+      observer.current = new ResizeObserver(handleResize);
+      observer.current.observe(ref.current);
+    }
+
+    return () => {
+      if (observer.current) {
+        observer.current.disconnect();
+      }
+    };
+  }, [ref, handleResize]);
+
+  return height;
+};
+
 // 各セクションの領域の高さ、写真の幅、高さを計算するhook
 export const usePhotoArea = (props: {
   componentWidth: number | undefined;

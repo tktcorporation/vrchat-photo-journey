@@ -1,20 +1,7 @@
-import React, { useEffect, useMemo } from 'react';
-
-import { PhotoByPath } from '@/components/ui/PhotoByPath';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Skeleton } from '@/components/ui/skeleton';
-import { trpcReact } from '@/trpc';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import * as dateFns from 'date-fns';
-import { Globe, Image, Search } from 'lucide-react';
-import * as path from 'pathe';
+import React, { useMemo } from 'react';
 import { useState } from 'react';
-import { P, match } from 'ts-pattern';
-import { RenderInView } from './RenderInView';
-import { VRChatWorldJoinDataView } from './VRChatJoinDataView';
+import { PhotoListByYearMonth } from './PhotoListByYearMonth';
 import * as hooks from './hooks';
 
 const PhotoList = (props: {
@@ -31,12 +18,31 @@ const PhotoList = (props: {
     gapWidth,
   });
 
+  const [overridedComponentHeight, setOverridedComponentHeight] = useState<
+    {
+      index: number;
+      height: number;
+    }[]
+  >([]);
+  const getEstimateSize = (index: number) => {
+    const overrided = overridedComponentHeight.find(
+      (item) => item.index === index,
+    );
+    const estimated =
+      (photoAreaList?.countByYearMonthList[index].areaHeight || 0) + 56;
+    if (overrided && estimated < overrided.height) {
+      console.log(`estimated: ${estimated}, overrided: ${overrided.height}`);
+      return overrided.height;
+    }
+    return estimated;
+  };
+
+  // バーチャルスクロール
   const parentRef = React.useRef<HTMLDivElement | null>(null);
   const rowVirtualizer = useVirtualizer({
     count: photoAreaList?.len || 0,
     getScrollElement: () => parentRef.current,
-    estimateSize: (index) =>
-      (photoAreaList?.countByYearMonthList[index].areaHeight || 0) + 56,
+    estimateSize: (index) => getEstimateSize(index),
     overscan: 0,
   });
 
@@ -44,7 +50,7 @@ const PhotoList = (props: {
     // countByYearMonthList の変更をトリガーに再レンダリングを促す
     console.log('measure');
     rowVirtualizer.measure();
-  }, [photoAreaList?.countByYearMonthList]);
+  }, [photoAreaList?.countByYearMonthList, overridedComponentHeight]);
 
   const content = () => {
     if (photoAreaList === null) {
@@ -69,33 +75,21 @@ const PhotoList = (props: {
             {(() => {
               const countByYearMonth =
                 photoAreaList.countByYearMonthList[virtualRow.index];
-              const {
-                photoTakenYear,
-                photoTakenMonth,
-                photoCount,
-                photoWidth,
-                rowCount,
-              } = countByYearMonth;
+              const { photoTakenYear, photoTakenMonth, photoWidth } =
+                countByYearMonth;
               return (
                 <div
                   key={`${photoTakenYear}-${photoTakenMonth}`}
                   className="flex flex-col w-full"
-                  style={{
-                    height: `${rowCount * photoWidth}px`,
-                  }}
                 >
-                  <div className="flex items-center justify-between px-3 py-2">
-                    <div className="flex items-center space-x-2">
-                      <Globe size={20} />
-                      <Badge>{`${photoTakenYear}年${photoTakenMonth}月`}</Badge>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Image size={20} />
-                      <Badge>{`${photoCount}枚`}</Badge>
-                    </div>
-                  </div>
-                  <PhotoListYearMonth
+                  <PhotoListByYearMonth
                     onSelectPhotoFileName={props.onSelectPhotoFileName}
+                    onChangeComponentHeight={(height) => {
+                      setOverridedComponentHeight((prev) => [
+                        { index: virtualRow.index, height },
+                        ...prev,
+                      ]);
+                    }}
                     photoTakenYear={photoTakenYear}
                     photoTakenMonth={photoTakenMonth}
                     photoWidth={photoWidth}
@@ -127,73 +121,6 @@ const PhotoList = (props: {
 };
 
 PhotoList.whyDidYouRender = true;
-
-const PhotoByPathRevalidateOnPathNotFound = (props: {
-  photoPath: string;
-  className?: string;
-  onClick: () => void;
-}) => {
-  const mutation = trpcReact.vrchatPhoto.validateVRChatPhotoPath.useMutation();
-  const onVRChatPhotoPathNotFound = () => {
-    mutation.mutate(props.photoPath);
-  };
-  return (
-    <PhotoByPath
-      alt={props.photoPath}
-      objectFit="cover"
-      className={props.className}
-      photoPath={props.photoPath}
-      onPathNotFound={onVRChatPhotoPathNotFound}
-      onClick={props.onClick}
-    />
-  );
-};
-
-const PhotoListYearMonth = (props: {
-  onSelectPhotoFileName: (fileName: string) => void;
-  photoTakenYear: number;
-  photoTakenMonth: number;
-  photoWidth: number;
-  gapWidth: number;
-}) => {
-  // 月初
-  const startOfMonth = dateFns.startOfMonth(
-    new Date(props.photoTakenYear, props.photoTakenMonth - 1),
-  );
-  // 次の月初
-  const endOfMonth = dateFns.startOfMonth(dateFns.addMonths(startOfMonth, 1));
-  const { data: photoPathList } =
-    trpcReact.vrchatPhoto.getVrchatPhotoPathList.useQuery({
-      gtPhotoTakenAt: startOfMonth,
-      ltPhotoTakenAt: endOfMonth,
-      orderByPhotoTakenAt: 'desc',
-    });
-  return (
-    <div className="flex flex-wrap" style={{ gap: `${props.gapWidth}px` }}>
-      {/* TODO: 日付ごとにグルーピング */}
-      {photoPathList?.map((photoPath) => {
-        return (
-          <div
-            key={photoPath}
-            className="w-full h-full"
-            style={{
-              width: props.photoWidth,
-              height: props.photoWidth,
-            }}
-          >
-            <RenderInView className="h-full w-full" delay={200}>
-              <PhotoByPathRevalidateOnPathNotFound
-                className="h-full w-full cursor-pointer hover:brightness-105"
-                photoPath={photoPath}
-                onClick={() => props.onSelectPhotoFileName(photoPath)}
-              />
-            </RenderInView>
-          </div>
-        );
-      })}
-    </div>
-  );
-};
 
 export const PhotoListAll = (props: {
   onSelectPhotoFileName: (fileName: string) => void;

@@ -66,7 +66,7 @@ export const VRChatWorldJoinDataView = ({
     trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery(vrcWorldId);
 
   const { data: vrchatPhotoPathListData } =
-    trpcReact.vrchatPhoto.getVrchatPhotoPathList.useQuery({
+    trpcReact.vrchatPhoto.getVrchatPhotoPathModelList.useQuery({
       gtPhotoTakenAt: joinDateTime,
       ltPhotoTakenAt: nextJoinDateTime,
       orderByPhotoTakenAt: 'desc',
@@ -119,10 +119,10 @@ export const VRChatWorldJoinDataView = ({
                     <div className="mt-3 flex-wrap flex gap-3 text-wrap">
                       {vrchatPhotoPathListData?.map((photoPath) => (
                         <PhotoByPath
-                          alt={photoPath}
-                          key={photoPath}
+                          alt={photoPath.photoPath}
+                          key={photoPath.id}
                           className="w-60"
-                          photoPath={photoPath}
+                          photoPath={photoPath.photoPath}
                         />
                       ))}
                     </div>

@@ -8,17 +8,29 @@ import { VRChatPhotoDirPathSchema } from './valueObjects';
 
 /**
  * index 済みの写真ファイルのpath一覧を取得する
- * TODO: pagination
  */
-const getVRChatLogFilePathList = async (query?: {
+const getVRChatLogFilePathModelList = async (query?: {
   gtPhotoTakenAt?: Date;
   ltPhotoTakenAt?: Date;
   orderByPhotoTakenAt: 'asc' | 'desc';
-}): Promise<neverthrow.Result<string[], Error>> => {
+}): Promise<
+  neverthrow.Result<
+    {
+      id: string;
+      photoPath: string;
+      photoTakenAt: Date;
+    }[],
+    Error
+  >
+> => {
   const vrchatPhotoPathList =
     await vrchatPhotoService.getVRChatPhotoPathList(query);
   return neverthrow.ok(
-    vrchatPhotoPathList.map((photoPathModel) => photoPathModel.photoPath),
+    vrchatPhotoPathList.map((photoPathModel) => ({
+      id: photoPathModel.id,
+      photoPath: photoPathModel.photoPath,
+      photoTakenAt: photoPathModel.photoTakenAt,
+    })),
   );
 };
 
@@ -72,7 +84,7 @@ export const vrchatPhotoRouter = () =>
         await vrchatPhotoService.clearVRChatPhotoDirPathInSettingStore();
       return result;
     }),
-    getVrchatPhotoPathList: procedure
+    getVrchatPhotoPathModelList: procedure
       .input(
         z
           .object({
@@ -83,7 +95,7 @@ export const vrchatPhotoRouter = () =>
           .optional(),
       )
       .query(async (ctx) => {
-        const result = await getVRChatLogFilePathList(ctx.input);
+        const result = await getVRChatLogFilePathModelList(ctx.input);
         if (result.isErr()) {
           throw result.error;
         }
