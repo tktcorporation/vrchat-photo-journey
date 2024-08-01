@@ -60,6 +60,13 @@ export const PhotoListByYearMonth = (props: {
       orderByPhotoTakenAt: 'desc',
     });
 
+  const { data: vrchatWorldJoinDataList } =
+    trpcReact.vrchatWorldJoinLog.getVRChatWorldJoinLogList.useQuery({
+      gtJoinDateTime: startOfMonth,
+      ltJoinDateTime: endOfMonth,
+      orderByJoinDateTime: 'desc',
+    });
+
   return (
     <div ref={rootRef}>
       <div className="flex items-center justify-between px-3 py-2">
@@ -81,12 +88,35 @@ export const PhotoListByYearMonth = (props: {
             ? !dateFns.isSameDay(prevDate, currentDate)
             : true;
 
+          const worldJoinData =
+            vrchatWorldJoinDataList?.filter((joinData) =>
+              dateFns.isWithinInterval(joinData.joinDateTime, {
+                start: currentDate || startOfMonth,
+                end: prevDate || endOfMonth,
+              }),
+            ) ?? [];
+
           return (
             <>
               {isDateChanged && (
                 <div className="w-full">
                   <Label>{dateFns.format(currentDate, 'yyyy/MM/dd (E)')}</Label>
                 </div>
+              )}
+              {worldJoinData.length > 0 && (
+                <>
+                  {worldJoinData.map((joinData) => (
+                    <div
+                      key={joinData.id}
+                      className="w-full flex-wrap flex my-4"
+                    >
+                      <div className="text-xl">Join {joinData.worldName}</div>
+                      <div className="text-lg ml-4">
+                        at {dateFns.format(joinData.joinDateTime, 'HH:mm')}
+                      </div>
+                    </div>
+                  ))}
+                </>
               )}
               <div
                 key={photoPath.id}

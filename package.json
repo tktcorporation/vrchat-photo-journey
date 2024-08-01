@@ -116,7 +116,7 @@
     "@types/react": "18.2.33",
     "@types/react-dom": "18.2.14",
     "@types/sharp": "0.32.0",
-    "@welldone-software/why-did-you-render": "8.0.1",
+    "@welldone-software/why-did-you-render": "^8.0.3",
     "autoprefixer": "10.4.19",
     "concurrently": "8.2.2",
     "electron": "27.3.11",

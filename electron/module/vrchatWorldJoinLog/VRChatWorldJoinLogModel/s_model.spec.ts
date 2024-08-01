@@ -1,13 +1,16 @@
 import path from 'node:path';
-import { type getSettingStore, initSettingStoreForTest } from '../settingStore';
+import {
+  type getSettingStore,
+  initSettingStoreForTest,
+} from '../../settingStore';
 import {
   type VRChatWorldJoinLog,
   getVRChaLogInfoFromLogPath,
-} from '../vrchatLog/service';
-import { getValidVRChatLogFileDir } from '../vrchatLogFileDir/service';
+} from '../../vrchatLog/service';
+import { getValidVRChatLogFileDir } from '../../vrchatLogFileDir/service';
 import * as model from './s_model';
 
-import * as client from '../../lib/sequelize';
+import * as client from '../../../lib/sequelize';
 
 const dbPath = path.join(process.cwd(), 'debug', 'db', 'test.sqlite');
 

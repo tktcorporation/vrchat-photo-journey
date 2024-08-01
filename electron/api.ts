@@ -10,6 +10,7 @@ import { settingsRouter } from './module/settings/settingsController';
 import { vrchatApiRouter } from './module/vrchatApi/vrchatApiController';
 import { vrchatLogRouter } from './module/vrchatLog/vrchatLogController';
 import { vrchatPhotoRouter } from './module/vrchatPhoto/vrchatPhoto.controller';
+import { vrchatWorldJoinLogRouter } from './module/vrchatWorldJoinLog/vrchatWorldJoinLog.controller';
 import {
   eventEmitter as ee,
   logError,
@@ -29,6 +30,7 @@ export const router = trpcRouter({
   electronUtil: electronUtilRouter(),
   vrchatPhoto: vrchatPhotoRouter(),
   vrchatLog: vrchatLogRouter(),
+  vrchatWorldJoinLog: vrchatWorldJoinLogRouter(),
   logInfo: logInfoRouter(),
   vrchatApi: vrchatApiRouter,
   subscribeToast: procedure.subscription(() => {

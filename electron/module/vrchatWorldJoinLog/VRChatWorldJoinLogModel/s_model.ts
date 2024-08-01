@@ -15,7 +15,7 @@ import {
   createIndexDecorator,
 } from '@sequelize/core/decorators-legacy';
 
-import type { VRChatWorldJoinLog } from '../vrchatLog/service';
+import type { VRChatWorldJoinLog } from '../../vrchatLog/service';
 
 const WorldInstanceIdJoinDateTimeIndex = createIndexDecorator(
   'WorldInstanceIdJoinDateTimeIndex',
@@ -98,6 +98,27 @@ export const findAllVRChatWorldJoinLogList = async () => {
     order: [['joinDateTime', 'DESC']],
   });
   return vrchatWorldJoinLogList;
+};
+
+/**
+ * VRChatでのWorldJoin記録を取得する
+ */
+export const findVRChatWorldJoinLogList = async (query?: {
+  gtJoinDateTime?: Date;
+  ltJoinDateTime?: Date;
+  orderByJoinDateTime: 'asc' | 'desc';
+}): Promise<VRChatWorldJoinLogModel[]> => {
+  const vrcWorldJoinLogModelList = await VRChatWorldJoinLogModel.findAll({
+    where: {
+      joinDateTime: {
+        ...(query?.gtJoinDateTime && { [Op.gt]: query.gtJoinDateTime }),
+        ...(query?.ltJoinDateTime && { [Op.lt]: query.ltJoinDateTime }),
+      },
+    },
+    order: [['joinDateTime', query?.orderByJoinDateTime ?? 'asc']],
+  });
+
+  return vrcWorldJoinLogModelList;
 };
 
 /**
