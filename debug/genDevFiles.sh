@@ -14,14 +14,14 @@ declare -A month_counts=(
     ["2023-01"]=3
     ["2023-02"]=4
     ["2023-03"]=6
-    ["2023-04"]=8
+    ["2023-04"]=10
     ["2023-05"]=9
-    ["2023-06"]=4
-    ["2023-07"]=6
+    ["2023-06"]=23
+    ["2023-07"]=9
     ["2023-08"]=5
     ["2023-09"]=10
     ["2023-10"]=7
-    ["2023-11"]=2
+    ["2023-11"]=20
     ["2023-12"]=3
     ["2024-02"]=12
 )
@@ -51,8 +51,11 @@ generate_random_filename() {
 destination_files=()
 for month_year in "${!month_counts[@]}"; do
     count=${month_counts[$month_year]}
+    echo "Processing month: $month_year with count: $count"  # デバッグ出力
     for ((i=0; i<count; i++)); do
-        destination_files+=("$(generate_random_filename $month_year)")
+        dest_file=$(generate_random_filename $month_year)
+        echo "Generated file: $dest_file"  # デバッグ出力
+        destination_files+=("$dest_file")
     done
 done
 
