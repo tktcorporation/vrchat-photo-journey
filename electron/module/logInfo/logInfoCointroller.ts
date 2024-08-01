@@ -2,7 +2,6 @@ import * as neverthrow from 'neverthrow';
 import { P, match } from 'ts-pattern';
 import z from 'zod';
 import * as playerJoinLogService from '../VRChatPlayerJoinLogModel/playerJoinLog.service';
-import * as worldJoinLogService from '../VRChatWorldJoinLogModel/service';
 import {
   type VRChatPlayerJoinLog,
   type VRChatWorldJoinLog,
@@ -10,6 +9,7 @@ import {
   getVRChaLogInfoByLogFilePathList,
 } from '../vrchatLog/service';
 import * as vrchatPhotoService from '../vrchatPhoto/vrchatPhoto.service';
+import * as worldJoinLogService from '../vrchatWorldJoinLog/service';
 import * as log from './../../lib/logger';
 import { procedure, router as trpcRouter } from './../../trpc';
 import {
