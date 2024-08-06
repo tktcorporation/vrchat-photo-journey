@@ -1113,7 +1113,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/brace-expansion",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/brace-expansion/LICENSE"
   },
-  "braces@3.0.2": {
+  "braces@3.0.3": {
     "licenses": "MIT",
     "repository": "https://github.com/micromatch/braces",
     "publisher": "Jon Schlinkert",
@@ -1770,7 +1770,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/file-uri-to-path",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/file-uri-to-path/LICENSE"
   },
-  "fill-range@7.0.1": {
+  "fill-range@7.1.1": {
     "licenses": "MIT",
     "repository": "https://github.com/jonschlinkert/fill-range",
     "publisher": "Jon Schlinkert",
@@ -3715,19 +3715,12 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/tar-stream",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/tar-stream/LICENSE"
   },
-  "tar@6.2.0": {
+  "tar@6.2.1": {
     "licenses": "ISC",
     "repository": "https://github.com/isaacs/node-tar",
     "publisher": "GitHub Inc.",
     "path": "/workspaces/vrchat-photo-journey/node_modules/tar",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/tar/LICENSE"
-  },
-  "tar@6.2.1": {
-    "licenses": "ISC",
-    "repository": "https://github.com/isaacs/node-tar",
-    "publisher": "GitHub Inc.",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/sqlite3/node_modules/cacache/node_modules/tar",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/sqlite3/node_modules/cacache/node_modules/tar/LICENSE"
   },
   "thenify-all@1.6.0": {
     "licenses": "MIT",
@@ -3952,7 +3945,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/vite",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/vite/LICENSE.md"
   },
-  "vrchat-photo-journey@0.1.0-alpha.2": {
+  "vrchat-photo-journey@0.2.0-alpha.1": {
     "licenses": "UNKNOWN",
     "repository": "https://github.com/tktcorporation/add-world-name-to-vrc-photo",
     "publisher": "tktcorporation",
