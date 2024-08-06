@@ -56,7 +56,7 @@ export class VRChatPlayerJoinLogModel extends Model<
 
 export const createVRChatPlayerJoinLog = async (
   playerJoinLogList: VRChatPlayerJoinLog[],
-): Promise<void> => {
+): Promise<VRChatPlayerJoinLogModel[]> => {
   const existingLogs = await VRChatPlayerJoinLogModel.findAll({
     attributes: ['joinDateTime', 'playerName'],
   });
@@ -67,19 +67,25 @@ export const createVRChatPlayerJoinLog = async (
     ),
   );
 
-  const newLogs = playerJoinLogList
+  const seen = new Set();
+  const newLogsExcludeDup = playerJoinLogList
     .filter((logInfo) => {
       const key = `${logInfo.joinDate.toISOString()}|${logInfo.playerName}`;
-      return !existingSet.has(key);
+      if (existingSet.has(key) || seen.has(key)) {
+        return false; // 既存セットまたは新しいセットに重複が見つかった場合は除外
+      }
+      seen.add(key); // 初めて見た組み合わせを新しいセットに追加
+      return true; // ユニークな組み合わせの場合は残す
     })
     .map((logInfo) => ({
       joinDateTime: logInfo.joinDate,
       playerName: logInfo.playerName,
     }));
 
-  if (newLogs.length > 0) {
-    await VRChatPlayerJoinLogModel.bulkCreate(newLogs);
+  if (newLogsExcludeDup.length < 1) {
+    return [];
   }
+  return await VRChatPlayerJoinLogModel.bulkCreate(newLogsExcludeDup);
 };
 
 /**
@@ -89,25 +95,23 @@ export const createVRChatPlayerJoinLog = async (
 export const getVRChatPlayerJoinLogListByJoinDateTime = async (
   props:
     | {
-        startJoinDateTime: Date;
-        endJoinDateTime: Date;
+        gteJoinDateTime: Date;
+        ltJoinDateTime: Date;
         getUntilDays: null;
       }
     | {
-        startJoinDateTime: Date;
-        endJoinDateTime: null;
+        gteJoinDateTime: Date;
+        ltJoinDateTime: null;
         // endJoinDateTime がない場合は以降のデータを最大n日分取得する
         getUntilDays: number;
       },
 ): Promise<VRChatPlayerJoinLogModel[]> => {
-  if (props.endJoinDateTime === null) {
+  if (props.ltJoinDateTime === null) {
     const playerJoinLogList = await VRChatPlayerJoinLogModel.findAll({
       where: {
         joinDateTime: {
-          [Op.between]: [
-            props.startJoinDateTime,
-            dateFns.addDays(props.startJoinDateTime, 7),
-          ],
+          [Op.gte]: props.gteJoinDateTime,
+          [Op.lt]: dateFns.addDays(props.gteJoinDateTime, props.getUntilDays),
         },
       },
     });
@@ -116,7 +120,8 @@ export const getVRChatPlayerJoinLogListByJoinDateTime = async (
   const playerJoinLogList = await VRChatPlayerJoinLogModel.findAll({
     where: {
       joinDateTime: {
-        [Op.between]: [props.startJoinDateTime, props.endJoinDateTime],
+        [Op.gte]: props.gteJoinDateTime,
+        [Op.lt]: props.ltJoinDateTime,
       },
     },
   });

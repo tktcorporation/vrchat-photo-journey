@@ -7,7 +7,7 @@ export const createVRChatPlayerJoinLogModel = (
   return model.createVRChatPlayerJoinLog(playerJoinLogList);
 };
 
-export const getVRChatPlayerJoinLogListByJoinDateTime = (props: {
+export const getVRChatPlayerJoinLogListByJoinDateTime = async (props: {
   startJoinDateTime: Date;
   endJoinDateTime: Date | null;
 }): Promise<
@@ -22,15 +22,23 @@ export const getVRChatPlayerJoinLogListByJoinDateTime = (props: {
 > => {
   if (props.endJoinDateTime === null) {
     return model.getVRChatPlayerJoinLogListByJoinDateTime({
-      startJoinDateTime: props.startJoinDateTime,
-      endJoinDateTime: props.endJoinDateTime, // null
+      gteJoinDateTime: props.startJoinDateTime,
+      ltJoinDateTime: props.endJoinDateTime, // null
       // 最大7日分取得
       getUntilDays: 7,
     });
   }
-  return model.getVRChatPlayerJoinLogListByJoinDateTime({
-    startJoinDateTime: props.startJoinDateTime,
-    endJoinDateTime: props.endJoinDateTime,
+  const modelList = await model.getVRChatPlayerJoinLogListByJoinDateTime({
+    gteJoinDateTime: props.startJoinDateTime,
+    ltJoinDateTime: props.endJoinDateTime,
     getUntilDays: null,
   });
+  return modelList.map((model) => ({
+    id: model.id,
+    playerId: model.playerId,
+    playerName: model.playerName,
+    joinDateTime: model.joinDateTime,
+    createdAt: model.createdAt,
+    updatedAt: model.updatedAt,
+  }));
 };
