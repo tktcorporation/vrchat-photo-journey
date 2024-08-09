@@ -69,50 +69,57 @@ export const PhotoListByYearMonth = (props: {
 
   return (
     <div ref={rootRef}>
-      <div className="flex items-center justify-between px-3 py-2">
-        <div className="flex items-center space-x-2">
-          <Globe size={20} />
-          <Badge>{`${props.photoTakenYear}年${props.photoTakenMonth}月`}</Badge>
+      <div className="flex items-center justify-between mt-8">
+        <div className="flex items-center text-lg">
+          {`${props.photoTakenYear}/${props.photoTakenMonth}`}
         </div>
         <div className="flex items-center space-x-2">
           <Image size={20} />
-          <Badge>{`${photoPathList?.length}枚`}</Badge>
+          <Badge variant={'outline'}>{`${photoPathList?.length}枚`}</Badge>
         </div>
       </div>
       <div className="flex flex-wrap" style={{ gap: `${props.gapWidth}px` }}>
         {photoPathList?.map((photoPath, index, arr) => {
           const prevDate = index > 0 ? arr[index - 1].photoTakenAt : undefined;
+          const nextDate =
+            index < arr.length - 1 ? arr[index + 1].photoTakenAt : undefined;
           const currentDate = photoPath.photoTakenAt;
           // 日付が変わっていたらTrue
-          const isDateChanged = prevDate
-            ? !dateFns.isSameDay(prevDate, currentDate)
-            : true;
+          // const isDateChanged = prevDate
+          //   ? !dateFns.isSameDay(prevDate, currentDate)
+          //   : true;
 
+          console.log('currentDate', currentDate);
+          console.log('prevDate', prevDate);
+          console.log('nextDate', nextDate);
           const worldJoinData =
             vrchatWorldJoinDataList?.filter((joinData) =>
               dateFns.isWithinInterval(joinData.joinDateTime, {
-                start: currentDate || startOfMonth,
+                start: currentDate,
                 end: prevDate || endOfMonth,
               }),
             ) ?? [];
 
           return (
             <>
-              {isDateChanged && (
+              {/* {isDateChanged && (
                 <div className="w-full">
                   <Label>{dateFns.format(currentDate, 'yyyy/MM/dd (E)')}</Label>
                 </div>
-              )}
+              )} */}
               {worldJoinData.length > 0 && (
                 <>
                   {worldJoinData.map((joinData) => (
                     <div
                       key={joinData.id}
-                      className="w-full flex-wrap flex my-4"
+                      className="w-full flex-col flex mt-4"
                     >
-                      <div className="text-xl">Join {joinData.worldName}</div>
-                      <div className="text-lg ml-4">
-                        at {dateFns.format(joinData.joinDateTime, 'HH:mm')}
+                      <div className="text-xl">{joinData.worldName}</div>
+                      <div className="text-muted-foreground">
+                        {dateFns.format(
+                          joinData.joinDateTime,
+                          'yyyy/MM/dd (E) HH:mm',
+                        )}
                       </div>
                     </div>
                   ))}

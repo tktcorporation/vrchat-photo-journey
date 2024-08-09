@@ -80,7 +80,7 @@ const PhotoList = (props: {
               return (
                 <div
                   key={`${photoTakenYear}-${photoTakenMonth}`}
-                  className="flex flex-col w-full"
+                  className="flex flex-col w-full space-y-8"
                 >
                   <PhotoListByYearMonth
                     onSelectPhotoFileName={props.onSelectPhotoFileName}
