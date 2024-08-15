@@ -1,5 +1,5 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
-import React from 'react';
+import React, { useRef } from 'react';
 import { useState } from 'react';
 import { PhotoListByYearMonth } from './PhotoListByYearMonth';
 import * as hooks from './hooks';
@@ -37,18 +37,25 @@ const PhotoList = (props: {
     count: photoAreaList?.len || 0,
     getScrollElement: () => parentRef.current,
     estimateSize: (index) => getEstimateSize(index),
-    overscan: 0,
+    gap: 8,
+    overscan: 1,
   });
 
-  const [overridedComponentHeight, setOverridedComponentHeight] = useState<
+  const overridedComponentHeight = useRef<
     {
       index: number;
       height: number;
     }[]
   >([]);
+  const onChangeComponentHeight = (height: number, virtualRowIndex: number) => {
+    overridedComponentHeight.current = [
+      { index: virtualRowIndex, height },
+      ...overridedComponentHeight.current,
+    ];
+  };
   const getEstimateSize = React.useCallback(
     (index: number) => {
-      const overrided = overridedComponentHeight.find(
+      const overrided = overridedComponentHeight.current.find(
         (item) => item.index === index,
       );
       const estimated =
@@ -59,7 +66,7 @@ const PhotoList = (props: {
       }
       return estimated;
     },
-    [overridedComponentHeight],
+    [overridedComponentHeight, photoAreaList?.countByYearMonthList],
   );
 
   const content = () => {
@@ -76,7 +83,7 @@ const PhotoList = (props: {
               transform: `translateY(${virtualRow.start}px)`,
               justifyContent: 'flex-start',
             }}
-            className="flex-wrap flex top-0 left-0 w-full absolute"
+            className="flex-wrap flex top-0 left-0 w-full absolute gap-8"
           >
             {(() => {
               const countByYearMonth =
@@ -86,16 +93,13 @@ const PhotoList = (props: {
               return (
                 <div
                   key={`${photoTakenYear}-${photoTakenMonth}`}
-                  className="flex flex-col w-full space-y-8"
+                  className="flex flex-col w-full"
                 >
                   <PhotoListByYearMonth
                     onSelectPhotoFileName={props.onSelectPhotoFileName}
-                    onChangeComponentHeight={(height) => {
-                      setOverridedComponentHeight([
-                        { index: virtualRow.index, height },
-                        ...overridedComponentHeight,
-                      ]);
-                    }}
+                    onChangeComponentHeight={(height) =>
+                      onChangeComponentHeight(height, virtualRow.index)
+                    }
                     photoTakenYear={photoTakenYear}
                     photoTakenMonth={photoTakenMonth}
                     photoWidth={photoWidth}
