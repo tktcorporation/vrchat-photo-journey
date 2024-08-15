@@ -1,11 +1,7 @@
-import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { trpcReact } from '@/trpc';
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { SettingBreadcrumb } from './__setting/SettingsBreadcrumb';
-
+import { useState } from 'react';
 interface BackgroundFileCreateToggleProps {
   defaultChecked: boolean;
 }

@@ -1,8 +1,8 @@
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { trpcReact } from '@/trpc';
-import { FilePlus2, FolderIcon } from 'lucide-react';
-import React, { useState } from 'react';
+import { FolderIcon } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   clickCallback: (key: string) => void;
@@ -13,25 +13,18 @@ interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   defaultKey?: string;
 }
 
-function Sidebar({
+export function Sidebar({
   className,
   clickCallback,
   itemList,
   defaultKey,
 }: SidebarProps) {
-  const [selectedItem, setSelectedItem] = useState<string>('');
+  const [selectedItem, setSelectedItem] = useState<string>(defaultKey ?? '');
 
   const handleItemClick = (key: string) => {
     setSelectedItem(key);
     clickCallback(key);
   };
-
-  // defaultKeyが指定されている場合は、初期値としてselectedItemを設定します。
-  React.useEffect(() => {
-    if (defaultKey) {
-      setSelectedItem(defaultKey);
-    }
-  }, [defaultKey]);
 
   return (
     <div className={cn('pb-12', className)}>
@@ -60,5 +53,3 @@ function Sidebar({
     </div>
   );
 }
-
-export default Sidebar;

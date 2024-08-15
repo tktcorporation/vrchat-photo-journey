@@ -77,7 +77,6 @@ export const getVRChatPhotoPathList = async (query?: {
         ...(query?.ltPhotoTakenAt && { [Op.lt]: query.ltPhotoTakenAt }),
       },
     },
-    attributes: ['photoPath', 'photoTakenAt'],
     order: [['photoTakenAt', query?.orderByPhotoTakenAt ?? 'asc']],
   });
 

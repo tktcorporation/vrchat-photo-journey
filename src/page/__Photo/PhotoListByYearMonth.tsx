@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 
 import { PhotoByPath } from '@/components/ui/PhotoByPath';
 import { Badge } from '@/components/ui/badge';
@@ -42,10 +42,10 @@ export const PhotoListByYearMonth = (props: {
   const rootRef = React.useRef<HTMLDivElement | null>(null);
   const componentHeight = hooks.useComponentHeight(rootRef);
   useMemo(() => {
-    if (componentHeight) {
-      props.onChangeComponentHeight(componentHeight);
+    if (componentHeight.current) {
+      props.onChangeComponentHeight(componentHeight.current);
     }
-  }, [componentHeight, !!rootRef]);
+  }, [componentHeight.current, !!rootRef]);
 
   // 月初
   const startOfMonth = dateFns.startOfMonth(
@@ -69,7 +69,7 @@ export const PhotoListByYearMonth = (props: {
 
   return (
     <div ref={rootRef}>
-      <div className="flex items-center justify-between mt-8">
+      <div className="flex items-center justify-between">
         <div className="flex items-center text-lg">
           {`${props.photoTakenYear}/${props.photoTakenMonth}`}
         </div>
@@ -81,17 +81,17 @@ export const PhotoListByYearMonth = (props: {
       <div className="flex flex-wrap" style={{ gap: `${props.gapWidth}px` }}>
         {photoPathList?.map((photoPath, index, arr) => {
           const prevDate = index > 0 ? arr[index - 1].photoTakenAt : undefined;
-          const nextDate =
-            index < arr.length - 1 ? arr[index + 1].photoTakenAt : undefined;
+          // const nextDate =
+          //   index < arr.length - 1 ? arr[index + 1].photoTakenAt : undefined;
           const currentDate = photoPath.photoTakenAt;
           // 日付が変わっていたらTrue
           // const isDateChanged = prevDate
           //   ? !dateFns.isSameDay(prevDate, currentDate)
           //   : true;
 
-          console.log('currentDate', currentDate);
-          console.log('prevDate', prevDate);
-          console.log('nextDate', nextDate);
+          // console.log('currentDate', currentDate);
+          // console.log('prevDate', prevDate);
+          // console.log('nextDate', nextDate);
           const worldJoinData =
             vrchatWorldJoinDataList?.filter((joinData) =>
               dateFns.isWithinInterval(joinData.joinDateTime, {
@@ -101,17 +101,12 @@ export const PhotoListByYearMonth = (props: {
             ) ?? [];
 
           return (
-            <>
-              {/* {isDateChanged && (
-                <div className="w-full">
-                  <Label>{dateFns.format(currentDate, 'yyyy/MM/dd (E)')}</Label>
-                </div>
-              )} */}
+            <React.Fragment key={photoPath.id}>
               {worldJoinData.length > 0 && (
                 <>
                   {worldJoinData.map((joinData) => (
                     <div
-                      key={joinData.id}
+                      key={`joinData-${joinData.id}`}
                       className="w-full flex-col flex mt-4"
                     >
                       <div className="text-xl">{joinData.worldName}</div>
@@ -142,7 +137,7 @@ export const PhotoListByYearMonth = (props: {
                   />
                 </RenderInView>
               </div>
-            </>
+            </React.Fragment>
           );
         })}
       </div>
