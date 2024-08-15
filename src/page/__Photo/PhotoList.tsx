@@ -1,21 +1,43 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useState } from 'react';
 import { PhotoListByYearMonth } from './PhotoListByYearMonth';
 import * as hooks from './hooks';
+import { usePhotoArea } from './ usePhotoArea';
 
 const PhotoList = (props: {
   onSelectPhotoFileName: (fileName: string) => void;
 }) => {
   console.log('PhotoList');
 
-  const scrollAreaContentRef = React.useRef<HTMLDivElement | null>(null);
-  const componentWidth = hooks.useComponentWidth(scrollAreaContentRef);
-  console.log(`componentWidth: ${componentWidth}`);
+  const [componentWidth, setComponentWidth] = useState<number | undefined>(
+    undefined,
+  );
   const gapWidth = 4;
-  const photoAreaList = hooks.usePhotoArea({
-    componentWidth,
-    gapWidth,
+  const { data: photoAreaList } = usePhotoArea({
+    input: {
+      componentWidth,
+      gapWidth,
+    },
+    onSuccess: () => {
+      rowVirtualizer.measure();
+    },
+  });
+
+  // バーチャルスクロール
+  const parentRef = React.useRef<HTMLDivElement | null>(null);
+  const scrollAreaContentRef = React.useRef<HTMLDivElement | null>(null);
+  hooks.useComponentWidth({
+    ref: scrollAreaContentRef,
+    onChange: (width) => {
+      setComponentWidth(width);
+    },
+  });
+  const rowVirtualizer = useVirtualizer({
+    count: photoAreaList?.len || 0,
+    getScrollElement: () => parentRef.current,
+    estimateSize: (index) => getEstimateSize(index),
+    overscan: 0,
   });
 
   const [overridedComponentHeight, setOverridedComponentHeight] = useState<
@@ -24,33 +46,21 @@ const PhotoList = (props: {
       height: number;
     }[]
   >([]);
-  const getEstimateSize = (index: number) => {
-    const overrided = overridedComponentHeight.find(
-      (item) => item.index === index,
-    );
-    const estimated =
-      (photoAreaList?.countByYearMonthList[index].areaHeight || 0) + 56;
-    if (overrided && estimated < overrided.height) {
-      console.log(`estimated: ${estimated}, overrided: ${overrided.height}`);
-      return overrided.height;
-    }
-    return estimated;
-  };
-
-  // バーチャルスクロール
-  const parentRef = React.useRef<HTMLDivElement | null>(null);
-  const rowVirtualizer = useVirtualizer({
-    count: photoAreaList?.len || 0,
-    getScrollElement: () => parentRef.current,
-    estimateSize: (index) => getEstimateSize(index),
-    overscan: 0,
-  });
-
-  useMemo(() => {
-    // countByYearMonthList の変更をトリガーに再レンダリングを促す
-    console.log('measure');
-    rowVirtualizer.measure();
-  }, [photoAreaList?.countByYearMonthList, overridedComponentHeight]);
+  const getEstimateSize = React.useCallback(
+    (index: number) => {
+      const overrided = overridedComponentHeight.find(
+        (item) => item.index === index,
+      );
+      const estimated =
+        (photoAreaList?.countByYearMonthList[index].areaHeight || 0) + 56;
+      if (overrided && estimated < overrided.height) {
+        console.log(`estimated: ${estimated}, overrided: ${overrided.height}`);
+        return overrided.height;
+      }
+      return estimated;
+    },
+    [overridedComponentHeight],
+  );
 
   const content = () => {
     if (photoAreaList === null) {
@@ -62,15 +72,11 @@ const PhotoList = (props: {
           <div
             key={virtualRow.key}
             style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
               height: `${virtualRow.size}px`,
               transform: `translateY(${virtualRow.start}px)`,
               justifyContent: 'flex-start',
             }}
-            className="flex-wrap flex"
+            className="flex-wrap flex top-0 left-0 w-full absolute"
           >
             {(() => {
               const countByYearMonth =
@@ -85,9 +91,9 @@ const PhotoList = (props: {
                   <PhotoListByYearMonth
                     onSelectPhotoFileName={props.onSelectPhotoFileName}
                     onChangeComponentHeight={(height) => {
-                      setOverridedComponentHeight((prev) => [
+                      setOverridedComponentHeight([
                         { index: virtualRow.index, height },
-                        ...prev,
+                        ...overridedComponentHeight,
                       ]);
                     }}
                     photoTakenYear={photoTakenYear}
