@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
-import type React from 'react';
+import React from 'react';
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 type CallbackFunction = (...args: any[]) => void;
@@ -66,12 +66,17 @@ export const useComponentWidth = (props: {
   return width;
 };
 
-export const useComponentHeight = (
-  ref: React.RefObject<HTMLDivElement>,
-): React.MutableRefObject<number | undefined> => {
-  const height = useRef<number>();
+export const useComponentHeight = (props: {
+  ref: React.RefObject<HTMLDivElement>;
+  onChange?: (height: number | undefined) => void;
+}): number | undefined => {
+  const [height, _setHeight] = React.useState<number | undefined>(undefined);
   const setHeight = useCallback((value: number) => {
-    height.current = value;
+    _setHeight(value);
+    if (props.onChange) {
+      console.log(`useComponentHeight setHeight: ${value}`);
+      props.onChange(value);
+    }
   }, []);
   const observer = useRef<ResizeObserver | null>(null);
 
@@ -85,9 +90,9 @@ export const useComponentHeight = (
   );
 
   useEffect(() => {
-    if (ref.current) {
+    if (props.ref.current) {
       observer.current = new ResizeObserver(handleResize);
-      observer.current.observe(ref.current);
+      observer.current.observe(props.ref.current);
     }
 
     return () => {
@@ -95,7 +100,7 @@ export const useComponentHeight = (
         observer.current.disconnect();
       }
     };
-  }, [ref]);
+  }, [props.ref]);
 
   return height;
 };
