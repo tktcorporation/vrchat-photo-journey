@@ -3,101 +3,20 @@ import React, { useMemo } from 'react';
 import { PhotoByPath } from '@/components/ui/PhotoByPath';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { trpcReact } from '@/trpc';
 import * as dateFns from 'date-fns';
 import { Globe, Image, Search } from 'lucide-react';
+import * as pathe from 'pathe';
 import { RenderInView } from './RenderInView';
+import * as composables from './_PhotoListByYearMonth/composables';
 import * as hooks from './hooks';
 
-interface WorldJoinData {
-  id: string;
-  worldId: string;
-  worldName: string;
-  worldInstanceId: string;
-  joinDateTime: Date;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-interface PhotoPathData {
-  id: string;
-  photoPath: string;
-  photoTakenAt: Date;
-}
-
-type WorldJoinWithPhotos = {
-  worldJoin: WorldJoinData | null;
-  photos: PhotoPathData[];
-}[];
-
-function groupPhotosByWorldJoin(
-  worldJoinData: WorldJoinData[],
-  photoPathList: PhotoPathData[],
-): WorldJoinWithPhotos {
-  const result: WorldJoinWithPhotos = [];
-
-  // worldJoinData を時系列降順にソート
-  const sortedWorldJoinData = worldJoinData.sort(
-    (a, b) => b.joinDateTime.getTime() - a.joinDateTime.getTime(),
-  );
-
-  // photoPathList も時系列降順にソート
-  const sortedPhotoPathList = photoPathList.sort(
-    (a, b) => b.photoTakenAt.getTime() - a.photoTakenAt.getTime(),
-  );
-
-  let currentJoinIndex = 0;
-
-  let currentGroup: {
-    worldJoin: WorldJoinData | null;
-    photos: PhotoPathData[];
-  } = {
-    worldJoin: null,
-    photos: [],
-  };
-
-  // 写真を順番に処理
-  for (const photo of sortedPhotoPathList) {
-    // 次の worldJoin があるか確認
-    while (
-      currentJoinIndex < sortedWorldJoinData.length &&
-      photo.photoTakenAt.getTime() <
-        sortedWorldJoinData[currentJoinIndex].joinDateTime.getTime()
-    ) {
-      // 現在のグループを結果に追加
-      if (currentGroup.worldJoin || currentGroup.photos.length > 0) {
-        result.push(currentGroup);
-      }
-
-      // 新しいグループを開始
-      currentGroup = {
-        worldJoin: sortedWorldJoinData[currentJoinIndex],
-        photos: [],
-      };
-
-      currentJoinIndex++;
-    }
-
-    // 現在のグループに写真を追加
-    currentGroup.photos.push(photo);
-  }
-
-  // 最後のグループも結果に追加
-  if (currentGroup.worldJoin || currentGroup.photos.length > 0) {
-    result.push(currentGroup);
-  }
-
-  // 残りの worldJoin も追加
-  while (currentJoinIndex < sortedWorldJoinData.length) {
-    result.push({
-      worldJoin: sortedWorldJoinData[currentJoinIndex],
-      photos: [],
-    });
-    currentJoinIndex++;
-  }
-
-  return result;
-}
 const PhotoViewGroupedByJoin = (props: {
   vrchatWorldJoinDataList: {
     id: string;
@@ -117,7 +36,7 @@ const PhotoViewGroupedByJoin = (props: {
   gapWidth: number;
   onSelectPhotoFileName: (fileName: string) => void;
 }): React.ReactElement => {
-  const grouped = groupPhotosByWorldJoin(
+  const grouped = composables.groupPhotosByWorldJoin(
     props.vrchatWorldJoinDataList,
     props.photoPathList,
   );
@@ -144,21 +63,31 @@ const PhotoViewGroupedByJoin = (props: {
             style={{ gap: `${props.gapWidth}px` }}
           >
             {group.photos.map((photo) => (
-              <div
-                key={photo.id}
-                style={{
-                  width: props.photoWidth,
-                  height: props.photoWidth,
-                }}
-              >
-                <RenderInView className="h-full w-full" delay={200}>
-                  <PhotoByPathRevalidateOnPathNotFound
-                    className="h-full w-full cursor-pointer hover:brightness-105"
-                    photoPath={photo.photoPath}
-                    onClick={() => props.onSelectPhotoFileName(photo.photoPath)}
-                  />
-                </RenderInView>
-              </div>
+              <TooltipProvider key={photo.id}>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <div
+                      style={{
+                        width: props.photoWidth,
+                        height: props.photoWidth,
+                      }}
+                    >
+                      <RenderInView className="h-full w-full" delay={200}>
+                        <PhotoByPathRevalidateOnPathNotFound
+                          className="h-full w-full cursor-pointer hover:brightness-105"
+                          photoPath={photo.photoPath}
+                          onClick={() =>
+                            props.onSelectPhotoFileName(photo.photoPath)
+                          }
+                        />
+                      </RenderInView>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{pathe.parse(photo.photoPath).name}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             ))}
           </div>
         </div>
