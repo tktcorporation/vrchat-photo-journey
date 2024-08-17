@@ -27,18 +27,16 @@ const useDebouncedCallback = <T extends CallbackFunction>(
 
 export const useComponentWidth = (props: {
   ref: React.RefObject<HTMLDivElement>;
-  onChange?: (width: number | undefined) => void;
+  onChange?: (width: number) => void;
 }): React.MutableRefObject<number | undefined> => {
   const width = useRef<number>();
-  const setWidth = useCallback((value: number) => {
-    if (width.current !== value) {
-      width.current = value;
-      if (props.onChange) {
-        props.onChange(value);
-      }
+  const setWidth = (value: number) => {
+    console.log(`setWidth: ${value}`);
+    width.current = value;
+    if (props.onChange) {
+      props.onChange(value);
     }
-    console.log(`setWidth: ${width.current}`);
-  }, []);
+  };
   const observer = useRef<ResizeObserver | null>(null);
 
   const handleResize = useDebouncedCallback(

@@ -1,5 +1,6 @@
 import { trpcReact } from '@/trpc';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import * as neverthrow from 'neverthrow';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { P, match } from 'ts-pattern';
 
 const getPhotoWidth = (componentWidth: number, gapWidth: number) => {
@@ -42,38 +43,35 @@ const getPhotoWidth = (componentWidth: number, gapWidth: number) => {
 };
 
 interface CalculateArgs {
-  countByYearMonthList?: {
-    photoTakenYear: number;
-    photoTakenMonth: number;
-    photoCount: number;
-  }[];
-  componentWidth?: number;
-  gapWidth: number;
-}
-const calculatePhotoArea = (
-  args: CalculateArgs,
-): {
-  len: number;
   countByYearMonthList: {
     photoTakenYear: number;
     photoTakenMonth: number;
     photoCount: number;
-    areaHeight: number;
-    columnCount: number;
-    rowCount: number;
-    photoWidth: number;
   }[];
-} | null => {
-  if (args.countByYearMonthList === undefined) {
-    return null;
+  componentWidth: number;
+  gapWidth: number;
+}
+const calculatePhotoArea = (
+  args: CalculateArgs,
+): neverthrow.Result<
+  {
+    len: number;
+    countByYearMonthList: {
+      photoTakenYear: number;
+      photoTakenMonth: number;
+      photoCount: number;
+      areaHeight: number;
+      columnCount: number;
+      rowCount: number;
+      photoWidth: number;
+    }[];
+  },
+  'COMPONENT_WIDTH_IS_UNDEFINED_OR_ZERO'
+> => {
+  if (args.componentWidth === undefined || args.componentWidth === 0) {
+    return neverthrow.err('COMPONENT_WIDTH_IS_UNDEFINED_OR_ZERO');
   }
-  if (args.componentWidth === undefined) {
-    return null;
-  }
-
-  const photoWidth = args.componentWidth
-    ? getPhotoWidth(args.componentWidth, args.gapWidth)
-    : 100;
+  const photoWidth = getPhotoWidth(args.componentWidth, args.gapWidth);
 
   const result: {
     photoTakenYear: number;
@@ -96,14 +94,14 @@ const calculatePhotoArea = (
       photoWidth,
     });
   }
-  return {
+  return neverthrow.ok({
     len: args.countByYearMonthList.length,
     countByYearMonthList: result,
-  };
+  });
 };
 
 // 各セクションの領域の高さ、写真の幅、高さを計算するhook
-type UsePhotoAreaResult = null | {
+type UsePhotoAreaResult = {
   len: number;
   countByYearMonthList: {
     photoTakenYear: number;
@@ -116,56 +114,76 @@ type UsePhotoAreaResult = null | {
   }[];
 };
 interface UsePhotoAreaInput {
-  componentWidth: number | undefined;
+  componentWidth: number;
   gapWidth: number;
 }
 export const usePhotoArea = (props: {
   input: UsePhotoAreaInput;
   onSuccess?: (data: UsePhotoAreaResult) => void;
 }): {
-  data: UsePhotoAreaResult;
+  data: UsePhotoAreaResult | null;
   reclaim: (input: UsePhotoAreaInput) => void;
 } => {
-  const { data: countByYearMonthList } =
-    trpcReact.vrchatPhoto.getCountByYearMonthList.useQuery();
+  const usePhotoAreaInput = useRef<UsePhotoAreaInput>(props.input);
 
   const [resultUsePhotoArea, _setResultUsePhotoArea] =
-    useState<UsePhotoAreaResult>(null);
+    useState<UsePhotoAreaResult | null>(null);
   const setResultUsePhotoArea = (data: UsePhotoAreaResult) => {
     _setResultUsePhotoArea(data);
+    console.log('usePhotoArea onSuccess', data, resultUsePhotoArea);
     props.onSuccess?.(data);
   };
 
-  const calculatePhotoAreaResult = useMemo(() => {
-    console.log('calculatePhotoAreaResult');
-    return calculatePhotoArea({
-      countByYearMonthList,
-      componentWidth: props.input.componentWidth,
-      gapWidth: props.input.gapWidth,
-    });
-  }, [countByYearMonthList, props.input.componentWidth, props.input.gapWidth]);
-
-  useEffect(() => {
-    console.log('setResultUsePhotoArea');
-    setResultUsePhotoArea(calculatePhotoAreaResult);
-  }, [countByYearMonthList, props.input.componentWidth, props.input.gapWidth]);
-
-  const reclaim = useCallback(
-    (input: UsePhotoAreaInput) => {
-      console.log('reclaim');
-      setResultUsePhotoArea(
-        calculatePhotoArea({
-          countByYearMonthList,
-          componentWidth: input.componentWidth,
-          gapWidth: input.gapWidth,
-        }),
-      );
+  const countByYearMonthList = useRef<
+    | {
+        photoTakenYear: number;
+        photoTakenMonth: number;
+        photoCount: number;
+      }[]
+    | undefined
+  >(undefined);
+  trpcReact.vrchatPhoto.getCountByYearMonthList.useQuery(undefined, {
+    onSuccess: (data) => {
+      countByYearMonthList.current = data;
+      const photoArea = calculatePhotoArea({
+        countByYearMonthList: data,
+        componentWidth: usePhotoAreaInput.current.componentWidth,
+        gapWidth: usePhotoAreaInput.current.gapWidth,
+      });
+      if (photoArea.isErr()) {
+        console.log(
+          'setResultUsePhotoArea is skipped: calculatePhotoArea failed',
+        );
+        return;
+      }
+      console.log('setResultUsePhotoArea', photoArea.value);
+      setResultUsePhotoArea(photoArea.value);
     },
-    [countByYearMonthList],
-  );
+  });
 
-  console.log(`usePhotoArea componentWidth: ${props.input.componentWidth}`);
-  console.log(resultUsePhotoArea);
+  const reclaim = (input: UsePhotoAreaInput) => {
+    console.log('reclaim');
+    usePhotoAreaInput.current = input;
+    if (countByYearMonthList.current === undefined) {
+      console.log(
+        'setResultUsePhotoArea is skipped: countByYearMonthList is undefined',
+      );
+      return;
+    }
+    const photoArea = calculatePhotoArea({
+      countByYearMonthList: countByYearMonthList.current,
+      componentWidth: input.componentWidth,
+      gapWidth: input.gapWidth,
+    });
+    if (photoArea.isErr()) {
+      console.log(
+        'setResultUsePhotoArea is skipped: calculatePhotoArea failed',
+      );
+      return;
+    }
+    setResultUsePhotoArea(photoArea.value);
+  };
+
   return {
     data: resultUsePhotoArea,
     reclaim,

@@ -21,25 +21,34 @@ const getEstimateSizeFn =
       photoWidth: number;
     }[];
   }) =>
-  (index: number) => {
+  (index: number): number => {
     const overrided = input.overridedComponentHeight.find(
       (item) => item.index === index,
     );
+    console.log('getEstimateSizeFn', index, input);
     const estimated = (input.countByYearMonthList[index]?.areaHeight || 0) + 56;
-    if (overrided && estimated < overrided.height) {
+    if (overrided) {
       console.log(`estimated: ${estimated}, overrided: ${overrided.height}`);
       return overrided.height;
     }
     return estimated;
   };
 
+/**
+ *
+ */
 const PhotoList = (props: {
   onSelectPhotoFileName: (fileName: string) => void;
 }) => {
   console.log('PhotoList');
-  const [componentWidth, setComponentWidth] = useState<number | undefined>(
-    undefined,
-  );
+  const gapWidth = 4;
+  const overridedComponentHeight = useRef<
+    {
+      index: number;
+      height: number;
+    }[]
+  >([]);
+
   const [photoAreaList, setPhotoAreaList] = useState<{
     countByYearMonthList: {
       photoTakenYear: number;
@@ -52,37 +61,26 @@ const PhotoList = (props: {
     }[];
     len: number;
   } | null>(null);
-  const gapWidth = 4;
 
   const [getEstimateSize, _setGetEstimateSize] = React.useState<
     ((index: number) => number) | undefined
   >(undefined);
-  const overridedComponentHeight = useRef<
-    {
-      index: number;
-      height: number;
-    }[]
-  >([]);
-  const setGetEstimateSize = () => {
-    _setGetEstimateSize(() =>
-      getEstimateSizeFn({
-        overridedComponentHeight: overridedComponentHeight.current,
-        countByYearMonthList: photoAreaList?.countByYearMonthList || [],
-      }),
-    );
-    console.log('setGetEstimateSize', 'getEstimateSize', getEstimateSize);
-    rowVirtualizer.measure();
-  };
 
-  usePhotoArea({
+  const { reclaim } = usePhotoArea({
     input: {
-      componentWidth,
+      componentWidth: 0,
       gapWidth,
     },
     onSuccess: (data) => {
       console.log('usePhotoArea onSuccess');
       setPhotoAreaList(data);
-      setGetEstimateSize();
+      _setGetEstimateSize(() =>
+        getEstimateSizeFn({
+          overridedComponentHeight: overridedComponentHeight.current,
+          countByYearMonthList: data.countByYearMonthList,
+        }),
+      );
+      rowVirtualizer.measure();
     },
   });
 
@@ -92,8 +90,8 @@ const PhotoList = (props: {
   hooks.useComponentWidth({
     ref: scrollAreaContentRef,
     onChange: (width) => {
-      setComponentWidth(width);
-      setGetEstimateSize();
+      console.log('useComponentWidth onChange');
+      reclaim({ componentWidth: width, gapWidth });
     },
   });
 
@@ -101,18 +99,26 @@ const PhotoList = (props: {
     count: photoAreaList?.len || 0,
     getScrollElement: () => parentRef.current,
     estimateSize: (index) => {
-      return getEstimateSize ? getEstimateSize(index) : 0;
+      const size = getEstimateSize ? getEstimateSize(index) : 3000;
+      console.log(`index${index}: estimateSize: ${size}`);
+      return size;
     },
     gap: 8,
     overscan: 1,
   });
 
   const onChangeComponentHeight = (height: number, virtualRowIndex: number) => {
-    overridedComponentHeight.current = [
-      { index: virtualRowIndex, height },
-      ...overridedComponentHeight.current,
-    ];
-    setGetEstimateSize();
+    const indexIfExists = overridedComponentHeight.current.findIndex(
+      (item) => item.index === virtualRowIndex,
+    );
+    if (indexIfExists === -1) {
+      overridedComponentHeight.current.push({ index: virtualRowIndex, height });
+    } else {
+      overridedComponentHeight.current[indexIfExists] = {
+        index: virtualRowIndex,
+        height,
+      };
+    }
   };
 
   const content = () => {
