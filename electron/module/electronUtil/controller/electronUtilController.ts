@@ -1,8 +1,9 @@
-import path from 'node:path';
+import { clipboard, nativeImage } from 'electron';
+import * as path from 'pathe';
 import sharp from 'sharp';
 import z from 'zod';
 import { getWindow } from '../../../electronUtil';
-import { procedure, router as trpcRouter } from './../../../trpc';
+import { eventEmitter, procedure, router as trpcRouter } from './../../../trpc';
 import * as utilsService from './../service';
 
 const reloadWindow = () => {
@@ -29,5 +30,11 @@ export const electronUtilRouter = () =>
       return `data:image/${path
         .extname(ctx.input)
         .replace('.', '')};base64,${photoBuf.toString('base64')}`;
+    }),
+    copyImageDataByPath: procedure.input(z.string()).mutation(async (ctx) => {
+      const photoBuf = await sharp(ctx.input).toBuffer();
+      const image = nativeImage.createFromBuffer(photoBuf);
+      clipboard.writeImage(image);
+      eventEmitter.emit('toast', 'copied');
     }),
   });
