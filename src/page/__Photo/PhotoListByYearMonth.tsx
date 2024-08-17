@@ -2,6 +2,12 @@ import React, { useMemo } from 'react';
 
 import { PhotoByPath } from '@/components/ui/PhotoByPath';
 import { Badge } from '@/components/ui/badge';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from '@/components/ui/context-menu';
 import { Label } from '@/components/ui/label';
 import {
   Tooltip,
@@ -40,6 +46,8 @@ const PhotoViewGroupedByJoin = (props: {
     props.vrchatWorldJoinDataList,
     props.photoPathList,
   );
+  const { mutate: copyImageDataByPath } =
+    trpcReact.electronUtil.copyImageDataByPath.useMutation();
   return (
     <div className="space-y-6 w-full">
       {grouped.map((group) => (
@@ -63,31 +71,44 @@ const PhotoViewGroupedByJoin = (props: {
             style={{ gap: `${props.gapWidth}px` }}
           >
             {group.photos.map((photo) => (
-              <TooltipProvider key={photo.id}>
-                <Tooltip>
-                  <TooltipTrigger>
-                    <div
-                      style={{
-                        width: props.photoWidth,
-                        height: props.photoWidth,
-                      }}
-                    >
-                      <RenderInView className="h-full w-full" delay={200}>
-                        <PhotoByPathRevalidateOnPathNotFound
-                          className="h-full w-full cursor-pointer hover:brightness-105"
-                          photoPath={photo.photoPath}
-                          onClick={() =>
-                            props.onSelectPhotoFileName(photo.photoPath)
-                          }
-                        />
-                      </RenderInView>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{pathe.parse(photo.photoPath).name}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <ContextMenu>
+                <ContextMenuTrigger>
+                  <TooltipProvider key={photo.id}>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <div
+                          style={{
+                            width: props.photoWidth,
+                            height: props.photoWidth,
+                          }}
+                        >
+                          <RenderInView className="h-full w-full" delay={200}>
+                            <PhotoByPathRevalidateOnPathNotFound
+                              className="h-full w-full cursor-pointer hover:brightness-105"
+                              photoPath={photo.photoPath}
+                              onClick={() =>
+                                props.onSelectPhotoFileName(photo.photoPath)
+                              }
+                            />
+                          </RenderInView>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{pathe.parse(photo.photoPath).name}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </ContextMenuTrigger>
+                <ContextMenuContent>
+                  <ContextMenuItem
+                    onClick={() => {
+                      copyImageDataByPath(photo.photoPath);
+                    }}
+                  >
+                    Copy Image
+                  </ContextMenuItem>
+                </ContextMenuContent>
+              </ContextMenu>
             ))}
           </div>
         </div>
