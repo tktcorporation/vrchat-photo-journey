@@ -61,14 +61,18 @@ export const VRChatWorldJoinDataView = ({
   vrcWorldId,
   joinDateTime,
   nextJoinDateTime,
-}: { vrcWorldId: string; joinDateTime: Date; nextJoinDateTime?: Date }) => {
+}: {
+  vrcWorldId: string;
+  joinDateTime: Date;
+  nextJoinDateTime: Date | null;
+}): React.ReactElement => {
   const { data } =
     trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery(vrcWorldId);
 
   const { data: vrchatPhotoPathListData } =
     trpcReact.vrchatPhoto.getVrchatPhotoPathModelList.useQuery({
       gtPhotoTakenAt: joinDateTime,
-      ltPhotoTakenAt: nextJoinDateTime,
+      ...(nextJoinDateTime && { ltPhotoTakenAt: nextJoinDateTime }),
       orderByPhotoTakenAt: 'desc',
     });
 
@@ -82,7 +86,13 @@ export const VRChatWorldJoinDataView = ({
                 <div className="relative rounded-md bg-card p-4 flex flex-col overflow-hidden">
                   <div className="max-h-full">
                     <div className="text-sm text-muted-foreground">
-                      Join Date
+                      <span>Join Date</span>
+                      <span>{joinDateTime.toISOString()} ~ </span>
+                      <span>
+                        {nextJoinDateTime
+                          ? nextJoinDateTime.toISOString()
+                          : 'Now'}
+                      </span>
                     </div>
                     <div className="text-xl">
                       {datefns.format(
