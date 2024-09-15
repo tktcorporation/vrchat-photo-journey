@@ -67,6 +67,15 @@ export const getRecentVRChatWorldJoinLogByVRChatPhotoName = async (
       joinDateTime: Date;
       createdAt: Date;
       updatedAt: Date;
+      nextJoinLog: {
+        id: string;
+        worldId: string;
+        worldName: string;
+        worldInstanceId: string;
+        joinDateTime: Date;
+        createdAt: Date;
+        updatedAt: Date;
+      } | null;
     },
     'RECENT_JOIN_LOG_NOT_FOUND'
   >
