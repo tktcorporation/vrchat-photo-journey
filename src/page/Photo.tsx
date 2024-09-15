@@ -79,6 +79,9 @@ function PhotoSelector() {
             <VRChatWorldJoinDataView
               vrcWorldId={recentJoinWorldData.worldId}
               joinDateTime={recentJoinWorldData.joinDateTime}
+              nextJoinDateTime={
+                recentJoinWorldData.nextJoinLog?.joinDateTime || null
+              }
             />
           )}
         </div>
