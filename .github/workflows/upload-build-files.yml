@@ -63,42 +63,9 @@ jobs:
       - name: Install dependencies
         run: nci
 
-      - name: Build Electron app
-        run: nr dist
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-${{ matrix.os }}-v${{ needs.vars.outputs.app-version }}
-          path: |
-            dist/*
-  
-  release:
-    needs:
-      - build
-      - vars
-    runs-on: ubuntu-22.04
-    env:
-      WIN_ARTIFACT: app-windows-latest-v${{ needs.vars.outputs.app-version }}
-      UBUNTU_ARTIFACT: app-ubuntu-22.04-v${{ needs.vars.outputs.app-version }}
-
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-
-      - name: Zip artifacts
-        run: |
-          zip -r "${WIN_ARTIFACT}.zip" "${WIN_ARTIFACT}"
-          zip -r "${UBUNTU_ARTIFACT}.zip" "${UBUNTU_ARTIFACT}"
-
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            ${{ env.WIN_ARTIFACT }}.zip
-            ${{ env.UBUNTU_ARTIFACT }}.zip
-          tag_name: ${{ github.ref }}
-          body: |
-            Release for ${{ github.ref }}
-          draft: ${{ needs.vars.outputs.is-semver-tag == 'false' }}
-          prerelease: false
+      - name: Build and Publish Electron App
+          env:
+            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            NOT_DRAFT_RELEASE: ${{ needs.vars.outputs.is-semver-tag == 'true' && 'true' || 'false' }}
+          run: |
+            nlx electron-builder --${{ matrix.os == 'windows-latest' && 'win' || 'linux' }} --publish always
