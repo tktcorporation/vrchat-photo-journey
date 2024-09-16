@@ -65,7 +65,10 @@ jobs:
 
       - name: Build and Publish Electron App
         env:
+          NODE_ENV: production
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NOT_DRAFT_RELEASE: ${{ needs.vars.outputs.is-semver-tag == 'true' && 'true' || 'false' }}
         run: |
-          nr publish --${{ matrix.os == 'windows-latest' && 'win' || 'linux' }}
+          nr clean:build
+          nr build
+          nlx electron-builder --config=electron-builder.js --publish always --${{ matrix.os == 'windows-latest' && 'win' || 'linux' }}
