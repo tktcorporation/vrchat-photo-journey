@@ -64,8 +64,8 @@ jobs:
         run: nci
 
       - name: Build and Publish Electron App
-          env:
-            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            NOT_DRAFT_RELEASE: ${{ needs.vars.outputs.is-semver-tag == 'true' && 'true' || 'false' }}
-          run: |
-            nlx electron-builder --${{ matrix.os == 'windows-latest' && 'win' || 'linux' }} --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NOT_DRAFT_RELEASE: ${{ needs.vars.outputs.is-semver-tag == 'true' && 'true' || 'false' }}
+        run: |
+          nlx electron-builder --${{ matrix.os == 'windows-latest' && 'win' || 'linux' }} --publish always
