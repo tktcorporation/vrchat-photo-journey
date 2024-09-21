@@ -2658,7 +2658,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/merge2",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/merge2/LICENSE"
   },
-  "micromatch@4.0.5": {
+  "micromatch@4.0.8": {
     "licenses": "MIT",
     "repository": "https://github.com/micromatch/micromatch",
     "publisher": "Jon Schlinkert",
@@ -4111,7 +4111,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/vite",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/vite/LICENSE.md"
   },
-  "vrchat-photo-journey@0.2.0-alpha.1": {
+  "vrchat-photo-journey@0.2.0-alpha.2": {
     "licenses": "UNKNOWN",
     "repository": "https://github.com/tktcorporation/add-world-name-to-vrc-photo",
     "publisher": "tktcorporation",
