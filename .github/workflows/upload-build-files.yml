@@ -56,19 +56,14 @@ jobs:
         id: get-version
         uses: battila7/get-version-action@v2
 
-      - name: update ChangeLog
+      - name: Generate a changelog
         uses: orhun/git-cliff-action@v4
+        id: git-cliff
         with:
           config: cliff.toml
+          args: --strip header ${{ needs.vars.outputs.is-semver-tag == 'true' && '--current' || '--unreleased' }}
         env:
           OUTPUT: CHANGELOG.md
-          GITHUB_REPO: ${{ github.repository }}
-
-      - name: Parse Changelog
-        id: changelog
-        uses: coditory/changelog-parser@v1
-        with:
-          path: CHANGELOG.md
 
       - name: Delete drafts
         uses: hugo19941994/delete-draft-releases@v1.0.0
@@ -80,8 +75,9 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           draft: true
-          name: v${{steps.changelog.outputs.version}}
-          body: ${{ steps.changelog.outputs.description }}
+          # v0.0.0 or ref
+          name: ${{ needs.vars.outputs.is-semver-tag == 'true' && 'v' || '' }}${{ needs.vars.outputs.is-semver-tag == 'true' && steps.get-version.outputs.version-without-v || github.ref }}
+          body: ${{ steps.git-cliff.outputs.content }}
 
 
   electron-build:
