@@ -47,6 +47,8 @@ jobs:
 
       - name: Get latest tag
         id: get_latest_tag
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           LATEST_RELEASE_TAG=$(gh release list --exclude-drafts --json tagName --limit 1 -t '{{range .}}{{.tagName}}{{end}}')
           echo "latest_release_tag=$LATEST_RELEASE_TAG" >> $GITHUB_OUTPUT
