@@ -38,7 +38,8 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
           git switch -c $BRANCH
-          git commit -am "Bump version to $VERSION"
+          git add CHANGELOG.md
+          git commit -m "Bump version to $VERSION"
           git push --set-upstream origin $BRANCH
 
       - name: Parse Changelog
