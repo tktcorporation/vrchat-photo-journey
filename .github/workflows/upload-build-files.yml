@@ -76,7 +76,7 @@ jobs:
         with:
           draft: true
           # v0.0.0 or ref
-          name: ${{ needs.vars.outputs.is-semver-tag == 'true' && 'v' || '' }}${{ needs.vars.outputs.is-semver-tag == 'true' && steps.get-version.outputs.version-without-v || github.ref }}
+          name: ${{ needs.vars.outputs.is-semver-tag == 'true' && steps.get-version.outputs.version || github.ref }}
           body: ${{ steps.git-cliff.outputs.content }}
 
 
