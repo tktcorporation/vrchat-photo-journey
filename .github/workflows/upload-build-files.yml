@@ -84,6 +84,9 @@ jobs:
     name: Build on ${{ matrix.os }}
     needs: [vars, draft-release]
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
     strategy:
       matrix:
         os: [windows-latest, ubuntu-22.04]
