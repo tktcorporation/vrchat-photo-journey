@@ -3,7 +3,8 @@ name: Update Changelog
 on:
   push:
     tags:
-      - 'v*'
+      # - 'v*'
+      - '*'
 
 permissions:
   contents: write
@@ -56,6 +57,6 @@ jobs:
               repo: context.repo.repo,
               head: 'release/${{ steps.get-version.outputs.version-without-v }}',
               base: main,
-              title: 'Release ${{ steps.get-version.outputs.version-without-v }}',
-              body: ${{ steps.changelog.outputs.description }}
+              title: 'Update CHABGELOG.md : ${{ steps.get-version.outputs.version-without-v }}',
+              body: 'Update CHABGELOG.md',
             });
