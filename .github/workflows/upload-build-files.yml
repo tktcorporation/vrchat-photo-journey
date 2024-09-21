@@ -123,7 +123,7 @@ jobs:
             tag_string=$(echo "${GITHUB_REF##*/}" | sed 's/v//')
             echo "tag_string: $tag_string"
             for file in ./dist/*; do
-              result=$(gh release upload $tag_string $file || echo "failed")
+              result=$(gh release upload "$tag_string" "$file" || echo "failed")
               echo "result: $file $result"
             done
           fi
