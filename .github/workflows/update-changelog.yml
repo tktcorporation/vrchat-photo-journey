@@ -1,0 +1,61 @@
+name: Update Changelog
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  changelog:
+    name: Generate changelog
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Get version from tag
+        id: get-version
+        uses: battila7/get-version-action@v2
+
+      - name: Generate changelog
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: cliff.toml
+        env:
+          OUTPUT: CHANGELOG.md
+          GITHUB_REPO: ${{ github.repository }}
+
+      - name: Commit changes
+        run: |
+          VERSION=${{ steps.get-version.outputs.version-without-v }}
+          BRANCH="release/${VERSION}"
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git switch -c $BRANCH
+          git commit -am "Bump version to $VERSION"
+          git push --set-upstream origin $BRANCH
+
+      - name: Parse Changelog
+        id: changelog
+        uses: coditory/changelog-parser@v1
+        with:
+          version: ${{ steps.get-version.outputs.version-without-v }}
+
+      - name: Create Pull Request
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const response = await github.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              head: 'release/${{ steps.get-version.outputs.version-without-v }}',
+              base: main,
+              title: 'Release ${{ steps.get-version.outputs.version-without-v }}',
+              body: ${{ steps.changelog.outputs.description }}
+            });

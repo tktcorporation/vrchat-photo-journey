@@ -56,11 +56,19 @@ jobs:
         id: get-version
         uses: battila7/get-version-action@v2
 
+      - name: update ChangeLog
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: cliff.toml
+        env:
+          OUTPUT: CHANGELOG.md
+          GITHUB_REPO: ${{ github.repository }}
+
       - name: Parse Changelog
         id: changelog
         uses: coditory/changelog-parser@v1
         with:
-          version: ${{ steps.get-version.outputs.version-without-v }}
+          path: CHANGELOG.md
 
       - name: Delete drafts
         uses: hugo19941994/delete-draft-releases@v1.0.0
