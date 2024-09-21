@@ -42,12 +42,6 @@ jobs:
           git commit -m "Bump version to $VERSION"
           git push --set-upstream origin $BRANCH
 
-      - name: Parse Changelog
-        id: changelog
-        uses: coditory/changelog-parser@v1
-        with:
-          version: ${{ steps.get-version.outputs.version-without-v }}
-
       - name: Create Pull Request
         uses: actions/github-script@v6
         with:
@@ -55,7 +49,7 @@ jobs:
             const response = await github.pulls.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              head: 'release/${{ steps.get-version.outputs.version-without-v }}',
+              head: context.ref,
               base: main,
               title: 'Update CHABGELOG.md : ${{ steps.get-version.outputs.version-without-v }}',
               body: 'Update CHABGELOG.md',
