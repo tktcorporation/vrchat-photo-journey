@@ -112,7 +112,7 @@ jobs:
         run: |
           nr clean:build
           nr build
-          nlx electron-builder --config=electron-builder.js --publish always --${{ matrix.os == 'windows-latest' && 'win' || 'linux' }}
+          nlx electron-builder --config=electron-builder.js --publish onTagOrDraft --${{ matrix.os == 'windows-latest' && 'win' || 'linux' }}
 
   publish-release:
     needs: [vars, draft-release, electron-build]
