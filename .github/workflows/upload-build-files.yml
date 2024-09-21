@@ -120,8 +120,10 @@ jobs:
           else
             nlx electron-builder --config=electron-builder.js --${{ matrix.os == 'windows-latest' && 'win' || 'linux' }} --publish never
             tag_string=$(echo "${GITHUB_REF##*/}" | sed 's/v//')
+            echo "tag_string: $tag_string"
             for file in ./dist/*; do
-              gh release upload $tag_string $file
+              result=$(gh release upload $tag_string $file || echo "failed")
+              echo "result: $result"
             done
           fi
 
