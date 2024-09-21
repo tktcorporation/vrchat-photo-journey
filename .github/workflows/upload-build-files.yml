@@ -5,6 +5,9 @@ on:
     tags:
       - '*'
 
+concurrency:
+  group: release
+
 permissions:
   contents: write
 
@@ -39,9 +42,43 @@ jobs:
             echo "is-semver=false" >> $GITHUB_OUTPUT
           fi
 
-  build:
-    name: Build on ${{ matrix.os }}
+  draft-release:
+    runs-on: ubuntu-latest
     needs: vars
+    outputs:
+      release_id: ${{ steps.create-release-draft.outputs.id }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get version from tag
+        id: get-version
+        uses: battila7/get-version-action@v2
+
+      - name: Parse Changelog
+        id: changelog
+        uses: coditory/changelog-parser@v1
+        with:
+          version: ${{ steps.get-version.outputs.version-without-v }}
+
+      - name: Delete drafts
+        uses: hugo19941994/delete-draft-releases@v1.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.github_token }}
+
+      - name: Create Release Draft
+        id: create-release-draft
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          name: v${{steps.changelog.outputs.version}}
+          body: ${{ steps.changelog.outputs.description }}
+
+
+  electron-build:
+    name: Build on ${{ matrix.os }}
+    needs: [vars, draft-release]
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -67,8 +104,20 @@ jobs:
         env:
           NODE_ENV: production
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NOT_DRAFT_RELEASE: ${{ needs.vars.outputs.is-semver-tag == 'true' && 'true' || 'false' }}
+          NOT_DRAFT_RELEASE: 'false'
         run: |
           nr clean:build
           nr build
           nlx electron-builder --config=electron-builder.js --publish always --${{ matrix.os == 'windows-latest' && 'win' || 'linux' }}
+
+  publish-release:
+    needs: [vars, draft-release, electron-build]
+    runs-on: ubuntu-latest
+    if: ${{ needs.vars.outputs.is-semver-tag == 'true' }}
+    steps:
+      - name: Publish Release
+        uses: eregon/publish-release@v1
+        with:
+          release_id: ${{ needs.draft-release.outputs.release_id }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
