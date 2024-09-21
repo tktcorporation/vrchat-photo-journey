@@ -29,7 +29,6 @@ jobs:
           config: cliff.toml
         env:
           OUTPUT: CHANGELOG.md
-          GITHUB_REPO: ${{ github.repository }}
 
       - name: Commit changes
         run: |

@@ -51,6 +51,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Get version from tag
         id: get-version
@@ -78,7 +80,6 @@ jobs:
           # v0.0.0 or ref
           name: ${{ needs.vars.outputs.is-semver-tag == 'true' && steps.get-version.outputs.version || github.ref }}
           body: ${{ steps.git-cliff.outputs.content }}
-
 
   electron-build:
     name: Build on ${{ matrix.os }}
@@ -123,7 +124,7 @@ jobs:
             echo "tag_string: $tag_string"
             for file in ./dist/*; do
               result=$(gh release upload $tag_string $file || echo "failed")
-              echo "result: $result"
+              echo "result: $file $result"
             done
           fi
 
