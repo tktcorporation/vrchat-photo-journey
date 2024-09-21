@@ -112,7 +112,15 @@ jobs:
         run: |
           nr clean:build
           nr build
-          nlx electron-builder --config=electron-builder.js --publish onTagOrDraft --${{ matrix.os == 'windows-latest' && 'win' || 'linux' }}
+          if [[ "${{ needs.vars.outputs.is-semver-tag }}" == 'true' ]]; then
+            nlx electron-builder --config=electron-builder.js --${{ matrix.os == 'windows-latest' && 'win' || 'linux' }} --publish always
+          else
+            nlx electron-builder --config=electron-builder.js --${{ matrix.os == 'windows-latest' && 'win' || 'linux' }} --publish never
+            tag_string=$(echo "${GITHUB_REF##*/}" | sed 's/v//')
+            for file in ./dist/*; do
+              gh release upload $tag_string $file
+            done
+          fi
 
   publish-release:
     needs: [vars, draft-release, electron-build]
