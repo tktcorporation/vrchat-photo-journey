@@ -41,22 +41,18 @@ jobs:
 
       - name: Get current version from package.json
         id: get_version
-        run: |
-          package_version=$(node -p "require('./package.json').version")
-          echo "package_version=$package_version" >> $GITHUB_ENV
-
-      - name: Get latest tag
-        id: get_latest_tag
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          package_version=$(node -p "require('./package.json').version")
+          echo "package_version=$package_version" >> $GITHUB_OUTPUT
           LATEST_RELEASE_TAG=$(gh release list --exclude-drafts --json tagName --limit 1 -t '{{range .}}{{.tagName}}{{end}}')
           echo "latest_release_tag=$LATEST_RELEASE_TAG" >> $GITHUB_OUTPUT
 
       - name: Check if version differs from latest tag
         id: check_version
         run: |
-          if [ "v${{ steps.get_version.outputs.package_version }}" != "${{ steps.get_latest_tag.outputs.latest_tag }}" ]; then
+          if [ "v${{ steps.get_version.outputs.package_version }}" != "${{ steps.get_version.outputs.latest_release_tag }}" ]; then
             echo "new_version=true" >> $GITHUB_OUTPUT
           else
             echo "new_version=false" >> $GITHUB_OUTPUT
