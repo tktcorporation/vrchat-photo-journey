@@ -43,14 +43,10 @@ jobs:
           git push --set-upstream origin $BRANCH
 
       - name: Create Pull Request
-        uses: actions/github-script@v6
+        uses: peter-evans/create-pull-request@v7
         with:
-          script: |
-            const response = await github.pulls.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              head: context.ref,
-              base: main,
-              title: 'Update CHABGELOG.md : ${{ steps.get-version.outputs.version-without-v }}',
-              body: 'Update CHABGELOG.md',
-            });
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: "Update CHABGELOG.md"
+          body: "Update CHABGELOG.md for ${{ steps.get-version.outputs.version-without-v }}"
+          branch: "release/${{ steps.get-version.outputs.version-without-v }}"
+          base: "main"
