@@ -44,10 +44,8 @@ jobs:
           git push --set-upstream origin $BRANCH
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v7
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          title: "Update CHABGELOG.md"
-          body: "Update CHABGELOG.md for ${{ steps.get-version.outputs.version-without-v }}"
-          branch: "release/${{ steps.get-version.outputs.version-without-v }}"
-          base: "main"
+        run: |
+          VERSION=${{ steps.get-version.outputs.version-without-v }}
+          BRANCH="release/${VERSION}"
+          gh pr create --title "Update CHABGELOG.md" --body "Update CHABGELOG.md for $VERSION" --base main --head $BRANCH --delete-branch
+          
