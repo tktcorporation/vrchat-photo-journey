@@ -30,6 +30,7 @@
     "pack": "nr clean:build && nr build && NODE_ENV=production electron-builder --config=electron-builder.js --dir",
     "publish": "nr clean:build && nr build && NODE_ENV=production electron-builder --config=electron-builder.js --publish always",
     "clean:build": "rimraf dist main src/out",
+    "update-changelog": "git-cliff -c ./cliff.toml -o CHANGELOG.md",
     "clean:debug": "bash debug/cleanDevFiles.sh",
     "find-deadcode": "ts-prune",
     "license-check:generate": "license-checker --production --json --out src/assets/licenses.json",
