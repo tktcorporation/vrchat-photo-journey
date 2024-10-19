@@ -106,6 +106,7 @@
     "zod": "3.23.4"
   },
   "devDependencies": {
+    "@antfu/ni": "^0.23.0",
     "@biomejs/biome": "1.6.0",
     "@playwright/test": "1.43.1",
     "@swc/core": "1.4.17",
