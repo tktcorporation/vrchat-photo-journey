@@ -44,3 +44,5 @@ debug/sequelize.sqlite
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# pnpm
