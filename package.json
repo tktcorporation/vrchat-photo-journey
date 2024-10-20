@@ -17,7 +17,7 @@
   },
   "productName": "vrchat-photo-journey",
   "scripts": {
-    "preinstall": "nlx only-allow yarn",
+    "preinstall": "nlx only-allow pnpm",
     "postinstall": "simple-git-hooks && nr license-check:generate",
     "setup:debug": "bash debug/genDevFiles.sh",
     "dev": "./scripts/dev.sh",
@@ -37,18 +37,20 @@
     "license-check:validate": "license-checker --production --failOn 'GPL;GPL-2.0;GPL-3.0;LGPL;LGPL-3.0;AGPL;AGPL-3.0;AGPL-3.0-only;'",
     "test": "jest",
     "test:playwright": "playwright install --with-deps && playwright test",
-    "lint": "nr biome check . && nr lint:type-check",
+    "lint": "nr lint:biome && nr lint:type-check",
+    "lint:biome": "biome check .",
     "lint:type-check": "nr lint:type-check:electron && nr lint:type-check:src",
     "lint:type-check:electron": "tsc --noEmit -p electron",
     "lint:type-check:src": "tsc --noEmit",
-    "lint:fix": "nr biome check --apply ."
+    "lint:fix": "biome check --apply ."
   },
   "simple-git-hooks": {
     "pre-commit": "nr lint"
   },
+  "packageManager": "pnpm@9.12.2",
   "engines": {
     "node": "20",
-    "yarn": "4"
+    "pnpm": "9"
   },
   "dependencies": {
     "@heroicons/react": "2.1.3",
@@ -72,6 +74,7 @@
     "@vitejs/plugin-react": "4.2.1",
     "class-variance-authority": "0.7.0",
     "clsx": "2.1.1",
+    "consola": "^3.2.3",
     "date-fns": "2.30.0",
     "date-fns-tz": "2.0.1",
     "electron-is-dev": "2.0.0",
@@ -86,6 +89,7 @@
     "jschardet": "3.1.2",
     "lucide-react": "0.376.0",
     "neverthrow": "6.2.1",
+    "ofetch": "^1.4.1",
     "opentype.js": "1.3.4",
     "pathe": "1.1.2",
     "pony-cause": "2.1.11",
@@ -101,11 +105,14 @@
     "tailwindcss": "3.4.3",
     "tailwindcss-animate": "1.0.7",
     "ts-pattern": "5.1.1",
+    "ufo": "^1.5.4",
+    "undici": "^6.20.1",
     "vaul": "0.9.0",
     "vite": "5.2.14",
     "zod": "3.23.4"
   },
   "devDependencies": {
+    "@antfu/ni": "^0.23.0",
     "@biomejs/biome": "1.6.0",
     "@playwright/test": "1.43.1",
     "@swc/core": "1.4.17",
@@ -133,6 +140,5 @@
     "simple-git-hooks": "2.11.1",
     "ts-prune": "0.10.3",
     "typescript": "5.4.5"
-  },
-  "packageManager": "yarn@4.1.0"
+  }
 }

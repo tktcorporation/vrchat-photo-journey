@@ -15,10 +15,17 @@ jobs:
         - name: Checkout code
           uses: actions/checkout@v4
     
+        - uses: pnpm/action-setup@v4
+          name: Install pnpm
+          with:
+            version: 9
+            run_install: false
+  
         - name: setup node
-          uses: actions/setup-node@v3
+          uses: actions/setup-node@v4
           with:
             node-version-file: 'package.json'
+            cache: 'pnpm'
     
         - run: npm i -g @antfu/ni
         

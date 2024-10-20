@@ -11,10 +11,17 @@ import { Migrations } from './sequelize/migrations.model';
 let rdbClient: ReturnType<typeof _getRDBClient> | null = null;
 let migrationProgeress = false;
 
+type SequelizeOptions = ConstructorParameters<typeof Sequelize>[0] & {
+  storage: string;
+};
 const _getRDBClient = (props: { db_url: string }) => {
-  const sequelizeOptions = {
+  const sequelizeOptions: SequelizeOptions = {
     dialect: SqliteDialect,
     storage: props.db_url,
+    retry: {
+      max: 10,
+      timeout: 3000,
+    },
     models: [
       VRChatWorldJoinLogModel,
       VRChatPlayerJoinLogModel,
