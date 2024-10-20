@@ -1,5 +1,6 @@
 import * as neverthrow from 'neverthrow';
 import { z } from 'zod';
+import { getData } from '../../lib/getData';
 import type { VRChatWorldId } from './valueObject';
 
 /**
@@ -33,7 +34,9 @@ import type { VRChatWorldId } from './valueObject';
  * created_at: '2023-06-21T13:30:58.720Z',
  * updated_at: '2024-03-20T05:59:42.558Z'
  */
-type VRChatWorldInfoFromApi = z.infer<typeof VRChatWorldInfoFromApiSchema>;
+export type VRChatWorldInfoFromApi = z.infer<
+  typeof VRChatWorldInfoFromApiSchema
+>;
 const VRChatWorldInfoFromApiSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -69,14 +72,13 @@ export const getVrcWorldInfoByWorldId = async (
   worldId: VRChatWorldId,
 ): Promise<neverthrow.Result<VRChatWorldInfoFromApi, Error>> => {
   const reqUrl = `https://api.vrchat.cloud/api/1/worlds/${worldId.value}`;
-  const response = await fetch(reqUrl);
-  if (!response.ok) {
+  const response = await getData(reqUrl);
+  if (!response.isOk()) {
     return neverthrow.err(
-      new Error(`getVrcWorldInfoByWorldId: ${response.statusText}`),
+      new Error(`getVrcWorldInfoByWorldId: ${response.error.message}`),
     );
   }
-  const json = await response.json();
-  const result = VRChatWorldInfoFromApiSchema.safeParse(json);
+  const result = VRChatWorldInfoFromApiSchema.safeParse(response.value);
   if (!result.success) {
     return neverthrow.err(
       new Error(`fail to parse VRChatWorldInfoFromApi: ${result.error.errors}`),

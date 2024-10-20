@@ -1,78 +1,17 @@
-import * as path from 'node:path';
-import * as type from './type';
-// import { getSettingStore } from '../settingStore';
-// import {
-//   getVRChatPhotoFolderYearMonthList,
-//   getVRChatPhotoItemPathListByYearMonth,
-// } from './vrchatPhoto/service';
-// import { readDirSyncSafe } from '../lib/wrappedFs';
-
-// const settingStore = getSettingStore('test-settings');
-
-// readDirSyncSafe の結果を mock する
-// jest.mock('../lib/wrappedFs', () => {
-//   const originalModule = jest.requireActual('../lib/wrappedFs');
-//   return {
-//     __esModule: true,
-//     ...originalModule,
-//     readDirSyncSafe: jest.fn().mockReturnValue({
-//       isErr: () => false,
-//       isOk: () => true,
-//       value: ['2023-11'],
-//   }),
-//   };
-// });
-
-// describe('viewer', () => {
-//   beforeEach(async () => {
-//     await settingStore.clearAllStoredSettings();
-//     await settingStore.setVRChatPhotoDir(
-//       '/testPath/VRChat',
-//     );
-//   });
-//   it('should be defined', () => {
-//     const VrcPhotoPath = settingStore.getVRChatPhotoDir();
-//     console.log(VrcPhotoPath);
-//     expect(VrcPhotoPath).toStrictEqual(
-//       '/testPath/VRChat',
-//     );
-//     const yearMonthList = getVRChatPhotoFolderYearMonthList({
-//       storedPath: VrcPhotoPath,
-//     })._unsafeUnwrap();
-//     const { year, month } = yearMonthList[0];
-//     const vrcPhotoPathList = getVRChatPhotoItemPathListByYearMonth({
-//       year,
-//       month,
-//       storedVRCPhotoDir: VrcPhotoPath,
-//     })._unsafeUnwrap();
-//     console.log(vrcPhotoPathList);
-
-//     const infoFileName: string[] = [];
-//     for (const vrcPhotoPath of vrcPhotoPathList) {
-//       const fileName = path.basename(vrcPhotoPath);
-//       const parseResult = t.JoinInfoFileNameSchema.safeParse(
-//         fileName
-//           .replace(/\.png$/, '')
-//           .replace(/\.jpg$/, '')
-//           .replace(/\.jpeg$/, ''),
-//       );
-//       if (parseResult.success) {
-//         infoFileName.push(vrcPhotoPath);
-//       }
-//     }
-
-//     console.log(infoFileName);
-//     expect(infoFileName.length).toBeGreaterThan(0);
-//   });
-// });
+import { getData } from '../../lib/getData';
+import type { VRChatWorldInfoFromApi } from '../vrchatApi/service';
 
 describe('viewer_api', () => {
   it('ワールド情報を取得する', async () => {
     const worldId = 'wrld_6fecf18a-ab96-43f2-82dc-ccf79f17c34f';
     // api で world 情報を取得する
     const reqUrl = `https://api.vrchat.cloud/api/1/worlds/${worldId}`;
-    const res = await fetch(reqUrl);
-    const worldInfo = await res.json();
+    const res = await getData<VRChatWorldInfoFromApi>(reqUrl);
+    expect(res).toBeDefined();
+    expect(res.isOk()).toBe(true);
+
+    const worldInfo = await res._unsafeUnwrap();
+    expect(worldInfo).toBeDefined();
     expect(worldInfo.id).toBe(worldId);
     expect(typeof worldInfo.name).toBe('string');
   }, 1000);

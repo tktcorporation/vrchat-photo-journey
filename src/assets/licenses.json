@@ -136,6 +136,12 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/clsx",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/clsx/license"
   },
+  "consola@3.2.3": {
+    "licenses": "MIT",
+    "repository": "https://github.com/unjs/consola",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/consola",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/consola/LICENSE"
+  },
   "date-fns-tz@2.0.1": {
     "licenses": "MIT",
     "repository": "https://github.com/marnusw/date-fns-tz",
@@ -245,6 +251,12 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/neverthrow",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/neverthrow/LICENSE"
   },
+  "ofetch@1.4.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/unjs/ofetch",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/ofetch",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/ofetch/LICENSE"
+  },
   "opentype.js@1.3.4": {
     "licenses": "MIT",
     "repository": "https://github.com/opentypejs/opentype.js",
@@ -353,6 +365,12 @@
     "publisher": "Gabriel Vergnaud",
     "path": "/workspaces/vrchat-photo-journey/node_modules/ts-pattern",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/ts-pattern/LICENSE"
+  },
+  "ufo@1.5.4": {
+    "licenses": "MIT",
+    "repository": "https://github.com/unjs/ufo",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/ufo",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/ufo/LICENSE"
   },
   "vaul@0.9.0": {
     "licenses": "MIT",
