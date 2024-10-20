@@ -812,7 +812,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@remix-run/router",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@remix-run/router/LICENSE.md"
   },
-  "@rollup/rollup-linux-x64-gnu@4.17.0": {
+  "@rollup/rollup-linux-x64-gnu@4.22.4": {
     "licenses": "MIT",
     "repository": "https://github.com/rollup/rollup",
     "publisher": "Lukas Taegert-Atkinson",
@@ -1499,6 +1499,12 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/conf",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/conf/license"
   },
+  "consola@3.2.3": {
+    "licenses": "MIT",
+    "repository": "https://github.com/unjs/consola",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/consola",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/consola/LICENSE"
+  },
   "console-control-strings@1.1.0": {
     "licenses": "ISC",
     "repository": "https://github.com/iarna/console-control-strings",
@@ -1631,6 +1637,12 @@
     "repository": "https://github.com/visionmedia/node-delegates",
     "path": "/workspaces/vrchat-photo-journey/node_modules/delegates",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/delegates/License"
+  },
+  "destr@2.0.3": {
+    "licenses": "MIT",
+    "repository": "https://github.com/unjs/destr",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/destr",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/destr/LICENSE"
   },
   "detect-libc@2.0.2": {
     "licenses": "Apache-2.0",
@@ -2898,6 +2910,12 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/node-addon-api",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/node-addon-api/LICENSE.md"
   },
+  "node-fetch-native@1.6.4": {
+    "licenses": "MIT",
+    "repository": "https://github.com/unjs/node-fetch-native",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/node-fetch-native",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/node-fetch-native/LICENSE"
+  },
   "node-gyp@8.4.1": {
     "licenses": "MIT",
     "repository": "https://github.com/nodejs/node-gyp",
@@ -2973,6 +2991,12 @@
     "url": "http://ljharb.codes",
     "path": "/workspaces/vrchat-photo-journey/node_modules/object-keys",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/object-keys/LICENSE"
+  },
+  "ofetch@1.4.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/unjs/ofetch",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/ofetch",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/ofetch/LICENSE"
   },
   "once@1.4.0": {
     "licenses": "ISC",
@@ -3502,7 +3526,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/roarr",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/roarr/LICENSE"
   },
-  "rollup@4.17.0": {
+  "rollup@4.22.4": {
     "licenses": "MIT",
     "repository": "https://github.com/rollup/rollup",
     "publisher": "Rich Harris",
@@ -4003,11 +4027,23 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/type-fest",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/type-fest/readme.md"
   },
+  "ufo@1.5.4": {
+    "licenses": "MIT",
+    "repository": "https://github.com/unjs/ufo",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/ufo",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/ufo/LICENSE"
+  },
   "undici-types@5.26.5": {
     "licenses": "MIT",
     "repository": "https://github.com/nodejs/undici",
     "path": "/workspaces/vrchat-photo-journey/node_modules/undici-types",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/undici-types/README.md"
+  },
+  "undici@6.20.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/nodejs/undici",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/undici",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/undici/LICENSE"
   },
   "unique-filename@1.1.1": {
     "licenses": "ISC",
@@ -4104,14 +4140,14 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/vaul",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/vaul/LICENSE.md"
   },
-  "vite@5.2.10": {
+  "vite@5.2.14": {
     "licenses": "MIT",
     "repository": "https://github.com/vitejs/vite",
     "publisher": "Evan You",
     "path": "/workspaces/vrchat-photo-journey/node_modules/vite",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/vite/LICENSE.md"
   },
-  "vrchat-photo-journey@0.2.0-alpha.2": {
+  "vrchat-photo-journey@0.2.0-alpha.4": {
     "licenses": "UNKNOWN",
     "repository": "https://github.com/tktcorporation/add-world-name-to-vrc-photo",
     "publisher": "tktcorporation",
