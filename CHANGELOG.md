@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### 📚 Documentation
+
+- Update CHANGELOG.md (#111)
+
 ### ⚙️ Miscellaneous Tasks
 
 - Use `create-pull-request@v7` to update CHANGELOG.md (#107)
