@@ -34,7 +34,7 @@ jobs:
         run: nr build
 
       - name: Run Playwright tests
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" -- nr playwright test
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" -- nr test:playwright
 
       - name: upload screenshot
         id: upload-screenshot
