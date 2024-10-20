@@ -372,6 +372,12 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/ufo",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/ufo/LICENSE"
   },
+  "undici@6.20.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/nodejs/undici",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/undici",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/undici/LICENSE"
+  },
   "vaul@0.9.0": {
     "licenses": "MIT",
     "repository": "https://github.com/emilkowalski/vaul",
