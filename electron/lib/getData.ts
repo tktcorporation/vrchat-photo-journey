@@ -11,22 +11,25 @@ export class FetchError extends Error {
   responseBody?: unknown;
   originalMessage?: string;
 
-  constructor({
-    message,
-    status,
-    url,
-    method,
-    headers,
-    responseBody,
-  }: {
-    message: string;
-    status: number;
-    url: string;
-    method?: string;
-    headers?: Headers;
-    responseBody?: unknown;
-  }) {
-    super(message);
+  constructor(
+    {
+      message,
+      status,
+      url,
+      method,
+      headers,
+      responseBody,
+    }: {
+      message: string;
+      status: number;
+      url: string;
+      method?: string;
+      headers?: Headers;
+      responseBody?: unknown;
+    },
+    option: { cause?: Error } = {},
+  ) {
+    super(message, { cause: option.cause });
     this.name = 'FetchError';
     this.status = status;
     this.url = url;
@@ -65,15 +68,7 @@ const fetchWithResult = async <T = unknown>(
     return ok(response);
   } catch (error: unknown) {
     if (error instanceof FetchError) {
-      const fetchError = new FetchError({
-        message: error.message,
-        status: error.status,
-        url: url,
-        method: options?.method,
-        headers: options?.headers as Headers,
-        responseBody: error.responseBody,
-      });
-      return err(fetchError);
+      return err(error);
     }
     throw error; // FetchError でない場合はそのまま throw する
   }
