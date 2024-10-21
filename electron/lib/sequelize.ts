@@ -1,6 +1,8 @@
 import { Sequelize } from '@sequelize/core';
 import { SqliteDialect } from '@sequelize/sqlite3';
+import path from 'pathe';
 import { match } from 'ts-pattern';
+import { uuidv7 } from 'uuidv7';
 import { VRChatPlayerJoinLogModel } from '../module/VRChatPlayerJoinLogModel/playerJoinInfoLog.model';
 import { VRChatPhotoPathModel } from '../module/vrchatPhoto/model/vrchatPhotoPath.model';
 import { VRChatWorldJoinLogModel } from '../module/vrchatWorldJoinLog/VRChatWorldJoinLogModel/s_model';
@@ -8,13 +10,13 @@ import * as settingService from './../module/settings/service';
 import * as log from './logger';
 import { Migrations } from './sequelize/migrations.model';
 
-let rdbClient: ReturnType<typeof _getRDBClient> | null = null;
+let rdbClient: ReturnType<typeof _newRDBClient> | null = null;
 let migrationProgeress = false;
 
 type SequelizeOptions = ConstructorParameters<typeof Sequelize>[0] & {
   storage: string;
 };
-const _getRDBClient = (props: { db_url: string }) => {
+const _newRDBClient = (props: { db_url: string }) => {
   const sequelizeOptions: SequelizeOptions = {
     dialect: SqliteDialect,
     storage: props.db_url,
@@ -29,7 +31,7 @@ const _getRDBClient = (props: { db_url: string }) => {
       Migrations,
     ],
   };
-  log.info(`sequelizeOptions: ${JSON.stringify(sequelizeOptions)}`);
+  log.debug(`sequelizeOptions: ${JSON.stringify(sequelizeOptions)}`);
   const client = new Sequelize(sequelizeOptions);
   return {
     __db_url: props.db_url,
@@ -38,18 +40,48 @@ const _getRDBClient = (props: { db_url: string }) => {
 };
 
 export const initRDBClient = (props: { db_url: string }) => {
+  return _initRDBClient({
+    db_url: props.db_url,
+  });
+};
+
+const _initRDBClient = (props: { db_url: string }) => {
   if (rdbClient !== null) {
     if (rdbClient.__db_url !== props.db_url) {
       throw new Error(
         `rdbClient is already initialized with ${rdbClient.__db_url}`,
       );
     }
-    return rdbClient;
+    throw new Error(
+      `rdbClient is already initialized with ${rdbClient.__db_url}`,
+    );
   }
-  rdbClient = _getRDBClient({
+  rdbClient = _newRDBClient({
     db_url: props.db_url,
   });
   return rdbClient;
+};
+
+/**
+ * テスト用の RDBClient を初期化する
+ */
+export const __initTestRDBClient = () => {
+  // テスト環境でなければエラー
+  if (process.env.NODE_ENV !== 'test') {
+    throw new Error('NODE_ENV is not test');
+  }
+  // const dbPath = ':memory:';
+  const dbPath = path.join(process.cwd(), 'debug', 'db', `test.${uuidv7()}.db`);
+  return _initRDBClient({
+    db_url: dbPath,
+  });
+};
+export const __cleanupTestRDBClient = async () => {
+  if (rdbClient === null) {
+    return;
+  }
+  await rdbClient.__client.close();
+  rdbClient = null;
 };
 
 export const getRDBClient = () => {
