@@ -14,27 +14,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - uses: pnpm/action-setup@v4
-        name: Install pnpm
-        with:
-          run_install: false
-
-      - name: setup node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version-file: 'package.json'
-          cache: 'pnpm'
 
       - run: npm i -g @antfu/ni
 
       - name: Install dependencies
-        run: ni
+        run: nci
 
       - name: build app
         run: nr build
 
+      - name: Install Playwright Browsers
+        run: nr playwright install --with-deps
       - name: Run Playwright tests
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" -- nr test:playwright
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" -- nr playwright test
 
       - name: upload screenshot
         id: upload-screenshot
