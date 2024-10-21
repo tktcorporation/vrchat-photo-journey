@@ -30,7 +30,7 @@ jobs:
         - run: npm i -g @antfu/ni
         
         - name: install dependencies
-          run: nci
+          run: ni
         
         - name: run license-checker
           run: |
