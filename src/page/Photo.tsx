@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { trpcReact } from '@/trpc';
-import { Globe, Image, Search } from 'lucide-react';
+import { MinusIcon, Plus, PlusIcon, Search } from 'lucide-react';
 import * as path from 'pathe';
 import React from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -49,39 +49,48 @@ function PhotoSelector() {
 
   return (
     <div className="flex flex-col flex-1">
-      <div className="mx-3 ">
-        <Label
-          htmlFor="imege-search"
-          className="relative flex items-center w-full"
-        >
-          <Search
-            strokeWidth={1}
-            size={20}
-            className="absolute left-3 h-5 w-5 text-muted-foreground"
+      <div className="flex">
+        <div className="flex-1">
+          <Label
+            htmlFor="imege-search"
+            className="relative flex items-center w-full"
+          >
+            <Search
+              strokeWidth={1}
+              size={20}
+              className="absolute left-3 h-5 w-5 text-muted-foreground"
+            />
+            <div className="flex h-10 w-full rounded-md bg-card px-3 py-2 pl-10 text-sm ring-offset-background text-muted-foreground">
+              {inputPhotoFileNameValue
+                ? `PhotoPath:${inputPhotoFileNameValue}`
+                : '写真で検索'}
+            </div>
+          </Label>
+          <Input
+            id="imege-search"
+            type="file"
+            onChange={onChangeInput}
+            className="hidden"
           />
-          <div className="flex h-10 w-full rounded-md bg-card px-3 py-2 pl-10 text-sm ring-offset-background text-muted-foreground">
-            {inputPhotoFileNameValue
-              ? `PhotoPath:${inputPhotoFileNameValue}`
-              : '写真で検索'}
-          </div>
-        </Label>
-        <Input
-          id="imege-search"
-          type="file"
-          onChange={onChangeInput}
-          className="hidden"
-        />
+        </div>
+        {/* photoColumnCount を増減させるボタン */}
+        <div className="flex">
+          <Button
+            onClick={() => setPhotoColumnCount((prev) => prev - 1 || 1)}
+            disabled={photoColumnCount <= 1}
+            variant={'secondary'}
+          >
+            <MinusIcon />
+          </Button>
+          <Button
+            onClick={() => setPhotoColumnCount((prev) => prev + 1)}
+            variant={'secondary'}
+          >
+            <PlusIcon />
+          </Button>
+        </div>
       </div>
-      {/* photoColumnCount を増減させるボタン */}
-      <div className="flex justify-center space-x-3 m-3">
-        <Button onClick={() => setPhotoColumnCount((prev) => prev - 1)}>
-          <Image size={20} />
-        </Button>
-        <Button onClick={() => setPhotoColumnCount((prev) => prev + 1)}>
-          <Globe size={20} />
-        </Button>
-        {photoColumnCount}
-      </div>
+
       {inputPhotoFileNameValue ? (
         <div
           className="m-3 flex-1"
