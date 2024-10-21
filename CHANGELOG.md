@@ -4,11 +4,31 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### 🚀 Features
+
+- 自動アップデートの仮実装 (#119)
+- 写真サイズの拡大縮小機能WIP (#121)
+
+### 🚜 Refactor
+
+- Use UUIDv7 for primarykey (#120)
+
+### 📚 Documentation
+
+- Update CHANGELOG.md (#111)
+
 ### ⚙️ Miscellaneous Tasks
 
 - Use `create-pull-request@v7` to update CHANGELOG.md (#107)
 - Changelog 更新に必要な権限を追加 (#108)
 - Update changelog action (#110)
+- AppVersion の取得方法変更 (#112)
+- Use `ni` instead of `nci` (#117)
+
+### Build
+
+- `skipLibCheck`, `esModuleInterop` (#116)
+- `yarn` の使用に戻す (#118)
 
 ## [0.2.0-alpha.4] - 2024-09-21
 
