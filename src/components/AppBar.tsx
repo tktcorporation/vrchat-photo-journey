@@ -12,7 +12,9 @@ import {
 import { ROUTER_PATHS } from '@/constants';
 import { cn } from '@/lib/utils';
 import SettingSheet from '@/page/SettingSheet';
+import { trpcReact } from '@/trpc';
 import {
+  DownloadIcon,
   HomeIcon,
   Maximize,
   Minimize,
@@ -25,6 +27,9 @@ import { Link } from 'react-router-dom';
 
 function AppBar() {
   const [isMaximize, setMaximize] = useState(false);
+  const getAppUpdateInfQuery = trpcReact.settings.getAppUpdateInfo.useQuery();
+  const updateAvailable = getAppUpdateInfQuery.data?.isUpdateAvailable ?? false;
+  const updateInstallMutation = trpcReact.settings.installUpdate.useMutation();
 
   const handleToggle = () => {
     if (isMaximize) {
@@ -33,6 +38,11 @@ function AppBar() {
       setMaximize(true);
     }
     window.Main.Maximize();
+  };
+
+  const handleUpdate = async () => {
+    getAppUpdateInfQuery.refetch();
+    updateInstallMutation.mutate();
   };
 
   return (
@@ -60,6 +70,18 @@ function AppBar() {
         </Sheet>
       </div>
       <div className="inline-flex">
+        {/* アップデートインストールボタン */}
+        {updateAvailable && (
+          <Button
+            variant="icon"
+            size="icon"
+            onClick={handleUpdate}
+            className="undraggable hover:bg-muted"
+          >
+            <DownloadIcon strokeWidth={1} size={16} />
+          </Button>
+        )}
+
         <Button
           variant="icon"
           size="icon"

@@ -82,6 +82,7 @@
     "electron-store": "8.2.0",
     "electron-trpc": "0.5.2",
     "electron-unhandled": "4.0.1",
+    "electron-updater": "^6.3.9",
     "framer-motion": "11.2.4",
     "glob": "10.4.3",
     "i": "0.3.7",
