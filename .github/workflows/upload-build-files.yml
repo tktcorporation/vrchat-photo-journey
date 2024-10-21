@@ -118,7 +118,7 @@ jobs:
       - run: npm i -g @antfu/ni
 
       - name: Install dependencies
-        run: nci
+        run: ni
 
       - name: Build and Publish Electron App
         env:

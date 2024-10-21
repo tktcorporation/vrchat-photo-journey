@@ -29,7 +29,7 @@ jobs:
       - run: npm i -g @antfu/ni
 
       - name: install dependencies
-        run: nci
+        run: ni
 
       - name: lint
         run: nr lint
