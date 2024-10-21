@@ -39,6 +39,7 @@ const getEstimateSizeFn =
  */
 const PhotoList = (props: {
   onSelectPhotoFileName: (fileName: string) => void;
+  photoColumnCount: number;
 }) => {
   console.log('PhotoList');
   const gapWidth = 4;
@@ -69,6 +70,7 @@ const PhotoList = (props: {
   const { reclaim } = usePhotoArea({
     input: {
       componentWidth: 0,
+      columnCount: props.photoColumnCount,
       gapWidth,
     },
     onSuccess: (data) => {
@@ -91,7 +93,11 @@ const PhotoList = (props: {
     ref: scrollAreaContentRef,
     onChange: (width) => {
       console.log('useComponentWidth onChange');
-      reclaim({ componentWidth: width, gapWidth });
+      reclaim({
+        componentWidth: width,
+        gapWidth,
+        columnCount: props.photoColumnCount,
+      });
     },
   });
 
@@ -186,12 +192,18 @@ PhotoList.whyDidYouRender = true;
 
 export const PhotoListAll = (props: {
   onSelectPhotoFileName: (fileName: string) => void;
+  photoColumnCount: number;
 }) => {
   console.log('PhotoListAll');
 
   const renderContent = () => {
     console.log('renderContent');
-    return <PhotoList onSelectPhotoFileName={props.onSelectPhotoFileName} />;
+    return (
+      <PhotoList
+        onSelectPhotoFileName={props.onSelectPhotoFileName}
+        photoColumnCount={props.photoColumnCount}
+      />
+    );
   };
 
   return <div className="h-full w-full relative">{renderContent()}</div>;

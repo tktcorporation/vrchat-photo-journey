@@ -1,9 +1,10 @@
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { trpcReact } from '@/trpc';
 import { Globe, Image, Search } from 'lucide-react';
 import * as path from 'pathe';
-import type React from 'react';
+import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { PhotoListAll } from './__Photo/PhotoList';
 import { VRChatWorldJoinDataView } from './__Photo/VRChatJoinDataView';
@@ -11,6 +12,7 @@ import { VRChatWorldJoinDataView } from './__Photo/VRChatJoinDataView';
 function PhotoSelector() {
   console.log('PhotoSelector');
   const [searchParams, setSearchParams] = useSearchParams();
+  const [photoColumnCount, setPhotoColumnCount] = React.useState<number>(4);
 
   const inputPhotoFileNameValue = searchParams.get('photoFileName');
 
@@ -70,6 +72,16 @@ function PhotoSelector() {
           className="hidden"
         />
       </div>
+      {/* photoColumnCount を増減させるボタン */}
+      <div className="flex justify-center space-x-3 m-3">
+        <Button onClick={() => setPhotoColumnCount((prev) => prev - 1)}>
+          <Image size={20} />
+        </Button>
+        <Button onClick={() => setPhotoColumnCount((prev) => prev + 1)}>
+          <Globe size={20} />
+        </Button>
+        {photoColumnCount}
+      </div>
       {inputPhotoFileNameValue ? (
         <div
           className="m-3 flex-1"
@@ -88,7 +100,10 @@ function PhotoSelector() {
       ) : (
         <div className="m-3 flex flex-1 flex-row space-x-3 items-start h-full relative">
           <div className="flex-1 h-full relative">
-            <PhotoListAll onSelectPhotoFileName={onSelectPhotoFileName} />
+            <PhotoListAll
+              onSelectPhotoFileName={onSelectPhotoFileName}
+              photoColumnCount={photoColumnCount}
+            />
           </div>
         </div>
       )}
