@@ -4225,6 +4225,14 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/uuid",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/uuid/LICENSE.md"
   },
+  "uuidv7@1.0.2": {
+    "licenses": "Apache-2.0",
+    "repository": "https://github.com/LiosK/uuidv7",
+    "publisher": "LiosK",
+    "email": "contact@mail.liosk.net",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/uuidv7",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/uuidv7/LICENSE"
+  },
   "validator@13.11.0": {
     "licenses": "MIT",
     "repository": "https://github.com/validatorjs/validator.js",

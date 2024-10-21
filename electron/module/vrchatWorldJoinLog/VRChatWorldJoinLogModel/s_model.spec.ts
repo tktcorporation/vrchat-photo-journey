@@ -12,18 +12,17 @@ import * as model from './s_model';
 
 import * as client from '../../../lib/sequelize';
 
-const dbPath = path.join(process.cwd(), 'debug', 'db', 'test.sqlite');
-
 describe('module/logInfo/s_model', () => {
   beforeAll(async () => {
-    client.initRDBClient({
-      db_url: dbPath,
-    });
+    client.__initTestRDBClient();
     // migrate db
     await client.syncRDBClient({
       checkRequired: false,
     });
   }, 10000);
+  afterAll(async () => {
+    await client.__cleanupTestRDBClient();
+  });
   it('has a model', async () => {
     const storedVRChatLogFilesDirPath = {
       value: path.join(process.cwd(), 'debug', 'logs'),
@@ -51,9 +50,5 @@ describe('module/logInfo/s_model', () => {
   it('findAllVRChatWorldJoinLogList', async () => {
     const result = await model.findAllVRChatWorldJoinLogList();
     expect(result.length).toBeGreaterThan(0);
-  });
-
-  afterAll(async () => {
-    await client.getRDBClient().__client.close();
   });
 });

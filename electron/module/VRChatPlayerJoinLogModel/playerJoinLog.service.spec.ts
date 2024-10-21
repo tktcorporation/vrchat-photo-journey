@@ -1,24 +1,20 @@
 import * as service from './playerJoinLog.service';
 
 import * as datefns from 'date-fns';
-import path from 'pathe';
 import * as client from '../../lib/sequelize';
-
-const dbPath = path.join(process.cwd(), 'debug', 'db', 'test.sqlite');
 
 describe('VRChatPlayerJoinLogModel', () => {
   describe('createVRChatPlayerJoinLogModel', () => {
+    beforeAll(async () => {
+      client.__initTestRDBClient();
+    }, 10000);
     beforeEach(async () => {
-      client.initRDBClient({
-        db_url: dbPath,
-      });
-      // migrate db
       await client.syncRDBClient({
         checkRequired: false,
       });
-    }, 10000);
+    });
     afterAll(async () => {
-      await client.getRDBClient().__client.close();
+      await client.__cleanupTestRDBClient();
     });
     it('should create playerJoinLog', async () => {
       const playerJoinLogList = [

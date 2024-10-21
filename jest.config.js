@@ -1,4 +1,4 @@
-module.exports = {
+const commonConfig = {
   transform: {
     '^.+\\.(t|j)sx?$': [
       '@swc/jest',
@@ -22,6 +22,22 @@ module.exports = {
     '/playwright/',
   ],
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1',
+    '^@/(.*)$': '<rootDir>/src/$1', // 共通のエイリアス設定
   },
+};
+
+module.exports = {
+  projects: [
+    {
+      ...commonConfig, // 共通の設定
+      displayName: 'electron',
+      testMatch: ['<rootDir>/electron/**/*.(spec|test).(ts|tsx|js|jsx)'], // electron 用のテストファイル
+      setupFilesAfterEnv: ['<rootDir>/jest.electron.setup.js'], // electron 用の setup
+    },
+    {
+      ...commonConfig, // 共通の設定
+      displayName: 'src',
+      testMatch: ['<rootDir>/src/**/*.(spec|test).(ts|tsx|js|jsx)'], // src 用のテストファイル
+    },
+  ],
 };

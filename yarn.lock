@@ -10387,6 +10387,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"uuidv7@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "uuidv7@npm:1.0.2"
+  bin:
+    uuidv7: cli.js
+  checksum: 10c0/882187a3b6237068979a1a39912e5c2e3b8c6694321a21070c7f558e4fcf997e8208e30b63819c13758715c407ff5d059d296fcc170f5c7796ca7e0ea45740da
+  languageName: node
+  linkType: hard
+
 "v8-to-istanbul@npm:^9.0.1":
   version: 9.2.0
   resolution: "v8-to-istanbul@npm:9.2.0"
@@ -10565,6 +10574,7 @@ __metadata:
     typescript: "npm:5.4.5"
     ufo: "npm:^1.5.4"
     undici: "npm:^6.20.1"
+    uuidv7: "npm:^1.0.2"
     vaul: "npm:0.9.0"
     vite: "npm:5.2.14"
     zod: "npm:3.23.4"
