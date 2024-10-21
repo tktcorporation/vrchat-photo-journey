@@ -3,7 +3,7 @@ import React, { useRef } from 'react';
 import { useState } from 'react';
 import { PhotoListByYearMonth } from './PhotoListByYearMonth';
 import * as hooks from './hooks';
-import { usePhotoArea } from './ usePhotoArea';
+import { usePhotoArea } from './usePhotoArea';
 
 const getEstimateSizeFn =
   (input: {
@@ -34,12 +34,14 @@ const getEstimateSizeFn =
     return estimated;
   };
 
-/**
- *
- */
-const PhotoList = (props: {
+interface PhotoListProps {
   onSelectPhotoFileName: (fileName: string) => void;
-}) => {
+  photoColumnCount: number;
+}
+const PhotoList = ({
+  onSelectPhotoFileName,
+  photoColumnCount,
+}: PhotoListProps) => {
   console.log('PhotoList');
   const gapWidth = 4;
   const overridedComponentHeight = useRef<
@@ -66,11 +68,14 @@ const PhotoList = (props: {
     ((index: number) => number) | undefined
   >(undefined);
 
-  const { reclaim } = usePhotoArea({
-    input: {
-      componentWidth: 0,
-      gapWidth,
-    },
+  const usePhotoAreaInput = useRef({
+    componentWidth: 0,
+    columnCount: photoColumnCount,
+    gapWidth,
+  });
+
+  const { reclaim: _reclaim } = usePhotoArea({
+    input: usePhotoAreaInput.current,
     onSuccess: (data) => {
       console.log('usePhotoArea onSuccess');
       setPhotoAreaList(data);
@@ -84,6 +89,11 @@ const PhotoList = (props: {
     },
   });
 
+  const reclaimPhotoArea = (props: Parameters<typeof _reclaim>[0]) => {
+    console.log('reclaimPhotoArea', props);
+    _reclaim(props);
+  };
+
   // バーチャルスクロール
   const parentRef = React.useRef<HTMLDivElement | null>(null);
   const scrollAreaContentRef = React.useRef<HTMLDivElement | null>(null);
@@ -91,9 +101,17 @@ const PhotoList = (props: {
     ref: scrollAreaContentRef,
     onChange: (width) => {
       console.log('useComponentWidth onChange');
-      reclaim({ componentWidth: width, gapWidth });
+      usePhotoAreaInput.current.componentWidth = width;
+      reclaimPhotoArea(usePhotoAreaInput.current);
     },
   });
+
+  // columnCount変更時
+  React.useEffect(() => {
+    console.log('useEffect photoColumnCount');
+    usePhotoAreaInput.current.columnCount = photoColumnCount;
+    reclaimPhotoArea(usePhotoAreaInput.current);
+  }, [photoColumnCount]);
 
   const rowVirtualizer = useVirtualizer({
     count: photoAreaList?.len || 0,
@@ -148,7 +166,7 @@ const PhotoList = (props: {
                   className="flex flex-col w-full PhotoListByYearMonthWrapper"
                 >
                   <PhotoListByYearMonth
-                    onSelectPhotoFileName={props.onSelectPhotoFileName}
+                    onSelectPhotoFileName={onSelectPhotoFileName}
                     onChangeComponentHeight={(height) =>
                       onChangeComponentHeight(height, virtualRow.index)
                     }
@@ -184,14 +202,26 @@ const PhotoList = (props: {
 
 PhotoList.whyDidYouRender = true;
 
-export const PhotoListAll = (props: {
+interface PhotoListAllProps {
   onSelectPhotoFileName: (fileName: string) => void;
-}) => {
+  photoColumnCount: number;
+}
+export const PhotoListAll = ({
+  onSelectPhotoFileName,
+  photoColumnCount,
+}: PhotoListAllProps) => {
   console.log('PhotoListAll');
 
   const renderContent = () => {
     console.log('renderContent');
-    return <PhotoList onSelectPhotoFileName={props.onSelectPhotoFileName} />;
+    return (
+      <>
+        <PhotoList
+          onSelectPhotoFileName={onSelectPhotoFileName}
+          photoColumnCount={photoColumnCount}
+        />
+      </>
+    );
   };
 
   return <div className="h-full w-full relative">{renderContent()}</div>;

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 
 import { PhotoByPath } from '@/components/ui/PhotoByPath';
 import { Badge } from '@/components/ui/badge';

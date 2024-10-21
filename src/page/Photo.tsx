@@ -1,9 +1,10 @@
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { trpcReact } from '@/trpc';
-import { Globe, Image, Search } from 'lucide-react';
+import { MinusIcon, Plus, PlusIcon, Search } from 'lucide-react';
 import * as path from 'pathe';
-import type React from 'react';
+import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { PhotoListAll } from './__Photo/PhotoList';
 import { VRChatWorldJoinDataView } from './__Photo/VRChatJoinDataView';
@@ -11,6 +12,7 @@ import { VRChatWorldJoinDataView } from './__Photo/VRChatJoinDataView';
 function PhotoSelector() {
   console.log('PhotoSelector');
   const [searchParams, setSearchParams] = useSearchParams();
+  const [photoColumnCount, setPhotoColumnCount] = React.useState<number>(4);
 
   const inputPhotoFileNameValue = searchParams.get('photoFileName');
 
@@ -47,29 +49,48 @@ function PhotoSelector() {
 
   return (
     <div className="flex flex-col flex-1">
-      <div className="mx-3 ">
-        <Label
-          htmlFor="imege-search"
-          className="relative flex items-center w-full"
-        >
-          <Search
-            strokeWidth={1}
-            size={20}
-            className="absolute left-3 h-5 w-5 text-muted-foreground"
+      <div className="flex">
+        <div className="flex-1">
+          <Label
+            htmlFor="imege-search"
+            className="relative flex items-center w-full"
+          >
+            <Search
+              strokeWidth={1}
+              size={20}
+              className="absolute left-3 h-5 w-5 text-muted-foreground"
+            />
+            <div className="flex h-10 w-full rounded-md bg-card px-3 py-2 pl-10 text-sm ring-offset-background text-muted-foreground">
+              {inputPhotoFileNameValue
+                ? `PhotoPath:${inputPhotoFileNameValue}`
+                : '写真で検索'}
+            </div>
+          </Label>
+          <Input
+            id="imege-search"
+            type="file"
+            onChange={onChangeInput}
+            className="hidden"
           />
-          <div className="flex h-10 w-full rounded-md bg-card px-3 py-2 pl-10 text-sm ring-offset-background text-muted-foreground">
-            {inputPhotoFileNameValue
-              ? `PhotoPath:${inputPhotoFileNameValue}`
-              : '写真で検索'}
-          </div>
-        </Label>
-        <Input
-          id="imege-search"
-          type="file"
-          onChange={onChangeInput}
-          className="hidden"
-        />
+        </div>
+        {/* photoColumnCount を増減させるボタン */}
+        <div className="flex">
+          <Button
+            onClick={() => setPhotoColumnCount((prev) => prev - 1 || 1)}
+            disabled={photoColumnCount <= 1}
+            variant={'secondary'}
+          >
+            <MinusIcon />
+          </Button>
+          <Button
+            onClick={() => setPhotoColumnCount((prev) => prev + 1)}
+            variant={'secondary'}
+          >
+            <PlusIcon />
+          </Button>
+        </div>
       </div>
+
       {inputPhotoFileNameValue ? (
         <div
           className="m-3 flex-1"
@@ -88,7 +109,10 @@ function PhotoSelector() {
       ) : (
         <div className="m-3 flex flex-1 flex-row space-x-3 items-start h-full relative">
           <div className="flex-1 h-full relative">
-            <PhotoListAll onSelectPhotoFileName={onSelectPhotoFileName} />
+            <PhotoListAll
+              onSelectPhotoFileName={onSelectPhotoFileName}
+              photoColumnCount={photoColumnCount}
+            />
           </div>
         </div>
       )}
