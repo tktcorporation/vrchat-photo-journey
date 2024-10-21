@@ -23,7 +23,7 @@
     "dev": "./scripts/dev.sh",
     "dev:vite": "vite",
     "dev:electron": "nr build:electron && electron . --disable-gpu",
-    "build": "nr build:vite && nr build:electron",
+    "build": "nr lint:type-check && nr build:vite && nr build:electron",
     "build:vite": "vite build",
     "build:electron": "tsc -p electron",
     "dist": "nr clean:build && nr build && NODE_ENV=production electron-builder --config=electron-builder.js --publish never",
