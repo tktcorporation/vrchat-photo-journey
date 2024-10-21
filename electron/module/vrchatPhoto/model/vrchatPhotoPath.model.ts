@@ -5,7 +5,6 @@ import {
   type InferCreationAttributes,
   Model,
   Op,
-  sql,
 } from '@sequelize/core';
 import { col, fn, literal } from '@sequelize/core';
 import {
@@ -15,14 +14,15 @@ import {
   NotNull,
   PrimaryKey,
 } from '@sequelize/core/decorators-legacy';
+import { uuidv7 } from 'uuidv7';
 
 export class VRChatPhotoPathModel extends Model<
   InferAttributes<VRChatPhotoPathModel>,
   InferCreationAttributes<VRChatPhotoPathModel>
 > {
-  @Attribute(DataTypes.UUIDV4)
+  @Attribute(DataTypes.UUID)
   @PrimaryKey
-  @Default(sql.uuidV4)
+  @Default(uuidv7)
   declare id: CreationOptional<string>;
 
   // TODO: world id をここに入れる必要はある？
