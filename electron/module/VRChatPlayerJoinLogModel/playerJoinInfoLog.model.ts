@@ -5,7 +5,6 @@ import {
   type InferCreationAttributes,
   Model,
   Op,
-  sql,
 } from '@sequelize/core';
 import {
   Attribute,
@@ -15,6 +14,7 @@ import {
   createIndexDecorator,
 } from '@sequelize/core/decorators-legacy';
 import * as dateFns from 'date-fns';
+import { uuidv7 } from 'uuidv7';
 
 import type { VRChatPlayerJoinLog } from '../vrchatLog/service';
 
@@ -32,9 +32,9 @@ export class VRChatPlayerJoinLogModel extends Model<
   InferAttributes<VRChatPlayerJoinLogModel>,
   InferCreationAttributes<VRChatPlayerJoinLogModel>
 > {
-  @Attribute(DataTypes.UUIDV4)
+  @Attribute(DataTypes.UUID)
   @PrimaryKey
-  @Default(sql.uuidV4)
+  @Default(uuidv7)
   declare id: CreationOptional<string>;
 
   @Attribute(DataTypes.STRING)
