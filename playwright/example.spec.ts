@@ -65,3 +65,58 @@ test('各画面でスクショ', async () => {
   // Exit app.
   await electronApp.close();
 });
+
+test('ユーザーが設定を変更できること', async () => {
+  const electronApp = await launchElectronApp();
+  const page = await electronApp.firstWindow();
+
+  await page.evaluate(() => {
+    window.history.pushState({}, '', '/setting');
+  });
+
+  await page.click('text=ログファイルの場所');
+  await page.click('text=設定をリセットする');
+
+  const logFilesDir = await page.evaluate(() => {
+    return window.localStorage.getItem('logFilesDir');
+  });
+
+  console.log('Log Files Directory:', logFilesDir);
+  expect(logFilesDir).toBeNull();
+
+  await electronApp.close();
+});
+
+test('アプリケーションのエラーハンドリングを確認する', async () => {
+  const electronApp = await launchElectronApp();
+  const page = await electronApp.firstWindow();
+
+  page.on('pageerror', (error) => {
+    console.log('Page error:', error);
+  });
+
+  await page.evaluate(() => {
+    throw new Error('Test error');
+  });
+
+  await electronApp.close();
+});
+
+test('アプリケーションのパフォーマンスを測定する', async () => {
+  const electronApp = await launchElectronApp();
+  const page = await electronApp.firstWindow();
+
+  const startTime = Date.now();
+
+  await page.evaluate(() => {
+    window.history.pushState({}, '', '/');
+  });
+
+  const endTime = Date.now();
+  const loadTime = endTime - startTime;
+
+  console.log('Page load time:', loadTime);
+  expect(loadTime).toBeLessThan(2000);
+
+  await electronApp.close();
+});

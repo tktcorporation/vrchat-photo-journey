@@ -39,5 +39,11 @@ module.exports = {
       displayName: 'src',
       testMatch: ['<rootDir>/src/**/*.(spec|test).(ts|tsx|js|jsx)'], // src 用のテストファイル
     },
+    {
+      ...commonConfig, // 共通の設定
+      displayName: 'e2e',
+      testMatch: ['<rootDir>/playwright/**/*.(spec|test).(ts|tsx|js|jsx)'], // e2e 用のテストファイル
+      setupFilesAfterEnv: ['<rootDir>/jest.electron.setup.js'], // e2e 用の setup
+    },
   ],
 };
