@@ -45,5 +45,10 @@ module.exports = {
       testMatch: ['<rootDir>/playwright/**/*.(spec|test).(ts|tsx|js|jsx)'], // e2e 用のテストファイル
       setupFilesAfterEnv: ['<rootDir>/jest.electron.setup.js'], // e2e 用の setup
     },
+    {
+      ...commonConfig, // 共通の設定
+      displayName: 'playwright',
+      testMatch: ['<rootDir>/playwright/**/*.(spec|test).(ts|tsx|js|jsx)'], // playwright 用のテストファイル
+    },
   ],
 };
