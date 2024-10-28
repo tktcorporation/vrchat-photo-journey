@@ -23,7 +23,7 @@ import {
   X,
 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 function AppBar() {
   const [isMaximize, setMaximize] = useState(false);
@@ -44,17 +44,6 @@ function AppBar() {
     getAppUpdateInfQuery.refetch();
     updateInstallMutation.mutate();
   };
-
-  const location = useLocation();
-  const [isPhotoPage, setIsPhotoPage] = useState(false);
-
-  useEffect(() => {
-    if (location.pathname === ROUTER_PATHS.HOME) {
-      setIsPhotoPage(true);
-    } else {
-      setIsPhotoPage(false);
-    }
-  }, [location]);
 
   useEffect(() => {
     if (updateInstallMutation.isSuccess) {
@@ -88,7 +77,7 @@ function AppBar() {
       </div>
       <div className="inline-flex">
         {/* アップデートインストールボタン */}
-        {updateAvailable && isPhotoPage && (
+        {updateAvailable && (
           <Button
             variant="icon"
             size="icon"
