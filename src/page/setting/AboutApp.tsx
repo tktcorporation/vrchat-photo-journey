@@ -12,18 +12,22 @@ export const AboutApp = () => {
   const version = trpcReact.settings.getAppVersion.useQuery().data;
   const [updateAvailable, setUpdateAvailable] = useState(false);
 
+  const [updateInfo, error] =
+    trpcReact.settings.getAppUpdateInfo.useSuspenseQuery();
   useEffect(() => {
+    if (error) {
+      console.error(error);
+    }
     const checkForUpdates = async () => {
-      const updateInfo = await trpcReact.settings.getAppUpdateInfo.fetch();
       setUpdateAvailable(updateInfo.isUpdateAvailable);
     };
 
     checkForUpdates();
-  }, []);
+  }, [updateInfo]);
 
+  const installUpdateMutation = trpcReact.settings.installUpdate.useMutation();
   const handleUpdate = async () => {
-    await trpcReact.settings.installUpdate.mutateAsync();
-    window.location.reload();
+    installUpdateMutation.mutate();
   };
 
   return (
