@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label';
 import { trpcReact } from '@/trpc';
 import { MinusIcon, Plus, PlusIcon, Search } from 'lucide-react';
 import * as path from 'pathe';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { PhotoListAll } from './__Photo/PhotoList';
 import { VRChatWorldJoinDataView } from './__Photo/VRChatJoinDataView';
@@ -12,7 +12,8 @@ import { VRChatWorldJoinDataView } from './__Photo/VRChatJoinDataView';
 function PhotoSelector() {
   console.log('PhotoSelector');
   const [searchParams, setSearchParams] = useSearchParams();
-  const [photoColumnCount, setPhotoColumnCount] = React.useState<number>(4);
+  const [photoColumnCount, setPhotoColumnCount] = useState<number>(4);
+  const [updateAvailable, setUpdateAvailable] = useState(false);
 
   const inputPhotoFileNameValue = searchParams.get('photoFileName');
 
@@ -45,6 +46,20 @@ function PhotoSelector() {
     } else {
       remove();
     }
+  };
+
+  useEffect(() => {
+    const checkForUpdates = async () => {
+      const updateInfo = await trpcReact.settings.getAppUpdateInfo.fetch();
+      setUpdateAvailable(updateInfo.isUpdateAvailable);
+    };
+
+    checkForUpdates();
+  }, []);
+
+  const handleUpdate = async () => {
+    await trpcReact.settings.installUpdate.mutateAsync();
+    window.location.reload();
   };
 
   return (
@@ -115,6 +130,17 @@ function PhotoSelector() {
             />
           </div>
         </div>
+      )}
+
+      {updateAvailable && (
+        <Button
+          variant="icon"
+          size="icon"
+          onClick={handleUpdate}
+          className="fixed bottom-4 right-4"
+        >
+          <DownloadIcon strokeWidth={1} size={16} />
+        </Button>
       )}
     </div>
   );
