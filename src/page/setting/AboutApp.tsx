@@ -1,34 +1,40 @@
 import { trpcReact } from '@/trpc';
 
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-
 import { Button } from '@/components/ui/button';
 import { ROUTER_PATHS } from '@/constants';
 import { ChevronRight, DownloadIcon } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
-import { SettingBreadcrumb } from './__setting/SettingsBreadcrumb';
+import React, { Suspense, useEffect, useState } from 'react';
 
-export const AboutApp = () => {
-  const version = trpcReact.settings.getAppVersion.useQuery().data;
-  const [updateAvailable, setUpdateAvailable] = useState(false);
-
-  const [updateInfo, error] =
-    trpcReact.settings.getAppUpdateInfo.useSuspenseQuery();
-  useEffect(() => {
-    if (error) {
-      console.error(error);
-    }
-    const checkForUpdates = async () => {
-      setUpdateAvailable(updateInfo.isUpdateAvailable);
-    };
-
-    checkForUpdates();
-  }, [updateInfo]);
+const SectionUpdate = () => {
+  const [updateInfo] = trpcReact.settings.getAppUpdateInfo.useSuspenseQuery();
+  const updateAvailable = updateInfo.isUpdateAvailable;
 
   const installUpdateMutation = trpcReact.settings.installUpdate.useMutation();
   const handleUpdate = async () => {
     installUpdateMutation.mutate();
   };
+
+  const UpdateButton = (
+    <Button
+      variant="icon"
+      size="icon"
+      onClick={handleUpdate}
+      className="fixed bottom-4 right-4"
+    >
+      <DownloadIcon strokeWidth={1} size={16} />
+    </Button>
+  );
+
+  return (
+    <div className="flex">
+      <div>アップデート</div>
+      <div>{updateAvailable ? UpdateButton : '最新です'}</div>
+    </div>
+  );
+};
+
+export const AboutApp = () => {
+  const version = trpcReact.settings.getAppVersion.useQuery().data;
 
   return (
     <div className="flex-auto h-full flex flex-col space-y-9">
@@ -41,16 +47,16 @@ export const AboutApp = () => {
             </div>
           </div>
         </div>
-        {updateAvailable && (
-          <Button
-            variant="icon"
-            size="icon"
-            onClick={handleUpdate}
-            className="fixed bottom-4 right-4"
-          >
-            <DownloadIcon strokeWidth={1} size={16} />
-          </Button>
-        )}
+        <Suspense
+          fallback={
+            // skeleton
+            <div className="flex justify-center items-center h-64">
+              <div className="animate-pulse bg-gray-200 rounded-lg w-64 h-64" />
+            </div>
+          }
+        >
+          <SectionUpdate />
+        </Suspense>
       </div>
     </div>
   );
