@@ -1,6 +1,8 @@
 import type { UpdateCheckResult } from 'electron-updater';
 import { getWindow } from '../../electronUtil';
+import * as log from '../../lib/logger';
 import * as sequelizeLib from '../../lib/sequelize';
+import * as electronUtilService from '../electronUtil/service';
 import { procedure, router as trpcRouter } from './../../trpc';
 import * as settingService from './service';
 
@@ -60,5 +62,10 @@ export const settingsRouter = () =>
       if (mainWindow) {
         mainWindow.reload();
       }
+    }),
+    openApplicationLogInExploler: procedure.mutation(async () => {
+      const logPath = electronUtilService.getApplicationLogPath();
+      log.debug('openApplicationLogInExploler', logPath);
+      await electronUtilService.openPathInExplorer(logPath);
     }),
   });
