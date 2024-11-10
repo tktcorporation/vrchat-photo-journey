@@ -2,11 +2,14 @@ import { app } from 'electron';
 import * as log from 'electron-log';
 import path from 'pathe';
 
-// 固定されたログファイルパスの設定
-const logFilePath = path.join(app.getPath('logs'), 'app.log');
+// appが未定義の場合はテスト環境や非Electron環境として判定
+const logFilePath = app
+  ? path.join(app.getPath('logs'), 'app.log') // Electron環境
+  : path.join(__dirname, 'test-app.log'); // テストまたは非Electron環境
+
 log.transports.file.resolvePathFn = () => logFilePath;
 
-// ファイルのサイズ上限設定（例: 5MB）
+// ファイルサイズの上限設定（例: 5MB）
 log.transports.file.maxSize = 5 * 1024 * 1024;
 
 // ログレベルの設定
