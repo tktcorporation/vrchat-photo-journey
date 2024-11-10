@@ -1,5 +1,6 @@
 import { app } from 'electron';
 import { type UpdateCheckResult, autoUpdater } from 'electron-updater';
+import * as log from '../../lib/logger';
 
 export const getAppVersion = async (): Promise<string> => {
   // 本番では app.getVersion() を使用してバージョンを取得
@@ -38,6 +39,7 @@ export const getElectronUpdaterInfo = async (): Promise<
       updateInfo: null,
     };
   }
+  log.debug('Update info:', updateInfo);
   return {
     isUpdateAvailable: true as const,
     updateInfo: updateInfo as UpdateCheckResult,
