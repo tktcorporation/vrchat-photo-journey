@@ -1,4 +1,4 @@
-import { dialog, shell } from 'electron';
+import { app, dialog, shell } from 'electron';
 import * as neverthrow from 'neverthrow';
 
 const openPathInExplorer = async (
@@ -14,6 +14,10 @@ const openPathInExplorer = async (
     }
     throw error;
   }
+};
+
+export const getApplicationLogPath = (): string => {
+  return app.getPath('logs');
 };
 
 const openGetDirDialog = async (): Promise<
