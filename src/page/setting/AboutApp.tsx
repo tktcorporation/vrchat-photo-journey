@@ -21,7 +21,8 @@ const OpenApplicationLogButton = () => {
 };
 
 const SectionUpdate = () => {
-  const { data: updateInfo, error } = trpcReact.settings.getAppUpdateInfo.useQuery();
+  const { data: updateInfo, error } =
+    trpcReact.settings.getAppUpdateInfo.useQuery();
   const [updateAvailable, setUpdateAvailable] = useState(false);
 
   useEffect(() => {

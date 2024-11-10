@@ -14,13 +14,13 @@ import { cn } from '@/lib/utils';
 import SettingSheet from '@/page/SettingSheet';
 import { trpcReact } from '@/trpc';
 import {
+  DownloadIcon,
   HomeIcon,
   Maximize,
   Minimize,
   Minus,
   SettingsIcon,
   X,
-  DownloadIcon,
 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
@@ -38,7 +38,8 @@ function AppBar() {
     window.Main.Maximize();
   };
 
-  const { data: updateInfo, error } = trpcReact.settings.getAppUpdateInfo.useQuery();
+  const { data: updateInfo, error } =
+    trpcReact.settings.getAppUpdateInfo.useQuery();
   useEffect(() => {
     if (error) {
       console.error(error);

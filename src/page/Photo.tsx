@@ -49,7 +49,8 @@ function PhotoSelector() {
     }
   };
 
-  const { data: updateInfo, error } = trpcReact.settings.getAppUpdateInfo.useQuery();
+  const { data: updateInfo, error } =
+    trpcReact.settings.getAppUpdateInfo.useQuery();
   useEffect(() => {
     if (error) {
       console.error(error);
