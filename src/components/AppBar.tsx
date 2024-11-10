@@ -22,7 +22,7 @@ import {
   SettingsIcon,
   X,
 } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 function AppBar() {
@@ -44,6 +44,12 @@ function AppBar() {
     getAppUpdateInfQuery.refetch();
     updateInstallMutation.mutate();
   };
+
+  useEffect(() => {
+    if (updateInstallMutation.isSuccess) {
+      window.location.reload();
+    }
+  }, [updateInstallMutation.isSuccess]);
 
   return (
     <div className="flex justify-between draggable bg-background text-sm justify-items-center">

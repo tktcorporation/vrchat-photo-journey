@@ -2,9 +2,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { trpcReact } from '@/trpc';
-import { MinusIcon, Plus, PlusIcon, Search } from 'lucide-react';
+import { DownloadIcon, MinusIcon, Plus, PlusIcon, Search } from 'lucide-react';
 import * as path from 'pathe';
-import React from 'react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { PhotoListAll } from './__Photo/PhotoList';
 import { VRChatWorldJoinDataView } from './__Photo/VRChatJoinDataView';
@@ -12,7 +13,8 @@ import { VRChatWorldJoinDataView } from './__Photo/VRChatJoinDataView';
 function PhotoSelector() {
   console.log('PhotoSelector');
   const [searchParams, setSearchParams] = useSearchParams();
-  const [photoColumnCount, setPhotoColumnCount] = React.useState<number>(4);
+  const [photoColumnCount, setPhotoColumnCount] = useState<number>(4);
+  const [updateAvailable, setUpdateAvailable] = useState(false);
 
   const inputPhotoFileNameValue = searchParams.get('photoFileName');
 
@@ -45,6 +47,23 @@ function PhotoSelector() {
     } else {
       remove();
     }
+  };
+  const [updateInfo, error] =
+    trpcReact.settings.getAppUpdateInfo.useSuspenseQuery();
+  useEffect(() => {
+    if (error) {
+      console.error(error);
+    }
+    const checkForUpdates = async () => {
+      setUpdateAvailable(updateInfo.isUpdateAvailable);
+    };
+
+    checkForUpdates();
+  }, [updateInfo]);
+
+  const installUpdateMutation = trpcReact.settings.installUpdate.useMutation();
+  const handleUpdate = async () => {
+    await installUpdateMutation.mutateAsync();
   };
 
   return (
@@ -115,6 +134,17 @@ function PhotoSelector() {
             />
           </div>
         </div>
+      )}
+
+      {updateAvailable && (
+        <Button
+          variant="icon"
+          size="icon"
+          onClick={handleUpdate}
+          className="fixed bottom-4 right-4"
+        >
+          <DownloadIcon strokeWidth={1} size={16} />
+        </Button>
       )}
     </div>
   );

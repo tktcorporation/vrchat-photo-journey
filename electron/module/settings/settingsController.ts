@@ -1,3 +1,5 @@
+import type { UpdateCheckResult } from 'electron-updater';
+import { getWindow } from '../../electronUtil';
 import * as sequelizeLib from '../../lib/sequelize';
 import { procedure, router as trpcRouter } from './../../trpc';
 import * as settingService from './service';
@@ -24,6 +26,39 @@ export const settingsRouter = () =>
       return await settingService.getElectronUpdaterInfo();
     }),
     installUpdate: procedure.mutation(async () => {
-      return await settingService.installUpdate();
+      await settingService.installUpdate();
+      const mainWindow = getWindow();
+      if (mainWindow) {
+        mainWindow.reload();
+      }
+    }),
+    checkForUpdates: procedure.query(async () => {
+      return await settingService.getElectronUpdaterInfo();
+    }),
+    installUpdatesAndReload: procedure.mutation(async () => {
+      await settingService.installUpdate();
+      const mainWindow = getWindow();
+      if (mainWindow) {
+        mainWindow.reload();
+      }
+    }),
+    checkForUpdatesAndReturnResult: procedure.query(
+      async (): Promise<{
+        isUpdateAvailable: boolean;
+        updateInfo: UpdateCheckResult | null;
+      }> => {
+        const updateInfo = await settingService.getElectronUpdaterInfo();
+        return {
+          isUpdateAvailable: updateInfo.isUpdateAvailable,
+          updateInfo: updateInfo.updateInfo,
+        };
+      },
+    ),
+    installUpdatesAndReloadApp: procedure.mutation(async () => {
+      await settingService.installUpdate();
+      const mainWindow = getWindow();
+      if (mainWindow) {
+        mainWindow.reload();
+      }
     }),
   });
