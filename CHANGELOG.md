@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [unreleased]
+## [0.2.0-alpha.7] - 2024-11-10
 
 ### 🚀 Features
 
