@@ -2,7 +2,12 @@ import { trpcReact } from '@/trpc';
 
 import { Button } from '@/components/ui/button';
 import { ROUTER_PATHS } from '@/constants';
-import { ChevronRight, DownloadIcon, RefreshCwIcon, RotateCwIcon } from 'lucide-react';
+import {
+  ChevronRight,
+  DownloadIcon,
+  RefreshCwIcon,
+  RotateCwIcon,
+} from 'lucide-react';
 import React, { Suspense, useEffect, useState } from 'react';
 
 const OpenApplicationLogButton = () => {
@@ -21,8 +26,12 @@ const OpenApplicationLogButton = () => {
 };
 
 const SectionUpdate = () => {
-  const { data: updateInfo, error, refetch } =
-    trpcReact.settings.getAppUpdateInfo.useQuery();
+  const {
+    data: updateInfo,
+    isLoading: updateInfoLoading,
+    error,
+    refetch,
+  } = trpcReact.settings.getAppUpdateInfo.useQuery();
   const [updateAvailable, setUpdateAvailable] = useState(false);
 
   useEffect(() => {
@@ -57,18 +66,34 @@ const SectionUpdate = () => {
     <Button
       variant="icon"
       size="icon"
-      onClick={refetch}
+      onClick={() => refetch()}
       className="flex items-center"
     >
-      <span>アップデートを確認する</span>
+      {!updateAvailable && <span>このバージョンは最新です</span>}
+      <span className="ml-2 text-sm text-gray-500">アップデートを確認する</span>
       <RotateCwIcon strokeWidth={1} size={16} />
     </Button>
   );
 
   return (
-    <div className="flex justify-between">
-      <div>アップデート</div>
-      <div>{updateAvailable ? UpdateButton : RecheckButton}</div>
+    <div className="flex justify-between items-center">
+      <div className="whitespace-nowrap">アップデート</div>
+      <div className="flex items-center justify-end">
+        {installUpdateMutation.isLoading || updateInfoLoading ? (
+          <>
+            <RefreshCwIcon
+              className="animate-spin mr-2"
+              strokeWidth={1}
+              size={16}
+            />
+            <span>更新中...</span>
+          </>
+        ) : updateAvailable ? (
+          UpdateButton
+        ) : (
+          RecheckButton
+        )}
+      </div>
     </div>
   );
 };
@@ -81,8 +106,8 @@ export const AboutApp = () => {
       <div className="w-3/5 mx-auto mt-6">
         <div>
           <div className="flex flex-col mt-10 gap-8">
-            <div className="flex justify-between text-center">
-              <div className="">バージョン</div>
+            <div className="flex justify-between items-center">
+              <div className="whitespace-nowrap">バージョン</div>
               <div className="">{version}</div>
             </div>
             <Suspense
@@ -96,8 +121,8 @@ export const AboutApp = () => {
               <SectionUpdate />
             </Suspense>
             <div className="flex justify-between items-center">
-              <div>アプリケーションログ</div>
-              <div>
+              <div className="whitespace-nowrap">アプリケーションログ</div>
+              <div className="flex items-center justify-end">
                 <OpenApplicationLogButton />
               </div>
             </div>
