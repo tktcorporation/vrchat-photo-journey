@@ -2,7 +2,7 @@ import { trpcReact } from '@/trpc';
 
 import { Button } from '@/components/ui/button';
 import { ROUTER_PATHS } from '@/constants';
-import { ChevronRight, DownloadIcon } from 'lucide-react';
+import { ChevronRight, DownloadIcon, RefreshCwIcon, RotateCwIcon } from 'lucide-react';
 import React, { Suspense, useEffect, useState } from 'react';
 
 const OpenApplicationLogButton = () => {
@@ -21,7 +21,7 @@ const OpenApplicationLogButton = () => {
 };
 
 const SectionUpdate = () => {
-  const { data: updateInfo, error } =
+  const { data: updateInfo, error, refetch } =
     trpcReact.settings.getAppUpdateInfo.useQuery();
   const [updateAvailable, setUpdateAvailable] = useState(false);
 
@@ -39,6 +39,7 @@ const SectionUpdate = () => {
   const installUpdateMutation = trpcReact.settings.installUpdate.useMutation();
   const handleUpdate = async () => {
     await installUpdateMutation.mutateAsync();
+    refetch();
   };
 
   const UpdateButton = (
@@ -52,10 +53,22 @@ const SectionUpdate = () => {
     </Button>
   );
 
+  const RecheckButton = (
+    <Button
+      variant="icon"
+      size="icon"
+      onClick={refetch}
+      className="flex items-center"
+    >
+      <span>アップデートを確認する</span>
+      <RotateCwIcon strokeWidth={1} size={16} />
+    </Button>
+  );
+
   return (
     <div className="flex justify-between">
       <div>アップデート</div>
-      <div>{updateAvailable ? UpdateButton : '最新です'}</div>
+      <div>{updateAvailable ? UpdateButton : RecheckButton}</div>
     </div>
   );
 };
