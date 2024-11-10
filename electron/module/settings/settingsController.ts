@@ -28,6 +28,10 @@ export const settingsRouter = () =>
       return await settingService.getElectronUpdaterInfo();
     }),
     installUpdate: procedure.mutation(async () => {
+      const updateInfo = await settingService.getElectronUpdaterInfo();
+      if (!updateInfo.isUpdateAvailable) {
+        throw new Error('No updates available');
+      }
       await settingService.installUpdate();
       const mainWindow = getWindow();
       if (mainWindow) {

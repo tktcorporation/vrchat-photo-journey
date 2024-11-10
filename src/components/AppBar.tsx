@@ -14,22 +14,20 @@ import { cn } from '@/lib/utils';
 import SettingSheet from '@/page/SettingSheet';
 import { trpcReact } from '@/trpc';
 import {
-  DownloadIcon,
   HomeIcon,
   Maximize,
   Minimize,
   Minus,
   SettingsIcon,
   X,
+  DownloadIcon,
 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 function AppBar() {
   const [isMaximize, setMaximize] = useState(false);
-  const getAppUpdateInfQuery = trpcReact.settings.getAppUpdateInfo.useQuery();
-  const updateAvailable = getAppUpdateInfQuery.data?.isUpdateAvailable ?? false;
-  const updateInstallMutation = trpcReact.settings.installUpdate.useMutation();
+  const [updateAvailable, setUpdateAvailable] = useState(false);
 
   const handleToggle = () => {
     if (isMaximize) {
@@ -40,16 +38,22 @@ function AppBar() {
     window.Main.Maximize();
   };
 
-  const handleUpdate = async () => {
-    getAppUpdateInfQuery.refetch();
-    updateInstallMutation.mutate();
-  };
-
+  const { data: updateInfo, error } = trpcReact.settings.getAppUpdateInfo.useQuery();
   useEffect(() => {
-    if (updateInstallMutation.isSuccess) {
-      window.location.reload();
+    if (error) {
+      console.error(error);
     }
-  }, [updateInstallMutation.isSuccess]);
+    const checkForUpdates = async () => {
+      setUpdateAvailable(updateInfo?.isUpdateAvailable ?? false);
+    };
+
+    checkForUpdates();
+  }, [updateInfo]);
+
+  const installUpdateMutation = trpcReact.settings.installUpdate.useMutation();
+  const handleUpdate = async () => {
+    await installUpdateMutation.mutateAsync();
+  };
 
   return (
     <div className="flex justify-between draggable bg-background text-sm justify-items-center">
@@ -76,18 +80,6 @@ function AppBar() {
         </Sheet>
       </div>
       <div className="inline-flex">
-        {/* アップデートインストールボタン */}
-        {updateAvailable && (
-          <Button
-            variant="icon"
-            size="icon"
-            onClick={handleUpdate}
-            className="undraggable hover:bg-muted"
-          >
-            <DownloadIcon strokeWidth={1} size={16} />
-          </Button>
-        )}
-
         <Button
           variant="icon"
           size="icon"
@@ -115,6 +107,16 @@ function AppBar() {
         >
           <X strokeWidth={1} size={16} />
         </button>
+        {updateAvailable && (
+          <Button
+            variant="icon"
+            size="icon"
+            onClick={handleUpdate}
+            className="undraggable hover:bg-muted"
+          >
+            <DownloadIcon strokeWidth={1} size={16} />
+          </Button>
+        )}
       </div>
     </div>
   );

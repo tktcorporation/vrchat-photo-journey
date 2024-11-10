@@ -48,14 +48,14 @@ function PhotoSelector() {
       remove();
     }
   };
-  const [updateInfo, error] =
-    trpcReact.settings.getAppUpdateInfo.useSuspenseQuery();
+
+  const { data: updateInfo, error } = trpcReact.settings.getAppUpdateInfo.useQuery();
   useEffect(() => {
     if (error) {
       console.error(error);
     }
     const checkForUpdates = async () => {
-      setUpdateAvailable(updateInfo.isUpdateAvailable);
+      setUpdateAvailable(updateInfo?.isUpdateAvailable ?? false);
     };
 
     checkForUpdates();

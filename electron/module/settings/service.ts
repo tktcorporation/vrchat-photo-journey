@@ -41,12 +41,21 @@ export const getElectronUpdaterInfo = async (): Promise<
   }
   log.debug('Update info:', updateInfo);
   return {
-    isUpdateAvailable: true as const,
+    isUpdateAvailable: updateInfo.updateInfo.version !== app.getVersion(),
     updateInfo: updateInfo as UpdateCheckResult,
   };
 };
 
 export const installUpdate = async (): Promise<void> => {
+  const updateInfo = await getElectronUpdaterInfo();
+  if (!updateInfo.isUpdateAvailable) {
+    throw new Error('No updates available');
+  }
   await autoUpdater.downloadUpdate();
   await autoUpdater.quitAndInstall();
+};
+
+export const isUpdateAvailable = async (): Promise<boolean> => {
+  const updateInfo = await getElectronUpdaterInfo();
+  return updateInfo.isUpdateAvailable;
 };
