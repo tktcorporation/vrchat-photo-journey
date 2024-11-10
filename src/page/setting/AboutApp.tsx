@@ -21,12 +21,24 @@ const OpenApplicationLogButton = () => {
 };
 
 const SectionUpdate = () => {
-  const [updateInfo] = trpcReact.settings.getAppUpdateInfo.useSuspenseQuery();
-  const updateAvailable = updateInfo.isUpdateAvailable;
+  const { data: updateInfo, error } =
+    trpcReact.settings.getAppUpdateInfo.useQuery();
+  const [updateAvailable, setUpdateAvailable] = useState(false);
+
+  useEffect(() => {
+    if (error) {
+      console.error(error);
+    }
+    const checkForUpdates = async () => {
+      setUpdateAvailable(updateInfo?.isUpdateAvailable ?? false);
+    };
+
+    checkForUpdates();
+  }, [updateInfo]);
 
   const installUpdateMutation = trpcReact.settings.installUpdate.useMutation();
   const handleUpdate = async () => {
-    installUpdateMutation.mutate();
+    await installUpdateMutation.mutateAsync();
   };
 
   const UpdateButton = (
