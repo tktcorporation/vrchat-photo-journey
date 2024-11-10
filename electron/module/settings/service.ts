@@ -19,23 +19,17 @@ export const getAppVersion = async (): Promise<string> => {
   return appVersion;
 };
 
-export const getElectronUpdaterInfo = async (): Promise<
-  | {
-      isUpdateAvailable: false;
-      updateInfo: null;
-    }
-  | {
-      isUpdateAvailable: true;
-      updateInfo: UpdateCheckResult;
-    }
-> => {
+export const getElectronUpdaterInfo = async (): Promise<{
+  isUpdateAvailable: boolean;
+  updateInfo: UpdateCheckResult | null;
+}> => {
   const updateInfo = await autoUpdater.checkForUpdates().catch((error) => {
     console.error('Failed to check for updates', error);
     return null;
   });
   if (!updateInfo) {
     return {
-      isUpdateAvailable: false as const,
+      isUpdateAvailable: false,
       updateInfo: null,
     };
   }
