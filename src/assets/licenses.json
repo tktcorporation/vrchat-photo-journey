@@ -279,11 +279,11 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@electron/get",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@electron/get/LICENSE"
   },
-  "@esbuild/linux-x64@0.20.2": {
+  "@esbuild/linux-arm64@0.20.2": {
     "licenses": "MIT",
     "repository": "https://github.com/evanw/esbuild",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/@esbuild/linux-x64",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@esbuild/linux-x64/README.md"
+    "path": "/workspaces/vrchat-photo-journey/node_modules/@esbuild/linux-arm64",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@esbuild/linux-arm64/README.md"
   },
   "@floating-ui/core@1.5.2": {
     "licenses": "MIT",
@@ -327,21 +327,21 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@heroicons/react",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@heroicons/react/LICENSE"
   },
-  "@img/sharp-libvips-linux-x64@1.0.2": {
+  "@img/sharp-libvips-linux-arm64@1.0.2": {
     "licenses": "LGPL-3.0-or-later",
     "repository": "https://github.com/lovell/sharp-libvips",
     "publisher": "Lovell Fuller",
     "email": "npm@lovell.info",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/@img/sharp-libvips-linux-x64",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@img/sharp-libvips-linux-x64/README.md"
+    "path": "/workspaces/vrchat-photo-journey/node_modules/@img/sharp-libvips-linux-arm64",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@img/sharp-libvips-linux-arm64/README.md"
   },
-  "@img/sharp-linux-x64@0.33.3": {
+  "@img/sharp-linux-arm64@0.33.3": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/lovell/sharp",
     "publisher": "Lovell Fuller",
     "email": "npm@lovell.info",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/@img/sharp-linux-x64",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@img/sharp-linux-x64/LICENSE"
+    "path": "/workspaces/vrchat-photo-journey/node_modules/@img/sharp-linux-arm64",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@img/sharp-linux-arm64/LICENSE"
   },
   "@isaacs/cliui@8.0.2": {
     "licenses": "ISC",
@@ -812,12 +812,12 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@remix-run/router",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@remix-run/router/LICENSE.md"
   },
-  "@rollup/rollup-linux-x64-gnu@4.22.4": {
+  "@rollup/rollup-linux-arm64-gnu@4.22.4": {
     "licenses": "MIT",
     "repository": "https://github.com/rollup/rollup",
     "publisher": "Lukas Taegert-Atkinson",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/@rollup/rollup-linux-x64-gnu",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@rollup/rollup-linux-x64-gnu/README.md"
+    "path": "/workspaces/vrchat-photo-journey/node_modules/@rollup/rollup-linux-arm64-gnu",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@rollup/rollup-linux-arm64-gnu/README.md"
   },
   "@sequelize/core@7.0.0-alpha.40": {
     "licenses": "MIT",
@@ -4256,7 +4256,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/vite",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/vite/LICENSE.md"
   },
-  "vrchat-photo-journey@0.2.0-alpha.6": {
+  "vrchat-photo-journey@0.2.0-alpha.7": {
     "licenses": "UNKNOWN",
     "repository": "https://github.com/tktcorporation/add-world-name-to-vrc-photo",
     "publisher": "tktcorporation",
