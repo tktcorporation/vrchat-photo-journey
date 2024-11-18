@@ -3483,6 +3483,13 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/react-style-singleton",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/react-style-singleton/README.md"
   },
+  "react-virtuoso@4.7.2": {
+    "licenses": "MIT",
+    "repository": "https://github.com/petyosi/react-virtuoso",
+    "publisher": "Petyo Ivanov",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/react-virtuoso",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/react-virtuoso/LICENSE"
+  },
   "react@18.2.0": {
     "licenses": "MIT",
     "repository": "https://github.com/facebook/react",
@@ -4349,5 +4356,12 @@
     "email": "colin@colinhacks.com",
     "path": "/workspaces/vrchat-photo-journey/node_modules/zod",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/zod/LICENSE"
+  },
+  "zustand@4.5.2": {
+    "licenses": "MIT",
+    "repository": "https://github.com/pmndrs/zustand",
+    "publisher": "Paul Henschel",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/zustand",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/zustand/LICENSE"
   }
 }

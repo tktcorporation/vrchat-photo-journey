@@ -8778,6 +8778,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-virtuoso@npm:4.7.2":
+  version: 4.7.2
+  resolution: "react-virtuoso@npm:4.7.2"
+  peerDependencies:
+    react: ">=16 || >=17 || >= 18"
+    react-dom: ">=16 || >=17 || >= 18"
+  checksum: 10c0/581c40458f6653bb1de55745761013d406ffd0b11423703fe363dd93a003b0bc35a9be754c490da97511d13cf5c3b1c286aec98a86fa64aadd5524d25847e325
+  languageName: node
+  linkType: hard
+
 "react@npm:18.2.0":
   version: 18.2.0
   resolution: "react@npm:18.2.0"
@@ -10348,7 +10358,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"use-sync-external-store@npm:^1.2.0":
+"use-sync-external-store@npm:1.2.0, use-sync-external-store@npm:^1.2.0":
   version: 1.2.0
   resolution: "use-sync-external-store@npm:1.2.0"
   peerDependencies:
@@ -10562,6 +10572,7 @@ __metadata:
     react-hot-toast: "npm:2.4.1"
     react-intersection-observer: "npm:9.8.2"
     react-router-dom: "npm:6.23.0"
+    react-virtuoso: "npm:4.7.2"
     rimraf: "npm:5.0.5"
     sharp: "npm:0.33.3"
     simple-git-hooks: "npm:2.11.1"
@@ -10578,6 +10589,7 @@ __metadata:
     vaul: "npm:0.9.0"
     vite: "npm:5.2.14"
     zod: "npm:3.23.4"
+    zustand: "npm:4.5.2"
   languageName: unknown
   linkType: soft
 
@@ -10745,5 +10757,25 @@ __metadata:
   version: 3.23.4
   resolution: "zod@npm:3.23.4"
   checksum: 10c0/7fb99f05bd5b86dcde06e202285a5d102b2e26d46f5119403a17618d0048e488e074cdcdf3fbba2bdcb77ff8141ddd85112b6d86d7a2fbefc9ffc983997b970e
+  languageName: node
+  linkType: hard
+
+"zustand@npm:4.5.2":
+  version: 4.5.2
+  resolution: "zustand@npm:4.5.2"
+  dependencies:
+    use-sync-external-store: "npm:1.2.0"
+  peerDependencies:
+    "@types/react": ">=16.8"
+    immer: ">=9.0.6"
+    react: ">=16.8"
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    immer:
+      optional: true
+    react:
+      optional: true
+  checksum: 10c0/aee26f11facebb39b016e89539f72a72c2c00151208907fc909c3cedd455728240e09e01d98ebd3b63a2a3518a5917eac5de6c853743ca55a1655296d750bb48
   languageName: node
   linkType: hard
