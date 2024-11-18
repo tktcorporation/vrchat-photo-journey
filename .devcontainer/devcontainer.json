@@ -1,5 +1,14 @@
 {
+  "image": "mcr.microsoft.com/devcontainers/base:bookworm",
   "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest",
+      "enableNonRootDocker": "true",
+      "moby": "true"
+    },
+    "ghcr.io/devcontainers/features/aws-cli:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/node:1": {},
     "ghcr.io/devcontainers/features/desktop-lite:1": {
       "resolution": "3840×2160"
     }
@@ -10,6 +19,7 @@
       "label": "desktop"
     }
   },
-  "runArgs": ["--shm-size=2g"],
-  "postCreateCommand": "npm i -g @antfu/ni && xrandr --output VNC-0 --mode 3840×2160"
+  "runArgs": ["--shm-size=2g", "--env-file", ".devcontainer/devcontainer.env"],
+  "updateContentCommand": "sudo apt-get update && sudo apt-get install -y build-essential fzf",
+  "postCreateCommand": "npm i -g @antfu/ni && xrandr --output VNC-0 --mode 3840×2160 && git config --global user.name \"${GIT_USER_NAME}\" && git config --global user.email \"${GIT_USER_EMAIL}\""
 }
