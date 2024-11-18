@@ -146,6 +146,23 @@ const setSettingStore = (name: storeName) => {
     setBackgroundFileCreateFlag: setBackgroundFileCreateFlag(set),
     clearAllStoredSettings: clearAllStoredSettings(store),
     clearStoredSetting: clearStoredSetting(store),
+    setWindowBounds: (bounds: Electron.Rectangle) => {
+      store.set('windowBounds', bounds);
+    },
+    getWindowBounds: (): Electron.Rectangle | undefined => {
+      const bounds = store.get('windowBounds');
+      if (
+        bounds &&
+        typeof bounds === 'object' &&
+        'x' in bounds &&
+        'y' in bounds &&
+        'width' in bounds &&
+        'height' in bounds
+      ) {
+        return bounds as Electron.Rectangle;
+      }
+      return undefined;
+    },
   };
   settingStore = _settingStore;
   return _settingStore;

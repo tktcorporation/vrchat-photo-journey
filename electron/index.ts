@@ -51,7 +51,7 @@ const registerIpcMainListeners = () => {
 const backgroundUsecase = getBackgroundUsecase(settingStore);
 
 const createOrGetMainWindow = async (): Promise<BrowserWindow> => {
-  const mainWindow = electronUtil.createOrGetWindow();
+  const mainWindow = electronUtil.createOrGetWindow(settingStore);
   // 他のウィンドウ設定やイベントリスナーをここに追加
   return mainWindow;
 };
@@ -77,7 +77,7 @@ const initializeApp = async () => {
   registerIpcMainListeners();
   const mainWindow = await createOrGetMainWindow();
   createIPCHandler({ router, windows: [mainWindow] });
-  electronUtil.setTray();
+  electronUtil.setTray(settingStore);
 
   unhandled({
     logger: (error) => log.error(error),
@@ -93,7 +93,7 @@ process.on('uncaughtException', (error) => log.error(error));
 process.on('unhandledRejection', (error) => log.error(error));
 
 app.on('second-instance', () => {
-  const mainWindow = electronUtil.createOrGetWindow();
+  const mainWindow = electronUtil.createOrGetWindow(settingStore);
   if (mainWindow.isMinimized()) mainWindow.restore();
   mainWindow.focus();
 });
