@@ -19,6 +19,8 @@ const getVRChatLogFilePathModelList = async (query?: {
       id: string;
       photoPath: string;
       photoTakenAt: Date;
+      width: number;
+      height: number;
     }[],
     Error
   >
@@ -29,6 +31,8 @@ const getVRChatLogFilePathModelList = async (query?: {
     vrchatPhotoPathList.map((photoPathModel) => ({
       id: photoPathModel.id,
       photoPath: photoPathModel.photoPath,
+      width: 1600, // TODO: photoPathModel.width,
+      height: 900,// TODO: photoPathModel.height,
       photoTakenAt: photoPathModel.photoTakenAt,
     })),
   );

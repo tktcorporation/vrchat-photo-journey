@@ -3,6 +3,7 @@ import { Photo } from '../types/photo';
 import { memo } from 'react';
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
 import ProgressiveImage from './ProgressiveImage';
+import { trpcReact } from '@/trpc';
 
 interface PhotoCardProps {
   photo: Photo;
@@ -20,6 +21,10 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(({ photo, priority = false, onS
   const shouldLoad = priority || (entry?.isIntersecting ?? false);
   const placeholderUrl = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${photo.width} ${photo.height}'%3E%3Crect width='100%25' height='100%25' fill='%23f3f4f6'/%3E%3C/svg%3E`;
 
+  const { data: photoData } = trpcReact.vrchatPhoto.getVRChatPhotoItemData.useQuery(photo.url, {
+    enabled: shouldLoad,
+  });
+
   return (
     <div 
       ref={ref}
@@ -31,7 +36,7 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(({ photo, priority = false, onS
     >
       {shouldLoad ? (
         <ProgressiveImage
-          src={photo.url}
+          src={photoData?.data || ''}
           placeholderSrc={placeholderUrl}
           alt={photo.title}
           className="absolute inset-0 w-full h-full object-cover"
