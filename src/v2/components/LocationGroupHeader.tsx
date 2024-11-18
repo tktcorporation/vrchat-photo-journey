@@ -2,6 +2,7 @@ import React, { memo } from 'react';
 import { MapPin, Users, Calendar } from 'lucide-react';
 import { LocationDetail } from '../types/location';
 import { locationDetails } from '../data/locationDetails';
+import { trpcReact } from '@/trpc';
 
 interface LocationGroupHeaderProps {
   groupName: string;
@@ -10,14 +11,14 @@ interface LocationGroupHeaderProps {
 }
 
 const LocationGroupHeader = memo(({ groupName, photoCount, date }: LocationGroupHeaderProps) => {
-  const details = locationDetails[groupName];
+  const {data: details} = trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery('wrld_6fecf18a-ab96-43f2-82dc-ccf79f17c34f')
   if (!details) return null;
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
       <div className="relative h-48 overflow-hidden">
         <img
-          src={details.coverImage}
+          src={details.thumbnailImageUrl}
           alt={details.name}
           className="w-full h-full object-cover"
           loading="lazy"
@@ -37,7 +38,7 @@ const LocationGroupHeader = memo(({ groupName, photoCount, date }: LocationGroup
               {date}
             </div>
           </div>
-          <p className="text-sm opacity-90 mt-1">{details.prefecture}</p>
+          <p className="text-sm opacity-90 mt-1">{details.authorName}</p>
         </div>
       </div>
       
@@ -49,11 +50,11 @@ const LocationGroupHeader = memo(({ groupName, photoCount, date }: LocationGroup
         <div className="flex flex-wrap gap-4 text-sm">
           <div className="flex items-center text-gray-600 dark:text-gray-400">
             <Users className="h-4 w-4 mr-1.5" />
-            {details.yearlyVisitors}
+            {details.occupants}
           </div>
           <div className="flex items-center text-gray-600 dark:text-gray-400">
             <Calendar className="h-4 w-4 mr-1.5" />
-            おすすめ時期: {details.bestSeason}
+            おすすめ時期: {details.recommendedCapacity}
           </div>
         </div>
 
