@@ -1,12 +1,19 @@
-import React, { memo, useState } from 'react';
-import { X, Settings as SettingsIcon, Sun, FolderOpen, Globe2 } from 'lucide-react';
+import {
+  FolderOpen,
+  Globe2,
+  Settings as SettingsIcon,
+  Sun,
+  X,
+} from 'lucide-react';
+import type React from 'react';
+import { memo, useState } from 'react';
 import { useI18n } from '../../i18n/store';
-import ThemeSelector from './ThemeSelector';
+import LanguageSelector from '../LanguageSelector';
 import AppInfo from './AppInfo';
 import DependencyList from './DependencyList';
 import LicenseInfo from './LicenseInfo';
 import PathSettings from './PathSettings';
-import LanguageSelector from '../LanguageSelector';
+import ThemeSelector from './ThemeSelector';
 
 interface SettingsModalProps {
   onClose: () => void;
@@ -26,27 +33,27 @@ const SettingsModal = memo(({ onClose }: SettingsModalProps) => {
   const [activeTab, setActiveTab] = useState<SettingsTab>('paths');
 
   const tabs: TabConfig[] = [
-    { 
-      id: 'paths', 
-      label: t('settings.tabs.dataSource'), 
+    {
+      id: 'paths',
+      label: t('settings.tabs.dataSource'),
       icon: FolderOpen,
-      component: PathSettings
+      component: PathSettings,
     },
-    { 
-      id: 'theme', 
-      label: t('settings.tabs.theme'), 
+    {
+      id: 'theme',
+      label: t('settings.tabs.theme'),
       icon: Sun,
-      component: ThemeSelector
+      component: ThemeSelector,
     },
     {
       id: 'language',
       label: 'Language / 言語',
       icon: Globe2,
-      component: LanguageSelector
+      component: LanguageSelector,
     },
-    { 
-      id: 'info', 
-      label: t('settings.tabs.info'), 
+    {
+      id: 'info',
+      label: t('settings.tabs.info'),
       icon: SettingsIcon,
       component: () => (
         <div className="space-y-8">
@@ -54,22 +61,23 @@ const SettingsModal = memo(({ onClose }: SettingsModalProps) => {
           <DependencyList />
           <LicenseInfo />
         </div>
-      )
-    }
+      ),
+    },
   ];
 
   const handleContentClick = (e: React.MouseEvent) => {
     e.stopPropagation();
   };
 
-  const ActiveComponent = tabs.find(tab => tab.id === activeTab)?.component || tabs[0].component;
+  const ActiveComponent =
+    tabs.find((tab) => tab.id === activeTab)?.component || tabs[0].component;
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
       onClick={onClose}
     >
-      <div 
+      <div
         className="h-[90vh] w-full max-w-2xl flex flex-col bg-white dark:bg-gray-800 rounded-lg shadow-xl"
         onClick={handleContentClick}
       >

@@ -1,27 +1,27 @@
-import React, { memo } from 'react';
 import { Book } from 'lucide-react';
-import { useI18n } from '../../i18n/store';
+import React, { memo } from 'react';
 import packageJson from '../../../../package.json';
+import { useI18n } from '../../i18n/store';
 
 const licenses = [
   {
     name: 'React',
     version: packageJson.dependencies.react,
     license: 'MIT',
-    url: 'https://github.com/facebook/react/blob/main/LICENSE'
+    url: 'https://github.com/facebook/react/blob/main/LICENSE',
   },
   {
     name: '@tanstack/react-virtual',
     version: packageJson.dependencies['@tanstack/react-virtual'],
     license: 'MIT',
-    url: 'https://github.com/TanStack/virtual/blob/main/LICENSE'
+    url: 'https://github.com/TanStack/virtual/blob/main/LICENSE',
   },
   {
     name: 'Lucide React',
     version: packageJson.dependencies['lucide-react'],
     license: 'ISC',
-    url: 'https://github.com/lucide-icons/lucide/blob/main/LICENSE'
-  }
+    url: 'https://github.com/lucide-icons/lucide/blob/main/LICENSE',
+  },
 ];
 
 const LicenseInfo = memo(() => {
@@ -37,8 +37,12 @@ const LicenseInfo = memo(() => {
         {licenses.map((lib) => (
           <div key={lib.name} className="py-3">
             <div className="flex items-center justify-between mb-1">
-              <span className="font-medium text-gray-900 dark:text-white">{lib.name}</span>
-              <span className="text-sm font-mono text-gray-500 dark:text-gray-400">{lib.version}</span>
+              <span className="font-medium text-gray-900 dark:text-white">
+                {lib.name}
+              </span>
+              <span className="text-sm font-mono text-gray-500 dark:text-gray-400">
+                {lib.version}
+              </span>
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-gray-600 dark:text-gray-400">

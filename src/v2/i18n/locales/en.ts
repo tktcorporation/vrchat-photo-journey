@@ -8,20 +8,20 @@ export default {
     photos: 'photos',
     refresh: 'Check for new photos',
     search: {
-      placeholder: 'Search photos...'
-    }
+      placeholder: 'Search photos...',
+    },
   },
   settings: {
     tabs: {
       dataSource: 'Data Source',
       theme: 'Theme',
-      info: 'Information'
+      info: 'Information',
     },
     theme: {
       title: 'Theme Settings',
       system: 'Follow System',
       dark: 'Dark Mode',
-      light: 'Light Mode'
+      light: 'Light Mode',
     },
     paths: {
       useDemo: 'Use Demo Data',
@@ -33,8 +33,9 @@ export default {
       validating: 'Validating...',
       logFormat: {
         title: 'Log File Format',
-        description: 'The log file must be a JSON file with the following format:'
-      }
+        description:
+          'The log file must be a JSON file with the following format:',
+      },
     },
     info: {
       version: 'Version',
@@ -43,22 +44,22 @@ export default {
       licenses: {
         title: 'License Information',
         viewLicense: 'View License',
-        suffix: 'License'
-      }
-    }
+        suffix: 'License',
+      },
+    },
   },
   photoModal: {
     visitedWith: 'Visited with',
     tags: 'Tags',
     resolution: 'Resolution',
     lastVisited: 'Last visited',
-    recommendedSeason: 'Best season'
+    recommendedSeason: 'Best season',
   },
   pullToRefresh: {
     pull: 'Pull to refresh',
     release: 'Release to refresh',
     refreshing: 'Refreshing...',
-    checking: 'Checking for new photos...'
+    checking: 'Checking for new photos...',
   },
-  yearlyVisitors: 'Annual visitors'
+  yearlyVisitors: 'Annual visitors',
 };

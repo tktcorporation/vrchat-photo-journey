@@ -1,10 +1,10 @@
+import { trpcReact } from '@/trpc';
+import TrpcWrapper from '@/trpcWrapper';
+import { Toaster } from '@/v2/components/ui/toaster';
 import React from 'react';
 import PhotoGallery from './components/PhotoGallery';
 import { ThemeProvider } from './contexts/ThemeContext';
-import TrpcWrapper from '@/trpcWrapper';
 import { useToast } from './hooks/use-toast';
-import { Toaster } from '@/v2/components/ui/toaster';
-import { trpcReact } from '@/trpc';
 
 function App() {
   return (

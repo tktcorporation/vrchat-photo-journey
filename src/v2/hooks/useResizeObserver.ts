@@ -7,7 +7,7 @@ interface Size {
 
 export function useResizeObserver<T extends HTMLElement>(): [
   React.RefObject<T>,
-  Size
+  Size,
 ] {
   const ref = useRef<T>(null);
   const [size, setSize] = useState<Size>({ width: 0, height: 0 });

@@ -1,4 +1,4 @@
-import { useEffect, useState, RefObject } from 'react';
+import { type RefObject, useEffect, useState } from 'react';
 
 export function useInView(elementRef: RefObject<Element>) {
   const [isInView, setIsInView] = useState(false);
@@ -15,7 +15,7 @@ export function useInView(elementRef: RefObject<Element>) {
         root: null,
         rootMargin: '100px',
         threshold: 0,
-      }
+      },
     );
 
     observer.observe(element);

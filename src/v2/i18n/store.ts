@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Language, Translations } from './types';
 import en from './locales/en';
 import ja from './locales/ja';
+import type { Language, Translations } from './types';
 
 const translations: Record<Language, Translations> = { en, ja };
 
@@ -20,11 +20,13 @@ export const useI18n = create<I18nState>()(
       t: (key: string) => {
         const { language } = get();
         const translation = translations[language];
-        return key.split('.').reduce((obj, k) => obj?.[k], translation as any) || key;
-      }
+        return (
+          key.split('.').reduce((obj, k) => obj?.[k], translation as any) || key
+        );
+      },
     }),
     {
-      name: 'photo-gallery-language'
-    }
-  )
+      name: 'photo-gallery-language',
+    },
+  ),
 );

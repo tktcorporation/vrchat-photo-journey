@@ -1,5 +1,5 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { RefObject } from 'react';
+import type { RefObject } from 'react';
 import { useWindowSize } from './useWindowSize';
 
 interface UseVirtualGridOptions {

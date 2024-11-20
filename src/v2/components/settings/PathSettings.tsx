@@ -1,8 +1,8 @@
-import React, { memo, useState } from 'react';
-import { FolderOpen, FileText, AlertCircle } from 'lucide-react';
-import { useI18n } from '../../i18n/store';
 import { trpcReact } from '@/trpc';
+import { AlertCircle, FileText, FolderOpen } from 'lucide-react';
+import React, { memo, useState } from 'react';
 import { match } from 'ts-pattern';
+import { useI18n } from '../../i18n/store';
 
 const PathSettingsComponent = memo(() => {
   const { t } = useI18n();
@@ -10,17 +10,25 @@ const PathSettingsComponent = memo(() => {
   const [validationError, setValidationError] = useState<string | null>(null);
 
   // Photo directory queries and mutations
-  const { data: photoDir, refetch: refetchPhotoDir } = trpcReact.vrchatPhoto.getVRChatPhotoDirPath.useQuery();
-  const validatePhotoPathMutation = trpcReact.vrchatPhoto.validateVRChatPhotoPath.useMutation();
-  const setPhotoDirectoryMutation = trpcReact.vrchatPhoto.setVRChatPhotoDirPathToSettingStore.useMutation();
-  const clearPhotoDirectoryMutation = trpcReact.vrchatPhoto.clearVRChatPhotoDirPathInSettingStore.useMutation();
+  const { data: photoDir, refetch: refetchPhotoDir } =
+    trpcReact.vrchatPhoto.getVRChatPhotoDirPath.useQuery();
+  const validatePhotoPathMutation =
+    trpcReact.vrchatPhoto.validateVRChatPhotoPath.useMutation();
+  const setPhotoDirectoryMutation =
+    trpcReact.vrchatPhoto.setVRChatPhotoDirPathToSettingStore.useMutation();
+  const clearPhotoDirectoryMutation =
+    trpcReact.vrchatPhoto.clearVRChatPhotoDirPathInSettingStore.useMutation();
 
   // Log file queries and mutations
-  const { data: logFilesDir, refetch: refetchLogFilesDir } = trpcReact.getVRChatLogFilesDir.useQuery();
-  const setLogPathMutation = trpcReact.setVRChatLogFilesDirByDialog.useMutation();
+  const { data: logFilesDir, refetch: refetchLogFilesDir } =
+    trpcReact.getVRChatLogFilesDir.useQuery();
+  const setLogPathMutation =
+    trpcReact.setVRChatLogFilesDirByDialog.useMutation();
 
   // 写真パスの検証状態を保持
-  const [photoValidationResult, setPhotoValidationResult] = useState<'MODEL_NOT_FOUND' | 'FILE_NOT_FOUND_MODEL_DELETED' | 'VALID' | null>(null);
+  const [photoValidationResult, setPhotoValidationResult] = useState<
+    'MODEL_NOT_FOUND' | 'FILE_NOT_FOUND_MODEL_DELETED' | 'VALID' | null
+  >(null);
 
   // 写真パスの検証を行う関数
   const validatePhotoPath = async () => {
@@ -43,11 +51,19 @@ const PathSettingsComponent = memo(() => {
       if (!photoDir?.value) {
         throw new Error('写真ディレクトリが設定されていません');
       }
-      const photoResult = await validatePhotoPathMutation.mutateAsync(photoDir.value);
-      
+      const photoResult = await validatePhotoPathMutation.mutateAsync(
+        photoDir.value,
+      );
+
       const photoValidationError = match(photoResult.result)
-        .with('MODEL_NOT_FOUND', () => '写真ディレクトリのモデルが見つかりません')
-        .with('FILE_NOT_FOUND_MODEL_DELETED', () => '写真ディレクトリが存在しないため、モデルを削除しました')
+        .with(
+          'MODEL_NOT_FOUND',
+          () => '写真ディレクトリのモデルが見つかりません',
+        )
+        .with(
+          'FILE_NOT_FOUND_MODEL_DELETED',
+          () => '写真ディレクトリが存在しないため、モデルを削除しました',
+        )
         .with('VALID', () => null)
         .exhaustive();
 
@@ -70,7 +86,9 @@ const PathSettingsComponent = memo(() => {
         throw new Error(logValidationError);
       }
     } catch (error) {
-      setValidationError(error instanceof Error ? error.message : '不明なエラーが発生しました');
+      setValidationError(
+        error instanceof Error ? error.message : '不明なエラーが発生しました',
+      );
     } finally {
       setIsValidating(false);
     }
@@ -124,8 +142,15 @@ const PathSettingsComponent = memo(() => {
               <div className="flex items-center text-sm text-red-600 dark:text-red-400">
                 <AlertCircle className="h-4 w-4 mr-1" />
                 {match(photoValidationResult)
-                  .with('MODEL_NOT_FOUND', () => '写真ディレクトリのモデルが見つかりません')
-                  .with('FILE_NOT_FOUND_MODEL_DELETED', () => '写真ディレクトリが存在しないため、モデルを削除しました')
+                  .with(
+                    'MODEL_NOT_FOUND',
+                    () => '写真ディレクトリのモデルが見つかりません',
+                  )
+                  .with(
+                    'FILE_NOT_FOUND_MODEL_DELETED',
+                    () =>
+                      '写真ディレクトリが存在しないため、モデルを削除しました',
+                  )
                   .exhaustive()}
               </div>
             )}
@@ -155,8 +180,14 @@ const PathSettingsComponent = memo(() => {
               <div className="flex items-center text-sm text-red-600 dark:text-red-400">
                 <AlertCircle className="h-4 w-4 mr-1" />
                 {match(logFilesDir.error)
-                  .with('logFilesNotFound', () => 'ログファイルが見つかりませんでした')
-                  .with('logFileDirNotFound', () => 'フォルダの読み取りに失敗しました')
+                  .with(
+                    'logFilesNotFound',
+                    () => 'ログファイルが見つかりませんでした',
+                  )
+                  .with(
+                    'logFileDirNotFound',
+                    () => 'フォルダの読み取りに失敗しました',
+                  )
                   .exhaustive()}
               </div>
             )}

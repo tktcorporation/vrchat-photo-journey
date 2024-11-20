@@ -1,8 +1,8 @@
-import React, { memo } from 'react';
 import { Monitor, Moon, Sun } from 'lucide-react';
+import React, { memo } from 'react';
 import { useTheme } from '../../hooks/useTheme';
-import { Theme, ThemeOption } from '../../utils/theme';
 import { useI18n } from '../../i18n/store';
+import { Theme, type ThemeOption } from '../../utils/theme';
 
 const ThemeSelector = memo(() => {
   const { t } = useI18n();
@@ -31,16 +31,20 @@ const ThemeSelector = memo(() => {
                 : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
             }`}
           >
-            <Icon className={`h-5 w-5 ${
-              theme === value
-                ? 'text-indigo-600 dark:text-indigo-400'
-                : 'text-gray-500 dark:text-gray-400'
-            }`} />
-            <span className={`text-sm font-medium ${
-              theme === value
-                ? 'text-indigo-600 dark:text-indigo-400'
-                : 'text-gray-700 dark:text-gray-300'
-            }`}>
+            <Icon
+              className={`h-5 w-5 ${
+                theme === value
+                  ? 'text-indigo-600 dark:text-indigo-400'
+                  : 'text-gray-500 dark:text-gray-400'
+              }`}
+            />
+            <span
+              className={`text-sm font-medium ${
+                theme === value
+                  ? 'text-indigo-600 dark:text-indigo-400'
+                  : 'text-gray-700 dark:text-gray-300'
+              }`}
+            >
               {label}
             </span>
           </button>

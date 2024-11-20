@@ -19,7 +19,7 @@ export const useIntersectionObserver = ({
       ([entry]) => {
         setEntry(entry);
       },
-      { threshold, root, rootMargin }
+      { threshold, root, rootMargin },
     );
 
     const element = elementRef.current;

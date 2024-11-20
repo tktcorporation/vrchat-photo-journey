@@ -3,7 +3,7 @@ import { useCurrentGroup } from './useCurrentGroup';
 
 export function useGroupInView(
   contentRef: React.RefObject<HTMLDivElement>,
-  groupNames: string[]
+  groupNames: string[],
 ) {
   const groupRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const { setCurrentGroup } = useCurrentGroup();
@@ -25,8 +25,8 @@ export function useGroupInView(
       {
         root: null,
         rootMargin: '-80px 0px -80% 0px',
-        threshold: [0, 1]
-      }
+        threshold: [0, 1],
+      },
     );
 
     groupRefs.current.forEach((element) => {

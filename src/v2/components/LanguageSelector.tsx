@@ -1,11 +1,11 @@
-import React, { memo } from 'react';
 import { Globe2 } from 'lucide-react';
+import React, { memo } from 'react';
 import { useI18n } from '../i18n/store';
 import type { Language } from '../i18n/types';
 
 const languages: { value: Language; label: string }[] = [
   { value: 'ja', label: '日本語' },
-  { value: 'en', label: 'English' }
+  { value: 'en', label: 'English' },
 ];
 
 const LanguageSelector = memo(() => {
@@ -28,11 +28,13 @@ const LanguageSelector = memo(() => {
                 : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
             }`}
           >
-            <span className={`text-sm font-medium ${
-              language === value
-                ? 'text-indigo-600 dark:text-indigo-400'
-                : 'text-gray-700 dark:text-gray-300'
-            }`}>
+            <span
+              className={`text-sm font-medium ${
+                language === value
+                  ? 'text-indigo-600 dark:text-indigo-400'
+                  : 'text-gray-700 dark:text-gray-300'
+              }`}
+            >
               {label}
             </span>
           </button>

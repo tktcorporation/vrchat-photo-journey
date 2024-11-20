@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import { Photo } from '../types/photo';
 import { generatePhotos } from '../data/photos';
+import type { Photo } from '../types/photo';
 
 interface PhotoSourceState {
   sourceType: 'local' | 'demo';
@@ -12,11 +12,17 @@ interface PhotoSourceState {
   lastUpdated: number;
   isRefreshing: boolean;
   setSourceType: (type: 'local' | 'demo') => void;
-  updateSettings: (settings: { photoDirectory: string; logFilePath: string }) => void;
+  updateSettings: (settings: {
+    photoDirectory: string;
+    logFilePath: string;
+  }) => void;
   refreshPhotos: () => Promise<void>;
 }
 
-const loadPhotos = (sourceType: 'local' | 'demo', settings: { photoDirectory: string; logFilePath: string }) => {
+const loadPhotos = (
+  sourceType: 'local' | 'demo',
+  settings: { photoDirectory: string; logFilePath: string },
+) => {
   if (sourceType === 'demo') {
     return generatePhotos();
   }
@@ -28,9 +34,9 @@ const loadNewPhotos = async (lastUpdated: number): Promise<Photo[]> => {
   // 実際の実装では lastUpdated 以降に追加された写真のみを取得
   return new Promise((resolve) => {
     setTimeout(() => {
-      const newPhotos = generatePhotos().filter(photo => 
-        photo.takenAt.getTime() > lastUpdated
-      ).slice(0, 5); // デモ用に最大5枚まで
+      const newPhotos = generatePhotos()
+        .filter((photo) => photo.takenAt.getTime() > lastUpdated)
+        .slice(0, 5); // デモ用に最大5枚まで
       resolve(newPhotos);
     }, 1500);
   });
@@ -51,8 +57,8 @@ const loadStoredSettings = () => {
     sourceType: 'demo' as const,
     settings: {
       photoDirectory: '',
-      logFilePath: ''
-    }
+      logFilePath: '',
+    },
   };
 };
 
@@ -71,12 +77,15 @@ export const usePhotoSource = create<PhotoSourceState>((set, get) => ({
         settings: state.settings,
         photos: loadPhotos(type, state.settings),
         lastUpdated: Date.now(),
-        isRefreshing: false
+        isRefreshing: false,
       };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        sourceType: type,
-        settings: state.settings
-      }));
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          sourceType: type,
+          settings: state.settings,
+        }),
+      );
       return newState;
     });
   },
@@ -87,12 +96,15 @@ export const usePhotoSource = create<PhotoSourceState>((set, get) => ({
         settings,
         photos: loadPhotos(state.sourceType, settings),
         lastUpdated: Date.now(),
-        isRefreshing: false
+        isRefreshing: false,
       };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        sourceType: state.sourceType,
-        settings
-      }));
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          sourceType: state.sourceType,
+          settings,
+        }),
+      );
       return newState;
     });
   },
@@ -107,7 +119,7 @@ export const usePhotoSource = create<PhotoSourceState>((set, get) => ({
         set((state) => ({
           photos: [...newPhotos, ...state.photos],
           lastUpdated: Date.now(),
-          isRefreshing: false
+          isRefreshing: false,
         }));
       } else {
         set({ isRefreshing: false });
@@ -116,5 +128,5 @@ export const usePhotoSource = create<PhotoSourceState>((set, get) => ({
       console.error('Failed to refresh photos:', error);
       set({ isRefreshing: false });
     }
-  }
+  },
 }));

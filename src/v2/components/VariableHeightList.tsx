@@ -1,21 +1,22 @@
-import React, { useRef, useEffect, useState } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import type React from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const VariableHeightList: React.FC = () => {
   const parentRef = useRef<HTMLDivElement>(null);
-  const [measurements, setMeasurements] = useState<{ [key: number]: number }>({});
-  
+  const [measurements, setMeasurements] = useState<{ [key: number]: number }>(
+    {},
+  );
+
   // Generate rows with variable content lengths
   const rows = Array.from({ length: 10000 }, (_, index) => ({
     id: index,
     title: `Row ${index + 1}`,
-    description: `This is a variable height row with ID ${index + 1}. ${
-      Array(Math.floor(Math.random() * 3) + 1)
-        .fill(
-          'Some additional content to make this row taller. '
-        )
-        .join('')
-    }`,
+    description: `This is a variable height row with ID ${index + 1}. ${Array(
+      Math.floor(Math.random() * 3) + 1,
+    )
+      .fill('Some additional content to make this row taller. ')
+      .join('')}`,
   }));
 
   const rowVirtualizer = useVirtualizer({
@@ -59,7 +60,9 @@ const VariableHeightList: React.FC = () => {
             }}
           >
             <div className="p-4">
-              <div className="font-medium text-gray-900">{rows[virtualRow.index].title}</div>
+              <div className="font-medium text-gray-900">
+                {rows[virtualRow.index].title}
+              </div>
               <div className="text-sm text-gray-500 whitespace-pre-wrap">
                 {rows[virtualRow.index].description}
               </div>

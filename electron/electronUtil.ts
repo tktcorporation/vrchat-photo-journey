@@ -10,8 +10,8 @@ import {
   Tray,
   app,
   ipcMain,
-  shell,
   screen,
+  shell,
 } from 'electron';
 import type { Event } from 'electron';
 import isDev from 'electron-is-dev';
@@ -25,33 +25,37 @@ const WINDOW_CONFIG = {
   MIN_HEIGHT: 600,
 } as const;
 
-function createWindow(settingStore: ReturnType<typeof getSettingStore>): BrowserWindow {
+function createWindow(
+  settingStore: ReturnType<typeof getSettingStore>,
+): BrowserWindow {
   const savedBounds = settingStore.getWindowBounds();
-  
+
   // 保存された位置に最も近いディスプレイを取得
   const nearestDisplay = savedBounds
     ? screen.getDisplayNearestPoint({ x: savedBounds.x, y: savedBounds.y })
     : screen.getPrimaryDisplay();
-    
+
   const workAreaSize = nearestDisplay.workArea;
-  
+
   // ウィンドウサイズを画面サイズに合わせて調整
   const width = Math.min(
     savedBounds?.width || WINDOW_CONFIG.DEFAULT_WIDTH,
-    workAreaSize.width
+    workAreaSize.width,
   );
   const height = Math.min(
     savedBounds?.height || WINDOW_CONFIG.DEFAULT_HEIGHT,
-    workAreaSize.height
+    workAreaSize.height,
   );
 
   // ウィンドウ位置が画面外にはみ出していないか確認
-  const x = savedBounds?.x !== undefined
-    ? Math.max(0, Math.min(savedBounds.x, workAreaSize.width - width))
-    : undefined;
-  const y = savedBounds?.y !== undefined
-    ? Math.max(0, Math.min(savedBounds.y, workAreaSize.height - height))
-    : undefined;
+  const x =
+    savedBounds?.x !== undefined
+      ? Math.max(0, Math.min(savedBounds.x, workAreaSize.width - width))
+      : undefined;
+  const y =
+    savedBounds?.y !== undefined
+      ? Math.max(0, Math.min(savedBounds.y, workAreaSize.height - height))
+      : undefined;
 
   const mainWindow = new BrowserWindow({
     width,
@@ -129,19 +133,34 @@ function createWindow(settingStore: ReturnType<typeof getSettingStore>): Browser
   // ディスプレイ構成が変更された時のハンドリング
   screen.on('display-metrics-changed', () => {
     const currentBounds = mainWindow.getBounds();
-    const currentDisplay = screen.getDisplayNearestPoint({ 
-      x: currentBounds.x, 
-      y: currentBounds.y 
+    const currentDisplay = screen.getDisplayNearestPoint({
+      x: currentBounds.x,
+      y: currentBounds.y,
     });
-    
+
     // ウィンドウが表示可能な領域に収まるように調整
     const adjustedBounds = {
       width: Math.min(currentBounds.width, currentDisplay.workAreaSize.width),
-      height: Math.min(currentBounds.height, currentDisplay.workAreaSize.height),
-      x: Math.max(0, Math.min(currentBounds.x, currentDisplay.workAreaSize.width - currentBounds.width)),
-      y: Math.max(0, Math.min(currentBounds.y, currentDisplay.workAreaSize.height - currentBounds.height))
+      height: Math.min(
+        currentBounds.height,
+        currentDisplay.workAreaSize.height,
+      ),
+      x: Math.max(
+        0,
+        Math.min(
+          currentBounds.x,
+          currentDisplay.workAreaSize.width - currentBounds.width,
+        ),
+      ),
+      y: Math.max(
+        0,
+        Math.min(
+          currentBounds.y,
+          currentDisplay.workAreaSize.height - currentBounds.height,
+        ),
+      ),
     };
-    
+
     mainWindow.setBounds(adjustedBounds);
   });
 
@@ -165,7 +184,9 @@ export const getWindow = (): BrowserWindow | null => {
  * window が存在しなければ新しく作成する
  * 存在していれば取得する
  */
-const createOrGetWindow = (settingStore: ReturnType<typeof getSettingStore>): BrowserWindow => {
+const createOrGetWindow = (
+  settingStore: ReturnType<typeof getSettingStore>,
+): BrowserWindow => {
   const window = getWindow();
   if (window) {
     return window;
@@ -182,9 +203,9 @@ const setTray = (settingStore: ReturnType<typeof getSettingStore>) => {
 
     const appPath = app.isPackaged ? process.resourcesPath : app.getAppPath();
     const iconPath = join(appPath, 'assets', 'icons', 'Icon-Electron.png');
-    
+
     tray = new Tray(iconPath);
-    
+
     const contextMenu = Menu.buildFromTemplate([
       {
         label: 'ウィンドウを表示',
@@ -193,20 +214,22 @@ const setTray = (settingStore: ReturnType<typeof getSettingStore>) => {
           if (window.isMinimized()) window.restore();
           window.show();
           window.focus();
-        }
+        },
       },
       { type: 'separator' },
       {
         label: '設定',
-        click: () => {/* 設定画面を開く */}
+        click: () => {
+          /* 設定画面を開く */
+        },
       },
       { type: 'separator' },
       {
         label: '終了',
         click: () => {
           app.quit();
-        }
-      }
+        },
+      },
     ]);
 
     tray.setToolTip(app.name);

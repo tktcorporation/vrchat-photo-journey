@@ -11,7 +11,7 @@ export function usePullToRefresh({
   onRefresh,
   isRefreshing,
   threshold = 100,
-  containerRef
+  containerRef,
 }: UsePullToRefreshOptions) {
   const pullStartY = useRef(0);
   const refreshIndicatorRef = useRef<HTMLDivElement>(null);
@@ -53,8 +53,12 @@ export function usePullToRefresh({
       isDraggingRef.current = false;
     };
 
-    container.addEventListener('touchstart', handleTouchStart, { passive: true });
-    container.addEventListener('touchmove', handleTouchMove, { passive: false });
+    container.addEventListener('touchstart', handleTouchStart, {
+      passive: true,
+    });
+    container.addEventListener('touchmove', handleTouchMove, {
+      passive: false,
+    });
     container.addEventListener('touchend', handleTouchEnd);
 
     return () => {

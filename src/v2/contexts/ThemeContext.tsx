@@ -1,5 +1,6 @@
-import React, { createContext, useEffect, useState, useMemo } from 'react';
-import { Theme, shouldUseDarkTheme, setRootTheme } from '../utils/theme';
+import type React from 'react';
+import { createContext, useEffect, useMemo, useState } from 'react';
+import { type Theme, setRootTheme, shouldUseDarkTheme } from '../utils/theme';
 
 interface ThemeContextType {
   theme: Theme;
@@ -7,7 +8,9 @@ interface ThemeContextType {
   isDark: boolean;
 }
 
-export const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+export const ThemeContext = createContext<ThemeContextType | undefined>(
+  undefined,
+);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
@@ -31,11 +34,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     return () => mediaQuery.removeEventListener('change', updateTheme);
   }, [theme]);
 
-  const contextValue = useMemo(() => ({
-    theme,
-    setTheme,
-    isDark,
-  }), [theme, isDark]);
+  const contextValue = useMemo(
+    () => ({
+      theme,
+      setTheme,
+      isDark,
+    }),
+    [theme, isDark],
+  );
 
   return (
     <ThemeContext.Provider value={contextValue}>

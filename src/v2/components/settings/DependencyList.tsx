@@ -1,7 +1,7 @@
-import React, { memo } from 'react';
 import { Package } from 'lucide-react';
-import { useI18n } from '../../i18n/store';
+import React, { memo } from 'react';
 import packageJson from '../../../../package.json';
+import { useI18n } from '../../i18n/store';
 
 const DependencyList = memo(() => {
   const { t } = useI18n();
@@ -14,9 +14,16 @@ const DependencyList = memo(() => {
       </h3>
       <div className="space-y-4">
         {Object.entries(packageJson.dependencies).map(([name, version]) => (
-          <div key={name} className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800">
-            <span className="font-mono text-gray-900 dark:text-white">{name}</span>
-            <span className="font-mono text-gray-500 dark:text-gray-400">{version}</span>
+          <div
+            key={name}
+            className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800"
+          >
+            <span className="font-mono text-gray-900 dark:text-white">
+              {name}
+            </span>
+            <span className="font-mono text-gray-500 dark:text-gray-400">
+              {version}
+            </span>
           </div>
         ))}
       </div>

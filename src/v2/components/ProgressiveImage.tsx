@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 
 interface ProgressiveImageProps {
   src: string;
@@ -19,7 +20,7 @@ const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
   sizes,
   srcSet,
   loading = 'lazy',
-  fetchpriority = 'auto'
+  fetchpriority = 'auto',
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [currentSrc, setCurrentSrc] = useState(placeholderSrc);
@@ -44,7 +45,7 @@ const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
           isLoaded ? 'opacity-0' : 'opacity-100'
         } blur-xl scale-110`}
       />
-      
+
       {/* Main image */}
       <img
         src={currentSrc}

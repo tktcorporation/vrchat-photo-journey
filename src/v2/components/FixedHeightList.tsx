@@ -1,5 +1,6 @@
-import React, { useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import type React from 'react';
+import { useRef } from 'react';
 
 const FixedHeightList: React.FC = () => {
   const parentRef = useRef<HTMLDivElement>(null);
@@ -41,8 +42,12 @@ const FixedHeightList: React.FC = () => {
             }}
           >
             <div className="p-4">
-              <div className="font-medium text-gray-900">{rows[virtualRow.index].title}</div>
-              <div className="text-sm text-gray-500">{rows[virtualRow.index].description}</div>
+              <div className="font-medium text-gray-900">
+                {rows[virtualRow.index].title}
+              </div>
+              <div className="text-sm text-gray-500">
+                {rows[virtualRow.index].description}
+              </div>
             </div>
           </div>
         ))}

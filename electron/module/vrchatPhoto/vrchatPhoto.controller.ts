@@ -32,7 +32,7 @@ const getVRChatLogFilePathModelList = async (query?: {
       id: photoPathModel.id,
       photoPath: photoPathModel.photoPath,
       width: 1600, // TODO: photoPathModel.width,
-      height: 900,// TODO: photoPathModel.height,
+      height: 900, // TODO: photoPathModel.height,
       photoTakenAt: photoPathModel.photoTakenAt,
     })),
   );

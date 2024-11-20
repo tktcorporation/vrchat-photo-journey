@@ -1,9 +1,9 @@
-import React from 'react';
-import { usePhotoGallery } from './usePhotoGallery';
-import Header from './Header';
-import GalleryContent from './GalleryContent';
+import type React from 'react';
 import PhotoModal from '../PhotoModal';
 import SettingsModal from '../settings/SettingsModal';
+import GalleryContent from './GalleryContent';
+import Header from './Header';
+import { usePhotoGallery } from './usePhotoGallery';
 
 const PhotoGallery: React.FC = () => {
   const {
@@ -37,9 +37,7 @@ const PhotoGallery: React.FC = () => {
         />
       )}
 
-      {showSettings && (
-        <SettingsModal onClose={() => setShowSettings(false)} />
-      )}
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
     </>
   );
 };

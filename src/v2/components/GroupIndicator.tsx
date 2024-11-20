@@ -1,12 +1,15 @@
-import React from 'react';
 import { ChevronDown } from 'lucide-react';
+import type React from 'react';
 
 interface GroupIndicatorProps {
   currentGroup: string;
   totalGroups: number;
 }
 
-const GroupIndicator: React.FC<GroupIndicatorProps> = ({ currentGroup, totalGroups }) => {
+const GroupIndicator: React.FC<GroupIndicatorProps> = ({
+  currentGroup,
+  totalGroups,
+}) => {
   if (!currentGroup) return null;
 
   return (

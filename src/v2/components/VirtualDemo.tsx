@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import { ArrowRight } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import FixedHeightList from './FixedHeightList';
 import VariableHeightList from './VariableHeightList';
-import { ArrowRight } from 'lucide-react';
 
 const VirtualDemo: React.FC = () => {
   const [activeView, setActiveView] = useState<'fixed' | 'variable'>('fixed');
@@ -13,7 +14,9 @@ const VirtualDemo: React.FC = () => {
           <div className="flex items-center space-x-2">
             <ArrowRight className="h-5 w-5 text-indigo-600" />
             <h2 className="text-lg font-semibold text-gray-900">
-              {activeView === 'fixed' ? 'Fixed Height Rows' : 'Variable Height Rows'}
+              {activeView === 'fixed'
+                ? 'Fixed Height Rows'
+                : 'Variable Height Rows'}
             </h2>
           </div>
           <div className="flex space-x-4">

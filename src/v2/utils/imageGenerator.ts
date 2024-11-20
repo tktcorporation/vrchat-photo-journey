@@ -1,7 +1,7 @@
-import { Photo } from '../types/photo';
+import type { Photo } from '../types/photo';
 
 // キャンバスを使用してダミー画像を生成
-function generateDataUrl(width: number, height: number, text: string = ''): string {
+function generateDataUrl(width: number, height: number, text = ''): string {
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
@@ -24,7 +24,7 @@ function generateDataUrl(width: number, height: number, text: string = ''): stri
   const displayText = `${width}x${height}\n${aspectRatio}`;
   const lines = displayText.split('\n');
   const lineHeight = Math.min(width, height) * 0.12;
-  
+
   lines.forEach((line, i) => {
     const y = height / 2 + (i - (lines.length - 1) / 2) * lineHeight;
     ctx.fillText(line, width / 2, y);
@@ -43,17 +43,17 @@ export function calculateOptimalDimensions(
   originalWidth: number,
   originalHeight: number,
   maxWidth: number,
-  maxHeight: number
+  maxHeight: number,
 ): { width: number; height: number } {
   const aspectRatio = originalWidth / originalHeight;
-  
+
   let width = maxWidth;
   let height = maxWidth / aspectRatio;
-  
+
   if (height > maxHeight) {
     height = maxHeight;
     width = maxHeight * aspectRatio;
   }
-  
+
   return { width: Math.round(width), height: Math.round(height) };
 }
