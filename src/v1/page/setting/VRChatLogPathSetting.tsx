@@ -1,8 +1,6 @@
 import { trpcReact } from '@/trpc';
 import { Button } from '@/v1/components/ui/button';
 import { FolderOpen } from 'lucide-react';
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { match } from 'ts-pattern';
 import { sourceBadge } from './components';
 
