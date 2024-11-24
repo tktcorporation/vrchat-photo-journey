@@ -11,7 +11,6 @@ import { memo, useState } from 'react';
 import { useI18n } from '../../i18n/store';
 import LanguageSelector from '../LanguageSelector';
 import AppInfo from './AppInfo';
-import DependencyList from './DependencyList';
 import LicenseInfo from './LicenseInfo';
 import PathSettings from './PathSettings';
 import ThemeSelector from './ThemeSelector';
@@ -59,7 +58,6 @@ const SettingsModal = memo(({ onClose }: SettingsModalProps) => {
       component: () => (
         <div className="space-y-8">
           <AppInfo />
-          <DependencyList />
         </div>
       ),
     },
