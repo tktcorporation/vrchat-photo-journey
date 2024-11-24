@@ -1,5 +1,5 @@
 import { trpcReact } from '@/trpc';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { match } from 'ts-pattern';
 
 type ProcessStage = 'pending' | 'inProgress' | 'success' | 'error' | 'skipped';
@@ -11,6 +11,11 @@ interface ProcessStages {
   indexLoaded: ProcessStage;
 }
 
+interface ProcessError {
+  stage: keyof ProcessStages;
+  message: string;
+}
+
 const initialStages: ProcessStages = {
   startingSync: 'pending',
   syncDone: 'pending',
@@ -20,8 +25,7 @@ const initialStages: ProcessStages = {
 
 export const useStartupStage = () => {
   const [stages, setStages] = useState<ProcessStages>(initialStages);
-  const [errorStage, setErrorStage] = useState<string>('');
-  const [errorMessage, setErrorMessage] = useState<string>('');
+  const [error, setError] = useState<ProcessError | null>(null);
 
   const updateStage = (
     stage: keyof ProcessStages,
@@ -30,8 +34,9 @@ export const useStartupStage = () => {
   ) => {
     setStages((prev) => ({ ...prev, [stage]: status }));
     if (status === 'error' && errorMsg) {
-      setErrorStage(stage);
-      setErrorMessage(errorMsg);
+      setError({ stage, message: errorMsg });
+    } else if (status === 'success' || status === 'skipped') {
+      setError(null);
     }
   };
 
@@ -65,52 +70,63 @@ export const useStartupStage = () => {
       onError: () => updateStage('indexLoaded', 'error', 'Loading Index Error'),
     });
 
-  const executeLogOperations = () => {
-    if (logFilesDirData?.error) {
+  const executeLogOperations = useCallback(() => {
+    if (!logFilesDirData) return;
+
+    if (logFilesDirData.error) {
       const message = match(logFilesDirData.error)
         .with('logFilesNotFound', () => 'ログファイルが見つかりませんでした')
         .with('logFileDirNotFound', () => 'フォルダの読み取りに失敗しました')
         .otherwise(() => '不明なエラーが発生しました');
 
       updateStage('logsStored', 'error', message);
-    } else {
-      storeLogsMutation.mutate();
+      return;
     }
-  };
 
-  const retryProcess = () => {
+    storeLogsMutation.mutate();
+  }, [logFilesDirData]);
+
+  const retryProcess = useCallback(() => {
     setStages(initialStages);
-    setErrorStage('');
-    setErrorMessage('');
+    setError(null);
     refetchMigrateRequirement();
-  };
+  }, [refetchMigrateRequirement]);
 
   useEffect(() => {
-    if (migrateRequirement !== undefined) {
-      if (migrateRequirement) {
-        updateStage('startingSync', 'inProgress');
-        syncRdbMutation.mutate();
-      } else {
-        updateStage('startingSync', 'skipped');
-        updateStage('syncDone', 'skipped');
-        executeLogOperations();
-      }
-    }
-  }, [migrateRequirement]);
+    if (migrateRequirement === undefined) return;
 
-  const completed = Object.values(stages).every(
-    (stage) => stage === 'success' || stage === 'skipped',
+    if (migrateRequirement) {
+      updateStage('startingSync', 'inProgress');
+      syncRdbMutation.mutate();
+    } else {
+      updateStage('startingSync', 'skipped');
+      updateStage('syncDone', 'skipped');
+      executeLogOperations();
+    }
+  }, [migrateRequirement, executeLogOperations]);
+
+  const completed = useMemo(
+    () =>
+      Object.values(stages).every(
+        (stage) => stage === 'success' || stage === 'skipped',
+      ),
+    [stages],
   );
 
-  const finished = Object.values(stages).every(
-    (stage) => stage === 'success' || stage === 'skipped' || stage === 'error',
+  const finished = useMemo(
+    () =>
+      Object.values(stages).every(
+        (stage) =>
+          stage === 'success' || stage === 'skipped' || stage === 'error',
+      ),
+    [stages],
   );
 
   return {
     stages,
     updateStage,
-    errorMessage,
-    errorStage,
+    errorMessage: error?.message ?? '',
+    errorStage: error?.stage ?? '',
     retryProcess,
     completed,
     finished,

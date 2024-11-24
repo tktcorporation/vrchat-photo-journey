@@ -1,3 +1,4 @@
+import { useStartupStage } from '@/v2/hooks/useStartUpStage';
 import { RefreshCw } from 'lucide-react';
 import React, { memo, useRef } from 'react';
 import { usePhotoSource } from '../../hooks/usePhotoSource';
@@ -35,6 +36,10 @@ const GalleryContent = memo(
       containerRef: contentRef,
     });
 
+    const { errorMessage, finished } = useStartupStage();
+
+    const isPhotoRefetching = isRefreshing || !finished;
+
     return (
       <main ref={contentRef} className="flex-1 overflow-y-auto relative">
         {/* Pull-to-refresh indicator */}
@@ -46,14 +51,14 @@ const GalleryContent = memo(
           <div className="flex items-center space-x-2 text-gray-500 dark:text-gray-400">
             <RefreshCw
               className={`h-5 w-5 transition-transform duration-300 ${
-                isRefreshing ? 'animate-spin' : ''
+                isPhotoRefetching ? 'animate-spin' : ''
               }`}
               style={{
                 transform: `rotate(${Math.min(pullProgress * 360, 360)}deg)`,
               }}
             />
             <span className="text-sm">
-              {isRefreshing
+              {isPhotoRefetching
                 ? t('pullToRefresh.refreshing')
                 : pullProgress >= 1
                   ? t('pullToRefresh.release')
@@ -96,7 +101,7 @@ const GalleryContent = memo(
         {/* Loading indicator */}
         <div
           className={`fixed bottom-6 right-6 transition-all duration-300 ${
-            isRefreshing
+            isPhotoRefetching
               ? 'opacity-100 translate-y-0'
               : 'opacity-0 translate-y-4'
           }`}
