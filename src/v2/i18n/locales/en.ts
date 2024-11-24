@@ -16,6 +16,7 @@ export default {
       dataSource: 'Data Source',
       theme: 'Theme',
       info: 'Information',
+      license: 'License Information',
     },
     theme: {
       title: 'Theme Settings',

@@ -16,6 +16,7 @@ export default {
       dataSource: 'データソース',
       theme: 'テーマ',
       info: '情報',
+      license: 'ライセンス情報',
     },
     theme: {
       title: 'テーマ設定',

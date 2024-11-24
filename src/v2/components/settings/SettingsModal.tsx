@@ -1,4 +1,5 @@
 import {
+  FileText,
   FolderOpen,
   Globe2,
   Settings as SettingsIcon,
@@ -19,7 +20,7 @@ interface SettingsModalProps {
   onClose: () => void;
 }
 
-type SettingsTab = 'paths' | 'theme' | 'language' | 'info';
+type SettingsTab = 'paths' | 'theme' | 'language' | 'info' | 'license';
 
 interface TabConfig {
   id: SettingsTab;
@@ -59,9 +60,14 @@ const SettingsModal = memo(({ onClose }: SettingsModalProps) => {
         <div className="space-y-8">
           <AppInfo />
           <DependencyList />
-          <LicenseInfo />
         </div>
       ),
+    },
+    {
+      id: 'license',
+      label: t('settings.tabs.license'),
+      icon: FileText,
+      component: LicenseInfo,
     },
   ];
 
