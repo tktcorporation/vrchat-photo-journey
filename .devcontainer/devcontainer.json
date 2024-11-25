@@ -13,6 +13,13 @@
       "resolution": "3840×2160"
     }
   },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "WakaTime.vscode-wakatime"
+      ]
+    }
+  },
   "forwardPorts": [6080],
   "portsAttributes": {
     "6080": {
