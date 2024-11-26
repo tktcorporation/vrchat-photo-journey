@@ -15,9 +15,7 @@
   },
   "customizations": {
     "vscode": {
-      "extensions": [
-        "WakaTime.vscode-wakatime"
-      ]
+      "extensions": ["WakaTime.vscode-wakatime"]
     }
   },
   "forwardPorts": [6080],

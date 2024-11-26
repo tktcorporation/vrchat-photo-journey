@@ -13,13 +13,20 @@ import LanguageSelector from '../LanguageSelector';
 import AppInfo from './AppInfo';
 import LicenseInfo from './LicenseInfo';
 import PathSettings from './PathSettings';
+import SystemSettings from './SystemSettings';
 import ThemeSelector from './ThemeSelector';
 
 interface SettingsModalProps {
   onClose: () => void;
 }
 
-type SettingsTab = 'paths' | 'theme' | 'language' | 'info' | 'license';
+type SettingsTab =
+  | 'paths'
+  | 'theme'
+  | 'language'
+  | 'info'
+  | 'license'
+  | 'system';
 
 interface TabConfig {
   id: SettingsTab;
@@ -33,6 +40,22 @@ const SettingsModal = memo(({ onClose }: SettingsModalProps) => {
   const [activeTab, setActiveTab] = useState<SettingsTab>('paths');
 
   const tabs: TabConfig[] = [
+    {
+      id: 'info',
+      label: t('settings.tabs.info'),
+      icon: SettingsIcon,
+      component: () => (
+        <div className="space-y-8">
+          <AppInfo />
+        </div>
+      ),
+    },
+    {
+      id: 'system',
+      label: t('settings.tabs.system'),
+      icon: SettingsIcon,
+      component: SystemSettings,
+    },
     {
       id: 'paths',
       label: t('settings.tabs.dataSource'),
@@ -50,16 +73,6 @@ const SettingsModal = memo(({ onClose }: SettingsModalProps) => {
       label: 'Language / 言語',
       icon: Globe2,
       component: LanguageSelector,
-    },
-    {
-      id: 'info',
-      label: t('settings.tabs.info'),
-      icon: SettingsIcon,
-      component: () => (
-        <div className="space-y-8">
-          <AppInfo />
-        </div>
-      ),
     },
     {
       id: 'license',

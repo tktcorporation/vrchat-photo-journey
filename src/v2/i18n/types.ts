@@ -2,7 +2,6 @@ export type Language = 'en' | 'ja';
 
 export interface Translations {
   common: {
-    photoGallery: string;
     settings: string;
     close: string;
     loading: string;
@@ -17,7 +16,26 @@ export interface Translations {
     tabs: {
       dataSource: string;
       theme: string;
+      system: string;
       info: string;
+      license: string;
+    };
+    system: {
+      title: string;
+      startupLaunch: string;
+      startupDescription: string;
+      backgroundUpdate: string;
+      backgroundDescription: string;
+      updateInterval: string;
+      updateIntervalDescription: string;
+      notifications: string;
+      notificationsDescription: string;
+      interval: {
+        '5min': string;
+        '15min': string;
+        '30min': string;
+        '1hour': string;
+      };
     };
     theme: {
       title: string;

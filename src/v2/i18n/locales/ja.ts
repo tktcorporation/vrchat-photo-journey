@@ -1,6 +1,7 @@
-export default {
+import type { Translations } from '../types';
+
+const ja: Translations = {
   common: {
-    photoGallery: '写真ギャラリー',
     settings: '設定',
     close: '閉じる',
     loading: '読み込み中...',
@@ -14,9 +15,27 @@ export default {
   settings: {
     tabs: {
       dataSource: 'データソース',
+      system: 'システム',
       theme: 'テーマ',
       info: '情報',
       license: 'ライセンス情報',
+    },
+    system: {
+      title: 'システム設定',
+      startupLaunch: 'スタートアップ時に起動',
+      startupDescription: 'ログイン時に自動的にアプリケーションを起動します',
+      backgroundUpdate: 'バックグラウンド更新',
+      backgroundDescription: 'バックグラウンドで新しい写真を確認します',
+      updateInterval: '更新間隔',
+      updateIntervalDescription: '新しい写真を確認する頻度',
+      notifications: '通知を表示',
+      notificationsDescription: '新しい写真が見つかった時に通知を表示します',
+      interval: {
+        '5min': '5分',
+        '15min': '15分',
+        '30min': '30分',
+        '1hour': '1時間',
+      },
     },
     theme: {
       title: 'テーマ設定',
@@ -64,3 +83,5 @@ export default {
   },
   yearlyVisitors: '年間来場者数',
 };
+
+export default ja;

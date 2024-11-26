@@ -1,6 +1,7 @@
-export default {
+import type { Translations } from '../types';
+
+const en: Translations = {
   common: {
-    photoGallery: 'Photo Gallery',
     settings: 'Settings',
     close: 'Close',
     loading: 'Loading...',
@@ -15,14 +16,26 @@ export default {
     tabs: {
       dataSource: 'Data Source',
       theme: 'Theme',
+      system: 'System',
       info: 'Information',
       license: 'License Information',
     },
-    theme: {
-      title: 'Theme Settings',
-      system: 'Follow System',
-      dark: 'Dark Mode',
-      light: 'Light Mode',
+    system: {
+      title: 'System Settings',
+      startupLaunch: 'Startup Launch',
+      startupDescription: 'Automatically start the application when logging in',
+      backgroundUpdate: 'Background Update',
+      backgroundDescription: 'Check for new photos in the background',
+      updateInterval: 'Update Interval',
+      updateIntervalDescription: 'Frequency of checking for new photos',
+      notifications: 'Show Notifications',
+      notificationsDescription: 'Show notifications when new photos are found',
+      interval: {
+        '5min': '5 minutes',
+        '15min': '15 minutes',
+        '30min': '30 minutes',
+        '1hour': '1 hour',
+      },
     },
     paths: {
       useDemo: 'Use Demo Data',
@@ -64,3 +77,5 @@ export default {
   },
   yearlyVisitors: 'Annual visitors',
 };
+
+export default en;

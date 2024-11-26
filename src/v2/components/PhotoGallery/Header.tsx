@@ -32,10 +32,7 @@ const Header = memo(
     return (
       <header className="flex-none bg-white dark:bg-gray-800 shadow-sm z-50 sticky top-0">
         <div className="max-w-[2000px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <h1 className="text-lg font-medium text-gray-900 dark:text-white">
-              {t('common.photoGallery')}
-            </h1>
+          <div className="flex justify-end items-center">
             <div className="flex items-center gap-4">
               <SearchBar onSearch={setSearchQuery} />
               <button
