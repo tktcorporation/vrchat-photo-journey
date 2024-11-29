@@ -37,7 +37,6 @@ const GalleryContent = memo(
       containerRef: contentRef,
     });
 
-    const { toast } = useToast();
     const { finished } = useStartupStage({
       onError: (error) => {
         throw error;
