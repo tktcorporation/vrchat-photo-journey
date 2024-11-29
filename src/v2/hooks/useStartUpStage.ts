@@ -23,22 +23,31 @@ const initialStages: ProcessStages = {
   indexLoaded: 'pending',
 };
 
-export const useStartupStage = () => {
+interface StartupStageCallbacks {
+  onError?: (error: ProcessError) => void;
+  onComplete?: () => void;
+}
+
+export const useStartupStage = (callbacks?: StartupStageCallbacks) => {
   const [stages, setStages] = useState<ProcessStages>(initialStages);
   const [error, setError] = useState<ProcessError | null>(null);
 
-  const updateStage = (
-    stage: keyof ProcessStages,
-    status: ProcessStage,
-    errorMsg?: string,
-  ) => {
-    setStages((prev) => ({ ...prev, [stage]: status }));
-    if (status === 'error' && errorMsg) {
-      setError({ stage, message: errorMsg });
-    } else if (status === 'success' || status === 'skipped') {
-      setError(null);
-    }
-  };
+  const updateStage = useCallback(
+    (stage: keyof ProcessStages, status: ProcessStage, errorMsg?: string) => {
+      setStages((prev) => ({ ...prev, [stage]: status }));
+
+      console.log('updateStage', stage, status, errorMsg);
+      
+      if (status === 'error' && errorMsg) {
+        const processError = { stage, message: errorMsg };
+        setError(processError);
+        callbacks?.onError?.(processError);
+      } else if (status === 'success' || status === 'skipped') {
+        setError(null);
+      }
+    },
+    [callbacks]
+  );
 
   const { data: migrateRequirement, refetch: refetchMigrateRequirement } =
     trpcReact.settings.isDatabaseReady.useQuery();
@@ -121,6 +130,12 @@ export const useStartupStage = () => {
       ),
     [stages],
   );
+
+  useEffect(() => {
+    if (completed) {
+      callbacks?.onComplete?.();
+    }
+  }, [completed, callbacks]);
 
   return {
     stages,
