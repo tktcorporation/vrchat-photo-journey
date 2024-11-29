@@ -64,6 +64,7 @@ const initializeRDBClient = async () => {
   sequelizeClient.initRDBClient({
     db_url: filePath,
   });
+  await sequelizeClient.syncRDBClient();
 };
 
 const initializeApp = async () => {
