@@ -4,6 +4,7 @@ import Header from './PhotoGallery/Header';
 import { usePhotoGallery } from './PhotoGallery/usePhotoGallery';
 import PhotoModal from './PhotoModal';
 import SettingsModal from './settings/SettingsModal';
+import { GalleryErrorBoundary } from './PhotoGallery/GalleryErrorBoundary';
 
 const PhotoGallery: React.FC = () => {
   const {
@@ -25,10 +26,12 @@ const PhotoGallery: React.FC = () => {
         groupCount={Object.keys(groupedPhotos).length}
       />
 
-      <GalleryContent
-        groupedPhotos={groupedPhotos}
-        onPhotoSelect={setSelectedPhoto}
-      />
+      <GalleryErrorBoundary>
+        <GalleryContent
+          groupedPhotos={groupedPhotos}
+          onPhotoSelect={setSelectedPhoto}
+        />
+      </GalleryErrorBoundary>
 
       {selectedPhoto && (
         <PhotoModal

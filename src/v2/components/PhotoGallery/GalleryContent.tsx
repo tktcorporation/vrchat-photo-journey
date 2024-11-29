@@ -40,10 +40,7 @@ const GalleryContent = memo(
     const { toast } = useToast();
     const { finished } = useStartupStage({
       onError: (error) => {
-        toast({
-          title: 'Error',
-          description: error.message,
-        });
+        throw error;
       },
     });
 
