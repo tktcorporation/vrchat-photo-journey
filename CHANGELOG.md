@@ -7,51 +7,18 @@ All notable changes to this project will be documented in this file.
 ### 🚀 Features
 
 - Add button to manually apply updates (#131)
-- V2 ui の表示まで
-- 写真の取得を雑に
-- Feat: デフォルトのウィンドウ設定を変更
-- Feat: feat: 場所情報を仮出し
-- Path 設定を行えるように
-- Path 設定を行えるように
-- ライセンス情報を別タブに切り出し
-- ライセンス情報を表示
-- Scrollbar のデザイン調整
-- 不必要なンポーネント 削除
-- 起動時にmigration行
-- システム設定UI追加
-- システム設定UI追加
-- 起動時に dbmigration を行う
-- StartUp 処理でエラーがあった場合に toast
-- Path未設定の時にエラー画面をだす
-- Force migrate は test 環境の時のみにする
-- 縦横比が異なる画像データに対応
 
-### 🚜 Refactor
+### 🐛 Bug Fixes
 
-- UI一新のためにフォルダ整理
-- Fix lint errors
-- Fix lint errors
-- Fix lint errors
-- いろいろ更
-- いろいろ更
-- DBMiGration は forceTrue にしない
+- 本番でエラーが出たので devtools 削除
 
-### 🎨 Styling
+### 📚 Documentation
 
-- `nr lint:fix`
-- `nr lint:fix`
-- `nr lint:fix`
-- `nr lint:fix`
-- Fix lint errors
+- Update changelog
 
-### ⚙️ Miscellaneous Tasks
+### Fest
 
-- AppleSilicon でも動くようにする
-- Playwright の設定を v2 用に修正
-
-### Clean
-
-- 未使用行削除
+- UI を中心に大幅に構成変更 (#132)
 
 ## [0.2.0-alpha.7] - 2024-11-10
 
