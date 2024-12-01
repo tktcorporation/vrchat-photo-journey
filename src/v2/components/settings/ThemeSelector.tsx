@@ -23,6 +23,7 @@ const ThemeSelector = memo(() => {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {themeOptions.map(({ value, label, icon: Icon }) => (
           <button
+            type="button"
             key={value}
             onClick={() => setTheme(value)}
             className={`flex items-center justify-center gap-2 p-3 rounded-lg border-2 transition-colors ${

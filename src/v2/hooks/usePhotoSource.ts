@@ -21,7 +21,7 @@ interface PhotoSourceState {
 
 const loadPhotos = (
   sourceType: 'local' | 'demo',
-  settings: { photoDirectory: string; logFilePath: string },
+  _settings: { photoDirectory: string; logFilePath: string },
 ) => {
   if (sourceType === 'demo') {
     return generatePhotos();

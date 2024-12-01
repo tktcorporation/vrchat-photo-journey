@@ -1,9 +1,10 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
 import type { RefObject } from 'react';
 import { useWindowSize } from './useWindowSize';
+import type { Photo } from '../types/photo';
 
 interface UseVirtualGridOptions {
-  items: any[];
+  items: Photo[];
   parentRef: RefObject<HTMLDivElement>;
   rowHeight?: number;
   overscan?: number;

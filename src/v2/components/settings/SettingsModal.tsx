@@ -93,6 +93,9 @@ const SettingsModal = memo(({ onClose }: SettingsModalProps) => {
     <div
       className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
       onClick={onClose}
+      onKeyDown={(e) => e.key === 'Escape' && onClose()}
+      role="button"
+      tabIndex={0}
     >
       <div
         className="h-[90vh] w-full max-w-2xl flex flex-col bg-white dark:bg-gray-800 rounded-lg shadow-xl"
@@ -103,6 +106,7 @@ const SettingsModal = memo(({ onClose }: SettingsModalProps) => {
             {t('common.settings')}
           </h2>
           <button
+            type="button"
             onClick={onClose}
             className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >

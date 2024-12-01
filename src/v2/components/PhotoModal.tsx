@@ -160,9 +160,9 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose }) => {
                   <div>
                     <div className="mb-1">一緒に訪れた人</div>
                     <div className="flex flex-wrap gap-1">
-                      {photo.location.visitedWith.map((person, index) => (
+                      {photo.location.visitedWith.map((person) => (
                         <span
-                          key={index}
+                          key={`person-${person}`}
                           className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
                         >
                           {person}
@@ -179,9 +179,9 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose }) => {
                   タグ
                 </div>
                 <div className="flex flex-wrap gap-1">
-                  {photo.tags.map((tag, index) => (
+                  {photo.tags.map((tag) => (
                     <span
-                      key={index}
+                      key={`tag-${tag}`}
                       className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
                     >
                       {tag}

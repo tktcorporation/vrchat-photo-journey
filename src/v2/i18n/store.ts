@@ -13,16 +13,26 @@ interface I18nState {
 }
 
 export const useI18n = create<I18nState>()(
-  persist(
+  persist<I18nState>(
     (set, get) => ({
       language: 'ja',
-      setLanguage: (language: Language) => set({ language }),
-      t: (key: string) => {
+      setLanguage: (language) => set({ language }),
+      t: (key) => {
         const { language } = get();
         const translation = translations[language];
-        return (
-          key.split('.').reduce((obj, k) => obj?.[k], translation as any) || key
-        );
+        const keys = key.split('.');
+        
+        let current: unknown = translation;
+
+        for (const k of keys) {
+          if (typeof current === 'object' && current !== null && k in current) {
+            current = (current as Record<string, unknown>)[k];
+          } else {
+            return key; // 見つからなければキーをそのまま返す
+          }
+        }
+
+        return typeof current === 'string' ? current : key; // 最終結果が文字列なら返す
       },
     }),
     {

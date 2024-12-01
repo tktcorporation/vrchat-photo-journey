@@ -1,7 +1,7 @@
 import type { Photo } from '../types/photo';
 
 // キャンバスを使用してダミー画像を生成
-function generateDataUrl(width: number, height: number, text = ''): string {
+function generateDataUrl(width: number, height: number, _text = ''): string {
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
