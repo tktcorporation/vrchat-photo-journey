@@ -1,7 +1,7 @@
-import React from 'react';
-import PathSettings from '../settings/PathSettings';
 import { Button } from '@/v1/components/ui/button';
 import { AlertCircle } from 'lucide-react';
+import React from 'react';
+import PathSettings from '../settings/PathSettings';
 
 interface Props {
   children: React.ReactNode;
@@ -33,7 +33,7 @@ export class GalleryErrorBoundary extends React.Component<Props, State> {
                 エラーが発生しました
               </h2>
             </div>
-            
+
             <div className="mb-8 rounded-md bg-white p-4">
               <p className="font-mono text-sm text-red-500">
                 {this.state.errorMessage}
@@ -41,7 +41,7 @@ export class GalleryErrorBoundary extends React.Component<Props, State> {
             </div>
 
             <PathSettings />
-            
+
             <div className="mt-6 flex justify-end">
               <Button
                 onClick={() => window.location.reload()}
@@ -57,4 +57,4 @@ export class GalleryErrorBoundary extends React.Component<Props, State> {
 
     return this.props.children;
   }
-} 
+}

@@ -1,10 +1,10 @@
 import type React from 'react';
 import GalleryContent from './PhotoGallery/GalleryContent';
+import { GalleryErrorBoundary } from './PhotoGallery/GalleryErrorBoundary';
 import Header from './PhotoGallery/Header';
 import { usePhotoGallery } from './PhotoGallery/usePhotoGallery';
 import PhotoModal from './PhotoModal';
 import SettingsModal from './settings/SettingsModal';
-import { GalleryErrorBoundary } from './PhotoGallery/GalleryErrorBoundary';
 
 const PhotoGallery: React.FC = () => {
   const {

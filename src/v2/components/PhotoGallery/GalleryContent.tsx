@@ -1,6 +1,7 @@
 import { useStartupStage } from '@/v2/hooks/useStartUpStage';
 import { RefreshCw } from 'lucide-react';
 import React, { memo, useRef, useCallback } from 'react';
+import { useToast } from '../../hooks/use-toast';
 import { usePhotoSource } from '../../hooks/usePhotoSource';
 import { usePullToRefresh } from '../../hooks/usePullToRefresh';
 import { useI18n } from '../../i18n/store';
@@ -8,7 +9,6 @@ import type { Photo } from '../../types/photo';
 import LocationGroupHeader from '../LocationGroupHeader';
 import PhotoGrid from '../PhotoGrid';
 import { useGroupInView } from './useGroupInView';
-import { useToast } from '../../hooks/use-toast';
 
 interface GroupedPhotos {
   photos: Photo[];

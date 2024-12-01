@@ -37,7 +37,7 @@ export const useStartupStage = (callbacks?: StartupStageCallbacks) => {
       setStages((prev) => ({ ...prev, [stage]: status }));
 
       console.log('updateStage', stage, status, errorMsg);
-      
+
       if (status === 'error' && errorMsg) {
         const processError = { stage, message: errorMsg };
         setError(processError);
@@ -46,7 +46,7 @@ export const useStartupStage = (callbacks?: StartupStageCallbacks) => {
         setError(null);
       }
     },
-    [callbacks]
+    [callbacks],
   );
 
   const { data: migrateRequirement, refetch: refetchMigrateRequirement } =
