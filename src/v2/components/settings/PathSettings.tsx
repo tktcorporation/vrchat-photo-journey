@@ -6,8 +6,8 @@ import { useI18n } from '../../i18n/store';
 
 const PathSettingsComponent = memo(() => {
   const { t } = useI18n();
-  const [isValidating, setIsValidating] = useState(false);
-  const [validationError, setValidationError] = useState<string | null>(null);
+  const [_isValidating, setIsValidating] = useState(false);
+  const [_validationError, setValidationError] = useState<string | null>(null);
 
   // Photo directory queries and mutations
   const { data: photoDir, refetch: refetchPhotoDir } =
@@ -16,7 +16,7 @@ const PathSettingsComponent = memo(() => {
     trpcReact.vrchatPhoto.validateVRChatPhotoPath.useMutation();
   const setPhotoDirectoryMutation =
     trpcReact.vrchatPhoto.setVRChatPhotoDirPathToSettingStore.useMutation();
-  const clearPhotoDirectoryMutation =
+  const _clearPhotoDirectoryMutation =
     trpcReact.vrchatPhoto.clearVRChatPhotoDirPathInSettingStore.useMutation();
 
   // Log file queries and mutations
@@ -132,6 +132,7 @@ const PathSettingsComponent = memo(() => {
                 className="flex-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
               />
               <button
+                type="button"
                 className="px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-200"
                 onClick={handleBrowsePhotoDirectory}
               >
@@ -170,6 +171,7 @@ const PathSettingsComponent = memo(() => {
                 className="flex-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
               />
               <button
+                type="button"
                 className="px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-200"
                 onClick={handleBrowseLogFile}
               >

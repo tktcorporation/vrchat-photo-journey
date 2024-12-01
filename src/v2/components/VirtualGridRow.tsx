@@ -25,7 +25,7 @@ const VirtualGridRow: React.FC<VirtualGridRowProps> = React.memo(
     const availableWidth = containerWidth - totalGapWidth;
 
     let currentPosition = 0;
-    const photoLayouts = photos.map((photo, index) => {
+    const photoLayouts = photos.map((photo) => {
       const aspectRatio = photo.width / photo.height;
       const relativeWidth = (aspectRatio / totalAspectRatio) * availableWidth;
       const layout = {

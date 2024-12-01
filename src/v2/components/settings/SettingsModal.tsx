@@ -100,6 +100,7 @@ const SettingsModal = memo(({ onClose }: SettingsModalProps) => {
       <div
         className="h-[90vh] w-full max-w-2xl flex flex-col bg-white dark:bg-gray-800 rounded-lg shadow-xl"
         onClick={handleContentClick}
+        onKeyDown={handleContentClick}
       >
         <div className="flex-none flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -118,6 +119,7 @@ const SettingsModal = memo(({ onClose }: SettingsModalProps) => {
           <nav className="flex px-6" aria-label="Tabs">
             {tabs.map(({ id, label, icon: Icon }) => (
               <button
+                type="button"
                 key={id}
                 onClick={() => setActiveTab(id)}
                 className={`relative py-4 px-1 flex items-center text-sm font-medium ${

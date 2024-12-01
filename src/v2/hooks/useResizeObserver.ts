@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import type { RefObject } from 'react';
 
 interface Size {
   width: number;
@@ -6,7 +7,7 @@ interface Size {
 }
 
 export function useResizeObserver<T extends HTMLElement>(): [
-  React.RefObject<T>,
+  RefObject<T>,
   Size,
 ] {
   const ref = useRef<T>(null);

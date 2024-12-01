@@ -32,7 +32,7 @@ const LocationGroupHeader = memo(
             <div className="flex items-center justify-between">
               <h3 className="text-2xl font-bold flex items-center">
                 <MapPin className="h-5 w-5 mr-2 flex-shrink-0" />
-                {details.name}
+                {groupName}
                 <span className="ml-3 text-sm font-normal opacity-90">
                   ({photoCount}枚)
                 </span>

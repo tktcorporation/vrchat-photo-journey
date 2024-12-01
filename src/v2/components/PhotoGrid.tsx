@@ -7,6 +7,7 @@ import PhotoCard from './PhotoCard';
 interface PhotoGridProps {
   photos: Photo[];
   onPhotoSelect: (photo: Photo) => void;
+  layout?: 'horizontal' | 'vertical';
 }
 
 const PhotoGrid: React.FC<PhotoGridProps> = React.memo(

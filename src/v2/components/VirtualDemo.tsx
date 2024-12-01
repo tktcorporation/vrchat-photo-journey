@@ -21,6 +21,7 @@ const VirtualDemo: React.FC = () => {
           </div>
           <div className="flex space-x-4">
             <button
+              type="button"
               onClick={() => setActiveView('fixed')}
               className={`px-3 py-1 rounded-md text-sm ${
                 activeView === 'fixed'
@@ -31,6 +32,7 @@ const VirtualDemo: React.FC = () => {
               Fixed Height
             </button>
             <button
+              type="button"
               onClick={() => setActiveView('variable')}
               className={`px-3 py-1 rounded-md text-sm ${
                 activeView === 'variable'

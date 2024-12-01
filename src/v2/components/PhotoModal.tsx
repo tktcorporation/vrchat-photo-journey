@@ -83,6 +83,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose }) => {
 
         {/* Toggle info button */}
         <button
+          type="button"
           className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
           onClick={(e) => {
             e.stopPropagation();
