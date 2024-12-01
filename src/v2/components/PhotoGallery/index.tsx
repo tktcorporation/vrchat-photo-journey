@@ -24,7 +24,6 @@ const PhotoGallery: React.FC = () => {
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
           onOpenSettings={() => setShowSettings(true)}
-          groupCount={0}
         />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-gray-500 dark:text-gray-400">
@@ -41,7 +40,6 @@ const PhotoGallery: React.FC = () => {
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         onOpenSettings={() => setShowSettings(true)}
-        groupCount={Object.keys(groupedPhotos).length}
       />
 
       <GalleryContent

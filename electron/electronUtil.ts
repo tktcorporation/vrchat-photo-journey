@@ -76,6 +76,11 @@ function createWindow(
     },
   });
 
+  // 開発環境の場合、DevToolsを開く
+  if (isDev) {
+    mainWindow.webContents.openDevTools();
+  }
+
   const port = process.env.PORT || 3000;
   const url = isDev
     ? `http://localhost:${port}`

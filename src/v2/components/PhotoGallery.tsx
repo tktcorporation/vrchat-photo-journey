@@ -15,7 +15,14 @@ const PhotoGallery: React.FC = () => {
     showSettings,
     setShowSettings,
     groupedPhotos,
+    isLoading,
   } = usePhotoGallery();
+
+  console.log('PhotoGallery render:', {
+    isLoading,
+    hasGroupedPhotos: !!groupedPhotos,
+    groupedPhotosKeys: groupedPhotos ? Object.keys(groupedPhotos) : [],
+  });
 
   return (
     <div className="h-full flex flex-col">
@@ -23,10 +30,13 @@ const PhotoGallery: React.FC = () => {
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         onOpenSettings={() => setShowSettings(true)}
-        groupCount={groupedPhotos && Object.keys(groupedPhotos).length}
       />
 
-      {groupedPhotos && (
+      {isLoading ? (
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-gray-500">写真を読み込み中...</div>
+        </div>
+      ) : (
         <GalleryErrorBoundary>
           <GalleryContent
             groupedPhotos={groupedPhotos}

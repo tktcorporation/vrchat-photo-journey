@@ -20,6 +20,11 @@ export function usePhotoGallery(): {
   const { data: photosData = [], isLoading } =
     trpcReact.vrchatPhoto.getVrchatPhotoPathModelList.useQuery();
 
+  console.log('usePhotoGallery:', {
+    isLoading,
+    photosDataLength: photosData?.length,
+  });
+
   const allPhotos: Photo[] = photosData.map((photo) => ({
     id: photo.id,
     url: photo.photoPath,

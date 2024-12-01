@@ -36,7 +36,12 @@ export const useStartupStage = (callbacks?: StartupStageCallbacks) => {
     (stage: keyof ProcessStages, status: ProcessStage, errorMsg?: string) => {
       setStages((prev) => ({ ...prev, [stage]: status }));
 
-      console.log('updateStage', stage, status, errorMsg);
+      console.log({
+        event: 'updateStage',
+        stage,
+        status,
+        errorMessage: errorMsg,
+      });
 
       if (status === 'error' && errorMsg) {
         const processError = { stage, message: errorMsg };

@@ -121,9 +121,8 @@ const resetRDB = async (appVersion: string) => {
   migrationProgeress = true;
   try {
     // migration 実行
-    // TODO: forceTrue にしなくて良い場合はしない
     const result = await getRDBClient().__client.sync({
-      force: true,
+      force: false,
       alter: true,
     });
     log.info('forceSyncRDB', result.options);
