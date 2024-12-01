@@ -8,7 +8,7 @@ import {
   X,
 } from 'lucide-react';
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { Photo } from '../types/photo';
 import { calculateOptimalDimensions } from '../utils/imageGenerator';
 import ProgressiveImage from './ProgressiveImage';
@@ -53,18 +53,23 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose }) => {
     }).format(date);
   };
 
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    },
+    [onClose],
+  );
+
   return (
     <div
       className="fixed inset-0 z-50 overflow-hidden bg-black/95 dark:bg-black/98"
       role="dialog"
       aria-modal="true"
       onClick={onClose}
-      onKeyDown={(e) => {
-        if (e.key === 'Escape') {
-          onClose();
-        }
-      }}
-      tabIndex={0}
+      onKeyDown={handleKeyDown}
+      tabIndex={-1}
     >
       <div className="h-full flex">
         {/* Close button */}
@@ -98,6 +103,8 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose }) => {
             marginRight: showInfo ? '320px' : '0',
           }}
           onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.stopPropagation()}
+          role="presentation"
         >
           <div
             style={{
@@ -125,6 +132,8 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose }) => {
             showInfo ? 'translate-x-0' : 'translate-x-full'
           }`}
           onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.stopPropagation()}
+          role="presentation"
         >
           <div className="h-full overflow-y-auto">
             <div className="p-6 space-y-6">

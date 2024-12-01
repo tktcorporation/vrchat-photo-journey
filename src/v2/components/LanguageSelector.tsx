@@ -21,6 +21,7 @@ const LanguageSelector = memo(() => {
         {languages.map(({ value, label }) => (
           <button
             key={value}
+            type="button"
             onClick={() => setLanguage(value)}
             className={`flex items-center justify-center p-3 rounded-lg border-2 transition-colors ${
               language === value

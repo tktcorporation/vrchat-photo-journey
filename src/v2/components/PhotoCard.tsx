@@ -9,11 +9,10 @@ interface PhotoCardProps {
   photo: Photo;
   priority?: boolean;
   onSelect: (photo: Photo) => void;
-  layout: 'vertical' | 'horizontal';
 }
 
 const PhotoCard: React.FC<PhotoCardProps> = memo(
-  ({ photo, priority = false, onSelect, layout }) => {
+  ({ photo, priority = false, onSelect }) => {
     const [ref, entry] = useIntersectionObserver({
       threshold: 0,
       rootMargin: '200px',
@@ -32,6 +31,13 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
         ref={ref}
         className="group relative w-full bg-gray-100 dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden cursor-pointer transform transition-all duration-300 hover:shadow-md hover:scale-[1.02]"
         onClick={() => onSelect(photo)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            onSelect(photo);
+          }
+        }}
+        role="button"
+        tabIndex={0}
         style={{
           aspectRatio: `${photo.width} / ${photo.height}`,
         }}
@@ -59,9 +65,9 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
               {photo.title}
             </h3>
             <div className="mt-1.5 flex flex-wrap gap-1.5">
-              {photo.tags.slice(0, 3).map((tag, index) => (
+              {photo.tags.slice(0, 3).map((tag) => (
                 <span
-                  key={index}
+                  key={`tag-${tag}`}
                   className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-white/20 text-white"
                 >
                   {tag}

@@ -36,6 +36,7 @@ const Header = memo(
             <div className="flex items-center gap-4">
               <SearchBar onSearch={setSearchQuery} />
               <button
+                type="button"
                 onClick={handleRefresh}
                 disabled={isRefreshing}
                 className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
@@ -49,6 +50,7 @@ const Header = memo(
                 />
               </button>
               <button
+                type="button"
                 onClick={onOpenSettings}
                 className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 aria-label={t('common.settings')}

@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
+import type { RefObject } from 'react';
 
 interface UsePullToRefreshOptions {
   onRefresh: () => Promise<void>;
   isRefreshing: boolean;
   threshold?: number;
-  containerRef: React.RefObject<HTMLElement>;
+  containerRef: RefObject<HTMLElement>;
 }
 
 export function usePullToRefresh({
