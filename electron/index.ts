@@ -1,10 +1,6 @@
 import path from 'node:path';
 // Packages
 import { type BrowserWindow, app, ipcMain } from 'electron';
-import installExtension, {
-  REACT_DEVELOPER_TOOLS,
-} from 'electron-devtools-installer';
-import isDev from 'electron-is-dev';
 import { createIPCHandler } from 'electron-trpc/main';
 import unhandled from 'electron-unhandled';
 import { router } from './api';
@@ -76,10 +72,6 @@ const initializeApp = async () => {
   if (!gotTheLock) {
     app.quit();
     return;
-  }
-
-  if (isDev) {
-    await installExtension(REACT_DEVELOPER_TOOLS);
   }
 
   await initializeRDBClient();
