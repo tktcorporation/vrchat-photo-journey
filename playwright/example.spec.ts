@@ -1,6 +1,5 @@
 import * as path from 'node:path';
 import { _electron, test } from '@playwright/test';
-import { getRoutePathKeyByValue, routerPathValues } from '../src/constants';
 
 const launchElectronApp = async () => {
   // Launch Electron app.
@@ -49,18 +48,16 @@ test('各画面でスクショ', async () => {
   // Print the title.
   console.log(await page.title());
 
-  for (const routerPath of routerPathValues) {
-    await page.evaluate((routerPath) => {
-      window.history.pushState({}, '', routerPath);
-      window.location.href = `#${routerPath}`;
-    }, routerPath);
-    const screenshotPath = path.join(
-      __dirname,
-      './previews',
-      `${getRoutePathKeyByValue(routerPath)}.png`,
-    );
-    await page.screenshot({ path: screenshotPath });
-  }
+  // await page.evaluate((routerPath) => {
+  //   window.history.pushState({}, '', routerPath);
+  //   window.location.href = `#${routerPath}`;
+  // }, routerPath);
+  const screenshotPath = path.join(
+    __dirname,
+    './previews',
+    `${page.title()}.png`,
+  );
+  await page.screenshot({ path: screenshotPath });
 
   // Exit app.
   await electronApp.close();
