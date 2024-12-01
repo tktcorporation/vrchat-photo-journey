@@ -10,6 +10,7 @@ import {
   Tray,
   app,
   ipcMain,
+  screen,
   shell,
 } from 'electron';
 import type { Event } from 'electron';
@@ -17,23 +18,68 @@ import isDev from 'electron-is-dev';
 import * as log from './lib/logger';
 // import * as joinLogInfoFileService from './module/joinLogInfoFile/service';
 
-const height = 600;
-const width = 800;
+const WINDOW_CONFIG = {
+  DEFAULT_WIDTH: 1024,
+  DEFAULT_HEIGHT: 768,
+  MIN_WIDTH: 800,
+  MIN_HEIGHT: 600,
+} as const;
 
-function createWindow(): BrowserWindow {
-  // Create the browser window.
+function createWindow(
+  settingStore: ReturnType<typeof getSettingStore>,
+): BrowserWindow {
+  const savedBounds = settingStore.getWindowBounds();
+
+  // 保存された位置に最も近いディスプレイを取得
+  const nearestDisplay = savedBounds
+    ? screen.getDisplayNearestPoint({ x: savedBounds.x, y: savedBounds.y })
+    : screen.getPrimaryDisplay();
+
+  const workAreaSize = nearestDisplay.workArea;
+
+  // ウィンドウサイズを画面サイズに合わせて調整
+  const width = Math.min(
+    savedBounds?.width || WINDOW_CONFIG.DEFAULT_WIDTH,
+    workAreaSize.width,
+  );
+  const height = Math.min(
+    savedBounds?.height || WINDOW_CONFIG.DEFAULT_HEIGHT,
+    workAreaSize.height,
+  );
+
+  // ウィンドウ位置が画面外にはみ出していないか確認
+  const x =
+    savedBounds?.x !== undefined
+      ? Math.max(0, Math.min(savedBounds.x, workAreaSize.width - width))
+      : undefined;
+  const y =
+    savedBounds?.y !== undefined
+      ? Math.max(0, Math.min(savedBounds.y, workAreaSize.height - height))
+      : undefined;
+
   const mainWindow = new BrowserWindow({
     width,
     height,
+    x,
+    y,
+    minWidth: WINDOW_CONFIG.MIN_WIDTH,
+    minHeight: WINDOW_CONFIG.MIN_HEIGHT,
     //  change to false to use AppBar
-    frame: false,
+    frame: true,
     show: true,
     fullscreenable: true,
     transparent: true,
     webPreferences: {
       preload: join(__dirname, 'preload.js'),
+      nodeIntegration: false, // セキュリティのため明示的に無効化
+      contextIsolation: true, // セキュリティのため明示的に有効化
     },
   });
+
+  // 開発環境の場合、DevToolsを開く
+  if (isDev) {
+    mainWindow.webContents.openDevTools();
+  }
 
   const port = process.env.PORT || 3000;
   const url = isDev
@@ -83,6 +129,46 @@ function createWindow(): BrowserWindow {
     win.close();
   });
 
+  // ウィンドウの状態を保存
+  mainWindow.on('close', () => {
+    const bounds = mainWindow.getBounds();
+    settingStore.setWindowBounds(bounds);
+  });
+
+  // ディスプレイ構成が変更された時のハンドリング
+  screen.on('display-metrics-changed', () => {
+    const currentBounds = mainWindow.getBounds();
+    const currentDisplay = screen.getDisplayNearestPoint({
+      x: currentBounds.x,
+      y: currentBounds.y,
+    });
+
+    // ウィンドウが表示可能な領域に収まるように調整
+    const adjustedBounds = {
+      width: Math.min(currentBounds.width, currentDisplay.workAreaSize.width),
+      height: Math.min(
+        currentBounds.height,
+        currentDisplay.workAreaSize.height,
+      ),
+      x: Math.max(
+        0,
+        Math.min(
+          currentBounds.x,
+          currentDisplay.workAreaSize.width - currentBounds.width,
+        ),
+      ),
+      y: Math.max(
+        0,
+        Math.min(
+          currentBounds.y,
+          currentDisplay.workAreaSize.height - currentBounds.height,
+        ),
+      ),
+    };
+
+    mainWindow.setBounds(adjustedBounds);
+  });
+
   return mainWindow;
 }
 
@@ -103,40 +189,67 @@ export const getWindow = (): BrowserWindow | null => {
  * window が存在しなければ新しく作成する
  * 存在していれば取得する
  */
-const createOrGetWindow = (): BrowserWindow => {
+const createOrGetWindow = (
+  settingStore: ReturnType<typeof getSettingStore>,
+): BrowserWindow => {
   const window = getWindow();
   if (window) {
     return window;
   }
-  mainWindow = createWindow();
+  mainWindow = createWindow(settingStore);
   return mainWindow;
 };
 
-const setTray = () => {
-  const appPath = app.isPackaged ? process.resourcesPath : app.getAppPath();
-  const fontfile = join(appPath, 'assets', 'icons', 'Icon-Electron.png');
-  const tray = new Tray(fontfile);
-  const contextMenu = Menu.buildFromTemplate([
-    {
-      label: 'ウィンドウを開く',
-      click: () => {
-        createWindow();
+const setTray = (settingStore: ReturnType<typeof getSettingStore>) => {
+  let tray: Tray | null = null;
+
+  const createTray = () => {
+    if (tray !== null) return;
+
+    const appPath = app.isPackaged ? process.resourcesPath : app.getAppPath();
+    const iconPath = join(appPath, 'assets', 'icons', 'Icon-Electron.png');
+
+    tray = new Tray(iconPath);
+
+    const contextMenu = Menu.buildFromTemplate([
+      {
+        label: 'ウィンドウを表示',
+        click: () => {
+          const window = createOrGetWindow(settingStore);
+          if (window.isMinimized()) window.restore();
+          window.show();
+          window.focus();
+        },
       },
-    },
-    {
-      label: '終了',
-      click: () => {
-        app.quit();
+      { type: 'separator' },
+      {
+        label: '設定',
+        click: () => {
+          /* 設定画面を開く */
+        },
       },
-    },
-  ]);
-  tray.setToolTip(app.name);
-  tray.setContextMenu(contextMenu);
-  tray.on('click', () => {
-    const mWindow = createOrGetWindow();
-    mWindow.show();
-    mWindow.focus();
+      { type: 'separator' },
+      {
+        label: '終了',
+        click: () => {
+          app.quit();
+        },
+      },
+    ]);
+
+    tray.setToolTip(app.name);
+    tray.setContextMenu(contextMenu);
+  };
+
+  // アプリ終了時にトレイも破棄
+  app.on('before-quit', () => {
+    if (tray) {
+      tray.destroy();
+      tray = null;
+    }
   });
+
+  return createTray();
 };
 import type { getSettingStore } from './module/settingStore';
 const setTimeEventEmitter = (

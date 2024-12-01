@@ -1,9 +1,9 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 /// <reference types="@welldone-software/why-did-you-render" />
-import './lib/wdyr';
+import './v1/lib/wdyr';
 
-import App from './App';
+import App from './v2/App';
 
 import './index.css';
 

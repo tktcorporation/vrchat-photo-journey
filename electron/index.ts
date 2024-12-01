@@ -1,6 +1,10 @@
 import path from 'node:path';
 // Packages
 import { type BrowserWindow, app, ipcMain } from 'electron';
+import installExtension, {
+  REACT_DEVELOPER_TOOLS,
+} from 'electron-devtools-installer';
+import isDev from 'electron-is-dev';
 import { createIPCHandler } from 'electron-trpc/main';
 import unhandled from 'electron-unhandled';
 import { router } from './api';
@@ -51,7 +55,7 @@ const registerIpcMainListeners = () => {
 const backgroundUsecase = getBackgroundUsecase(settingStore);
 
 const createOrGetMainWindow = async (): Promise<BrowserWindow> => {
-  const mainWindow = electronUtil.createOrGetWindow();
+  const mainWindow = electronUtil.createOrGetWindow(settingStore);
   // 他のウィンドウ設定やイベントリスナーをここに追加
   return mainWindow;
 };
@@ -64,6 +68,7 @@ const initializeRDBClient = async () => {
   sequelizeClient.initRDBClient({
     db_url: filePath,
   });
+  await sequelizeClient.syncRDBClient();
 };
 
 const initializeApp = async () => {
@@ -73,11 +78,15 @@ const initializeApp = async () => {
     return;
   }
 
+  if (isDev) {
+    await installExtension(REACT_DEVELOPER_TOOLS);
+  }
+
   await initializeRDBClient();
   registerIpcMainListeners();
   const mainWindow = await createOrGetMainWindow();
   createIPCHandler({ router, windows: [mainWindow] });
-  electronUtil.setTray();
+  electronUtil.setTray(settingStore);
 
   unhandled({
     logger: (error) => log.error(error),
@@ -93,7 +102,7 @@ process.on('uncaughtException', (error) => log.error(error));
 process.on('unhandledRejection', (error) => log.error(error));
 
 app.on('second-instance', () => {
-  const mainWindow = electronUtil.createOrGetWindow();
+  const mainWindow = electronUtil.createOrGetWindow(settingStore);
   if (mainWindow.isMinimized()) mainWindow.restore();
   mainWindow.focus();
 });

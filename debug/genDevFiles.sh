@@ -6,10 +6,46 @@ set -eu
 # スクリプトのディレクトリを取得
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 
-# コピー元のファイル（スクリプトの場所からの相対パス）
-source_file="$script_dir/VRChat_2023-10-01_03-01-18.551_2560x1440_sample.png"
+# 縦横のパターンと色の定義を追加
+declare -A width_height_patterns=(
+    [1280x720]=1
+    [1920x1080]=2
+    [2560x1440]=3
+    # たて長
+    [1280x1920]=4
+    [1440x2560]=5
+)
 
-# 月ごとの枚数を指定
+# ランダムな色を生成する関数
+generate_random_color() {
+    printf "%06x" $((RANDOM % 16777215))
+}
+
+# ファイル名の生成関数を更新
+generate_random_filename() {
+    local month_year=$1
+    local month=${month_year:5:2}
+    local year=${month_year:0:4}
+    
+    local day=$(printf "%02d" $((RANDOM % 28 + 1)))
+    local hour=$(printf "%02d" $((RANDOM % 24)))
+    local minute=$(printf "%02d" $((RANDOM % 60)))
+    local second=$(printf "%02d" $((RANDOM % 60)))
+    local millisecond=$(printf "%03d" $((RANDOM % 1000)))
+    
+    # ランダムに解像度を選択
+    local resolutions=("1280x720" "1920x1080" "2560x1440" "1280x1920" "1440x2560")
+    local resolution=${resolutions[$((RANDOM % ${#resolutions[@]}))]}
+    
+    local filename="./debug/photos/VRChat/${month_year}/VRChat_${year}-${month}-${day}_${hour}-${minute}-${second}.${millisecond}_${resolution}.png"
+    local dimensions=(${resolution//x/ })
+    local width=${dimensions[0]}
+    local height=${dimensions[1]}
+    
+    echo "${filename}|${width}|${height}"
+}
+
+# 月ごとの枚数の定義は変更なし
 declare -A month_counts=(
     ["2023-01"]=3
     ["2023-02"]=4
@@ -26,48 +62,26 @@ declare -A month_counts=(
     ["2024-02"]=12
 )
 
-# ファイル名の生成関数
-generate_random_filename() {
-    local month_year=$1
-    local month=${month_year:5:2}
-    local year=${month_year:0:4}
-    local day
-    local hour
-    local minute
-    local second
-    local millisecond
-
-    # ランダムな日、時間、分、秒、ミリ秒を生成
-    day=$(printf "%02d" $((RANDOM % 28 + 1)))
-    hour=$(printf "%02d" $((RANDOM % 24)))
-    minute=$(printf "%02d" $((RANDOM % 60)))
-    second=$(printf "%02d" $((RANDOM % 60)))
-    millisecond=$(printf "%03d" $((RANDOM % 1000)))
-
-    echo "./debug/photos/VRChat/${month_year}/VRChat_${year}-${month}-${day}_${hour}-${minute}-${second}.${millisecond}_2560x1440.png"
-}
-
-# コピー先のファイル名の配列（ランダムに生成）
-destination_files=()
+# ファイルの生成処理を更新
 for month_year in "${!month_counts[@]}"; do
     count=${month_counts[$month_year]}
-    echo "Processing month: $month_year with count: $count"  # デバッグ出力
+    echo "処理中の月: $month_year, 枚数: $count"
+    
     for ((i=0; i<count; i++)); do
-        dest_file=$(generate_random_filename $month_year)
-        echo "Generated file: $dest_file"  # デバッグ出力
-        destination_files+=("$dest_file")
+        IFS='|' read -r dest_file width height <<< "$(generate_random_filename $month_year)"
+        
+        if [ ! -f "$dest_file" ]; then
+            mkdir -p "$(dirname "$dest_file")"
+            
+            # ランダムな背景色とテキスト色を生成
+            bg_color=$(generate_random_color)
+            text_color=$(generate_random_color)
+            
+            # placehold.jpを使用して画像を生成
+            curl -s "https://placehold.jp/${text_color}/${bg_color}/${width}x${height}.png" -o "$dest_file"
+            echo "作成完了: $dest_file (${width}x${height})"
+        else
+            echo "既に存在します: $dest_file, スキップします"
+        fi
     done
-done
-
-# 各ファイルにコピー
-for dest_file in "${destination_files[@]}"
-do
-  # ファイルが既に存在する場合はスキップ
-  if [ ! -f "$dest_file" ]; then
-    mkdir -p "$(dirname "$dest_file")"
-    cp "$source_file" "$dest_file"
-    echo "File $dest_file created."
-  else
-    echo "File $dest_file already exists, skipping."
-  fi
 done

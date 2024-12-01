@@ -91,42 +91,23 @@ export const getRDBClient = () => {
   return rdbClient;
 };
 
-export const syncRDBClient = async (options?: {
-  // migration の必要性を確認せず実行する
-  checkRequired: boolean;
-}) => {
-  const appVersion = await settingService.getAppVersion();
-
+// 共通の sync 処理を抽出した関数
+const executeSyncRDB = async (options: { force: boolean }) => {
   // 実行中は何もしない
   if (migrationProgeress) {
     log.info('migrationProgeress');
     return;
   }
 
-  // デフォルトは確認してから実行
-  const checkRequired = options?.checkRequired ?? true;
-
-  const migrationRequired = match(checkRequired)
-    .with(true, async () => await checkMigrationRDBClient(appVersion))
-    .with(false, () => true);
-
-  if (!migrationRequired) {
-    return;
-  }
-
-  await resetRDB(appVersion);
-};
-
-const resetRDB = async (appVersion: string) => {
   migrationProgeress = true;
+  const appVersion = await settingService.getAppVersion();
   try {
     // migration 実行
-    // TODO: forceTrue にしなくて良い場合はしない
     const result = await getRDBClient().__client.sync({
-      force: true,
+      force: options.force,
       alter: true,
     });
-    log.info('forceSyncRDB', result.options);
+    log.info('executeSyncRDB', result.options);
 
     // migration のバージョンを保存
     const now = new Date();
@@ -137,6 +118,33 @@ const resetRDB = async (appVersion: string) => {
   } finally {
     migrationProgeress = false;
   }
+};
+
+export const syncRDBClient = async (options?: { checkRequired: boolean }) => {
+  // デフォルトは確認してから実行
+  const checkRequired = options?.checkRequired ?? true;
+  const appVersion = await settingService.getAppVersion();
+  const migrationRequired = match(checkRequired)
+    .with(true, async () => await checkMigrationRDBClient(appVersion))
+    .with(false, () => true);
+
+  if (!migrationRequired) {
+    return;
+  }
+  await executeSyncRDB({ force: false });
+};
+
+/**
+ * テスト用の強制的なDB同期を行う関数
+ * 既存のテーブルを削除して再作成する
+ */
+export const __forceSyncRDBClient = async () => {
+  // テスト環境でなければエラー
+  if (process.env.NODE_ENV !== 'test') {
+    throw new Error('NODE_ENV is not test');
+  }
+
+  await executeSyncRDB({ force: true });
 };
 
 /**

@@ -13,6 +13,7 @@ dist-ssr
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+test-app.log
 
 # dev debug
 debug/photos/**/*.html
@@ -29,6 +30,7 @@ debug/sequelize.sqlite
 .env.development.local
 .env.test.local
 .env.production.local
+*.env
 
 # yarn
 .yarn/*
