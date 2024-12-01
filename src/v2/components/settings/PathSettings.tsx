@@ -26,7 +26,7 @@ const PathSettingsComponent = memo(() => {
     trpcReact.setVRChatLogFilesDirByDialog.useMutation();
 
   // 写真パスの検証状態を保持
-  const [photoValidationResult, setPhotoValidationResult] = useState<
+  const [photoValidationResult, _setPhotoValidationResult] = useState<
     'MODEL_NOT_FOUND' | 'FILE_NOT_FOUND_MODEL_DELETED' | 'VALID' | null
   >(null);
 
@@ -42,7 +42,7 @@ const PathSettingsComponent = memo(() => {
     validatePhotoPath();
   }, [photoDir?.value]);
 
-  const validatePaths = async () => {
+  const _validatePaths = async () => {
     setIsValidating(true);
     setValidationError(null);
 
@@ -85,10 +85,8 @@ const PathSettingsComponent = memo(() => {
       if (logValidationError) {
         throw new Error(logValidationError);
       }
-    } catch (error) {
-      setValidationError(
-        error instanceof Error ? error.message : '不明なエラーが発生しました',
-      );
+    } catch (_error) {
+      setValidationError('写真ディレクトリの選択中にエラーが発生しました');
     } finally {
       setIsValidating(false);
     }
@@ -100,7 +98,7 @@ const PathSettingsComponent = memo(() => {
       if (result) {
         await refetchPhotoDir();
       }
-    } catch (error) {
+    } catch (_error) {
       setValidationError('写真ディレクトリの選択中にエラーが発生しました');
     }
   };
@@ -109,7 +107,7 @@ const PathSettingsComponent = memo(() => {
     try {
       await setLogPathMutation.mutateAsync();
       await refetchLogFilesDir();
-    } catch (error) {
+    } catch (_error) {
       setValidationError('ログファイルの選択中にエラーが発生しました');
     }
   };

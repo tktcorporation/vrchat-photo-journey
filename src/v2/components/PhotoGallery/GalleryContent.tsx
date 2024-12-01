@@ -10,11 +10,19 @@ import LocationGroupHeader from '../LocationGroupHeader';
 import PhotoGrid from '../PhotoGrid';
 import { useGroupInView } from './useGroupInView';
 
+interface LocationDetail {
+  name: string;
+  description: string;
+  recommendedCapacity: number;
+  tags: string[];
+  // 他の必要なプロパティを追加
+}
+
 interface GroupedPhotos {
   photos: Photo[];
   location: string;
   date: string;
-  locationDetail: any;
+  locationDetail: LocationDetail;
 }
 
 interface GalleryContentProps {

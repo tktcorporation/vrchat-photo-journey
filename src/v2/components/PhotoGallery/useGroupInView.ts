@@ -1,3 +1,4 @@
+import type React from 'react';
 import { useEffect, useRef } from 'react';
 import { useCurrentGroup } from './useCurrentGroup';
 
@@ -13,14 +14,14 @@ export function useGroupInView(
 
     const observer = new IntersectionObserver(
       (entries) => {
-        entries.forEach((entry) => {
+        for (const entry of entries) {
           if (entry.isIntersecting) {
             const groupName = entry.target.getAttribute('data-group-name');
             if (groupName) {
               setCurrentGroup(groupName);
             }
           }
-        });
+        }
       },
       {
         root: null,
@@ -29,9 +30,9 @@ export function useGroupInView(
       },
     );
 
-    groupRefs.current.forEach((element) => {
+    for (const element of groupRefs.current.values()) {
       observer.observe(element);
-    });
+    }
 
     return () => {
       observer.disconnect();
