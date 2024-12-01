@@ -13,7 +13,7 @@ import { useGroupInView } from './useGroupInView';
 interface LocationDetail {
   name: string;
   description: string;
-  recommendedCapacity: number;
+  recommendedCapacity?: number;
   tags: string[];
   // 他の必要なプロパティを追加
 }
@@ -22,7 +22,7 @@ interface GroupedPhotos {
   photos: Photo[];
   location: string;
   date: string;
-  locationDetail: LocationDetail;
+  locationDetail?: LocationDetail;
 }
 
 interface GalleryContentProps {
@@ -86,7 +86,7 @@ const GalleryContent = memo(
               <section
                 key={groupKey}
                 className="space-y-4"
-                ref={(el) => {
+                ref={(el: HTMLDivElement | null) => {
                   if (el) {
                     groupRefs.current.set(groupKey, el);
                   } else {

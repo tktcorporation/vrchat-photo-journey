@@ -61,6 +61,12 @@ const en: Translations = {
         suffix: 'License',
       },
     },
+    theme: {
+      title: 'Theme',
+      light: 'Light',
+      dark: 'Dark',
+      system: 'System',
+    },
   },
   photoModal: {
     visitedWith: 'Visited with',

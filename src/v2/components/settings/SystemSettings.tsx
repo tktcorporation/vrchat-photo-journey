@@ -11,7 +11,9 @@ const SystemSettings = memo(() => {
       updateInterval: 5,
       showNotifications: true,
     },
-    updateSettings: () => {},
+    updateSettings: (_newSettings: typeof settings) => {
+      // 実装は空のまま
+    },
   };
 
   return (

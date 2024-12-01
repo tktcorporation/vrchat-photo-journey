@@ -9,7 +9,6 @@ interface ProgressiveImageProps {
   sizes?: string;
   srcSet?: string;
   loading?: 'lazy' | 'eager';
-  fetchpriority?: 'high' | 'low' | 'auto';
 }
 
 const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
@@ -20,7 +19,6 @@ const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
   sizes,
   srcSet,
   loading = 'lazy',
-  fetchpriority = 'auto',
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [currentSrc, setCurrentSrc] = useState(placeholderSrc);
@@ -53,7 +51,6 @@ const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
         sizes={sizes}
         srcSet={srcSet}
         loading={loading}
-        fetchpriority={fetchpriority}
         onLoad={() => setIsLoaded(true)}
         className={`${className} absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
           isLoaded ? 'opacity-100' : 'opacity-0'

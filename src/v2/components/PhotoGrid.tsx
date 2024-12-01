@@ -65,9 +65,6 @@ const PhotoGrid: React.FC<PhotoGridProps> = React.memo(
                   photo={photo}
                   priority={columnIndex < 2}
                   onSelect={onPhotoSelect}
-                  layout={
-                    photo.width > photo.height ? 'horizontal' : 'vertical'
-                  }
                 />
               ))}
             </div>

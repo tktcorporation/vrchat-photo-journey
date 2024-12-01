@@ -122,7 +122,6 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose }) => {
               alt={photo.title}
               className="w-full h-full object-contain"
               loading="eager"
-              fetchpriority="high"
             />
           </div>
         </div>

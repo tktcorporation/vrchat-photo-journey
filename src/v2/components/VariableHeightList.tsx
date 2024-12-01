@@ -26,10 +26,13 @@ const VariableHeightList: React.FC = () => {
     overscan: 5,
     measureElement: (element) => {
       const height = element.getBoundingClientRect().height;
-      setMeasurements((prev) => ({
-        ...prev,
-        [element.dataset.index as unknown as number]: height,
-      }));
+      const index = element.getAttribute('data-index');
+      if (index !== null) {
+        setMeasurements((prev) => ({
+          ...prev,
+          [Number(index)]: height,
+        }));
+      }
       return height;
     },
   });

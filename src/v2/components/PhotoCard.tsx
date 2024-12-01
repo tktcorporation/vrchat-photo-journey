@@ -1,6 +1,6 @@
 import { trpcReact } from '@/trpc';
 import type React from 'react';
-import { memo } from 'react';
+import { memo, useRef } from 'react';
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
 import type { Photo } from '../types/photo';
 import ProgressiveImage from './ProgressiveImage';
@@ -13,12 +13,13 @@ interface PhotoCardProps {
 
 const PhotoCard: React.FC<PhotoCardProps> = memo(
   ({ photo, priority = false, onSelect }) => {
-    const [ref, entry] = useIntersectionObserver({
+    const elementRef = useRef<HTMLDivElement>(null);
+    const isIntersecting = useIntersectionObserver(elementRef, {
       threshold: 0,
       rootMargin: '200px',
     });
 
-    const shouldLoad = priority || (entry?.isIntersecting ?? false);
+    const shouldLoad = priority || isIntersecting;
     const placeholderUrl = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${photo.width} ${photo.height}'%3E%3Crect width='100%25' height='100%25' fill='%23f3f4f6'/%3E%3C/svg%3E`;
 
     const { data: photoData } =
@@ -28,7 +29,7 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
 
     return (
       <div
-        ref={ref}
+        ref={elementRef}
         className="group relative w-full bg-gray-100 dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden cursor-pointer transform transition-all duration-300 hover:shadow-md hover:scale-[1.02]"
         onClick={() => onSelect(photo)}
         onKeyDown={(e) => {
@@ -49,7 +50,6 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
             alt={photo.title}
             className="absolute inset-0 w-full h-full object-cover"
             loading={priority ? 'eager' : 'lazy'}
-            fetchpriority={priority ? 'high' : 'auto'}
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
         ) : (

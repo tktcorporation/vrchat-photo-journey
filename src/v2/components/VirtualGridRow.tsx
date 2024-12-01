@@ -56,9 +56,6 @@ const VirtualGridRow: React.FC<VirtualGridRowProps> = React.memo(
           >
             <PhotoCard
               photo={photo}
-              layout={
-                photo.width / photo.height > 1.2 ? 'horizontal' : 'vertical'
-              }
               priority={isPriority}
               onSelect={onPhotoSelect}
             />

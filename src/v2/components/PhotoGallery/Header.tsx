@@ -8,6 +8,7 @@ interface HeaderProps {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   onOpenSettings: () => void;
+  groupCount?: number;
 }
 
 const Header = memo(({ setSearchQuery, onOpenSettings }: HeaderProps) => {
