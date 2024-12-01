@@ -14,7 +14,26 @@ const PhotoGallery: React.FC = () => {
     showSettings,
     setShowSettings,
     groupedPhotos,
+    isLoading,
   } = usePhotoGallery();
+
+  if (isLoading) {
+    return (
+      <div className="h-full flex flex-col">
+        <Header
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          onOpenSettings={() => setShowSettings(true)}
+          groupCount={0}
+        />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-gray-500 dark:text-gray-400">
+            写真を読み込み中...
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

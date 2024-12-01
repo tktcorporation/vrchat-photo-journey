@@ -1,15 +1,25 @@
 import { trpcReact } from '@/trpc';
 import { useMemo, useState } from 'react';
 import type { Photo } from '../../types/photo';
-import { useGroupPhotos } from './useGroupPhotos';
+import { type GroupedPhotos, useGroupPhotos } from './useGroupPhotos';
 
-export function usePhotoGallery() {
+export function usePhotoGallery(): {
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  selectedPhoto: Photo | null;
+  setSelectedPhoto: (photo: Photo | null) => void;  
+  showSettings: boolean;
+  setShowSettings: (show: boolean) => void;
+  groupedPhotos: GroupedPhotos;
+  isLoading: boolean;
+} {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
   const [showSettings, setShowSettings] = useState(false);
 
   const { data: photosData = [], isLoading } =
     trpcReact.vrchatPhoto.getVrchatPhotoPathModelList.useQuery();
+
   const allPhotos: Photo[] = photosData.map((photo) => ({
     id: photo.id,
     url: photo.photoPath,

@@ -1,6 +1,5 @@
 import { RefreshCw, Settings } from 'lucide-react';
-import React, { memo } from 'react';
-import { usePhotoSource } from '../../hooks/usePhotoSource';
+import { memo, useState } from 'react';
 import { useI18n } from '../../i18n/store';
 import SearchBar from '../SearchBar';
 
@@ -13,11 +12,13 @@ interface HeaderProps {
 
 const Header = memo(({ setSearchQuery, onOpenSettings }: HeaderProps) => {
   const { t } = useI18n();
-  const { refreshPhotos, isRefreshing } = usePhotoSource();
-
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const handleRefresh = async () => {
     if (!isRefreshing) {
-      await refreshPhotos();
+      setIsRefreshing(true);
+      setTimeout(() => {
+        setIsRefreshing(false);
+      }, 1000);
     }
   };
 

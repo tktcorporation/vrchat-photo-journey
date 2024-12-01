@@ -1,9 +1,6 @@
 import { useStartupStage } from '@/v2/hooks/useStartUpStage';
 import { RefreshCw } from 'lucide-react';
-import React, { memo, useRef, useCallback } from 'react';
-import { useToast } from '../../hooks/use-toast';
-import { usePhotoSource } from '../../hooks/usePhotoSource';
-import { usePullToRefresh } from '../../hooks/usePullToRefresh';
+import { memo, useRef } from 'react';
 import { useI18n } from '../../i18n/store';
 import type { Photo } from '../../types/photo';
 import LocationGroupHeader from '../LocationGroupHeader';
@@ -32,18 +29,13 @@ interface GalleryContentProps {
 
 const GalleryContent = memo(
   ({ groupedPhotos, onPhotoSelect }: GalleryContentProps) => {
+    console.log('groupedPhotos', groupedPhotos);
     const contentRef = useRef<HTMLDivElement>(null);
     const { groupRefs } = useGroupInView(
       contentRef,
       Object.keys(groupedPhotos),
     );
-    const { refreshPhotos, isRefreshing } = usePhotoSource();
     const { t } = useI18n();
-    const { refreshIndicatorRef, pullProgress } = usePullToRefresh({
-      onRefresh: refreshPhotos,
-      isRefreshing,
-      containerRef: contentRef,
-    });
 
     const { finished } = useStartupStage({
       onError: (error) => {
@@ -51,35 +43,10 @@ const GalleryContent = memo(
       },
     });
 
-    const isPhotoRefetching = isRefreshing || !finished;
+    const isPhotoRefetching = !finished;
 
     return (
       <main ref={contentRef} className="flex-1 overflow-y-auto relative">
-        {/* Pull-to-refresh indicator */}
-        <div
-          ref={refreshIndicatorRef}
-          className="absolute left-0 right-0 -top-16 flex items-center justify-center h-16 pointer-events-none transition-transform duration-200"
-          style={{ transform: `translateY(${pullProgress * 64}px)` }}
-        >
-          <div className="flex items-center space-x-2 text-gray-500 dark:text-gray-400">
-            <RefreshCw
-              className={`h-5 w-5 transition-transform duration-300 ${
-                isPhotoRefetching ? 'animate-spin' : ''
-              }`}
-              style={{
-                transform: `rotate(${Math.min(pullProgress * 360, 360)}deg)`,
-              }}
-            />
-            <span className="text-sm">
-              {isPhotoRefetching
-                ? t('pullToRefresh.refreshing')
-                : pullProgress >= 1
-                  ? t('pullToRefresh.release')
-                  : t('pullToRefresh.pull')}
-            </span>
-          </div>
-        </div>
-
         <div className="max-w-[2000px] mx-auto py-8">
           <div className="space-y-8">
             {Object.entries(groupedPhotos).map(([groupKey, group]) => (

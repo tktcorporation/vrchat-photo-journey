@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { locationDetails } from '../../data/locationDetails';
 import type { Photo } from '../../types/photo';
 
-interface GroupedPhotos {
+export interface GroupedPhotos {
   [key: string]: {
     photos: Photo[];
     location: string;

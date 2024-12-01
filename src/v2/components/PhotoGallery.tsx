@@ -23,15 +23,17 @@ const PhotoGallery: React.FC = () => {
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         onOpenSettings={() => setShowSettings(true)}
-        groupCount={Object.keys(groupedPhotos).length}
+        groupCount={groupedPhotos && Object.keys(groupedPhotos).length}
       />
 
-      <GalleryErrorBoundary>
-        <GalleryContent
-          groupedPhotos={groupedPhotos}
-          onPhotoSelect={setSelectedPhoto}
-        />
-      </GalleryErrorBoundary>
+      {groupedPhotos && (
+        <GalleryErrorBoundary>
+          <GalleryContent
+            groupedPhotos={groupedPhotos}
+            onPhotoSelect={setSelectedPhoto}
+          />
+        </GalleryErrorBoundary>
+      )}
 
       {selectedPhoto && (
         <PhotoModal
