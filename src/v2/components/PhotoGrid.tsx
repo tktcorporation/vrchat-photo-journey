@@ -54,7 +54,10 @@ const PhotoGrid: React.FC<PhotoGridProps> = React.memo(
           }}
         >
           {photoColumns.map((column, columnIndex) => (
-            <div key={columnIndex} className="space-y-4">
+            <div
+              key={`column-${columnIndex}-${column[0]?.id ?? columnIndex}`}
+              className="space-y-4"
+            >
               {column.map((photo) => (
                 <PhotoCard
                   key={photo.id}
@@ -73,7 +76,13 @@ const PhotoGrid: React.FC<PhotoGridProps> = React.memo(
         {isLoading && (
           <div className="h-20 flex items-center justify-center mt-4">
             <div className="flex items-center space-x-2 text-gray-500 dark:text-gray-400">
-              <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+              <svg
+                className="animate-spin h-5 w-5"
+                viewBox="0 0 24 24"
+                role="img"
+                aria-label="Loading..."
+              >
+                <title>Loading...</title>
                 <circle
                   className="opacity-25"
                   cx="12"

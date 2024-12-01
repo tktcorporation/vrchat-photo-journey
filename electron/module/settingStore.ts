@@ -1,3 +1,4 @@
+import type { Rectangle } from 'electron';
 import Store from 'electron-store';
 import * as neverthrow from 'neverthrow';
 
@@ -146,10 +147,10 @@ const setSettingStore = (name: storeName) => {
     setBackgroundFileCreateFlag: setBackgroundFileCreateFlag(set),
     clearAllStoredSettings: clearAllStoredSettings(store),
     clearStoredSetting: clearStoredSetting(store),
-    setWindowBounds: (bounds: Electron.Rectangle) => {
+    setWindowBounds: (bounds: Rectangle) => {
       store.set('windowBounds', bounds);
     },
-    getWindowBounds: (): Electron.Rectangle | undefined => {
+    getWindowBounds: (): Rectangle | undefined => {
       const bounds = store.get('windowBounds');
       if (
         bounds &&
@@ -159,7 +160,7 @@ const setSettingStore = (name: storeName) => {
         'width' in bounds &&
         'height' in bounds
       ) {
-        return bounds as Electron.Rectangle;
+        return bounds as Rectangle;
       }
       return undefined;
     },

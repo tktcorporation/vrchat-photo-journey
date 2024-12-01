@@ -59,10 +59,17 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose }) => {
       role="dialog"
       aria-modal="true"
       onClick={onClose}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') {
+          onClose();
+        }
+      }}
+      tabIndex={0}
     >
       <div className="h-full flex">
         {/* Close button */}
         <button
+          type="button"
           className="absolute top-4 left-4 z-10 p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
           onClick={onClose}
         >

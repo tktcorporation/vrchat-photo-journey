@@ -1,9 +1,11 @@
+import type { ComponentType } from 'react';
+
 export type Theme = 'system' | 'dark' | 'light';
 
 export interface ThemeOption {
   value: Theme;
   label: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: ComponentType<{ className?: string }>;
 }
 
 export function getSystemTheme(): boolean {
