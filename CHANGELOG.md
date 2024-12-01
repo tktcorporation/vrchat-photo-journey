@@ -6,6 +6,16 @@ All notable changes to this project will be documented in this file.
 
 ### 🚀 Features
 
+- Add button to manually apply updates (#131)
+
+### Fest
+
+- UI を中心に大幅に構成変更 (#132)
+
+## [0.2.0-alpha.7] - 2024-11-10
+
+### 🚀 Features
+
 - ログの記録方法変更. ログファイルを簡単に開けるようにする (#127)
 - アップデート処理の修正 (#128)
 
