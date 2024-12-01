@@ -37,6 +37,17 @@ export class VRChatPhotoPathModel extends Model<
   @NotNull
   declare photoTakenAt: Date;
 
+  // 縦横比
+  @Attribute(DataTypes.INTEGER)
+  @NotNull
+  @Default(720)
+  declare height: number;
+
+  @Attribute(DataTypes.INTEGER)
+  @NotNull
+  @Default(1280)
+  declare width: number;
+
   // declare fileCreatedAt: Date;
 
   declare createdAt: CreationOptional<Date>;
@@ -46,15 +57,19 @@ export class VRChatPhotoPathModel extends Model<
 export interface VRChatPhotoPathCreationAttributes {
   photoPath: string;
   photoTakenAt: Date;
+  width: number;
+  height: number;
 }
 
-export const createOrUpdateListVRChatPlayerJoinLog = async (
+export const createOrUpdateListVRChatPhotoPath = async (
   attributes: VRChatPhotoPathCreationAttributes[],
 ): Promise<void> => {
   await VRChatPhotoPathModel.bulkCreate(
     attributes.map((attribute) => ({
       photoPath: attribute.photoPath,
       photoTakenAt: attribute.photoTakenAt,
+      width: attribute.width,
+      height: attribute.height,
     })),
     {
       updateOnDuplicate: ['photoPath', 'photoTakenAt'], // 更新するフィールドを指定

@@ -77,6 +77,8 @@ export const createVRChatPhotoPathIndex = async () => {
   const photoList: {
     photoPath: string;
     photoTakenAt: Date;
+    width: number;
+    height: number;
   }[] = [];
 
   // {photoDir}/**/VRChat_2023-11-08_15-11-42.163_2560x1440.png のようなファイル名のリストを取得
@@ -95,16 +97,23 @@ export const createVRChatPhotoPathIndex = async () => {
       // ファイル名の日時はlocal time なので、そのままparseする
       dateFns.parse(matchResult[1], 'yyyy-MM-dd_HH-mm-ss.SSS', new Date());
 
+    // 画像のメタデータを取得
+    const metadata = await sharp(photoPath).metadata();
+    const photoHeight = metadata.height ?? 720;
+    const photoWidth = metadata.width ?? 1280;
+
     photoList.push({
       photoPath,
       photoTakenAt,
+      width: photoWidth,
+      height: photoHeight,
     });
   }
 
   console.log(`photoList.length: ${photoList.length}`);
 
   // DBに保存
-  await model.createOrUpdateListVRChatPlayerJoinLog(photoList);
+  await model.createOrUpdateListVRChatPhotoPath(photoList);
 };
 
 export const getVRChatPhotoPathList = async (query?: {
