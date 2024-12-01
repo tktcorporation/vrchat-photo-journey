@@ -21,7 +21,7 @@ export const useI18n = create<I18nState>()(
         const { language } = get();
         const translation = translations[language];
         const keys = key.split('.');
-        
+
         let current: unknown = translation;
 
         for (const k of keys) {

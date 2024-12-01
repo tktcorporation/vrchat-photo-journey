@@ -1,7 +1,7 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
 import type { RefObject } from 'react';
-import { useWindowSize } from './useWindowSize';
 import type { Photo } from '../types/photo';
+import { useWindowSize } from './useWindowSize';
 
 interface UseVirtualGridOptions {
   items: Photo[];
