@@ -15,10 +15,7 @@
   },
   "customizations": {
     "vscode": {
-      "extensions": [
-        "WakaTime.vscode-wakatime",
-        "YoavBls.pretty-ts-errors"
-      ]
+      "extensions": ["WakaTime.vscode-wakatime", "YoavBls.pretty-ts-errors"]
     }
   },
   "forwardPorts": [6080],

@@ -1,8 +1,10 @@
 import path from 'node:path';
-import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
-import isDev from 'electron-is-dev';
 // Packages
 import { type BrowserWindow, app, ipcMain } from 'electron';
+import installExtension, {
+  REACT_DEVELOPER_TOOLS,
+} from 'electron-devtools-installer';
+import isDev from 'electron-is-dev';
 import { createIPCHandler } from 'electron-trpc/main';
 import unhandled from 'electron-unhandled';
 import { router } from './api';

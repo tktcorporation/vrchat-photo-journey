@@ -7,7 +7,7 @@ export function usePhotoGallery(): {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   selectedPhoto: Photo | null;
-  setSelectedPhoto: (photo: Photo | null) => void;  
+  setSelectedPhoto: (photo: Photo | null) => void;
   showSettings: boolean;
   setShowSettings: (show: boolean) => void;
   groupedPhotos: GroupedPhotos;
