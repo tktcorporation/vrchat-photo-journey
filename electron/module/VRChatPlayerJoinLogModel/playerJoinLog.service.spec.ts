@@ -9,9 +9,7 @@ describe('VRChatPlayerJoinLogModel', () => {
       client.__initTestRDBClient();
     }, 10000);
     beforeEach(async () => {
-      await client.syncRDBClient({
-        checkRequired: false,
-      });
+      await client.__forceSyncRDBClient();
     });
     afterAll(async () => {
       await client.__cleanupTestRDBClient();
