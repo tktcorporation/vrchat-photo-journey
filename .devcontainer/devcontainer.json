@@ -26,5 +26,5 @@
   },
   "runArgs": ["--shm-size=2g", "--env-file", ".devcontainer/devcontainer.env"],
   "updateContentCommand": "sudo apt-get update && sudo apt-get install -y build-essential fzf",
-  "postCreateCommand": "npm i -g @antfu/ni && xrandr --output VNC-0 --mode 3840×2160 && git config --global user.name \"${GIT_USER_NAME}\" && git config --global user.email \"${GIT_USER_EMAIL}\""
+  "postCreateCommand": "npm i -g @antfu/ni && git config --global user.name \"${GIT_USER_NAME}\" && git config --global user.email \"${GIT_USER_EMAIL}\""
 }

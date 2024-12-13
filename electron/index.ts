@@ -9,9 +9,9 @@ import * as log from './lib/logger';
 import * as sequelizeClient from './lib/sequelize';
 import { getAppUserDataPath } from './lib/wrappedApp';
 import { getBackgroundUsecase } from './module/backGroundUsecase';
-import { initSettingStore } from './module/settingStore';
+import { getSettingStore, initSettingStore } from './module/settingStore';
 
-const settingStore = initSettingStore('v0-settings');
+initSettingStore('v0-settings');
 
 const CHANNELS = {
   ERROR_MESSAGE: 'error-message',
@@ -24,10 +24,10 @@ const registerIpcMainListeners = () => {
   });
 };
 
-const backgroundUsecase = getBackgroundUsecase(settingStore);
+const backgroundUsecase = getBackgroundUsecase(getSettingStore());
 
 const createOrGetMainWindow = async (): Promise<BrowserWindow> => {
-  const mainWindow = electronUtil.createOrGetWindow(settingStore);
+  const mainWindow = electronUtil.createOrGetWindow(getSettingStore());
   // 他のウィンドウ設定やイベントリスナーをここに追加
   return mainWindow;
 };
@@ -53,7 +53,7 @@ const initializeApp = async () => {
   registerIpcMainListeners();
   const mainWindow = await createOrGetMainWindow();
   createIPCHandler({ router, windows: [mainWindow] });
-  electronUtil.setTray(settingStore);
+  electronUtil.setTray(getSettingStore());
 
   unhandled({
     logger: (error) => log.error(error),
@@ -69,7 +69,7 @@ process.on('uncaughtException', (error) => log.error(error));
 process.on('unhandledRejection', (error) => log.error(error));
 
 app.on('second-instance', () => {
-  const mainWindow = electronUtil.createOrGetWindow(settingStore);
+  const mainWindow = electronUtil.createOrGetWindow(getSettingStore());
   if (mainWindow.isMinimized()) mainWindow.restore();
   mainWindow.focus();
 });
@@ -86,7 +86,7 @@ app.on('window-all-closed', () => {
   }
   // background処理が有効になっている場合は終了しない
   if (backgroundUsecase.getIsEnabledBackgroundProcess()) {
-    electronUtil.setTimeEventEmitter(settingStore);
+    electronUtil.setTimeEventEmitter(getSettingStore());
     return;
   }
   app.quit();
