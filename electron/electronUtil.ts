@@ -10,7 +10,7 @@ import {
   Tray,
   app,
   ipcMain,
-  screen,
+  // screen,
   shell,
 } from 'electron';
 import type { Event } from 'electron';
@@ -30,38 +30,43 @@ function createWindow(
 ): BrowserWindow {
   const savedBounds = settingStore.getWindowBounds();
 
-  // 保存された位置に最も近いディスプレイを取得
-  const nearestDisplay = savedBounds
-    ? screen.getDisplayNearestPoint({ x: savedBounds.x, y: savedBounds.y })
-    : screen.getPrimaryDisplay();
+  const { width, height } = savedBounds || {
+    width: WINDOW_CONFIG.DEFAULT_WIDTH,
+    height: WINDOW_CONFIG.DEFAULT_HEIGHT,
+  };
 
-  const workAreaSize = nearestDisplay.workArea;
+  // 保存された位置に最も近いディスプレイを取得
+  // const nearestDisplay = savedBounds
+  //   ? screen.getDisplayNearestPoint({ x: savedBounds.x, y: savedBounds.y })
+  //   : screen.getPrimaryDisplay();
+
+  // const workAreaSize = nearestDisplay.workArea;
 
   // ウィンドウサイズを画面サイズに合わせて調整
-  const width = Math.min(
-    savedBounds?.width || WINDOW_CONFIG.DEFAULT_WIDTH,
-    workAreaSize.width,
-  );
-  const height = Math.min(
-    savedBounds?.height || WINDOW_CONFIG.DEFAULT_HEIGHT,
-    workAreaSize.height,
-  );
+  // const width = Math.min(
+  //   savedBounds?.width || WINDOW_CONFIG.DEFAULT_WIDTH,
+  //   workAreaSize.width,
+  // );
+  // const height = Math.min(
+  //   savedBounds?.height || WINDOW_CONFIG.DEFAULT_HEIGHT,
+  //   workAreaSize.height,
+  // );
 
   // ウィンドウ位置が画面外にはみ出していないか確認
-  const x =
-    savedBounds?.x !== undefined
-      ? Math.max(0, Math.min(savedBounds.x, workAreaSize.width - width))
-      : undefined;
-  const y =
-    savedBounds?.y !== undefined
-      ? Math.max(0, Math.min(savedBounds.y, workAreaSize.height - height))
-      : undefined;
+  // const x =
+  //   savedBounds?.x !== undefined
+  //     ? Math.max(0, Math.min(savedBounds.x, workAreaSize.width - width))
+  //     : undefined;
+  // const y =
+  //   savedBounds?.y !== undefined
+  //     ? Math.max(0, Math.min(savedBounds.y, workAreaSize.height - height))
+  //     : undefined;
 
   const mainWindow = new BrowserWindow({
     width,
     height,
-    x,
-    y,
+    // x,
+    // y,
     minWidth: WINDOW_CONFIG.MIN_WIDTH,
     minHeight: WINDOW_CONFIG.MIN_HEIGHT,
     //  change to false to use AppBar
@@ -136,38 +141,38 @@ function createWindow(
   });
 
   // ディスプレイ構成が変更された時のハンドリング
-  screen.on('display-metrics-changed', () => {
-    const currentBounds = mainWindow.getBounds();
-    const currentDisplay = screen.getDisplayNearestPoint({
-      x: currentBounds.x,
-      y: currentBounds.y,
-    });
+  // screen.on('display-metrics-changed', () => {
+  //   const currentBounds = mainWindow.getBounds();
+  //   const currentDisplay = screen.getDisplayNearestPoint({
+  //     x: currentBounds.x,
+  //     y: currentBounds.y,
+  //   });
 
-    // ウィンドウが表示可能な領域に収まるように調整
-    const adjustedBounds = {
-      width: Math.min(currentBounds.width, currentDisplay.workAreaSize.width),
-      height: Math.min(
-        currentBounds.height,
-        currentDisplay.workAreaSize.height,
-      ),
-      x: Math.max(
-        0,
-        Math.min(
-          currentBounds.x,
-          currentDisplay.workAreaSize.width - currentBounds.width,
-        ),
-      ),
-      y: Math.max(
-        0,
-        Math.min(
-          currentBounds.y,
-          currentDisplay.workAreaSize.height - currentBounds.height,
-        ),
-      ),
-    };
+  //   // ウィンドウが表示可能な領域に収まるように調整
+  //   const adjustedBounds = {
+  //     width: Math.min(currentBounds.width, currentDisplay.workAreaSize.width),
+  //     height: Math.min(
+  //       currentBounds.height,
+  //       currentDisplay.workAreaSize.height,
+  //     ),
+  //     x: Math.max(
+  //       0,
+  //       Math.min(
+  //         currentBounds.x,
+  //         currentDisplay.workAreaSize.width - currentBounds.width,
+  //       ),
+  //     ),
+  //     y: Math.max(
+  //       0,
+  //       Math.min(
+  //         currentBounds.y,
+  //         currentDisplay.workAreaSize.height - currentBounds.height,
+  //       ),
+  //     ),
+  //   };
 
-    mainWindow.setBounds(adjustedBounds);
-  });
+  //   mainWindow.setBounds(adjustedBounds);
+  // });
 
   return mainWindow;
 }
