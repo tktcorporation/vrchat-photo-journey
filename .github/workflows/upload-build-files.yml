@@ -90,7 +90,7 @@ jobs:
         shell: bash
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-22.04]
+        os: [windows-latest, ubuntu-22.04, macos-latest]
     
     steps:
       - name: Checkout code
@@ -117,9 +117,9 @@ jobs:
           nr clean:build
           nr build
           if [[ "${{ needs.vars.outputs.is-semver-tag }}" == 'true' ]]; then
-            nlx electron-builder --config=electron-builder.js --${{ matrix.os == 'windows-latest' && 'win' || 'linux' }} --publish always
+            nlx electron-builder --config=electron-builder.js --${{ matrix.os == 'windows-latest' && 'win' || matrix.os == 'ubuntu-22.04' && 'linux' || 'mac' }} --publish always
           else
-            nlx electron-builder --config=electron-builder.js --${{ matrix.os == 'windows-latest' && 'win' || 'linux' }} --publish never
+            nlx electron-builder --config=electron-builder.js --${{ matrix.os == 'windows-latest' && 'win' || matrix.os == 'ubuntu-22.04' && 'linux' || 'mac' }} --publish never
             tag_string=$(echo "${GITHUB_REF##*/}" | sed 's/v//')
             echo "tag_string: $tag_string"
             for file in ./dist/*; do
