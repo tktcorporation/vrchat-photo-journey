@@ -1,22 +1,21 @@
 // Native
+import EventEmitter from 'node:events';
 import { join } from 'node:path';
 
-import EventEmitter from 'node:events';
 // Packages
 import {
   BrowserWindow,
+  type Event,
   Menu,
-  // Notification,
   Tray,
   app,
   ipcMain,
-  // screen,
   shell,
 } from 'electron';
-import type { Event } from 'electron';
 import isDev from 'electron-is-dev';
+
+// Local
 import * as log from './lib/logger';
-// import * as joinLogInfoFileService from './module/joinLogInfoFile/service';
 
 const WINDOW_CONFIG = {
   DEFAULT_WIDTH: 1024,
@@ -227,6 +226,14 @@ const setTray = () => {
         label: '設定',
         click: () => {
           /* 設定画面を開く */
+        },
+      },
+      { type: 'separator' },
+      {
+        label: 'エラーログを開く',
+        click: () => {
+          const logPath = app.getPath('logs');
+          shell.openPath(logPath);
         },
       },
       { type: 'separator' },
