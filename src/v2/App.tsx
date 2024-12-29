@@ -3,22 +3,25 @@ import TrpcWrapper from '@/trpcWrapper';
 import { Toaster } from '@/v2/components/ui/toaster';
 import type React from 'react';
 import { useEffect } from 'react';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import PhotoGallery from './components/PhotoGallery';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { useToast } from './hooks/use-toast';
 
 function App() {
   return (
-    <TrpcWrapper>
-      <ThemeProvider>
-        <div className="h-screen flex flex-col overflow-hidden bg-white dark:bg-gray-900">
-          <ToasterWrapper />
-          <Contents>
-            <PhotoGallery />
-          </Contents>
-        </div>
-      </ThemeProvider>
-    </TrpcWrapper>
+    <ErrorBoundary>
+      <TrpcWrapper>
+        <ThemeProvider>
+          <div className="h-screen flex flex-col overflow-hidden bg-white dark:bg-gray-900">
+            <ToasterWrapper />
+            <Contents>
+              <PhotoGallery />
+            </Contents>
+          </div>
+        </ThemeProvider>
+      </TrpcWrapper>
+    </ErrorBoundary>
   );
 }
 
@@ -54,27 +57,29 @@ const Contents = (props: { children: React.ReactNode }) => {
     error,
     isSuccess,
   } = trpcReact.settings.syncDatabase.useMutation({
-    retry: 5,
-    retryDelay: 2000,
+    retry: 3,
+    retryDelay: 5000,
     onError: (error) => {
       console.error('Database sync error:', error);
       toast({
         variant: 'destructive',
         title: 'データベース同期エラー',
-        description: error.message,
+        description: `${error.message}\n再試行するか、アプリケーションを再起動してください。`,
       });
     },
   });
 
   useEffect(() => {
     let isMounted = true;
+    let retryCount = 0;
+    const maxRetries = 3;
 
     const sync = async () => {
       try {
         const timeoutPromise = new Promise((_, reject) => {
           setTimeout(
             () => reject(new Error('データベース同期がタイムアウトしました')),
-            60000,
+            30000,
           );
         });
 
@@ -97,12 +102,24 @@ const Contents = (props: { children: React.ReactNode }) => {
         if (!isMounted) return;
 
         console.error('Unexpected error during sync:', e);
-        toast({
-          variant: 'destructive',
-          title: 'エラー',
-          description:
-            e instanceof Error ? e.message : '予期せぬエラーが発生しました',
-        });
+
+        if (retryCount < maxRetries) {
+          retryCount++;
+          toast({
+            title: '再試行中',
+            description: `データベース同期を再試行しています (${retryCount}/${maxRetries})`,
+          });
+          setTimeout(sync, 5000);
+        } else {
+          toast({
+            variant: 'destructive',
+            title: 'エラー',
+            description:
+              e instanceof Error
+                ? e.message
+                : '予期せぬエラーが発生しました。アプリケーションを再起動してください。',
+          });
+        }
       }
     };
 
