@@ -29,6 +29,10 @@ const config = {
   linux: {
     target: 'AppImage',
   },
+  mac: {
+    target: 'dmg',
+    category: 'public.app-category.utilities',
+  },
 };
 
 module.exports = config;
