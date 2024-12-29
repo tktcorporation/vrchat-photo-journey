@@ -47,36 +47,63 @@ const ToasterWrapper = () => {
 };
 
 const Contents = (props: { children: React.ReactNode }) => {
+  const { toast } = useToast();
   const {
     mutate: syncDatabase,
     isLoading,
     error,
     isSuccess,
-    isSuccess,
-  } = trpcReact.settings.syncDatabase.useMutation();
+  } = trpcReact.settings.syncDatabase.useMutation({
+    retry: 3,
+    retryDelay: 1000,
+    onError: (error) => {
+      console.error('Database sync error:', error);
+      toast({
+        variant: "destructive",
+        title: "データベース同期エラー",
+        description: error.message,
+      });
+    },
+  });
 
   useEffect(() => {
     const sync = async () => {
       try {
-        await syncDatabase(undefined, {
-          onError: (error) => {
-            console.error('Database sync error:', error);
-          },
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('データベース同期がタイムアウトしました')), 30000);
         });
+
+        await Promise.race([
+          syncDatabase(undefined),
+          timeoutPromise
+        ]);
       } catch (e) {
         console.error('Unexpected error during sync:', e);
+        toast({
+          variant: "destructive",
+          title: "エラー",
+          description: e instanceof Error ? e.message : "予期せぬエラーが発生しました",
+        });
       }
     };
     sync();
     const sync = async () => {
       try {
-        await syncDatabase(undefined, {
-          onError: (error) => {
-            console.error('Database sync error:', error);
-          },
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('データベース同期がタイムアウトしました')), 30000);
         });
+
+        await Promise.race([
+          syncDatabase(undefined),
+          timeoutPromise
+        ]);
       } catch (e) {
         console.error('Unexpected error during sync:', e);
+        toast({
+          variant: "destructive",
+          title: "エラー",
+          description: e instanceof Error ? e.message : "予期せぬエラーが発生しました",
+        });
       }
     };
     sync();
