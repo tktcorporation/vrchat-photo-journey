@@ -25,10 +25,8 @@ const WINDOW_CONFIG = {
   MIN_HEIGHT: 600,
 } as const;
 
-function createWindow(
-  settingStore: ReturnType<typeof getSettingStore>,
-): BrowserWindow {
-  const savedBounds = settingStore.getWindowBounds();
+function createWindow(): BrowserWindow {
+  const savedBounds = null; //settingStore.getWindowBounds();
 
   const { width, height } = savedBounds || {
     width: WINDOW_CONFIG.DEFAULT_WIDTH,
@@ -136,8 +134,8 @@ function createWindow(
 
   // ウィンドウの状態を保存
   mainWindow.on('close', () => {
-    const bounds = mainWindow.getBounds();
-    settingStore.setWindowBounds(bounds);
+    // const bounds = mainWindow.getBounds();
+    // settingStore.setWindowBounds(bounds);
   });
 
   // ディスプレイ構成が変更された時のハンドリング
@@ -194,18 +192,16 @@ export const getWindow = (): BrowserWindow | null => {
  * window が存在しなければ新しく作成する
  * 存在していれば取得する
  */
-const createOrGetWindow = (
-  settingStore: ReturnType<typeof getSettingStore>,
-): BrowserWindow => {
+const createOrGetWindow = (): BrowserWindow => {
   const window = getWindow();
   if (window) {
     return window;
   }
-  mainWindow = createWindow(settingStore);
+  mainWindow = createWindow();
   return mainWindow;
 };
 
-const setTray = (settingStore: ReturnType<typeof getSettingStore>) => {
+const setTray = () => {
   let tray: Tray | null = null;
 
   const createTray = () => {
@@ -220,7 +216,7 @@ const setTray = (settingStore: ReturnType<typeof getSettingStore>) => {
       {
         label: 'ウィンドウを表示',
         click: () => {
-          const window = createOrGetWindow(settingStore);
+          const window = createOrGetWindow();
           if (window.isMinimized()) window.restore();
           window.show();
           window.focus();
