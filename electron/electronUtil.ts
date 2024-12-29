@@ -70,7 +70,6 @@ function createWindow(): BrowserWindow {
     frame: true,
     show: true,
     fullscreenable: true,
-    transparent: true,
     webPreferences: {
       preload: join(__dirname, 'preload.js'),
       nodeIntegration: false, // セキュリティのため明示的に無効化
@@ -94,8 +93,9 @@ function createWindow(): BrowserWindow {
   } else {
     mainWindow.loadFile(url);
   }
-  // Open the DevTools.
-  // mainWindow.webContents.openDevTools();
+
+  // デバッグのために常にDevToolsを開く
+  mainWindow.webContents.openDevTools();
 
   // http or httpsのリンクをクリックしたときにデフォルトブラウザで開く
   const handleUrlOpen = (e: Event, url: string) => {
