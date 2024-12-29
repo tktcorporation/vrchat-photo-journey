@@ -13,10 +13,9 @@ function App() {
       <ThemeProvider>
         <div className="h-screen flex flex-col overflow-hidden bg-white dark:bg-gray-900">
           <ToasterWrapper />
-          {/* <Contents>
+          <Contents>
             <PhotoGallery />
-          </Contents> */}
-          <div>Hello</div>
+          </Contents>
         </div>
       </ThemeProvider>
     </TrpcWrapper>
@@ -47,16 +46,16 @@ const ToasterWrapper = () => {
   );
 };
 
-// const Contents = (props: { children: React.ReactNode }) => {
-//   const { mutate: syncDatabase, isLoading } =
-//     trpcReact.settings.syncDatabase.useMutation();
-//   useEffect(() => {
-//     syncDatabase();
-//   }, []);
-//   if (isLoading) {
-//     return <div>Loading...</div>;
-//   }
-//   return <div>{props.children}</div>;
-// };
+const Contents = (props: { children: React.ReactNode }) => {
+  const { mutate: syncDatabase, isLoading } =
+    trpcReact.settings.syncDatabase.useMutation();
+  useEffect(() => {
+    syncDatabase();
+  }, []);
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+  return <div>{props.children}</div>;
+};
 
 export default App;
