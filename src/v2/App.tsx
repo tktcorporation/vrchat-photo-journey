@@ -51,14 +51,22 @@ const Contents = (props: { children: React.ReactNode }) => {
     mutate: syncDatabase,
     isLoading,
     error,
+    isSuccess,
   } = trpcReact.settings.syncDatabase.useMutation();
 
   useEffect(() => {
-    syncDatabase(undefined, {
-      onError: (error) => {
-        console.error('Database sync error:', error);
-      },
-    });
+    const sync = async () => {
+      try {
+        await syncDatabase(undefined, {
+          onError: (error) => {
+            console.error('Database sync error:', error);
+          },
+        });
+      } catch (e) {
+        console.error('Unexpected error during sync:', e);
+      }
+    };
+    sync();
   }, []);
 
   if (error) {
@@ -71,18 +79,27 @@ const Contents = (props: { children: React.ReactNode }) => {
           <p className="mt-2 text-gray-600 dark:text-gray-400">
             {error.message}
           </p>
+          <button
+            onClick={() => syncDatabase()}
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+          >
+            再試行
+          </button>
         </div>
       </div>
     );
   }
 
-  if (isLoading) {
+  if (isLoading || !isSuccess) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center p-4">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white mx-auto" />
           <p className="mt-2 text-gray-600 dark:text-gray-400">
             データベースを同期中...
+          </p>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            しばらくお待ちください
           </p>
         </div>
       </div>
