@@ -31,7 +31,7 @@ const config = {
   },
   mac: {
     target: 'dmg',
-    category: 'public.app-category.utilities',
+    identity: null,
   },
 };
 
