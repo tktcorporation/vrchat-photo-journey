@@ -43,7 +43,7 @@
     "lint:type-check": "nr lint:type-check:electron && nr lint:type-check:src",
     "lint:type-check:electron": "tsc --noEmit -p electron",
     "lint:type-check:src": "tsc --noEmit",
-    "lint:fix": "biome check --apply ."
+    "lint:fix": "biome check --apply . && nr lint:type-check"
   },
   "simple-git-hooks": {
     "pre-commit": "nr lint"
