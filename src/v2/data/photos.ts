@@ -125,19 +125,10 @@ const resolutionVariants = imageVariants.flatMap((variant) => {
 });
 
 export const generatePhotos = (): Photo[] => {
-  const categories = [
-    { season: '春', items: ['桜', '菜の花', '新緑'] },
-    { season: '夏', items: ['海', '花火', '夕焼け'] },
-    { season: '秋', items: ['紅葉', '秋空', '稲穂'] },
-    { season: '冬', items: ['雪景色', '冬空', '氷'] },
-  ];
-
   const photos: Photo[] = [];
   const startDate = new Date(2023, 0, 1);
 
   for (let i = 0; i < 200; i++) {
-    const categoryIndex = i % categories.length;
-    const category = categories[categoryIndex];
     const locationIndex = i % locations.length;
     const imageVariant = resolutionVariants[i % resolutionVariants.length];
     const location = locations[locationIndex];
@@ -152,16 +143,10 @@ export const generatePhotos = (): Photo[] => {
       url: `${imageVariant.url}?random=${i}`,
       width: imageVariant.width,
       height: imageVariant.height,
-      title: `${location.name}の${category.season}の風景 - ${imageVariant.description}`,
-      tags: [
-        category.season,
-        ...category.items,
-        `${imageVariant.width}x${imageVariant.height}`,
-      ],
       takenAt: photoDate,
       location: {
         ...location,
-        lastVisited: photoDate,
+        joinedAt: photoDate,
       },
     });
   }

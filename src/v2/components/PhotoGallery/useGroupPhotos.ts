@@ -21,7 +21,7 @@ export function useGroupPhotos(photos: Photo[]) {
     return sorted.reduce((groups: GroupedPhotos, photo) => {
       const date = photo.takenAt;
       const dateKey = `${date.getFullYear()}年${date.getMonth() + 1}月`;
-      const locationKey = `${photo.location.prefecture} - ${photo.location.name}`;
+      const locationKey = photo.location.name;
       const groupKey = `${locationKey}/${dateKey}`;
 
       if (!groups[groupKey]) {

@@ -28,17 +28,14 @@ export function usePhotoGallery(): {
   const allPhotos: Photo[] = photosData.map((photo) => ({
     id: photo.id,
     url: photo.photoPath,
-    title: '',
     tags: [],
     takenAt: photo.photoTakenAt,
     location: {
-      prefecture: '',
       name: '',
-      country: '',
       description: '',
       coverImage: '',
       visitedWith: [],
-      lastVisited: new Date(photo.photoTakenAt),
+      joinedAt: new Date(photo.photoTakenAt),
     },
     width: photo.width,
     height: photo.height,
@@ -50,10 +47,8 @@ export function usePhotoGallery(): {
     const query = searchQuery.toLowerCase();
     return allPhotos.filter(
       (photo) =>
-        photo.title.toLowerCase().includes(query) ||
-        photo.tags.some((tag) => tag.toLowerCase().includes(query)) ||
         photo.location.name.toLowerCase().includes(query) ||
-        photo.location.prefecture.toLowerCase().includes(query),
+        photo.location.description.toLowerCase().includes(query),
     );
   }, [allPhotos, searchQuery]);
 
