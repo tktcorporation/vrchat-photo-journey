@@ -12,6 +12,14 @@ export interface GroupedPhoto {
 
 export type GroupedPhotos = Record<string, GroupedPhoto>;
 
+interface JoinSession {
+  worldId: string;
+  worldName: string;
+  worldInstanceId: string;
+  joinDateTime: Date;
+  nextJoinDateTime?: Date;
+}
+
 export function useGroupPhotos(photos: Photo[]) {
   const { data: joinLogs } =
     trpcReact.vrchatWorldJoinLog.getVRChatWorldJoinLogList.useQuery({
@@ -21,30 +29,43 @@ export function useGroupPhotos(photos: Photo[]) {
   return useMemo(() => {
     if (!joinLogs) return {} as GroupedPhotos;
 
+    // joinログをセッションに変換
+    const sessions: JoinSession[] = joinLogs.map((log, index) => ({
+      worldId: log.worldId,
+      worldName: log.worldName,
+      worldInstanceId: log.worldInstanceId,
+      joinDateTime: log.joinDateTime,
+      // 次のjoinログの時刻を終了時刻として設定
+      nextJoinDateTime: joinLogs[index + 1]?.joinDateTime,
+    }));
+
     // 日付でソート（新しい順）
     const sorted = [...photos].sort(
       (a, b) => b.takenAt.getTime() - a.takenAt.getTime(),
     );
 
     return sorted.reduce<GroupedPhotos>((groups, photo) => {
-      // 写真の撮影時刻以前の最新のjoinLogを探す
-      const joinLog = joinLogs.find(
-        (log) => log.joinDateTime.getTime() <= photo.takenAt.getTime(),
+      // 写真の撮影時刻を含むセッションを探す
+      const session = sessions.find(
+        (s) =>
+          s.joinDateTime.getTime() <= photo.takenAt.getTime() &&
+          (!s.nextJoinDateTime ||
+            s.nextJoinDateTime.getTime() > photo.takenAt.getTime()),
       );
 
-      if (!joinLog) return groups;
+      if (!session) return groups;
 
       const groupKey = `${
-        joinLog.worldInstanceId
-      }/${joinLog.joinDateTime.getTime()}`;
+        session.worldInstanceId
+      }/${session.joinDateTime.getTime()}`;
 
       if (!groups[groupKey]) {
         groups[groupKey] = {
           photos: [],
-          worldId: joinLog.worldId,
-          worldName: joinLog.worldName,
-          worldInstanceId: joinLog.worldInstanceId,
-          joinDateTime: joinLog.joinDateTime,
+          worldId: session.worldId,
+          worldName: session.worldName,
+          worldInstanceId: session.worldInstanceId,
+          joinDateTime: session.joinDateTime,
         };
       }
 
