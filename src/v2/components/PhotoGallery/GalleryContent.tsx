@@ -1,6 +1,6 @@
 import { useStartupStage } from '@/v2/hooks/useStartUpStage';
 import { RefreshCw } from 'lucide-react';
-import { memo, useRef } from 'react';
+import { memo, useMemo, useRef } from 'react';
 import { useI18n } from '../../i18n/store';
 import type { Photo } from '../../types/photo';
 import LocationGroupHeader from '../LocationGroupHeader';
@@ -15,7 +15,6 @@ interface GalleryContentProps {
 
 const GalleryContent = memo(
   ({ groupedPhotos, onPhotoSelect }: GalleryContentProps) => {
-    console.log('groupedPhotos', groupedPhotos);
     const contentRef = useRef<HTMLDivElement>(null);
     const { groupRefs } = useGroupInView(
       contentRef,
@@ -31,6 +30,10 @@ const GalleryContent = memo(
 
     const isPhotoRefetching = !finished;
 
+    const groupEntries = useMemo(() => {
+      return Object.entries(groupedPhotos);
+    }, [groupedPhotos]);
+
     return (
       <main ref={contentRef} className="flex-1 overflow-y-auto relative">
         <div className="max-w-[2000px] mx-auto py-8">
@@ -42,7 +45,7 @@ const GalleryContent = memo(
           )}
 
           <div className="space-y-8 px-4">
-            {Object.entries(groupedPhotos).map(([key, group]) => (
+            {groupEntries.map(([key, group]) => (
               <section
                 key={key}
                 ref={(el) => {
@@ -72,6 +75,17 @@ const GalleryContent = memo(
           </div>
         </div>
       </main>
+    );
+  },
+  (prevProps, nextProps) => {
+    return (
+      Object.keys(prevProps.groupedPhotos).length ===
+        Object.keys(nextProps.groupedPhotos).length &&
+      Object.entries(prevProps.groupedPhotos).every(
+        ([key, value]) =>
+          nextProps.groupedPhotos[key] &&
+          value.photos.length === nextProps.groupedPhotos[key].photos.length,
+      )
     );
   },
 );

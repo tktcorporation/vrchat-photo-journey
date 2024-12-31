@@ -20,29 +20,35 @@ export function usePhotoGallery(): {
   const { data: photosData = [], isLoading } =
     trpcReact.vrchatPhoto.getVrchatPhotoPathModelList.useQuery();
 
-  console.log('usePhotoGallery:', {
-    isLoading,
-    photosDataLength: photosData?.length,
-  });
+  const allPhotos = useMemo(() => {
+    console.log('[usePhotoGallery] Raw data:', {
+      isLoading,
+      photosDataLength: photosData?.length,
+    });
 
-  const allPhotos: Photo[] = photosData.map((photo) => ({
-    id: photo.id,
-    url: photo.photoPath,
-    tags: [],
-    takenAt: photo.photoTakenAt,
-    location: {
-      name: '',
-      description: '',
-      coverImage: '',
-      visitedWith: [],
-      joinedAt: new Date(photo.photoTakenAt),
-    },
-    width: photo.width,
-    height: photo.height,
-  }));
+    return photosData.map((photo) => ({
+      id: photo.id,
+      url: photo.photoPath,
+      tags: [],
+      takenAt: photo.photoTakenAt,
+      location: {
+        name: '',
+        description: '',
+        coverImage: '',
+        visitedWith: [],
+        joinedAt: new Date(photo.photoTakenAt),
+      },
+      width: photo.width,
+      height: photo.height,
+    }));
+  }, [photosData, isLoading]);
 
   const filteredPhotos = useMemo(() => {
     if (!searchQuery) return allPhotos;
+
+    console.log('[usePhotoGallery] Filtering photos:', {
+      allPhotosLength: allPhotos.length,
+    });
 
     const query = searchQuery.toLowerCase();
     return allPhotos.filter(
