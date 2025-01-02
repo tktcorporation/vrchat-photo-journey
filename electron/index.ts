@@ -1,14 +1,16 @@
 import path from 'node:path';
 import { init } from '@sentry/electron/main';
+import { type BrowserWindow, app, ipcMain } from 'electron';
 
-// Sentryの初期化
-init({
-  dsn: 'https://0c062396cbe896482888204f42f947ec@o4504163555213312.ingest.us.sentry.io/4508574659837952',
-  debug: process.env.NODE_ENV === 'development',
-});
+// 本番環境でのみSentryを初期化
+if (app?.isPackaged) {
+  init({
+    dsn: 'https://0c062396cbe896482888204f42f947ec@o4504163555213312.ingest.us.sentry.io/4508574659837952',
+    debug: process.env.NODE_ENV === 'development',
+  });
+}
 
 // Packages
-import { type BrowserWindow, app, ipcMain } from 'electron';
 import { createIPCHandler } from 'electron-trpc/main';
 import unhandled from 'electron-unhandled';
 import { router } from './api';

@@ -29,6 +29,9 @@ export default ({ command }: ConfigEnv): UserConfig => {
       optimizeDeps: {
         exclude: ['path'],
       },
+      define: {
+        'process.env.NODE_ENV': JSON.stringify('development'),
+      },
     };
   }
   // PROD
@@ -59,6 +62,9 @@ export default ({ command }: ConfigEnv): UserConfig => {
     },
     optimizeDeps: {
       exclude: ['path'],
+    },
+    define: {
+      'process.env.NODE_ENV': JSON.stringify('production'),
     },
   };
 };

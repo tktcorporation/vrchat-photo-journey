@@ -40,10 +40,12 @@ const error = ({
   // ログ出力
   log.error(normalizedError, ...(stack ? [stackWithCauses(stack)] : []));
 
-  // Sentryへの送信
-  captureException(normalizedError, {
-    extra: stack ? { stack } : undefined,
-  });
+  // 本番環境でのみSentryへ送信
+  if (isProduction) {
+    captureException(normalizedError, {
+      extra: stack ? { stack } : undefined,
+    });
+  }
 };
 const electronLogFilePath = log.transports.file.getFile().path;
 
