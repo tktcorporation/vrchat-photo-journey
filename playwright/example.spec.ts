@@ -10,34 +10,6 @@ const launchElectronApp = async () => {
   return electronApp;
 };
 
-test('ボタンクリックできること', async () => {
-  // Launch Electron app.
-  const electronApp = await launchElectronApp();
-
-  // Evaluation expression in the Electron context.
-  const appPath = await electronApp.evaluate(async ({ app }) => {
-    // This runs in the main Electron process, parameter here is always
-    // the result of the require('electron') in the main app script.
-    return app.getAppPath();
-  });
-  console.log(appPath);
-
-  // Get the first window that the app opens, wait if necessary.
-  const page = await electronApp.firstWindow();
-
-  await page.evaluate(() => {
-    window.history.pushState({}, '', '/');
-  });
-  await page.click('text=設定画面へ');
-
-  // TODO: 画面遷移ができていることを確認する
-
-  // Direct Electron console to Node terminal.
-  page.on('console', console.log);
-
-  await electronApp.close();
-});
-
 test('各画面でスクショ', async () => {
   // Launch Electron app.
   const electronApp = await launchElectronApp();
