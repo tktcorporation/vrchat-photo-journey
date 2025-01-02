@@ -1,5 +1,5 @@
 import { trpcReact } from '@/trpc';
-import { useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Photo } from '../../types/photo';
 
 export interface GroupedPhoto {
@@ -12,116 +12,87 @@ export interface GroupedPhoto {
 
 export type GroupedPhotos = Record<string, GroupedPhoto>;
 
-export function useGroupPhotos(photos: Photo[]) {
-  console.log('[useGroupPhotos] Input photos:', {
-    length: photos.length,
-    firstPhoto: photos[0],
-    lastPhoto: photos[photos.length - 1],
-    sampleDates: photos.slice(0, 3).map((p) => ({
-      id: p.id,
-      takenAt: p.takenAt.toISOString(),
-    })),
-  });
+const BATCH_SIZE = 50; // 一度に処理する写真の数
 
-  const { data: joinLogs } =
-    trpcReact.vrchatWorldJoinLog.getVRChatWorldJoinLogList.useQuery(
-      {
-        gtJoinDateTime:
-          photos.length > 0
-            ? new Date(
-                Math.min(...photos.map((p) => p.takenAt.getTime())) -
-                  24 * 60 * 60 * 1000,
-              )
-            : undefined,
-        ltJoinDateTime:
-          photos.length > 0
-            ? new Date(
-                Math.max(...photos.map((p) => p.takenAt.getTime())) +
-                  24 * 60 * 60 * 1000,
-              )
-            : undefined,
-        orderByJoinDateTime: 'desc',
-      },
-      {
-        staleTime: 1000 * 60 * 30, // 30分間キャッシュ
-        cacheTime: 1000 * 60 * 60, // 1時間キャッシュを保持
-        retry: 3, // エラー時に3回まで再試行
-        retryDelay: 1000, // 再試行間隔を1秒に設定
-      },
-    );
+export function useGroupPhotos(photos: Photo[]): GroupedPhotos {
+  const [processedCount, setProcessedCount] = useState(0);
+  const [groupedPhotos, setGroupedPhotos] = useState<GroupedPhotos>({});
+  const processingRef = useRef(false);
 
-  const sessions = useMemo(() => {
-    if (!joinLogs) {
-      console.log('[useGroupPhotos] No join logs available');
-      return [];
-    }
-
-    console.log('[useGroupPhotos] Join logs:', {
-      count: joinLogs.length,
-      firstLog: joinLogs[0],
-      lastLog: joinLogs[joinLogs.length - 1],
-      timeRange:
-        joinLogs.length > 0
-          ? {
-              first: new Date(joinLogs[0].joinDateTime).toISOString(),
-              last: new Date(
-                joinLogs[joinLogs.length - 1].joinDateTime,
-              ).toISOString(),
-            }
-          : null,
-      sampleLogs: joinLogs.slice(0, 3).map((log) => ({
-        worldId: log.worldId,
-        worldName: log.worldName,
-        joinDateTime: new Date(log.joinDateTime).toISOString(),
-      })),
-    });
-    return joinLogs.map((log, index) => ({
-      worldId: log.worldId,
-      worldName: log.worldName,
-      worldInstanceId: log.worldInstanceId,
-      joinDateTime: log.joinDateTime,
-      nextJoinDateTime: joinLogs[index + 1]?.joinDateTime,
-    }));
-  }, [joinLogs]);
-
-  const photoGroups = useMemo(() => {
-    if (!sessions.length) return {} as GroupedPhotos;
-
-    console.log('[useGroupPhotos] Processing photos:', {
-      totalPhotos: photos.length,
-      sessionsCount: sessions.length,
-    });
-
-    const groups: GroupedPhotos = {};
-    // 写真を撮影時刻の昇順でソート
-    const sortedPhotos = [...photos].sort(
+  // 写真を時系列で並べ替え
+  const sortedPhotos = useMemo(() => {
+    return [...photos].sort(
       (a, b) => a.takenAt.getTime() - b.takenAt.getTime(),
     );
+  }, [photos]);
 
-    console.log('[useGroupPhotos] Time range:', {
-      oldest:
-        sortedPhotos.length > 0
-          ? new Date(sortedPhotos[0].takenAt).toISOString()
-          : null,
-      newest:
-        sortedPhotos.length > 0
-          ? new Date(
-              sortedPhotos[sortedPhotos.length - 1].takenAt,
-            ).toISOString()
-          : null,
-    });
+  // 現在のバッチの時間範囲を計算
+  const timeRange = useMemo(() => {
+    if (processedCount >= photos.length) return null;
 
-    // セッションを時刻の降順でソート（新しい順）
-    const sortedSessions = [...sessions].sort(
-      (a, b) => b.joinDateTime.getTime() - a.joinDateTime.getTime(),
+    const currentBatch = sortedPhotos.slice(
+      processedCount,
+      processedCount + BATCH_SIZE,
     );
 
-    let remainingPhotos = [...sortedPhotos];
-    let ungroupedCount = 0;
+    return {
+      gtJoinDateTime: new Date(
+        Math.min(...currentBatch.map((p) => p.takenAt.getTime())) -
+          24 * 60 * 60 * 1000,
+      ),
+      ltJoinDateTime: new Date(
+        Math.max(...currentBatch.map((p) => p.takenAt.getTime())) +
+          24 * 60 * 60 * 1000,
+      ),
+    };
+  }, [sortedPhotos, processedCount]);
 
-    // 各セッションに対して写真をグループ化
-    for (const session of sortedSessions) {
-      // このセッション以降に撮影された写真を取得
+  // 現在のバッチのワールド参加ログを取得
+  const { data: joinLogs } =
+    trpcReact.vrchatWorldJoinLog.getVRChatWorldJoinLogList.useQuery(
+      timeRange
+        ? {
+            gtJoinDateTime: timeRange.gtJoinDateTime,
+            ltJoinDateTime: timeRange.ltJoinDateTime,
+            orderByJoinDateTime: 'desc',
+          }
+        : {
+            gtJoinDateTime: new Date(),
+            ltJoinDateTime: new Date(),
+            orderByJoinDateTime: 'desc',
+          },
+      {
+        enabled: !!timeRange,
+        staleTime: 1000 * 60 * 30,
+        cacheTime: 1000 * 60 * 60,
+      },
+    );
+
+  // バッチ処理の実行
+  const processBatch = useCallback(() => {
+    if (!joinLogs || processingRef.current) return;
+    processingRef.current = true;
+
+    const currentBatch = sortedPhotos.slice(
+      processedCount,
+      processedCount + BATCH_SIZE,
+    );
+
+    const sessions = joinLogs
+      .map((log, index) => ({
+        worldId: log.worldId,
+        worldName: log.worldName,
+        worldInstanceId: log.worldInstanceId,
+        joinDateTime: log.joinDateTime,
+        nextJoinDateTime: joinLogs[index + 1]?.joinDateTime,
+      }))
+      .sort((a, b) => b.joinDateTime.getTime() - a.joinDateTime.getTime());
+
+    // 現在のバッチの写真をグループ化
+    const newGroups: GroupedPhotos = { ...groupedPhotos };
+    let remainingPhotos = [...currentBatch];
+
+    for (const session of sessions) {
       const sessionPhotos = remainingPhotos.filter(
         (photo) => photo.takenAt.getTime() >= session.joinDateTime.getTime(),
       );
@@ -130,34 +101,36 @@ export function useGroupPhotos(photos: Photo[]) {
         const groupKey = `${
           session.worldInstanceId
         }/${session.joinDateTime.getTime()}`;
-        groups[groupKey] = {
-          photos: sessionPhotos,
-          worldId: session.worldId,
-          worldName: session.worldName,
-          worldInstanceId: session.worldInstanceId,
-          joinDateTime: session.joinDateTime,
-        };
+
+        if (newGroups[groupKey]) {
+          newGroups[groupKey].photos.push(...sessionPhotos);
+        } else {
+          newGroups[groupKey] = {
+            photos: sessionPhotos,
+            worldId: session.worldId,
+            worldName: session.worldName,
+            worldInstanceId: session.worldInstanceId,
+            joinDateTime: session.joinDateTime,
+          };
+        }
       }
 
-      // 残りの写真を更新
       remainingPhotos = remainingPhotos.filter(
         (photo) => photo.takenAt.getTime() < session.joinDateTime.getTime(),
       );
     }
 
-    // グループ化されなかった写真の処理
-    ungroupedCount = remainingPhotos.length;
-    if (remainingPhotos.length > 0 && sortedSessions.length > 0) {
-      // 最も古いセッションに追加
-      const oldestSession = sortedSessions[sortedSessions.length - 1];
+    // 残りの写真を最も古いセッションに追加
+    if (remainingPhotos.length > 0 && sessions.length > 0) {
+      const oldestSession = sessions[sessions.length - 1];
       const groupKey = `${
         oldestSession.worldInstanceId
       }/${oldestSession.joinDateTime.getTime()}`;
 
-      if (groups[groupKey]) {
-        groups[groupKey].photos.push(...remainingPhotos);
+      if (newGroups[groupKey]) {
+        newGroups[groupKey].photos.push(...remainingPhotos);
       } else {
-        groups[groupKey] = {
+        newGroups[groupKey] = {
           photos: remainingPhotos,
           worldId: oldestSession.worldId,
           worldName: oldestSession.worldName,
@@ -167,17 +140,17 @@ export function useGroupPhotos(photos: Photo[]) {
       }
     }
 
-    console.log('[useGroupPhotos] Grouping results:', {
-      totalGroups: Object.keys(groups).length,
-      ungroupedPhotos: ungroupedCount,
-      groupedPhotos: Object.values(groups).reduce(
-        (acc, g) => acc + g.photos.length,
-        0,
-      ),
-    });
+    setGroupedPhotos(newGroups);
+    setProcessedCount((prev) => prev + BATCH_SIZE);
+    processingRef.current = false;
+  }, [joinLogs, processedCount, sortedPhotos, groupedPhotos]);
 
-    return groups;
-  }, [sessions, photos]);
+  // バッチ処理の実行
+  useEffect(() => {
+    if (processedCount < photos.length && !processingRef.current) {
+      processBatch();
+    }
+  }, [processedCount, photos.length, processBatch]);
 
-  return photoGroups;
+  return groupedPhotos;
 }
