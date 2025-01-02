@@ -24,9 +24,6 @@ jobs:
       - name: Install dependencies
         run: nci
 
-      - name: build app
-        run: nr build
-
       - name: Install Playwright Browsers
         run: nr playwright install --with-deps
       - name: Run Playwright tests
