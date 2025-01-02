@@ -1,6 +1,5 @@
 import { EventEmitter } from 'node:events';
 import { initTRPC } from '@trpc/server';
-import { stackWithCauses } from 'pony-cause';
 import superjson from 'superjson';
 import * as log from './lib/logger';
 
@@ -20,10 +19,10 @@ const logError = (err: Error | string, requestInfo?: string) => {
     error = new Error('TRPCErrorLogger', { cause: err });
   }
   const appVersion = process.env.npm_package_version;
-  log.error(
-    `version: ${appVersion}, request: ${requestInfo}`,
-    stackWithCauses(error),
-  );
+  log.error({
+    message: `version: ${appVersion}, request: ${requestInfo}`,
+    stack: error,
+  });
 };
 
 const errorHandler = t.middleware(async (opts) => {

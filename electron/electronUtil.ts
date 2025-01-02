@@ -7,6 +7,7 @@ import {
   BrowserWindow,
   type Event,
   Menu,
+  Notification,
   Tray,
   app,
   ipcMain,
@@ -259,51 +260,78 @@ const setTray = () => {
 
   return createTray();
 };
+import { match } from 'ts-pattern';
+import { loadLogInfoIndexFromVRChatLog } from './module/logInfo/service';
 import type { getSettingStore } from './module/settingStore';
 const setTimeEventEmitter = (
   settingStore: ReturnType<typeof getSettingStore>,
 ) => {
-  // 6時間ごとに通知を出す
   const intervalEventEmitter = new EventEmitter();
+  // 6時間ごとに実行
   setInterval(
     () => {
       intervalEventEmitter.emit('time', new Date());
     },
     1000 * 60 * 60 * 6,
-    // 1000 * 20
   );
 
   intervalEventEmitter.on('time', async (now: Date) => {
     if (!settingStore.getBackgroundFileCreateFlag()) {
-      log.info(`backgroundFileCreateFlag is false: ${now.toString()}`);
+      log.debug('バックグラウンド処理が無効になっています');
       return;
     }
-    // const result =
-    //   await joinLogInfoFileService.getConfigAndValidateAndCreateFiles(
-    //     settingStore,
-    //   )();
 
-    // let notificationTitle = '';
-    // let notificationBody = '';
+    const result = await loadLogInfoIndexFromVRChatLog();
 
-    // if (result.isErr()) {
-    //   log.error(result.error);
-    //   notificationTitle = 'エラーが発生しました。';
-    //   notificationBody = result.error;
-    // } else {
-    //   log.info(result.value);
-    //   if (result.value.createdFilesLength === 0) {
-    //     return;
-    //   }
-    //   notificationTitle = 'joinの記録に成功しました';
-    //   notificationBody = JSON.stringify(result.value);
-    // }
+    if (result.isErr()) {
+      const error = result.error;
+      const errorMessage = match(error)
+        .with(
+          { code: 'LOG_FILE_NOT_FOUND' },
+          () => 'VRChatのログファイルが見つかりませんでした',
+        )
+        .with(
+          { code: 'LOG_FILE_DIR_NOT_FOUND' },
+          () => 'VRChatのログディレクトリが見つかりませんでした',
+        )
+        .with(
+          { code: 'LOG_FILES_NOT_FOUND' },
+          () => 'VRChatのログファイルが存在しません',
+        )
+        .with({ code: 'UNKNOWN' }, () => '不明なエラーが発生しました')
+        .otherwise(() => '予期せぬエラーが発生しました');
 
-    // const notification = new Notification({
-    //   title: notificationTitle,
-    //   body: `${notificationBody}: ${now.toString()}`,
-    // });
-    // notification.show();
+      log.error({ message: error });
+
+      new Notification({
+        title: `joinの記録に失敗しました: ${now.toString()}`,
+        body: errorMessage,
+      }).show();
+
+      return;
+    }
+
+    const {
+      createdVRChatPhotoPathModelList,
+      createdWorldJoinLogModelList,
+      createdPlayerJoinLogModelList,
+    } = result.value;
+    if (
+      createdVRChatPhotoPathModelList.length === 0 &&
+      createdWorldJoinLogModelList.length === 0 &&
+      createdPlayerJoinLogModelList.length === 0
+    ) {
+      return;
+    }
+
+    const photoCount = createdVRChatPhotoPathModelList.length;
+    const worldJoinCount = createdWorldJoinLogModelList.length;
+    const playerJoinCount = createdPlayerJoinLogModelList.length;
+
+    new Notification({
+      title: `joinの記録に成功しました: ${now.toString()}`,
+      body: `${photoCount}枚の新しい写真を記録しました\n${worldJoinCount}件のワールド参加を記録しました\n${playerJoinCount}件のプレイヤー参加を記録しました`,
+    }).show();
   });
 };
 

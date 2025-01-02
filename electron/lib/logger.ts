@@ -1,6 +1,8 @@
+import { captureException } from '@sentry/electron/main';
 import { app } from 'electron';
 import * as log from 'electron-log';
 import path from 'pathe';
+import { stackWithCauses } from 'pony-cause';
 
 // appが未定義の場合はテスト環境や非Electron環境として判定
 const logFilePath = app
@@ -24,7 +26,27 @@ log.transports.console.format = '{y}-{m}-{d} {h}:{i}:{s} [{level}] {text}';
 // ログ関数のエクスポート
 const info = log.info;
 const debug = log.debug;
-const error = log.error;
+const error = ({
+  message,
+  stack,
+}: {
+  message: unknown;
+  stack?: Error;
+}) => {
+  // メッセージの正規化
+  const normalizedError =
+    message instanceof Error ? message : new Error(String(message));
+
+  // ログ出力
+  log.error(normalizedError, ...(stack ? [stackWithCauses(stack)] : []));
+
+  // 本番環境でのみSentryへ送信
+  if (isProduction) {
+    captureException(normalizedError, {
+      extra: stack ? { stack } : undefined,
+    });
+  }
+};
 const electronLogFilePath = log.transports.file.getFile().path;
 
 export { info, debug, error, electronLogFilePath };

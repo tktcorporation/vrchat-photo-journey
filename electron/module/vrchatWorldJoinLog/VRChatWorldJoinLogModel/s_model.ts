@@ -60,7 +60,7 @@ export class VRChatWorldJoinLogModel extends Model<
 
 export const createVRChatWorldJoinLog = async (
   vrchatWorldJoinLogList: VRChatWorldJoinLog[],
-) => {
+): Promise<VRChatWorldJoinLogModel[]> => {
   const newLogs = vrchatWorldJoinLogList.map((logInfo) => ({
     joinDateTime: logInfo.joinDate,
     worldId: logInfo.worldId,
@@ -79,6 +79,8 @@ export const createVRChatWorldJoinLog = async (
 
     return vrchatWorldJoinLog;
   }
+
+  return [];
 };
 
 export const findAllVRChatWorldJoinLogList = async () => {

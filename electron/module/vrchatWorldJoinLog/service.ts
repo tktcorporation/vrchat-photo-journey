@@ -3,8 +3,8 @@ import * as model from './VRChatWorldJoinLogModel/s_model';
 
 export const createVRChatWorldJoinLogModel = async (
   vrchatWorldJoinLogList: VRChatWorldJoinLog[],
-): Promise<void> => {
-  await model.createVRChatWorldJoinLog(vrchatWorldJoinLogList);
+): Promise<model.VRChatWorldJoinLogModel[]> => {
+  return model.createVRChatWorldJoinLog(vrchatWorldJoinLogList);
 };
 
 export const findAllVRChatWorldJoinLogList = async (): Promise<
