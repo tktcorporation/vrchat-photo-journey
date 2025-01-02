@@ -23,30 +23,47 @@ log.transports.console.level = isProduction ? 'warn' : 'debug';
 log.transports.file.format = '{y}-{m}-{d} {h}:{i}:{s} [{level}] {text}';
 log.transports.console.format = '{y}-{m}-{d} {h}:{i}:{s} [{level}] {text}';
 
-// ログ関数のエクスポート
-const info = log.info;
-const debug = log.debug;
-const error = ({
-  message,
-  stack,
-}: {
+interface ErrorLogParams {
   message: unknown;
   stack?: Error;
-}) => {
-  // メッセージの正規化
-  const normalizedError =
-    message instanceof Error ? message : new Error(String(message));
+}
+
+// エラーオブジェクトの正規化
+const normalizeError = (message: unknown): Error => {
+  return message instanceof Error ? message : new Error(String(message));
+};
+
+// エラー情報の構築
+const buildErrorInfo = ({ message, stack }: ErrorLogParams): Error => {
+  const baseError = message instanceof Error ? message : null;
+  if (!stack) return baseError || normalizeError(message);
+
+  return {
+    ...baseError,
+    stack: stack.stack,
+  } as Error;
+};
+
+const info = log.info;
+const debug = log.debug;
+const error = ({ message, stack }: ErrorLogParams): void => {
+  const normalizedError = normalizeError(message);
+  const errorInfo = buildErrorInfo({ message, stack });
 
   // ログ出力
-  log.error(normalizedError, ...(stack ? [stackWithCauses(stack)] : []));
+  log.error(
+    stackWithCauses(normalizedError),
+    ...(stack ? [stackWithCauses(stack)] : []),
+  );
 
   // 本番環境でのみSentryへ送信
   if (isProduction) {
-    captureException(normalizedError, {
-      extra: stack ? { stack } : undefined,
+    captureException(errorInfo, {
+      extra: stack ? { stack: stackWithCauses(stack) } : undefined,
     });
   }
 };
+
 const electronLogFilePath = log.transports.file.getFile().path;
 
 export { info, debug, error, electronLogFilePath };
