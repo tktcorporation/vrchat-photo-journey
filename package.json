@@ -23,7 +23,7 @@
     "dev": "./scripts/dev.sh",
     "dev:vite": "vite",
     "dev:electron": "nr build:electron && electron . --disable-gpu",
-    "build": "nr lint:type-check && nr build:vite && nr build:electron",
+    "build": "nr lint:type-check && nr build:vite && nr build:electron && npm run sentry:sourcemaps",
     "build:vite": "vite build",
     "build:electron": "tsc -p electron",
     "dist": "nr clean:build && nr build && NODE_ENV=production electron-builder --config=electron-builder.js --publish never",
@@ -43,7 +43,8 @@
     "lint:type-check": "nr lint:type-check:electron && nr lint:type-check:src",
     "lint:type-check:electron": "tsc --noEmit -p electron",
     "lint:type-check:src": "tsc --noEmit",
-    "lint:fix": "biome check --apply . && nr lint:type-check"
+    "lint:fix": "biome check --apply . && nr lint:type-check",
+    "sentry:sourcemaps": "npx @sentry/wizard@latest -i sourcemaps --saas"
   },
   "simple-git-hooks": {
     "pre-commit": "nr lint"
@@ -66,6 +67,7 @@
     "@radix-ui/react-tabs": "1.0.4",
     "@radix-ui/react-toast": "^1.2.2",
     "@radix-ui/react-tooltip": "1.0.7",
+    "@sentry/electron": "^5.9.0",
     "@sequelize/core": "7.0.0-alpha.40",
     "@sequelize/sqlite3": "7.0.0-alpha.40",
     "@tanstack/react-query": "4.36.1",
