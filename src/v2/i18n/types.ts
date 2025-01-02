@@ -11,6 +11,11 @@ export interface Translations {
     search: {
       placeholder: string;
     };
+    toast: {
+      settingsDeleted: string;
+      allSettingsDeleted: string;
+      logFilePathSet: string;
+    };
   };
   settings: {
     tabs: {
@@ -60,6 +65,7 @@ export interface Translations {
       version: string;
       name: string;
       dependencies: string;
+      openLog: string;
       licenses: {
         title: string;
         viewLicense: string;

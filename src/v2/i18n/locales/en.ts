@@ -11,6 +11,11 @@ const en: Translations = {
     search: {
       placeholder: 'Search photos...',
     },
+    toast: {
+      settingsDeleted: 'Settings deleted',
+      allSettingsDeleted: 'All settings deleted',
+      logFilePathSet: 'VRChat log file path has been set',
+    },
   },
   settings: {
     tabs: {
@@ -55,6 +60,7 @@ const en: Translations = {
       version: 'Version',
       name: 'Name',
       dependencies: 'Major Dependencies',
+      openLog: 'Open App Log',
       licenses: {
         title: 'License Information',
         viewLicense: 'View License',

@@ -1,10 +1,17 @@
-import { Info } from 'lucide-react';
+import { trpcReact } from '@/trpc';
+import { ArrowUpRight, Info } from 'lucide-react';
 import React, { memo } from 'react';
 import packageJson from '../../../../package.json';
 import { useI18n } from '../../i18n/store';
+import { Button } from '../ui/button';
 
 const AppInfo = memo(() => {
   const { t } = useI18n();
+  const { mutate: openLog } = trpcReact.openElectronLogOnExplorer.useMutation();
+
+  const handleOpenLog = () => {
+    openLog();
+  };
 
   return (
     <section>
@@ -28,6 +35,15 @@ const AppInfo = memo(() => {
           <span className="font-mono text-gray-900 dark:text-white">
             {packageJson.name}
           </span>
+        </div>
+        <div className="flex justify-between mt-8">
+          <span className="text-gray-600 dark:text-gray-400">
+            {t('settings.info.openLog')}
+          </span>
+          <Button variant="outline" size="sm" onClick={handleOpenLog}>
+            <span className="sr-only">{t('settings.info.openLog')}</span>
+            <ArrowUpRight className="h-4 w-4" />
+          </Button>
         </div>
       </div>
     </section>
