@@ -113,7 +113,8 @@ export const createVRChatPhotoPathIndex = async () => {
   console.log(`photoList.length: ${photoList.length}`);
 
   // DBに保存
-  await model.createOrUpdateListVRChatPhotoPath(photoList);
+  const result = await model.createOrUpdateListVRChatPhotoPath(photoList);
+  return result;
 };
 
 export const getVRChatPhotoPathList = async (query?: {

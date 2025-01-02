@@ -63,8 +63,8 @@ export interface VRChatPhotoPathCreationAttributes {
 
 export const createOrUpdateListVRChatPhotoPath = async (
   attributes: VRChatPhotoPathCreationAttributes[],
-): Promise<void> => {
-  await VRChatPhotoPathModel.bulkCreate(
+): Promise<VRChatPhotoPathModel[]> => {
+  const result = await VRChatPhotoPathModel.bulkCreate(
     attributes.map((attribute) => ({
       photoPath: attribute.photoPath,
       photoTakenAt: attribute.photoTakenAt,
@@ -75,6 +75,8 @@ export const createOrUpdateListVRChatPhotoPath = async (
       updateOnDuplicate: ['photoPath', 'photoTakenAt'], // 更新するフィールドを指定
     },
   );
+
+  return result;
 };
 
 /**
