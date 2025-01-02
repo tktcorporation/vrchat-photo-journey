@@ -1284,6 +1284,12 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@types/pg-pool",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@types/pg-pool/LICENSE"
   },
+  "@types/pg@8.11.10": {
+    "licenses": "MIT",
+    "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/@types/pg-pool/node_modules/@types/pg",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@types/pg-pool/node_modules/@types/pg/LICENSE"
+  },
   "@types/pg@8.6.1": {
     "licenses": "MIT",
     "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
@@ -3395,6 +3401,14 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/object-keys",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/object-keys/LICENSE"
   },
+  "obuf@1.1.2": {
+    "licenses": "MIT",
+    "repository": "https://github.com/indutny/offset-buffer",
+    "publisher": "Fedor Indutny",
+    "email": "fedor@indutny.com",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/obuf",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/obuf/LICENSE"
+  },
   "ofetch@1.4.1": {
     "licenses": "MIT",
     "repository": "https://github.com/unjs/ofetch",
@@ -3572,6 +3586,12 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/pg-int8",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/pg-int8/LICENSE"
   },
+  "pg-numeric@1.0.2": {
+    "licenses": "ISC",
+    "repository": "https://github.com/charmander/pg-numeric",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/pg-numeric",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/pg-numeric/LICENSE"
+  },
   "pg-protocol@1.7.0": {
     "licenses": "MIT",
     "repository": "https://github.com/brianc/node-postgres",
@@ -3584,6 +3604,13 @@
     "publisher": "Brian M. Carlson",
     "path": "/workspaces/vrchat-photo-journey/node_modules/pg-types",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/pg-types/README.md"
+  },
+  "pg-types@4.0.2": {
+    "licenses": "MIT",
+    "repository": "https://github.com/brianc/node-pg-types",
+    "publisher": "Brian M. Carlson",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/@types/pg-pool/node_modules/pg-types",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@types/pg-pool/node_modules/pg-types/README.md"
   },
   "picocolors@1.1.1": {
     "licenses": "ISC",
@@ -3698,6 +3725,15 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/postgres-array",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/postgres-array/license"
   },
+  "postgres-array@3.0.2": {
+    "licenses": "MIT",
+    "repository": "https://github.com/bendrucker/postgres-array",
+    "publisher": "Ben Drucker",
+    "email": "bvdrucker@gmail.com",
+    "url": "bendrucker.me",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/@types/pg-pool/node_modules/postgres-array",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@types/pg-pool/node_modules/postgres-array/license"
+  },
   "postgres-bytea@1.0.0": {
     "licenses": "MIT",
     "repository": "https://github.com/bendrucker/postgres-bytea",
@@ -3706,6 +3742,15 @@
     "url": "bendrucker.me",
     "path": "/workspaces/vrchat-photo-journey/node_modules/postgres-bytea",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/postgres-bytea/license"
+  },
+  "postgres-bytea@3.0.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/bendrucker/postgres-bytea",
+    "publisher": "Ben Drucker",
+    "email": "bvdrucker@gmail.com",
+    "url": "bendrucker.me",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/@types/pg-pool/node_modules/postgres-bytea",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@types/pg-pool/node_modules/postgres-bytea/license"
   },
   "postgres-date@1.0.7": {
     "licenses": "MIT",
@@ -3716,6 +3761,15 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/postgres-date",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/postgres-date/license"
   },
+  "postgres-date@2.1.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/bendrucker/postgres-date",
+    "publisher": "Ben Drucker",
+    "email": "bvdrucker@gmail.com",
+    "url": "bendrucker.me",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/@types/pg-pool/node_modules/postgres-date",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@types/pg-pool/node_modules/postgres-date/license"
+  },
   "postgres-interval@1.2.0": {
     "licenses": "MIT",
     "repository": "https://github.com/bendrucker/postgres-interval",
@@ -3724,6 +3778,23 @@
     "url": "bendrucker.me",
     "path": "/workspaces/vrchat-photo-journey/node_modules/postgres-interval",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/postgres-interval/license"
+  },
+  "postgres-interval@3.0.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/bendrucker/postgres-interval",
+    "publisher": "Ben Drucker",
+    "email": "bvdrucker@gmail.com",
+    "url": "https://www.bendrucker.me",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/@types/pg-pool/node_modules/postgres-interval",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@types/pg-pool/node_modules/postgres-interval/license"
+  },
+  "postgres-range@1.1.4": {
+    "licenses": "MIT",
+    "repository": "https://github.com/martianboy/postgres-range",
+    "publisher": "Abbas Mashayekh",
+    "email": "martianboy2005@gmail.com",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/postgres-range",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/postgres-range/LICENSE"
   },
   "prebuild-install@7.1.2": {
     "licenses": "MIT",
