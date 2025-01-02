@@ -187,6 +187,11 @@ export const logInfoRouter = () =>
           },
         );
       }),
+    /**
+     * 同じワールドにいたプレイヤーのリストを取得
+     * @param joinDateTime - 参加日時
+     * @returns プレイヤーリスト
+     */
     getPlayerListInSameWorld: procedure.input(z.date()).query(async (ctx) => {
       const playerJoinLogListResult = await getPlayerJoinListInSameWorld(
         ctx.input,

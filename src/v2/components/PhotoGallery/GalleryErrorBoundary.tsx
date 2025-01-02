@@ -1,3 +1,4 @@
+import { trpcReact } from '@/trpc';
 import { AlertCircle } from 'lucide-react';
 import React from 'react';
 import PathSettings from '../settings/PathSettings';
@@ -24,6 +25,8 @@ export class GalleryErrorBoundary extends React.Component<Props, State> {
 
   render() {
     if (this.state.hasError) {
+      const reloadWindow = trpcReact.electronUtil.reloadWindow.useMutation();
+
       return (
         <div className="flex min-h-[400px] items-center justify-center p-6">
           <div className="w-full max-w-2xl rounded-lg bg-red-50 p-8 shadow-lg">
@@ -44,7 +47,7 @@ export class GalleryErrorBoundary extends React.Component<Props, State> {
 
             <div className="mt-6 flex justify-end">
               <Button
-                onClick={() => window.location.reload()}
+                onClick={() => reloadWindow.mutate()}
                 className="flex items-center gap-2 bg-red-600 hover:bg-red-700"
               >
                 <span>ページを再読み込み</span>
