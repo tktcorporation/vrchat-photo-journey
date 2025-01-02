@@ -1,13 +1,31 @@
 import { trpcReact } from '@/trpc';
 import { Calendar, MapPin, Users } from 'lucide-react';
-import React, { memo } from 'react';
+import React, { memo, useRef, useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
+/**
+ * LocationGroupHeaderのプロパティ定義
+ * @param worldId - ワールドのID
+ * @param worldName - ワールドの名前
+ * @param worldInstanceId - ワールドインスタンスのID
+ * @param photoCount - 写真の枚数
+ * @param joinDateTime - ワールドに参加した日時
+ */
 interface LocationGroupHeaderProps {
   worldId: string;
   worldName: string;
   worldInstanceId: string;
   photoCount: number;
   joinDateTime: Date;
+}
+
+interface Player {
+  id: string;
+  playerId: string | null;
+  playerName: string;
+  joinDateTime: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const LocationGroupHeader = memo(
@@ -18,8 +36,46 @@ const LocationGroupHeader = memo(
     photoCount,
     joinDateTime,
   }: LocationGroupHeaderProps) => {
+    const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
+    const [isHovered, setIsHovered] = useState(false);
+    const playerListRef = useRef<HTMLSpanElement>(null);
+
+    const handleMouseMove = (event: React.MouseEvent) => {
+      setTooltipPosition({
+        top: event.clientY + 16,
+        left: event.clientX,
+      });
+    };
+
+    useEffect(() => {
+      const updateTooltipPosition = () => {
+        if (playerListRef.current) {
+          const rect = playerListRef.current.getBoundingClientRect();
+          setTooltipPosition({
+            top: rect.bottom + 8,
+            left: rect.left,
+          });
+        }
+      };
+
+      updateTooltipPosition();
+      window.addEventListener('resize', updateTooltipPosition);
+      window.addEventListener('scroll', updateTooltipPosition);
+
+      return () => {
+        window.removeEventListener('resize', updateTooltipPosition);
+        window.removeEventListener('scroll', updateTooltipPosition);
+      };
+    }, []);
+
+    // ワールドの詳細情報を取得
     const { data: details } =
       trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery(worldId);
+
+    // 同じワールドにいたプレイヤーリストを取得
+    const { data: playersResult } =
+      trpcReact.logInfo.getPlayerListInSameWorld.useQuery(joinDateTime);
+
     if (!details) return null;
 
     const formattedDate = new Intl.DateTimeFormat('ja-JP', {
@@ -29,6 +85,9 @@ const LocationGroupHeader = memo(
       hour: '2-digit',
       minute: '2-digit',
     }).format(joinDateTime);
+
+    // プレイヤーリストがエラーの場合は表示しない
+    const players = Array.isArray(playersResult) ? playersResult : null;
 
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
@@ -60,6 +119,96 @@ const LocationGroupHeader = memo(
                 Instance: {worldInstanceId}
               </span>
             </p>
+            {players && players.length > 0 && (
+              <div className="flex items-center mt-2 text-sm">
+                <Users className="h-4 w-4 mr-1.5" />
+                <span
+                  ref={playerListRef}
+                  className="relative cursor-help"
+                  title=""
+                  onMouseEnter={() => setIsHovered(true)}
+                  onMouseLeave={() => setIsHovered(false)}
+                  onMouseMove={handleMouseMove}
+                >
+                  <span className="opacity-75">一緒にいた人: </span>
+                  {players.length <= 6 ? (
+                    <>
+                      {players.map((p: Player, index) => (
+                        <React.Fragment key={p.id}>
+                          <span className="opacity-90">{p.playerName}</span>
+                          {index < players.length - 1 && (
+                            <span className="opacity-50"> , </span>
+                          )}
+                        </React.Fragment>
+                      ))}
+                      {createPortal(
+                        <div
+                          style={{
+                            position: 'fixed',
+                            visibility: isHovered ? 'visible' : 'hidden',
+                            opacity: isHovered ? 1 : 0,
+                            transition: 'opacity 200ms',
+                            top: tooltipPosition.top,
+                            left: tooltipPosition.left,
+                          }}
+                          className="z-50 p-4 bg-gray-900 text-white text-xs rounded-lg shadow-lg"
+                        >
+                          <div className="flex flex-wrap gap-2 max-w-[600px]">
+                            {players.map((p: Player) => (
+                              <span
+                                key={p.id}
+                                className="bg-gray-800 px-3 py-1 rounded-md"
+                              >
+                                {p.playerName}
+                              </span>
+                            ))}
+                          </div>
+                        </div>,
+                        document.body,
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      {players.slice(0, 6).map((p: Player, index) => (
+                        <React.Fragment key={p.id}>
+                          <span className="opacity-90">{p.playerName}</span>
+                          {index < 5 && <span className="opacity-50"> , </span>}
+                        </React.Fragment>
+                      ))}
+                      <span className="opacity-75">
+                        {' '}
+                        他{players.length - 6}人
+                      </span>
+                      {createPortal(
+                        <div
+                          style={{
+                            position: 'fixed',
+                            visibility: isHovered ? 'visible' : 'hidden',
+                            opacity: isHovered ? 1 : 0,
+                            transition: 'opacity 200ms',
+                            top: tooltipPosition.top,
+                            left: tooltipPosition.left,
+                          }}
+                          className="z-50 p-4 bg-gray-900 text-white text-xs rounded-lg shadow-lg"
+                        >
+                          <div className="flex flex-wrap gap-2 max-w-[600px]">
+                            {players.map((p: Player) => (
+                              <span
+                                key={p.id}
+                                className="bg-gray-800 px-3 py-1 rounded-md"
+                              >
+                                {p.playerName}
+                              </span>
+                            ))}
+                          </div>
+                        </div>,
+                        document.body,
+                      )}
+                    </>
+                  )}
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -61,33 +61,21 @@ export class VRChatWorldJoinLogModel extends Model<
 export const createVRChatWorldJoinLog = async (
   vrchatWorldJoinLogList: VRChatWorldJoinLog[],
 ) => {
-  const existingLogs = await VRChatWorldJoinLogModel.findAll({
-    attributes: ['joinDateTime', 'worldInstanceId'],
-  });
-
-  const existingSet = new Set(
-    existingLogs.map(
-      (log) => `${log.joinDateTime.toISOString()}|${log.worldInstanceId}`,
-    ),
-  );
-
-  const newLogs = vrchatWorldJoinLogList
-    .filter((logInfo) => {
-      const key = `${logInfo.joinDate.toISOString()}|${
-        logInfo.worldInstanceId
-      }`;
-      return !existingSet.has(key);
-    })
-    .map((logInfo) => ({
-      joinDateTime: logInfo.joinDate,
-      worldId: logInfo.worldId,
-      worldInstanceId: logInfo.worldInstanceId,
-      worldName: logInfo.worldName,
-    }));
+  const newLogs = vrchatWorldJoinLogList.map((logInfo) => ({
+    joinDateTime: logInfo.joinDate,
+    worldId: logInfo.worldId,
+    worldInstanceId: logInfo.worldInstanceId,
+    worldName: logInfo.worldName,
+  }));
 
   if (newLogs.length > 0) {
-    const vrchatWorldJoinLog =
-      await VRChatWorldJoinLogModel.bulkCreate(newLogs);
+    const vrchatWorldJoinLog = await VRChatWorldJoinLogModel.bulkCreate(
+      newLogs,
+      {
+        ignoreDuplicates: true,
+        validate: true,
+      },
+    );
 
     return vrchatWorldJoinLog;
   }
