@@ -23,7 +23,7 @@
     "dev": "./scripts/dev.sh",
     "dev:vite": "vite",
     "dev:electron": "nr build:electron && electron . --disable-gpu",
-    "build": "nr lint:type-check && nr build:vite && nr build:electron && npm run sentry:sourcemaps",
+    "build": "nr lint:type-check && nr build:vite && nr build:electron",
     "build:vite": "vite build",
     "build:electron": "tsc -p electron",
     "dist": "nr clean:build && nr build && NODE_ENV=production electron-builder --config=electron-builder.js --publish never",
@@ -44,7 +44,9 @@
     "lint:type-check:electron": "tsc --noEmit -p electron",
     "lint:type-check:src": "tsc --noEmit",
     "lint:fix": "biome check --apply . && nr lint:type-check",
-    "sentry:sourcemaps": "npx @sentry/wizard@latest -i sourcemaps --saas"
+    "sentry:sourcemaps": "nr sentry:sourcemaps:electron && nr sentry:sourcemaps:vite",
+    "sentry:sourcemaps:electron": "sentry-cli sourcemaps inject --org $SENTRY_ORG --project $SENTRY_PROJECT ./main && sentry-cli sourcemaps upload --org $SENTRY_ORG --project $SENTRY_PROJECT ./main",
+    "sentry:sourcemaps:vite": "sentry-cli sourcemaps inject --org $SENTRY_ORG --project $SENTRY_PROJECT ./src/out && sentry-cli sourcemaps upload --org $SENTRY_ORG --project $SENTRY_PROJECT ./src/out"
   },
   "simple-git-hooks": {
     "pre-commit": "nr lint"
@@ -67,7 +69,9 @@
     "@radix-ui/react-tabs": "1.0.4",
     "@radix-ui/react-toast": "^1.2.2",
     "@radix-ui/react-tooltip": "1.0.7",
+    "@sentry/cli": "^2.40.0",
     "@sentry/electron": "^5.9.0",
+    "@sentry/vite-plugin": "^2.22.7",
     "@sequelize/core": "7.0.0-alpha.40",
     "@sequelize/sqlite3": "7.0.0-alpha.40",
     "@tanstack/react-query": "4.36.1",

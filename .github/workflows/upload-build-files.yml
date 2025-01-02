@@ -85,6 +85,10 @@ jobs:
     name: Build on ${{ matrix.os }}
     needs: [vars, draft-release]
     runs-on: ${{ matrix.os }}
+    env:
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+      SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
     defaults:
       run:
         shell: bash
@@ -127,6 +131,9 @@ jobs:
               echo "result: $file $result"
             done
           fi
+
+      - name: Upload sourcemaps
+        run: nr sentry:sourcemaps
 
   publish-release:
     needs: [vars, draft-release, electron-build]

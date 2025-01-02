@@ -46,3 +46,9 @@ debug/sequelize.sqlite
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# Sentry Config File
+.env.sentry-build-plugin
+
+# Sentry Config File
+.sentryclirc
