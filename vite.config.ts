@@ -1,4 +1,5 @@
 import { join } from 'node:path';
+import { sentryVitePlugin } from '@sentry/vite-plugin';
 import react from '@vitejs/plugin-react';
 import type { ConfigEnv, UserConfig } from 'vite';
 
@@ -34,7 +35,14 @@ export default ({ command }: ConfigEnv): UserConfig => {
   return {
     root: srcRoot,
     base: './',
-    plugins: [react()],
+    plugins: [
+      react(),
+      sentryVitePlugin({
+        authToken: process.env.SENTRY_AUTH_TOKEN,
+        org: process.env.SENTRY_ORG,
+        project: process.env.SENTRY_PROJECT,
+      }),
+    ],
     resolve: {
       alias: {
         '@': srcRoot,
