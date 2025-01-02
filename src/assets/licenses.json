@@ -3042,8 +3042,8 @@
     "licenses": "MIT",
     "repository": "https://github.com/rich-harris/magic-string",
     "publisher": "Rich Harris",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/magic-string",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/magic-string/LICENSE"
+    "path": "/workspaces/vrchat-photo-journey/node_modules/@sentry/bundler-plugin-core/node_modules/magic-string",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@sentry/bundler-plugin-core/node_modules/magic-string/LICENSE"
   },
   "make-fetch-happen@9.1.0": {
     "licenses": "ISC",
