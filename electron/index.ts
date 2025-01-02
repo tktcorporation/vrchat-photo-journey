@@ -28,7 +28,9 @@ const CHANNELS = {
 
 const registerIpcMainListeners = () => {
   ipcMain.on(CHANNELS.ERROR_MESSAGE, (_, message) => {
-    log.error(message);
+    log.error({
+      message,
+    });
   });
 };
 
@@ -64,17 +66,17 @@ const initializeApp = async () => {
   electronUtil.setTray();
 
   unhandled({
-    logger: (error) => log.error(error),
+    logger: (error) => log.error({ message: error }),
   });
 };
 
 app
   .whenReady()
   .then(initializeApp)
-  .catch((error) => log.error(error));
+  .catch((error) => log.error({ message: error }));
 
-process.on('uncaughtException', (error) => log.error(error));
-process.on('unhandledRejection', (error) => log.error(error));
+process.on('uncaughtException', (error) => log.error({ message: error }));
+process.on('unhandledRejection', (error) => log.error({ message: error }));
 
 app.on('second-instance', () => {
   const mainWindow = electronUtil.createOrGetWindow();
