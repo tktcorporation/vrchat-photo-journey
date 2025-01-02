@@ -26,7 +26,9 @@ export const GalleryContent = ({
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
   const groupEntries = useMemo(() => {
-    return Object.entries(groupedPhotos);
+    return Object.entries(groupedPhotos).sort(
+      (a, b) => b[1].joinDateTime.getTime() - a[1].joinDateTime.getTime(),
+    );
   }, [groupedPhotos]);
 
   useEffect(() => {
@@ -66,7 +68,9 @@ export const GalleryContent = ({
               />
               <div className="mt-4">
                 <PhotoGrid
-                  photos={group.photos}
+                  photos={[...group.photos].sort(
+                    (a, b) => b.takenAt.getTime() - a.takenAt.getTime(),
+                  )}
                   onPhotoSelect={onPhotoSelect}
                 />
               </div>
