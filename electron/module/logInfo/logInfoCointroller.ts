@@ -2,43 +2,14 @@ import * as neverthrow from 'neverthrow';
 import { P, match } from 'ts-pattern';
 import z from 'zod';
 import * as playerJoinLogService from '../VRChatPlayerJoinLogModel/playerJoinLog.service';
-import {
-  type VRChatPlayerJoinLog,
-  type VRChatWorldJoinLog,
-  getLogStoreFilePath,
-  getVRChaLogInfoByLogFilePathList,
-} from '../vrchatLog/service';
-import * as vrchatPhotoService from '../vrchatPhoto/vrchatPhoto.service';
 import * as worldJoinLogService from '../vrchatWorldJoinLog/service';
 import * as log from './../../lib/logger';
 import { procedure, router as trpcRouter } from './../../trpc';
+import { loadLogInfoIndexFromVRChatLog } from './service';
 import {
   type VRChatPhotoFileNameWithExt,
   VRChatPhotoFileNameWithExtSchema,
 } from './valueObjects';
-
-const loadIndex = async () => {
-  const logStoreFilePath = getLogStoreFilePath();
-  const logInfoList = await getVRChaLogInfoByLogFilePathList([
-    logStoreFilePath,
-  ]);
-  if (logInfoList.isErr()) {
-    return neverthrow.err(logInfoList.error);
-  }
-  const worldJoinLogList = logInfoList.value.filter(
-    (log): log is VRChatWorldJoinLog => log.logType === 'worldJoin',
-  );
-  const playerJoinLogList = logInfoList.value.filter(
-    (log): log is VRChatPlayerJoinLog => log.logType === 'playerJoin',
-  );
-
-  await worldJoinLogService.createVRChatWorldJoinLogModel(worldJoinLogList);
-  await playerJoinLogService.createVRChatPlayerJoinLogModel(playerJoinLogList);
-
-  await vrchatPhotoService.createVRChatPhotoPathIndex();
-
-  return neverthrow.ok(undefined);
-};
 
 const getVRCWorldJoinLogList = async () => {
   const joinLogList = await worldJoinLogService.findAllVRChatWorldJoinLogList();
@@ -163,7 +134,7 @@ const getPlayerJoinListInSameWorld = async (
 export const logInfoRouter = () =>
   trpcRouter({
     loadLogInfoIndex: procedure.mutation(async () => {
-      const result = await loadIndex();
+      const result = await loadLogInfoIndexFromVRChatLog();
       if (result.isErr()) {
         return neverthrow.err(result.error);
       }
