@@ -1,7 +1,7 @@
-import { Button } from '@/v1/components/ui/button';
 import { AlertCircle } from 'lucide-react';
 import React from 'react';
 import PathSettings from '../settings/PathSettings';
+import { Button } from '../ui/button';
 
 interface Props {
   children: React.ReactNode;

@@ -4,6 +4,13 @@ import * as vrchatWorldJoinLogService from './service';
 
 export const vrchatWorldJoinLogRouter = () =>
   trpcRouter({
+    /**
+     * 自身がVRChatのワールドに参加したログを取得します
+     * @param gtJoinDateTime - 参加日時の下限
+     * @param ltJoinDateTime - 参加日時の上限
+     * @param orderByJoinDateTime - 参加日時のソート順
+     * @returns 参加したユーザーのログ
+     */
     getVRChatWorldJoinLogList: procedure
       .input(
         z.object({

@@ -43,8 +43,8 @@ const errorHandler = t.middleware(async (opts) => {
 });
 
 const logRequest = t.middleware(async (opts) => {
-  const { path, type } = opts;
-  log.debug(`Incoming request: ${type} ${path}`);
+  // const { path, type } = opts;
+  // log.debug(`Incoming request: ${type} ${path}`);
   return opts.next();
 });
 

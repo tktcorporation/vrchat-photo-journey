@@ -47,7 +47,7 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
           <ProgressiveImage
             src={photoData?.data || ''}
             placeholderSrc={placeholderUrl}
-            alt={photo.title}
+            alt={photo.location.name}
             className="absolute inset-0 w-full h-full object-cover"
             loading={priority ? 'eager' : 'lazy'}
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -62,17 +62,20 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
           <div className="absolute bottom-0 left-0 right-0 p-3">
             <h3 className="text-white font-semibold truncate text-sm">
-              {photo.title}
+              {photo.location.name}
             </h3>
             <div className="mt-1.5 flex flex-wrap gap-1.5">
-              {photo.tags.slice(0, 3).map((tag) => (
-                <span
-                  key={`tag-${tag}`}
-                  className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-white/20 text-white"
-                >
-                  {tag}
-                </span>
-              ))}
+              {photo.location.description
+                .split(',')
+                .slice(0, 3)
+                .map((tag) => (
+                  <span
+                    key={`tag-${tag}`}
+                    className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-white/20 text-white"
+                  >
+                    {tag}
+                  </span>
+                ))}
             </div>
           </div>
         </div>

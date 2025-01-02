@@ -37,12 +37,13 @@
     "license-check:validate": "license-checker --production --failOn 'GPL;GPL-2.0;GPL-3.0;LGPL;LGPL-3.0;AGPL;AGPL-3.0;AGPL-3.0-only;'",
     "test": "jest --runInBand",
     "test:playwright": "playwright install --with-deps && playwright test",
+    "check-unused": "npx tsr 'electron/index\\.ts' 'src/main\\.tsx' '\\.config\\.ts' 'spec.ts' 'test.ts'",
     "lint": "nr lint:biome && nr lint:type-check",
     "lint:biome": "biome check .",
     "lint:type-check": "nr lint:type-check:electron && nr lint:type-check:src",
     "lint:type-check:electron": "tsc --noEmit -p electron",
     "lint:type-check:src": "tsc --noEmit",
-    "lint:fix": "biome check --apply ."
+    "lint:fix": "biome check --apply . && nr lint:type-check"
   },
   "simple-git-hooks": {
     "pre-commit": "nr lint"
@@ -144,6 +145,6 @@
     "rimraf": "5.0.5",
     "simple-git-hooks": "2.11.1",
     "ts-prune": "0.10.3",
-    "typescript": "5.4.5"
+    "typescript": "5.7.2"
   }
 }

@@ -119,7 +119,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose }) => {
             <ProgressiveImage
               src={photo.url}
               placeholderSrc={placeholderUrl}
-              alt={photo.title}
+              alt={photo.location.name}
               className="w-full h-full object-contain"
               loading="eager"
             />
@@ -139,7 +139,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose }) => {
             <div className="p-6 space-y-6">
               <div>
                 <h2 className="text-lg font-bold text-gray-900 dark:text-white leading-tight">
-                  {photo.title}
+                  {photo.location.name}
                 </h2>
                 <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">
                   {photo.location.description}
@@ -155,11 +155,8 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose }) => {
                 <div className="flex items-center text-gray-600 dark:text-gray-300">
                   <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
                   <div>
-                    <div>
-                      {photo.location.prefecture} - {photo.location.name}
-                    </div>
                     <div className="text-xs text-gray-500 dark:text-gray-400">
-                      最終訪問: {formatDate(photo.location.lastVisited)}
+                      最終訪問: {formatDate(photo.location.joinedAt)}
                     </div>
                   </div>
                 </div>
@@ -187,15 +184,8 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose }) => {
                   <Tag className="h-3.5 w-3.5 mr-1" />
                   タグ
                 </div>
-                <div className="flex flex-wrap gap-1">
-                  {photo.tags.map((tag) => (
-                    <span
-                      key={`tag-${tag}`}
-                      className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
-                    >
-                      {tag}
-                    </span>
-                  ))}
+                <div className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
+                  {photo.location.description}
                 </div>
               </div>
 
