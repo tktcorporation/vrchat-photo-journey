@@ -1,4 +1,12 @@
 import path from 'node:path';
+import { init } from '@sentry/electron/main';
+
+// Sentryの初期化
+init({
+  dsn: 'https://0c062396cbe896482888204f42f947ec@o4504163555213312.ingest.us.sentry.io/4508574659837952',
+  debug: process.env.NODE_ENV === 'development',
+});
+
 // Packages
 import { type BrowserWindow, app, ipcMain } from 'electron';
 import { createIPCHandler } from 'electron-trpc/main';
