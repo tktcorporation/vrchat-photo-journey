@@ -41,7 +41,7 @@ export function groupPhotosBySession(
   const groups: GroupedPhoto[] = [];
   let remainingPhotos = [...sortedPhotos];
 
-  // 各セッションに対して写真をグループ化
+  // 各セッションに対してグループを作成
   for (let i = 0; i < sortedSessions.length; i++) {
     const currentSession = sortedSessions[i];
     const prevSession = sortedSessions[i - 1];
@@ -61,22 +61,21 @@ export function groupPhotosBySession(
       return photoTime >= sessionTime && photoTime < prevSessionTime;
     });
 
-    if (sessionPhotos.length > 0) {
-      groups.push({
-        photos: sessionPhotos,
-        worldInfo: {
-          worldId: currentSession.worldId,
-          worldName: currentSession.worldName,
-          worldInstanceId: currentSession.worldInstanceId,
-        },
-        joinDateTime: currentSession.joinDateTime,
-      });
+    // 写真の有無に関わらずグループを作成
+    groups.push({
+      photos: sessionPhotos,
+      worldInfo: {
+        worldId: currentSession.worldId,
+        worldName: currentSession.worldName,
+        worldInstanceId: currentSession.worldInstanceId,
+      },
+      joinDateTime: currentSession.joinDateTime,
+    });
 
-      // 処理済みの写真を除外
-      remainingPhotos = remainingPhotos.filter(
-        (photo) => !sessionPhotos.includes(photo),
-      );
-    }
+    // 処理済みの写真を除外
+    remainingPhotos = remainingPhotos.filter(
+      (photo) => !sessionPhotos.includes(photo),
+    );
   }
 
   // 最後のセッションに属する写真を処理（残りの写真がある場合のみ）

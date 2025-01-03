@@ -79,9 +79,9 @@ function createWindow(): BrowserWindow {
   });
 
   // 開発環境の場合、DevToolsを開く
-  if (isDev) {
-    mainWindow.webContents.openDevTools();
-  }
+  // if (isDev) {
+  //   mainWindow.webContents.openDevTools();
+  // }
 
   const port = process.env.PORT || 3000;
   const url = isDev
@@ -94,9 +94,6 @@ function createWindow(): BrowserWindow {
   } else {
     mainWindow.loadFile(url);
   }
-
-  // デバッグのために常にDevToolsを開く
-  mainWindow.webContents.openDevTools();
 
   // http or httpsのリンクをクリックしたときにデフォルトブラウザで開く
   const handleUrlOpen = (e: Event, url: string) => {

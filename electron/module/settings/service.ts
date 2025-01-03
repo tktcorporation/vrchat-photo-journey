@@ -2,7 +2,7 @@ import { app } from 'electron';
 import { type UpdateCheckResult, autoUpdater } from 'electron-updater';
 import * as log from '../../lib/logger';
 
-export const getAppVersion = async (): Promise<string> => {
+export const getAppVersion = (): string => {
   // 本番では app.getVersion() を使用してバージョンを取得
   const appVersionDev = process.env.npm_package_version;
   if (appVersionDev !== undefined) {

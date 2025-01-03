@@ -100,7 +100,7 @@ const executeSyncRDB = async (options: { force: boolean }) => {
   }
 
   migrationProgeress = true;
-  const appVersion = await settingService.getAppVersion();
+  const appVersion = settingService.getAppVersion();
   try {
     // migration 実行
     const result = await getRDBClient().__client.sync({

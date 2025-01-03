@@ -1,3 +1,4 @@
+import { trpcReact } from '@/trpc';
 import { RefreshCw, Settings } from 'lucide-react';
 import { memo, useState } from 'react';
 import { useI18n } from '../../i18n/store';
@@ -12,12 +13,17 @@ interface HeaderProps {
 const Header = memo(({ setSearchQuery, onOpenSettings }: HeaderProps) => {
   const { t } = useI18n();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const { mutate: loadLogInfo } =
+    trpcReact.logInfo.loadLogInfoIndex.useMutation({
+      onSettled: () => {
+        setIsRefreshing(false);
+      },
+    });
+
   const handleRefresh = async () => {
     if (!isRefreshing) {
       setIsRefreshing(true);
-      setTimeout(() => {
-        setIsRefreshing(false);
-      }, 1000);
+      loadLogInfo();
     }
   };
 
