@@ -63,6 +63,7 @@ const ja: Translations = {
       },
     },
     info: {
+      title: 'アプリ情報',
       version: 'バージョン',
       name: 'アプリ名',
       dependencies: '主要な依存関係',

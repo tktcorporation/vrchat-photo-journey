@@ -57,6 +57,7 @@ const en: Translations = {
       },
     },
     info: {
+      title: 'App Info',
       version: 'Version',
       name: 'Name',
       dependencies: 'Major Dependencies',

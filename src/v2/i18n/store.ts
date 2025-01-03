@@ -2,14 +2,14 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import en from './locales/en';
 import ja from './locales/ja';
-import type { Language, Translations } from './types';
+import type { Language, TranslationKey, Translations } from './types';
 
 const translations: Record<Language, Translations> = { en, ja };
 
 interface I18nState {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: (key: string) => string;
+  t: (key: TranslationKey) => string;
 }
 
 export const useI18n = create<I18nState>()(

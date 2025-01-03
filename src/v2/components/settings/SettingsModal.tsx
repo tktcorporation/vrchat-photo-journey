@@ -118,31 +118,33 @@ const SettingsModal = memo(({ onClose }: SettingsModalProps) => {
           </button>
         </div>
 
-        <div className="flex-none border-b border-gray-200 dark:border-gray-700">
-          <nav className="flex px-6" aria-label="Tabs">
-            {tabs.map(({ id, label, icon: Icon }) => (
-              <button
-                type="button"
-                key={id}
-                onClick={() => setActiveTab(id)}
-                className={`relative py-4 px-1 flex items-center text-sm font-medium ${
-                  activeTab === id
-                    ? 'text-indigo-600 dark:text-indigo-400'
-                    : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
-                } mr-8`}
-              >
-                <Icon className="h-5 w-5 mr-2" />
-                {label}
-                {activeTab === id && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 dark:bg-indigo-400" />
-                )}
-              </button>
-            ))}
-          </nav>
-        </div>
+        <div className="flex-1 flex">
+          <div className="flex-none w-48 border-r border-gray-200 dark:border-gray-700">
+            <nav className="flex flex-col py-2" aria-label="Tabs">
+              {tabs.map(({ id, label, icon: Icon }) => (
+                <button
+                  type="button"
+                  key={id}
+                  onClick={() => setActiveTab(id)}
+                  className={`relative py-2 px-4 flex items-center text-sm font-medium ${
+                    activeTab === id
+                      ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20'
+                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700/50'
+                  }`}
+                >
+                  <Icon className="h-5 w-5 mr-2 flex-shrink-0" />
+                  <span className="truncate">{label}</span>
+                  {activeTab === id && (
+                    <span className="absolute left-0 top-0 bottom-0 w-0.5 bg-indigo-600 dark:bg-indigo-400" />
+                  )}
+                </button>
+              ))}
+            </nav>
+          </div>
 
-        <div className="flex-1 overflow-y-auto px-6 py-4">
-          <ActiveComponent />
+          <div className="flex-1 overflow-y-auto p-6">
+            <ActiveComponent />
+          </div>
         </div>
       </div>
     </div>

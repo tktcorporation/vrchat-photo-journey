@@ -1,5 +1,18 @@
 export type Language = 'en' | 'ja';
 
+// 翻訳キーのパスを生成するための型
+export type RecursiveKeyOf<TObj> = {
+  [TKey in keyof TObj & (string | number)]: TObj[TKey] extends Record<
+    string,
+    unknown
+  >
+    ? `${TKey}` | `${TKey}.${RecursiveKeyOf<TObj[TKey]>}`
+    : `${TKey}`;
+}[keyof TObj & (string | number)];
+
+// 翻訳キーの型
+export type TranslationKey = RecursiveKeyOf<Translations>;
+
 export interface Translations {
   common: {
     settings: string;
@@ -62,6 +75,7 @@ export interface Translations {
       };
     };
     info: {
+      title: string;
       version: string;
       name: string;
       dependencies: string;
