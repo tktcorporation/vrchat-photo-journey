@@ -35,7 +35,9 @@
     "find-deadcode": "ts-prune",
     "license-check:generate": "license-checker --production --json --out src/assets/licenses.json",
     "license-check:validate": "license-checker --production --failOn 'GPL;GPL-2.0;GPL-3.0;LGPL;LGPL-3.0;AGPL;AGPL-3.0;AGPL-3.0-only;'",
-    "test": "jest --runInBand",
+    "test": "nr jest",
+    "vitest": "vitest run",
+    "jest": "jest --runInBand",
     "test:playwright": "playwright install --with-deps && playwright test",
     "check-unused": "npx tsr 'electron/index\\.ts' 'src/main\\.tsx' '\\.config\\.ts' 'spec.ts' 'test.ts'",
     "lint": "nr lint:biome && nr lint:type-check",
@@ -129,6 +131,7 @@
     "@playwright/test": "1.43.1",
     "@swc/core": "1.4.17",
     "@swc/jest": "0.2.36",
+    "@testing-library/react": "^16.1.0",
     "@types/babel__core": "7.20.5",
     "@types/electron-is-dev": "1.1.1",
     "@types/jest": "29.5.12",
@@ -151,6 +154,7 @@
     "rimraf": "5.0.5",
     "simple-git-hooks": "2.11.1",
     "ts-prune": "0.10.3",
-    "typescript": "5.7.2"
+    "typescript": "5.7.2",
+    "vitest": "^2.1.8"
   }
 }
