@@ -37,6 +37,30 @@ import type { VRChatWorldId } from './valueObject';
 export type VRChatWorldInfoFromApi = z.infer<
   typeof VRChatWorldInfoFromApiSchema
 >;
+/**
+ *  {
+ *    "assetUrl": "https://api.vrchat.cloud/api/1/file/file_e5014a77-4403-4b62-bf6d-3e16bcd6851b/6/file",
+ *    "assetVersion": 4,
+ *    "created_at": "2024-12-31T08:25:58.745Z",
+ *    "id": "unp_c89824dc-92d2-4d99-a368-2a81f9ef0f9a",
+ *    "platform": "android",
+ *    "unitySortNumber": 20220322000,
+ *    "unityVersion": "2022.3.22f1",
+ *    "worldSignature": "AK7LJzmBVYb+jw6Ixz7N7lX3s79ngTzOEGZyfEh7VO/Glkr+Gg=="
+ *  },
+ */
+const VRChatWorldInfoUnityPackagesSchema = z.array(
+  z.object({
+    assetUrl: z.string(),
+    assetVersion: z.number(),
+    created_at: z.string(),
+    id: z.string(),
+    platform: z.enum(['android', 'ios', 'standalonewindows']),
+    unitySortNumber: z.number(),
+    unityVersion: z.string(),
+    worldSignature: z.string(),
+  }),
+);
 const VRChatWorldInfoFromApiSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -63,7 +87,7 @@ const VRChatWorldInfoFromApiSchema = z.object({
   publicOccupants: z.number(),
   privateOccupants: z.number(),
   occupants: z.number(),
-  unityPackages: z.array(z.string()),
+  unityPackages: VRChatWorldInfoUnityPackagesSchema,
   tags: z.array(z.string()),
   created_at: z.string(),
   updated_at: z.string(),

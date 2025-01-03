@@ -120,10 +120,7 @@ function convertGroupsToRecord(groups: GroupedPhoto[]): GroupedPhotos {
   }, {});
 }
 
-const BATCH_SIZE = 50; // 一度に処理する写真の数
-
 export function useGroupPhotos(photos: Photo[]): GroupedPhotos {
-  const [processedCount, setProcessedCount] = useState(0);
   const [groupedPhotos, setGroupedPhotos] = useState<GroupedPhotos>({});
   const processingRef = useRef(false);
 
@@ -134,71 +131,29 @@ export function useGroupPhotos(photos: Photo[]): GroupedPhotos {
     );
   }, [photos]);
 
-  // 現在のバッチの時間範囲を計算
-  const timeRange = useMemo(() => {
-    if (processedCount >= photos.length) return null;
-
-    const currentBatch = sortedPhotos.slice(
-      processedCount,
-      processedCount + BATCH_SIZE,
-    );
-
-    // 新しい順にソートされているので、最初の写真が最新、最後の写真が最古
-    const newestPhoto = currentBatch[0];
-    const oldestPhoto = currentBatch[currentBatch.length - 1];
-
-    return {
-      // 最古の写真の24時間前から
-      gtJoinDateTime: new Date(
-        oldestPhoto.takenAt.getTime() - 24 * 60 * 60 * 1000,
-      ),
-      // 最新の写真の24時間後まで
-      ltJoinDateTime: new Date(
-        newestPhoto.takenAt.getTime() + 24 * 60 * 60 * 1000,
-      ),
-      orderByJoinDateTime: 'desc' as const,
-    };
-  }, [sortedPhotos, processedCount]);
-
-  // 現在のバッチのワールド参加ログを取得
+  // すべてのワールド参加ログを取得
   const { data: joinLogs } =
     trpcReact.vrchatWorldJoinLog.getVRChatWorldJoinLogList.useQuery(
-      timeRange || {
-        gtJoinDateTime: new Date(),
-        ltJoinDateTime: new Date(),
+      {
         orderByJoinDateTime: 'desc',
       },
       {
-        enabled: !!timeRange,
         staleTime: 1000 * 60 * 30,
         cacheTime: 1000 * 60 * 60,
       },
     );
 
-  // バッチ処理の実行
-  const processBatch = useCallback(() => {
+  // グループの作成
+  useEffect(() => {
     if (!joinLogs || processingRef.current) return;
     processingRef.current = true;
 
-    const currentBatch = sortedPhotos.slice(
-      processedCount,
-      processedCount + BATCH_SIZE,
-    );
-
-    const groups = groupPhotosBySession(currentBatch, joinLogs);
+    const groups = groupPhotosBySession(sortedPhotos, joinLogs);
     const newGroups = convertGroupsToRecord(groups);
+    setGroupedPhotos(newGroups);
 
-    setGroupedPhotos((prev) => ({ ...prev, ...newGroups }));
-    setProcessedCount((prev) => prev + BATCH_SIZE);
     processingRef.current = false;
-  }, [joinLogs, processedCount, sortedPhotos]);
-
-  // バッチ処理の実行
-  useEffect(() => {
-    if (processedCount < photos.length && !processingRef.current) {
-      processBatch();
-    }
-  }, [processedCount, photos.length, processBatch]);
+  }, [joinLogs, sortedPhotos]);
 
   return groupedPhotos;
 }

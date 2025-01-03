@@ -6,10 +6,12 @@ const ja: Translations = {
     close: '閉じる',
     loading: '読み込み中...',
     noPhotosFound: '写真が見つかりませんでした',
-    photos: '枚の写真',
-    refresh: '写真を更新',
+    photos: '写真',
+    refresh: '更新',
+    showEmptyGroups: '写真がないグループを表示',
+    hideEmptyGroups: '写真がないグループを非表示',
     search: {
-      placeholder: '写真を検索...',
+      placeholder: '検索...',
     },
     toast: {
       settingsDeleted: '設定を削除しました',

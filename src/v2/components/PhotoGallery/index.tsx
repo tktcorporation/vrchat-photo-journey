@@ -1,62 +1,31 @@
-import type React from 'react';
-import PhotoModal from '../PhotoModal';
+import { memo, useState } from 'react';
 import SettingsModal from '../settings/SettingsModal';
 import GalleryContent from './GalleryContent';
 import Header from './Header';
-import { usePhotoGallery } from './usePhotoGallery';
 
-const PhotoGallery: React.FC = () => {
-  const {
-    searchQuery,
-    setSearchQuery,
-    selectedPhoto,
-    setSelectedPhoto,
-    showSettings,
-    setShowSettings,
-    groupedPhotos,
-    isLoading,
-  } = usePhotoGallery();
-
-  if (isLoading) {
-    return (
-      <div className="h-full flex flex-col">
-        <Header
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          onOpenSettings={() => setShowSettings(true)}
-        />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-gray-500 dark:text-gray-400">
-            写真を読み込み中...
-          </div>
-        </div>
-      </div>
-    );
-  }
+const PhotoGallery = memo(() => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSettings, setShowSettings] = useState(false);
+  const [showEmptyGroups, setShowEmptyGroups] = useState(false);
 
   return (
-    <>
+    <div className="flex flex-col h-full">
       <Header
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         onOpenSettings={() => setShowSettings(true)}
+        showEmptyGroups={showEmptyGroups}
+        onToggleEmptyGroups={() => setShowEmptyGroups((prev) => !prev)}
       />
-
       <GalleryContent
-        groupedPhotos={groupedPhotos}
-        onPhotoSelect={setSelectedPhoto}
+        searchQuery={searchQuery}
+        showEmptyGroups={showEmptyGroups}
       />
-
-      {selectedPhoto && (
-        <PhotoModal
-          photo={selectedPhoto}
-          onClose={() => setSelectedPhoto(null)}
-        />
-      )}
-
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
-    </>
+    </div>
   );
-};
+});
+
+PhotoGallery.displayName = 'PhotoGallery';
 
 export default PhotoGallery;
