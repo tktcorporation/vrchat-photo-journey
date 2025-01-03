@@ -1,5 +1,4 @@
 import type { Photo } from '../../types/photo';
-// import { describe, it, expect } from 'vitest';
 import { groupPhotosBySession } from './useGroupPhotos';
 
 interface MockWorldJoinLog {
@@ -56,13 +55,13 @@ describe('groupPhotosBySession', () => {
     expect(groups).toHaveLength(2); // 2つのワールドグループができているはず
 
     // 最初のグループ（新しい方）の検証
-    expect(groups[0].worldId).toBe('world1');
+    expect(groups[0].worldInfo?.worldId).toBe('world1');
     expect(groups[0].photos).toHaveLength(2); // photo1とphoto2
     expect(groups[0].photos[0].id).toBe('1'); // 最新の写真が最初
     expect(groups[0].photos[1].id).toBe('2');
 
     // 2番目のグループの検証
-    expect(groups[1].worldId).toBe('world2');
+    expect(groups[1].worldInfo?.worldId).toBe('world2');
     expect(groups[1].photos).toHaveLength(1); // photo3
     expect(groups[1].photos[0].id).toBe('3');
   });
@@ -105,5 +104,21 @@ describe('groupPhotosBySession', () => {
     expect(groups).toHaveLength(1);
     expect(groups[0].photos).toHaveLength(1);
     expect(groups[0].photos[0].id).toBe('1');
+  });
+
+  it('セッションログがない場合、グルーピング不能な写真として処理', () => {
+    const now = new Date();
+    const photos = [
+      createMockPhoto('1', new Date(now.getTime() - 1000)),
+      createMockPhoto('2', new Date(now.getTime() - 2000)),
+    ];
+
+    const groups = groupPhotosBySession(photos, []);
+
+    expect(groups).toHaveLength(1);
+    expect(groups[0].worldInfo).toBeNull();
+    expect(groups[0].photos).toHaveLength(2);
+    expect(groups[0].photos[0].id).toBe('1');
+    expect(groups[0].photos[1].id).toBe('2');
   });
 });
