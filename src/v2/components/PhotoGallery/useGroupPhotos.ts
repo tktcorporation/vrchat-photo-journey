@@ -2,11 +2,15 @@ import { trpcReact } from '@/trpc';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Photo } from '../../types/photo';
 
-export interface GroupedPhoto {
-  photos: Photo[];
+export interface WorldInfo {
   worldId: string;
   worldName: string;
   worldInstanceId: string;
+}
+
+export interface GroupedPhoto {
+  photos: Photo[];
+  worldInfo: WorldInfo | null;
   joinDateTime: Date;
 }
 
@@ -60,9 +64,11 @@ export function groupPhotosBySession(
     if (sessionPhotos.length > 0) {
       groups.push({
         photos: sessionPhotos,
-        worldId: currentSession.worldId,
-        worldName: currentSession.worldName,
-        worldInstanceId: currentSession.worldInstanceId,
+        worldInfo: {
+          worldId: currentSession.worldId,
+          worldName: currentSession.worldName,
+          worldInstanceId: currentSession.worldInstanceId,
+        },
         joinDateTime: currentSession.joinDateTime,
       });
 
@@ -74,18 +80,29 @@ export function groupPhotosBySession(
   }
 
   // 最後のセッションに属する写真を処理（残りの写真がある場合のみ）
-  if (remainingPhotos.length > 0 && sortedSessions.length > 0) {
-    const lastGroup = groups[groups.length - 1];
-    if (lastGroup) {
-      lastGroup.photos = [...lastGroup.photos, ...remainingPhotos];
+  if (remainingPhotos.length > 0) {
+    if (sortedSessions.length > 0) {
+      const lastGroup = groups[groups.length - 1];
+      if (lastGroup) {
+        lastGroup.photos = [...lastGroup.photos, ...remainingPhotos];
+      } else {
+        const lastSession = sortedSessions[sortedSessions.length - 1];
+        groups.push({
+          photos: remainingPhotos,
+          worldInfo: {
+            worldId: lastSession.worldId,
+            worldName: lastSession.worldName,
+            worldInstanceId: lastSession.worldInstanceId,
+          },
+          joinDateTime: lastSession.joinDateTime,
+        });
+      }
     } else {
-      const lastSession = sortedSessions[sortedSessions.length - 1];
+      // セッションが存在しない場合、グルーピング不能な写真として扱う
       groups.push({
         photos: remainingPhotos,
-        worldId: lastSession.worldId,
-        worldName: lastSession.worldName,
-        worldInstanceId: lastSession.worldInstanceId,
-        joinDateTime: lastSession.joinDateTime,
+        worldInfo: null,
+        joinDateTime: remainingPhotos[0].takenAt,
       });
     }
   }
@@ -95,11 +112,13 @@ export function groupPhotosBySession(
 
 // グループ化された写真をRecordに変換する
 function convertGroupsToRecord(groups: GroupedPhoto[]): GroupedPhotos {
-  return groups.reduce((acc, group) => {
-    const key = `${group.worldInstanceId}/${group.joinDateTime.getTime()}`;
+  return groups.reduce<GroupedPhotos>((acc, group) => {
+    const key = group.worldInfo
+      ? `${group.worldInfo.worldInstanceId}/${group.joinDateTime.getTime()}`
+      : `ungrouped/${group.joinDateTime.getTime()}`;
     acc[key] = group;
     return acc;
-  }, {} as GroupedPhotos);
+  }, {});
 }
 
 const BATCH_SIZE = 50; // 一度に処理する写真の数

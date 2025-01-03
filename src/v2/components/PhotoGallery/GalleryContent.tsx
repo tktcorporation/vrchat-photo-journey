@@ -2,17 +2,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Photo } from '../../types/photo';
 import LocationGroupHeader from '../LocationGroupHeader';
 import PhotoGrid from '../PhotoGrid';
+import type { GroupedPhoto, GroupedPhotos } from './useGroupPhotos';
 
-interface GroupedPhoto {
-  worldId: string;
-  worldName: string;
-  worldInstanceId: string;
-  joinDateTime: Date;
-  photos: Photo[];
-}
-
-interface GalleryContentProps {
-  groupedPhotos: Record<string, GroupedPhoto>;
+export interface GalleryContentProps {
+  groupedPhotos: GroupedPhotos;
   onPhotoSelect: (photo: Photo) => void;
 }
 
@@ -60,9 +53,9 @@ export const GalleryContent = ({
           {groupEntries.slice(0, visibleCount).map(([key, group]) => (
             <section key={key}>
               <LocationGroupHeader
-                worldId={group.worldId}
-                worldName={group.worldName}
-                worldInstanceId={group.worldInstanceId}
+                worldId={group.worldInfo?.worldId ?? null}
+                worldName={group.worldInfo?.worldName ?? null}
+                worldInstanceId={group.worldInfo?.worldInstanceId ?? null}
                 photoCount={group.photos.length}
                 joinDateTime={group.joinDateTime}
               />

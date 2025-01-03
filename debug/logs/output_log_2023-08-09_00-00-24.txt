@@ -1,0 +1,28 @@
+2023.08.15 15:11:32 Log        -  [Behaviour] Joining wrld_6fecf18a-ab96-43f2-82dc-ccf79f17c34f:86676~region(jp)
+
+
+2023.08.15 15:11:32 Log        -  [Behaviour] Joining or Creating Room: はじまりタウン ⁄ Dawnville
+
+
+2023.08.15 15:11:32 Log        -  [Behaviour] Successfully joined room
+
+
+2023.08.15 15:11:37 Log        -  [Behaviour] OnPlayerJoined tkt_
+
+
+2023.08.15 15:11:37 Log        -  [Behaviour] OnPlayerJoinComplete tkt_
+
+
+2023.08.27 15:11:32 Log        -  [Behaviour] Joining wrld_3dcabc45-b66b-4d38-abaa-d2922ca4d678:86203~region(jp)
+
+
+2023.08.27 15:11:32 Log        -  [Behaviour] Joining or Creating Room: Beyond a bit - 想像のちょっと先へ
+
+
+2023.08.27 15:11:32 Log        -  [Behaviour] Successfully joined room
+
+
+2023.08.27 15:11:37 Log        -  [Behaviour] OnPlayerJoined tkt_
+
+
+2023.08.27 15:11:37 Log        -  [Behaviour] OnPlayerJoinComplete tkt_
