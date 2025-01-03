@@ -144,12 +144,6 @@ const SettingsModal = memo(({ onClose }: SettingsModalProps) => {
         <div className="flex-1 overflow-y-auto px-6 py-4">
           <ActiveComponent />
         </div>
-
-        <div className="flex-none px-6 py-4 bg-gray-50 dark:bg-gray-900/50 rounded-b-lg">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            © {new Date().getFullYear()} Photo Gallery. All rights reserved.
-          </p>
-        </div>
       </div>
     </div>
   );
