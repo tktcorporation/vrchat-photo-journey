@@ -28,10 +28,30 @@ const getIsAppAutoStartEnabled = async (): Promise<boolean> => {
 };
 
 const setIsAppAutoStartEnabled = async (isEnabled: boolean) => {
-  console.log('isEnabled', isEnabled);
+  console.log('setIsAppAutoStartEnabled: before', app.getLoginItemSettings());
+
+  // macOSの場合、openAsHiddenをtrueに設定することで、バックグラウンドで起動するように
   app.setLoginItemSettings({
     openAtLogin: isEnabled,
+    openAsHidden: true,
   });
+
+  // 設定が反映されるまで少し待つ
+  await new Promise((resolve) => setTimeout(resolve, 100));
+
+  // 設定が反映されたか確認
+  const newSettings = app.getLoginItemSettings();
+  console.log('setIsAppAutoStartEnabled: after', newSettings);
+
+  if (newSettings.openAtLogin !== isEnabled) {
+    console.error('Failed to update login item settings', {
+      expected: isEnabled,
+      actual: newSettings,
+    });
+    throw new Error('Failed to update login item settings');
+  }
+
+  return true;
 };
 
 export const backgroundSettingsRouter = (

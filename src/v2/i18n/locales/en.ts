@@ -31,6 +31,8 @@ const en: Translations = {
       startupDescription: 'Automatically start the application when logging in',
       backgroundUpdate: 'Background Update',
       backgroundDescription: 'Check for new photos in the background',
+      startupError: 'Failed to update startup launch setting',
+      startupSuccess: 'Startup launch setting updated',
       updateInterval: 'Update Interval',
       updateIntervalDescription: 'Frequency of checking for new photos',
       notifications: 'Show Notifications',

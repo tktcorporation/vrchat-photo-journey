@@ -29,6 +29,8 @@ const ja: Translations = {
       title: 'システム設定',
       startupLaunch: '起動時に自動実行',
       startupDescription: 'PCログイン時に自動的にアプリを起動します',
+      startupError: '自動起動の設定に失敗しました',
+      startupSuccess: '自動起動の設定を更新しました',
       backgroundUpdate: 'バックグラウンド更新',
       backgroundDescription: 'バックグラウンドで新しい写真を確認します',
       updateInterval: '更新間隔',

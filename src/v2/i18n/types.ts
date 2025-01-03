@@ -42,6 +42,8 @@ export interface Translations {
       title: string;
       startupLaunch: string;
       startupDescription: string;
+      startupError: string;
+      startupSuccess: string;
       backgroundUpdate: string;
       backgroundDescription: string;
       updateInterval: string;
