@@ -8,6 +8,7 @@ import { Button } from '../ui/button';
 const AppInfo = memo(() => {
   const { t } = useI18n();
   const { mutate: openLog } = trpcReact.openElectronLogOnExplorer.useMutation();
+  const { data: appVersion } = trpcReact.settings.getAppVersion.useQuery();
 
   const handleOpenLog = () => {
     openLog();
@@ -25,7 +26,7 @@ const AppInfo = memo(() => {
             {t('settings.info.version')}
           </span>
           <span className="font-mono text-gray-900 dark:text-white">
-            {packageJson.version}
+            {appVersion}
           </span>
         </div>
         <div className="flex justify-between">

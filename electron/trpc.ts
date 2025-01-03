@@ -2,6 +2,7 @@ import { EventEmitter } from 'node:events';
 import { initTRPC } from '@trpc/server';
 import superjson from 'superjson';
 import * as log from './lib/logger';
+import * as settingService from './module/settings/service';
 
 const eventEmitter = new EventEmitter();
 
@@ -18,7 +19,7 @@ const logError = (err: Error | string, requestInfo?: string) => {
   } else {
     error = new Error('TRPCErrorLogger', { cause: err });
   }
-  const appVersion = process.env.npm_package_version;
+  const appVersion = settingService.getAppVersion();
   log.error({
     message: `version: ${appVersion}, request: ${requestInfo}`,
     stack: error,
