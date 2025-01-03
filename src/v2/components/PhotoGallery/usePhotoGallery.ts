@@ -1,73 +1,48 @@
 import { trpcReact } from '@/trpc';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import type { Photo } from '../../types/photo';
-import { type GroupedPhotos, useGroupPhotos } from './useGroupPhotos';
+import { useGroupPhotos } from './useGroupPhotos';
 
-export function usePhotoGallery(): {
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
-  selectedPhoto: Photo | null;
-  setSelectedPhoto: (photo: Photo | null) => void;
-  showSettings: boolean;
-  setShowSettings: (show: boolean) => void;
-  groupedPhotos: GroupedPhotos;
-  isLoading: boolean;
-} {
-  const [searchQuery, setSearchQuery] = useState('');
+export function usePhotoGallery(searchQuery: string) {
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
-  const [showSettings, setShowSettings] = useState(false);
-
-  const { data: photosData = [], isLoading } =
+  const { data: photos, isLoading } =
     trpcReact.vrchatPhoto.getVrchatPhotoPathModelList.useQuery();
 
-  const allPhotos = useMemo(() => {
-    console.log('[usePhotoGallery] Raw data:', {
-      isLoading,
-      photosDataLength: photosData?.length,
-    });
-
-    return photosData.map((photo) => ({
-      id: photo.id,
-      url: photo.photoPath,
-      tags: [],
-      takenAt: photo.photoTakenAt,
-      location: {
-        name: '',
-        description: '',
-        coverImage: '',
-        visitedWith: [],
-        joinedAt: new Date(photo.photoTakenAt),
-      },
-      width: photo.width,
-      height: photo.height,
-    }));
-  }, [photosData, isLoading]);
-
-  const filteredPhotos = useMemo(() => {
-    if (!searchQuery) return allPhotos;
-
-    console.log('[usePhotoGallery] Filtering photos:', {
-      allPhotosLength: allPhotos.length,
-    });
-
-    const query = searchQuery.toLowerCase();
-    return allPhotos.filter(
-      (photo) =>
-        photo.location.name.toLowerCase().includes(query) ||
-        photo.location.description.toLowerCase().includes(query),
-    );
-  }, [allPhotos, searchQuery]);
+  // 検索クエリに基づいて写真をフィルタリング
+  const filteredPhotos =
+    photos
+      ?.map(
+        (photo) =>
+          ({
+            id: photo.id,
+            url: photo.photoPath,
+            width: photo.width,
+            height: photo.height,
+            takenAt: photo.photoTakenAt,
+            location: {
+              name: '',
+              description: '',
+              coverImage: '',
+              visitedWith: [],
+              joinedAt: photo.photoTakenAt,
+            },
+          }) satisfies Photo,
+      )
+      .filter((photo) => {
+        if (!searchQuery) return true;
+        const query = searchQuery.toLowerCase();
+        return (
+          photo.location.name.toLowerCase().includes(query) ||
+          photo.url.toLowerCase().includes(query)
+        );
+      }) ?? [];
 
   const groupedPhotos = useGroupPhotos(filteredPhotos);
 
   return {
-    searchQuery,
-    setSearchQuery,
-    selectedPhoto,
-    setSelectedPhoto,
-    showSettings,
-    setShowSettings,
     groupedPhotos,
     isLoading,
+    selectedPhoto,
+    setSelectedPhoto,
   };
 }

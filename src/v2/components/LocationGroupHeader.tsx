@@ -1,6 +1,6 @@
 import { trpcReact } from '@/trpc';
 import { format } from 'date-fns';
-import { Calendar, MapPin, Users } from 'lucide-react';
+import { Calendar, Laptop, MapPin, Users } from 'lucide-react';
 import React, { memo, useRef, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -28,6 +28,24 @@ interface Player {
   createdAt: Date;
   updatedAt: Date;
 }
+
+// プラットフォームのアイコンを表示するコンポーネント
+const PlatformBadge = memo(({ platform }: { platform: string }) => {
+  const platformName =
+    platform === 'standalonewindows'
+      ? 'PC'
+      : platform === 'android'
+        ? 'Quest'
+        : platform;
+  return (
+    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
+      <Laptop className="h-3 w-3 mr-1" />
+      {platformName}
+    </span>
+  );
+});
+
+PlatformBadge.displayName = 'PlatformBadge';
 
 export const LocationGroupHeader = ({
   worldId,
@@ -169,6 +187,15 @@ export const LocationGroupHeader = ({
             <span className="ml-2 text-xs opacity-75">
               Instance: {worldInstanceId}
             </span>
+            {details?.unityPackages && details.unityPackages.length > 0 && (
+              <span className="ml-2 flex items-center gap-1">
+                {Array.from(
+                  new Set(details.unityPackages.map((pkg) => pkg.platform)),
+                ).map((platform) => (
+                  <PlatformBadge key={platform} platform={platform} />
+                ))}
+              </span>
+            )}
           </p>
           {!isPlayersLoading && players && players.length > 0 && (
             <div className="flex items-center mt-2 text-sm">

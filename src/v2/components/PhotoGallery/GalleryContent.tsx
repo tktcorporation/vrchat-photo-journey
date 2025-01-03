@@ -1,81 +1,62 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import type { Photo } from '../../types/photo';
+import { memo } from 'react';
 import LocationGroupHeader from '../LocationGroupHeader';
 import PhotoGrid from '../PhotoGrid';
-import type { GroupedPhoto, GroupedPhotos } from './useGroupPhotos';
+import PhotoModal from '../PhotoModal';
+import { GalleryErrorBoundary } from './GalleryErrorBoundary';
+import { usePhotoGallery } from './usePhotoGallery';
 
-export interface GalleryContentProps {
-  groupedPhotos: GroupedPhotos;
-  onPhotoSelect: (photo: Photo) => void;
+interface GalleryContentProps {
+  searchQuery: string;
+  showEmptyGroups: boolean;
 }
 
-const BATCH_SIZE = 10;
+const GalleryContent = memo(
+  ({ searchQuery, showEmptyGroups }: GalleryContentProps) => {
+    const { groupedPhotos, isLoading, selectedPhoto, setSelectedPhoto } =
+      usePhotoGallery(searchQuery);
 
-export const GalleryContent = ({
-  groupedPhotos,
-  onPhotoSelect,
-}: GalleryContentProps) => {
-  const [visibleCount, setVisibleCount] = useState(BATCH_SIZE);
-  const loadMoreRef = useRef<HTMLDivElement>(null);
-
-  const groupEntries = useMemo(() => {
-    return Object.entries(groupedPhotos).sort(
-      (a, b) => b[1].joinDateTime.getTime() - a[1].joinDateTime.getTime(),
-    );
-  }, [groupedPhotos]);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting && visibleCount < groupEntries.length) {
-          setVisibleCount((prev) =>
-            Math.min(prev + BATCH_SIZE, groupEntries.length),
-          );
-        }
-      },
-      {
-        rootMargin: '200px',
-        threshold: 0.1,
-      },
-    );
-
-    if (loadMoreRef.current) {
-      observer.observe(loadMoreRef.current);
+    if (isLoading) {
+      return (
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-gray-500">写真を読み込み中...</div>
+        </div>
+      );
     }
 
-    return () => observer.disconnect();
-  }, [visibleCount, groupEntries.length]);
-
-  return (
-    <main className="flex-1 overflow-y-auto">
-      <div className="max-w-[2000px] mx-auto py-8">
-        <div className="space-y-8 px-4">
-          {groupEntries.slice(0, visibleCount).map(([key, group]) => (
-            <section key={key}>
-              <LocationGroupHeader
-                worldId={group.worldInfo?.worldId ?? null}
-                worldName={group.worldInfo?.worldName ?? null}
-                worldInstanceId={group.worldInfo?.worldInstanceId ?? null}
-                photoCount={group.photos.length}
-                joinDateTime={group.joinDateTime}
-              />
-              <div className="mt-4">
-                <PhotoGrid
-                  photos={[...group.photos].sort(
-                    (a, b) => b.takenAt.getTime() - a.takenAt.getTime(),
-                  )}
-                  onPhotoSelect={onPhotoSelect}
+    return (
+      <GalleryErrorBoundary>
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {Object.entries(groupedPhotos)
+            .filter(([_, group]) => showEmptyGroups || group.photos.length > 0)
+            .map(([key, group]) => (
+              <div key={key} className="space-y-4">
+                <LocationGroupHeader
+                  worldId={group.worldInfo?.worldId ?? null}
+                  worldName={group.worldInfo?.worldName ?? null}
+                  worldInstanceId={group.worldInfo?.worldInstanceId ?? null}
+                  photoCount={group.photos.length}
+                  joinDateTime={group.joinDateTime}
                 />
+                {group.photos.length > 0 && (
+                  <PhotoGrid
+                    photos={group.photos}
+                    onPhotoSelect={setSelectedPhoto}
+                  />
+                )}
               </div>
-            </section>
-          ))}
-          {visibleCount < groupEntries.length && (
-            <div ref={loadMoreRef} className="h-20" aria-hidden="true" />
-          )}
+            ))}
         </div>
-      </div>
-    </main>
-  );
-};
+        {selectedPhoto && (
+          <PhotoModal
+            photo={selectedPhoto}
+            onClose={() => setSelectedPhoto(null)}
+          />
+        )}
+      </GalleryErrorBoundary>
+    );
+  },
+);
+
+GalleryContent.displayName = 'GalleryContent';
 
 export default GalleryContent;

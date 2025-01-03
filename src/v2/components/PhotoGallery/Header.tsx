@@ -1,5 +1,5 @@
 import { trpcReact } from '@/trpc';
-import { RefreshCw, Settings } from 'lucide-react';
+import { Eye, EyeOff, RefreshCw, Settings } from 'lucide-react';
 import { memo, useState } from 'react';
 import { useI18n } from '../../i18n/store';
 import SearchBar from '../SearchBar';
@@ -8,59 +8,86 @@ interface HeaderProps {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   onOpenSettings: () => void;
+  showEmptyGroups: boolean;
+  onToggleEmptyGroups: () => void;
 }
 
-const Header = memo(({ setSearchQuery, onOpenSettings }: HeaderProps) => {
-  const { t } = useI18n();
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const { mutate: loadLogInfo } =
-    trpcReact.logInfo.loadLogInfoIndex.useMutation({
-      onSettled: () => {
-        setIsRefreshing(false);
-      },
-    });
+const Header = memo(
+  ({
+    setSearchQuery,
+    onOpenSettings,
+    showEmptyGroups,
+    onToggleEmptyGroups,
+  }: HeaderProps) => {
+    const { t } = useI18n();
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const { mutate: loadLogInfo } =
+      trpcReact.logInfo.loadLogInfoIndex.useMutation({
+        onSettled: () => {
+          setIsRefreshing(false);
+        },
+      });
 
-  const handleRefresh = async () => {
-    if (!isRefreshing) {
-      setIsRefreshing(true);
-      loadLogInfo();
-    }
-  };
+    const handleRefresh = async () => {
+      if (!isRefreshing) {
+        setIsRefreshing(true);
+        loadLogInfo();
+      }
+    };
 
-  return (
-    <header className="flex-none bg-white dark:bg-gray-800 shadow-sm z-50 sticky top-0">
-      <div className="max-w-[2000px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div className="flex justify-end items-center">
-          <div className="flex items-center gap-4">
-            <SearchBar onSearch={setSearchQuery} />
+    return (
+      <header className="flex-none bg-white dark:bg-gray-800 shadow-sm z-50 sticky top-0">
+        <div className="max-w-[2000px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-end items-center py-4">
+            <div className="flex items-center gap-4">
+              <SearchBar onSearch={setSearchQuery} />
+              <button
+                type="button"
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                aria-label={t('common.refresh')}
+                title={t('common.refresh')}
+              >
+                <RefreshCw
+                  className={`h-5 w-5 text-gray-500 dark:text-gray-400 ${
+                    isRefreshing ? 'animate-spin' : ''
+                  }`}
+                />
+              </button>
+              <button
+                type="button"
+                onClick={onOpenSettings}
+                className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                aria-label={t('common.settings')}
+              >
+                <Settings className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+              </button>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 pb-4 border-t border-gray-200 dark:border-gray-700 pt-2">
             <button
               type="button"
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-              className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
-              aria-label={t('common.refresh')}
-              title={t('common.refresh')}
+              onClick={onToggleEmptyGroups}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             >
-              <RefreshCw
-                className={`h-5 w-5 text-gray-500 dark:text-gray-400 ${
-                  isRefreshing ? 'animate-spin' : ''
-                }`}
-              />
-            </button>
-            <button
-              type="button"
-              onClick={onOpenSettings}
-              className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              aria-label={t('common.settings')}
-            >
-              <Settings className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+              {!showEmptyGroups ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
+              <span>
+                {!showEmptyGroups
+                  ? t('common.showEmptyGroups')
+                  : t('common.hideEmptyGroups')}
+              </span>
             </button>
           </div>
         </div>
-      </div>
-    </header>
-  );
-});
+      </header>
+    );
+  },
+);
 
 Header.displayName = 'Header';
 

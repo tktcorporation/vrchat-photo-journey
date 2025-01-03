@@ -6,10 +6,12 @@ const en: Translations = {
     close: 'Close',
     loading: 'Loading...',
     noPhotosFound: 'No photos found',
-    photos: 'photos',
-    refresh: 'Check for new photos',
+    photos: 'Photos',
+    refresh: 'Refresh',
+    showEmptyGroups: 'Show groups without photos',
+    hideEmptyGroups: 'Hide groups without photos',
     search: {
-      placeholder: 'Search photos...',
+      placeholder: 'Search...',
     },
     toast: {
       settingsDeleted: 'Settings deleted',
