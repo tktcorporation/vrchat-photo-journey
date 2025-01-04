@@ -1,48 +1,55 @@
 import { trpcReact } from '@/trpc';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { Photo } from '../../types/photo';
 import { useGroupPhotos } from './useGroupPhotos';
 
 export function usePhotoGallery(searchQuery: string) {
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
-  const { data: photos, isLoading } =
-    trpcReact.vrchatPhoto.getVrchatPhotoPathModelList.useQuery();
+  const { data: photoList, isLoading: isLoadingPhotos } =
+    trpcReact.vrchatPhoto.getVrchatPhotoPathModelList.useQuery(undefined, {
+      staleTime: 1000 * 60 * 5,
+      cacheTime: 1000 * 60 * 30,
+    });
 
-  // 検索クエリに基づいて写真をフィルタリング
-  const filteredPhotos =
-    photos
-      ?.map(
-        (photo) =>
-          ({
-            id: photo.id,
-            url: photo.photoPath,
-            width: photo.width,
-            height: photo.height,
-            takenAt: photo.photoTakenAt,
-            location: {
-              name: '',
-              description: '',
-              coverImage: '',
-              visitedWith: [],
-              joinedAt: photo.photoTakenAt,
-            },
-          }) satisfies Photo,
-      )
-      .filter((photo) => {
-        if (!searchQuery) return true;
-        const query = searchQuery.toLowerCase();
-        return (
-          photo.location.name.toLowerCase().includes(query) ||
-          photo.url.toLowerCase().includes(query)
-        );
-      }) ?? [];
+  const photos = useMemo(() => {
+    if (!photoList) return [];
 
-  const groupedPhotos = useGroupPhotos(filteredPhotos);
+    return photoList.map((photo) => ({
+      id: photo.id,
+      url: photo.photoPath,
+      fileName: photo.photoPath.split('/').pop() || '',
+      width: photo.width || 1920,
+      height: photo.height || 1080,
+      takenAt: photo.photoTakenAt,
+      location: {
+        name: '',
+        description: '',
+        coverImage: '',
+        visitedWith: [],
+        joinedAt: photo.photoTakenAt,
+      },
+    }));
+  }, [photoList]);
+
+  const filteredPhotos = useMemo(() => {
+    if (!searchQuery) return photos;
+    const query = searchQuery.toLowerCase();
+    return photos.filter((photo) =>
+      photo.fileName.toLowerCase().includes(query),
+    );
+  }, [photos, searchQuery]);
+
+  const {
+    groupedPhotos,
+    isLoading: isGrouping,
+    loadMoreGroups,
+  } = useGroupPhotos(filteredPhotos);
 
   return {
     groupedPhotos,
-    isLoading,
+    isLoading: isLoadingPhotos || isGrouping,
     selectedPhoto,
     setSelectedPhoto,
+    loadMoreGroups,
   };
 }

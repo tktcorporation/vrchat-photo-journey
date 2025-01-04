@@ -6,7 +6,7 @@ import SettingsModal from './settings/SettingsModal';
 const PhotoGallery = memo(() => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showSettings, setShowSettings] = useState(false);
-  const [showEmptyGroups, setShowEmptyGroups] = useState(false);
+  const [showEmptyGroups, setShowEmptyGroups] = useState(true);
 
   return (
     <div className="flex flex-col h-full">

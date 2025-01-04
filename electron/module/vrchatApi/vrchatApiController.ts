@@ -1,12 +1,22 @@
+import { match } from 'ts-pattern';
 import { z } from 'zod';
 import { procedure, router as trpcRouter } from './../../trpc';
 import * as vrchatApiService from './service';
+import type { VRChatWorldInfoFromApi } from './service';
 import { type VRChatWorldId, VRChatWorldIdSchema } from './valueObject';
 
-const getVrcWorldInfoByWorldId = async (worldId: VRChatWorldId) => {
+const getVrcWorldInfoByWorldId = async (
+  worldId: VRChatWorldId,
+): Promise<VRChatWorldInfoFromApi | null> => {
   const result = await vrchatApiService.getVrcWorldInfoByWorldId(worldId);
   if (result.isErr()) {
-    throw result.error;
+    return match(result.error)
+      .with('WORLD_NOT_FOUND', () => {
+        return null;
+      })
+      .otherwise((error) => {
+        throw error;
+      });
   }
   return result.value;
 };

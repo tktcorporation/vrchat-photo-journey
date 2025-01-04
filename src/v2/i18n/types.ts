@@ -21,8 +21,8 @@ export interface Translations {
     noPhotosFound: string;
     photos: string;
     refresh: string;
-    showEmptyGroups: string;
-    hideEmptyGroups: string;
+    showingEmptyGroups: string;
+    hidingEmptyGroups: string;
     search: {
       placeholder: string;
     };

@@ -78,8 +78,8 @@ const Header = memo(
               )}
               <span>
                 {!showEmptyGroups
-                  ? t('common.showEmptyGroups')
-                  : t('common.hideEmptyGroups')}
+                  ? t('common.hidingEmptyGroups')
+                  : t('common.showingEmptyGroups')}
               </span>
             </button>
           </div>

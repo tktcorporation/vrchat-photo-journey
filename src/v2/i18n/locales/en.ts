@@ -8,8 +8,8 @@ const en: Translations = {
     noPhotosFound: 'No photos found',
     photos: 'Photos',
     refresh: 'Refresh',
-    showEmptyGroups: 'Show groups without photos',
-    hideEmptyGroups: 'Hide groups without photos',
+    showingEmptyGroups: 'Show groups without photos',
+    hidingEmptyGroups: 'Hide groups without photos',
     search: {
       placeholder: 'Search...',
     },
