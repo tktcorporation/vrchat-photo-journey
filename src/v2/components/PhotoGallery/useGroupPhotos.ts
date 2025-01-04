@@ -120,18 +120,24 @@ function convertGroupsToRecord(groups: GroupedPhoto[]): GroupedPhotos {
   }, {});
 }
 
-export function useGroupPhotos(photos: Photo[]): GroupedPhotos {
+export function useGroupPhotos(photos: Photo[]): {
+  groupedPhotos: GroupedPhotos;
+  isLoading: boolean;
+  loadMoreGroups: () => void;
+} {
   const [groupedPhotos, setGroupedPhotos] = useState<GroupedPhotos>({});
+  const [processedCount, setProcessedCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
   const processingRef = useRef(false);
+  const photosRef = useRef(photos);
+  const CHUNK_SIZE = 50;
 
-  // 写真を時系列で並べ替え（新しい順）
   const sortedPhotos = useMemo(() => {
     return [...photos].sort(
       (a, b) => b.takenAt.getTime() - a.takenAt.getTime(),
     );
   }, [photos]);
 
-  // すべてのワールド参加ログを取得
   const { data: joinLogs } =
     trpcReact.vrchatWorldJoinLog.getVRChatWorldJoinLogList.useQuery(
       {
@@ -143,17 +149,95 @@ export function useGroupPhotos(photos: Photo[]): GroupedPhotos {
       },
     );
 
-  // グループの作成
-  useEffect(() => {
-    if (!joinLogs || processingRef.current) return;
+  const processNextChunk = useCallback(() => {
+    if (!joinLogs || processingRef.current) return false;
     processingRef.current = true;
 
-    const groups = groupPhotosBySession(sortedPhotos, joinLogs);
-    const newGroups = convertGroupsToRecord(groups);
-    setGroupedPhotos(newGroups);
+    try {
+      const remainingPhotos = sortedPhotos.slice(processedCount);
+      if (remainingPhotos.length === 0) {
+        return false;
+      }
 
+      const photosToProcess = remainingPhotos.slice(0, CHUNK_SIZE);
+      const groups = groupPhotosBySession(photosToProcess, joinLogs);
+      const newGroups = convertGroupsToRecord(groups);
+
+      setGroupedPhotos((prev) => ({
+        ...prev,
+        ...newGroups,
+      }));
+      setProcessedCount((prev) => prev + photosToProcess.length);
+
+      return remainingPhotos.length > CHUNK_SIZE;
+    } finally {
+      processingRef.current = false;
+    }
+  }, [joinLogs, sortedPhotos, processedCount]);
+
+  const loadMoreGroups = useCallback(() => {
+    if (isLoading || !joinLogs) return;
+    setIsLoading(true);
+
+    requestAnimationFrame(() => {
+      try {
+        const hasMore = processNextChunk();
+        if (!hasMore) {
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Error processing photos:', error);
+        setIsLoading(false);
+      }
+    });
+  }, [isLoading, processNextChunk, joinLogs]);
+
+  // 写真データが変更された場合のリセット
+  useEffect(() => {
+    if (!photos.length) return;
+    if (photos === photosRef.current) return;
+
+    photosRef.current = photos;
+    setGroupedPhotos({});
+    setProcessedCount(0);
+    setIsLoading(true);
     processingRef.current = false;
-  }, [joinLogs, sortedPhotos]);
 
-  return groupedPhotos;
+    requestAnimationFrame(() => {
+      try {
+        const hasMore = processNextChunk();
+        if (!hasMore) {
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Error loading data:', error);
+        setIsLoading(false);
+      }
+    });
+  }, [photos, processNextChunk]);
+
+  // 初期データの読み込み
+  useEffect(() => {
+    if (!photos.length || !joinLogs) return;
+    if (processedCount > 0) return;
+
+    setIsLoading(true);
+    requestAnimationFrame(() => {
+      try {
+        const hasMore = processNextChunk();
+        if (!hasMore) {
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Error loading initial data:', error);
+        setIsLoading(false);
+      }
+    });
+  }, [photos, joinLogs, processedCount, processNextChunk]);
+
+  return {
+    groupedPhotos,
+    isLoading: isLoading || !joinLogs || processedCount === 0,
+    loadMoreGroups,
+  };
 }

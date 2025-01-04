@@ -8,8 +8,8 @@ const ja: Translations = {
     noPhotosFound: '写真が見つかりませんでした',
     photos: '写真',
     refresh: '更新',
-    showEmptyGroups: '写真がないグループを表示',
-    hideEmptyGroups: '写真がないグループを非表示',
+    showingEmptyGroups: '写真がないグループを表示',
+    hidingEmptyGroups: '写真がないグループを非表示',
     search: {
       placeholder: '検索...',
     },

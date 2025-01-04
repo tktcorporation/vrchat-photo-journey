@@ -58,8 +58,10 @@ export const LocationGroupHeader = ({
   const [isHovered, setIsHovered] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
+  const [shouldLoadDetails, setShouldLoadDetails] = useState(false);
   const playerListRef = useRef<HTMLSpanElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const visibilityTimeoutRef = useRef<NodeJS.Timeout>();
 
   const handleMouseMove = (event: React.MouseEvent) => {
     setTooltipPosition({
@@ -73,10 +75,19 @@ export const LocationGroupHeader = ({
       (entries) => {
         if (entries.some((entry) => entry.isIntersecting)) {
           setIsVisible(true);
+          // 表示されてから少し待ってからデータを読み込む
+          visibilityTimeoutRef.current = setTimeout(() => {
+            setShouldLoadDetails(true);
+          }, 100);
+        } else {
+          setIsVisible(false);
+          if (visibilityTimeoutRef.current) {
+            clearTimeout(visibilityTimeoutRef.current);
+          }
         }
       },
       {
-        rootMargin: '50px',
+        rootMargin: '100px',
         threshold: 0,
       },
     );
@@ -87,6 +98,9 @@ export const LocationGroupHeader = ({
 
     return () => {
       observer.disconnect();
+      if (visibilityTimeoutRef.current) {
+        clearTimeout(visibilityTimeoutRef.current);
+      }
     };
   }, []);
 
@@ -114,7 +128,7 @@ export const LocationGroupHeader = ({
   // ワールドの詳細情報を取得
   const { data: details } =
     trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery(worldId ?? '', {
-      enabled: worldId !== null && isVisible,
+      enabled: worldId !== null && shouldLoadDetails,
       staleTime: 1000 * 60 * 5,
       cacheTime: 1000 * 60 * 30,
     });
@@ -122,7 +136,7 @@ export const LocationGroupHeader = ({
   // 同じワールドにいたプレイヤーリストを取得
   const { data: playersResult, isLoading: isPlayersLoading } =
     trpcReact.logInfo.getPlayerListInSameWorld.useQuery(joinDateTime, {
-      enabled: worldId !== null && isVisible,
+      enabled: worldId !== null && shouldLoadDetails,
       staleTime: 1000 * 60 * 5,
       cacheTime: 1000 * 60 * 30,
     });
