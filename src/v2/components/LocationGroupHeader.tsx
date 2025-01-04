@@ -126,7 +126,7 @@ export const LocationGroupHeader = ({
   }, []);
 
   // ワールドの詳細情報を取得
-  const { data: details } =
+  const { data: details, error: worldError } =
     trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery(worldId ?? '', {
       enabled: worldId !== null && shouldLoadDetails,
       staleTime: 1000 * 60 * 5,
@@ -167,21 +167,25 @@ export const LocationGroupHeader = ({
     >
       <div className="relative h-48 overflow-hidden">
         <div
-          className={`absolute inset-0 bg-gradient-to-t from-black/60 to-transparent ${
-            !isImageLoaded ? 'bg-gray-200 dark:bg-gray-700' : ''
+          className={`absolute inset-0 ${
+            !isImageLoaded || !details?.thumbnailImageUrl
+              ? 'bg-gray-200 dark:bg-gray-700'
+              : ''
           }`}
-        />
-        {isVisible && details && (
-          <img
-            src={details.thumbnailImageUrl}
-            alt={details.name}
-            className={`w-full h-full object-cover transition-opacity duration-300 ${
-              isImageLoaded ? 'opacity-100' : 'opacity-0'
-            }`}
-            loading="lazy"
-            onLoad={() => setIsImageLoaded(true)}
-          />
-        )}
+        >
+          {details?.thumbnailImageUrl && isVisible && (
+            <img
+              src={details.thumbnailImageUrl}
+              alt={details.name}
+              className={`w-full h-full object-cover transition-opacity duration-300 ${
+                isImageLoaded ? 'opacity-100' : 'opacity-0'
+              }`}
+              loading="lazy"
+              onLoad={() => setIsImageLoaded(true)}
+            />
+          )}
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
           <div className="flex items-center justify-between">
             <h3 className="text-2xl font-bold flex items-center">
@@ -197,7 +201,7 @@ export const LocationGroupHeader = ({
             </div>
           </div>
           <p className="text-sm opacity-90 mt-1">
-            {details?.authorName}
+            {details?.authorName && details.authorName}
             <span className="ml-2 text-xs opacity-75">
               Instance: {worldInstanceId}
             </span>
@@ -208,6 +212,11 @@ export const LocationGroupHeader = ({
                 ).map((platform) => (
                   <PlatformBadge key={platform} platform={platform} />
                 ))}
+              </span>
+            )}
+            {worldError && (
+              <span className="text-yellow-500 dark:text-yellow-400">
+                (ワールド情報は削除されています)
               </span>
             )}
           </p>

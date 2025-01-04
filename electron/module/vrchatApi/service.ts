@@ -94,10 +94,15 @@ const VRChatWorldInfoFromApiSchema = z.object({
 });
 export const getVrcWorldInfoByWorldId = async (
   worldId: VRChatWorldId,
-): Promise<neverthrow.Result<VRChatWorldInfoFromApi, Error>> => {
+): Promise<
+  neverthrow.Result<VRChatWorldInfoFromApi, Error | 'WORLD_NOT_FOUND'>
+> => {
   const reqUrl = `https://api.vrchat.cloud/api/1/worlds/${worldId.value}`;
   const response = await getData(reqUrl);
   if (!response.isOk()) {
+    if (response.error.status === 404) {
+      return neverthrow.err('WORLD_NOT_FOUND' as const);
+    }
     return neverthrow.err(
       new Error(`getVrcWorldInfoByWorldId: ${response.error.message}`),
     );
