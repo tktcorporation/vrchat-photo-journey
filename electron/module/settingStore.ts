@@ -9,6 +9,8 @@ const settingStoreKey = [
   'vrchatPhotoDir',
   'removeAdjacentDuplicateWorldEntriesFlag',
   'backgroundFileCreateFlag',
+  'termsAccepted',
+  'termsVersion',
 ] as const;
 export type SettingStoreKey = (typeof settingStoreKey)[number];
 
@@ -98,6 +100,32 @@ const getBackgroundFileCreateFlag =
   };
 
 /**
+ * 規約同意状態
+ */
+const getTermsAccepted =
+  (getB: (key: SettingStoreKey) => boolean | null) => (): boolean => {
+    const value = getB('termsAccepted');
+    return value ?? false;
+  };
+
+const setTermsAccepted =
+  (set: (key: SettingStoreKey, value: unknown) => void) => (flag: boolean) => {
+    set('termsAccepted', flag);
+  };
+
+const getTermsVersion =
+  (getS: (key: SettingStoreKey) => string | null) => (): string => {
+    const value = getS('termsVersion');
+    return value ?? '';
+  };
+
+const setTermsVersion =
+  (set: (key: SettingStoreKey, value: unknown) => void) =>
+  (version: string) => {
+    set('termsVersion', version);
+  };
+
+/**
  * Clear all settings
  */
 const clearAllStoredSettings = (settingsStore: Store) => () => {
@@ -164,6 +192,10 @@ const setSettingStore = (name: storeName) => {
       }
       return undefined;
     },
+    getTermsAccepted: getTermsAccepted(getB),
+    setTermsAccepted: setTermsAccepted(set),
+    getTermsVersion: getTermsVersion(getS),
+    setTermsVersion: setTermsVersion(set),
   };
   settingStore = _settingStore;
   return _settingStore;
@@ -174,7 +206,7 @@ const initSettingStore = (name: storeName) => {
     const existsPath = settingStore.__store.path;
     const existsName = path.basename(existsPath, '.json');
     log.info(
-      `SettingStore already initialized. existsName: ${existsName}, newName: ${name}`,
+      `SettingStore already initialized. existsName: ${existsName}, newName: ${name}。file: ${existsPath}`,
     );
     if (existsName === name) {
       return getSettingStore();
@@ -195,5 +227,25 @@ const getSettingStore = () => {
   }
   return settingStore;
 };
+
+export interface SettingStore {
+  __store: Store<Record<string, unknown>>;
+  getLogFilesDir: () => string | null;
+  setLogFilesDir: (dirPath: string) => void;
+  getVRChatPhotoDir: () => string | null;
+  setVRChatPhotoDir: (dirPath: string) => void;
+  getRemoveAdjacentDuplicateWorldEntriesFlag: () => boolean | null;
+  setRemoveAdjacentDuplicateWorldEntriesFlag: (flag: boolean) => void;
+  getBackgroundFileCreateFlag: () => boolean | null;
+  setBackgroundFileCreateFlag: (flag: boolean) => void;
+  clearAllStoredSettings: () => void;
+  clearStoredSetting: (key: SettingStoreKey) => neverthrow.Result<void, Error>;
+  getWindowBounds: () => Rectangle | undefined;
+  setWindowBounds: (bounds: Rectangle) => void;
+  getTermsAccepted: () => boolean;
+  setTermsAccepted: (accepted: boolean) => void;
+  getTermsVersion: () => string;
+  setTermsVersion: (version: string) => void;
+}
 
 export { getSettingStore, initSettingStore, initSettingStoreForTest };

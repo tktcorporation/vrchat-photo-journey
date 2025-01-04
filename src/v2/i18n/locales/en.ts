@@ -93,6 +93,11 @@ const en: Translations = {
     checking: 'Checking for new photos...',
   },
   yearlyVisitors: 'Annual visitors',
+  terms: {
+    title: 'Terms of Service and Privacy Policy',
+    updateTitle: 'Terms of Service and Privacy Policy Update',
+    accept: 'Accept',
+  },
 };
 
 export default en;

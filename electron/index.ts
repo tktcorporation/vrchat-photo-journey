@@ -1,14 +1,5 @@
 import path from 'node:path';
-import { init } from '@sentry/electron/main';
 import { type BrowserWindow, app, ipcMain } from 'electron';
-
-// 本番環境でのみSentryを初期化
-if (app?.isPackaged) {
-  init({
-    dsn: 'https://0c062396cbe896482888204f42f947ec@o4504163555213312.ingest.us.sentry.io/4508574659837952',
-    debug: process.env.NODE_ENV === 'development',
-  });
-}
 
 // Packages
 import { createIPCHandler } from 'electron-trpc/main';
@@ -33,6 +24,30 @@ const registerIpcMainListeners = () => {
     log.error({
       message,
     });
+  });
+
+  // 設定の取得
+  ipcMain.handle('get-setting', (_, key: string) => {
+    switch (key) {
+      case 'termsAccepted':
+        return settingStore.getTermsAccepted();
+      case 'termsVersion':
+        return settingStore.getTermsVersion();
+      default:
+        return null;
+    }
+  });
+
+  // 設定の保存
+  ipcMain.handle('set-setting', (_, key: string, value: unknown) => {
+    switch (key) {
+      case 'termsAccepted':
+        settingStore.setTermsAccepted(value as boolean);
+        break;
+      case 'termsVersion':
+        settingStore.setTermsVersion(value as string);
+        break;
+    }
   });
 };
 

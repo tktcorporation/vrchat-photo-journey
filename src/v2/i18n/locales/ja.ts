@@ -93,6 +93,11 @@ const ja: Translations = {
     checking: '新しい写真を確認中...',
   },
   yearlyVisitors: '年間来場者数',
+  terms: {
+    title: '利用規約とプライバシーポリシー',
+    updateTitle: '利用規約とプライバシーポリシーの更新',
+    accept: '同意する',
+  },
 };
 
 export default ja;
