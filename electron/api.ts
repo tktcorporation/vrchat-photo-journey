@@ -1,6 +1,7 @@
 import { observable } from '@trpc/server/observable';
 import z from 'zod';
 
+import { init as initSentry } from '@sentry/electron/main';
 import { backgroundSettingsRouter } from './module/backgroundSettings/controller/backgroundSettingsController';
 import { electronUtilRouter } from './module/electronUtil/controller/electronUtilController';
 import { logInfoRouter } from './module/logInfo/logInfoCointroller';
@@ -132,6 +133,32 @@ export const router = trpcRouter({
         return false;
       },
     );
+  }),
+  getTermsAccepted: procedure.query(() => {
+    return {
+      accepted: settingStore.getTermsAccepted(),
+      version: settingStore.getTermsVersion(),
+    };
+  }),
+  setTermsAccepted: procedure
+    .input(
+      z.object({
+        accepted: z.boolean(),
+        version: z.string(),
+      }),
+    )
+    .mutation(({ input }) => {
+      settingStore.setTermsAccepted(input.accepted);
+      settingStore.setTermsVersion(input.version);
+    }),
+  initializeSentry: procedure.mutation(() => {
+    const hasAcceptedTerms = settingStore.getTermsAccepted();
+    if (hasAcceptedTerms && process.env.NODE_ENV === 'production') {
+      initSentry({
+        dsn: process.env.VITE_SENTRY_DSN,
+        debug: false,
+      });
+    }
   }),
 });
 

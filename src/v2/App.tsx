@@ -1,24 +1,122 @@
 import { trpcReact } from '@/trpc';
 import TrpcWrapper from '@/trpcWrapper';
 import { Toaster } from '@/v2/components/ui/toaster';
+import { init as initSentry } from '@sentry/electron/renderer';
 import type React from 'react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import PhotoGallery from './components/PhotoGallery';
+import { TermsModal } from './components/TermsModal';
+import { terms } from './constants/terms/ja';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { useToast } from './hooks/use-toast';
+
+function AppContent() {
+  const [showTerms, setShowTerms] = useState(false);
+  const [isUpdate, setIsUpdate] = useState(false);
+  const [hasAcceptedTerms, setHasAcceptedTerms] = useState(false);
+  const { toast } = useToast();
+
+  const { data: termsStatus } = trpcReact.getTermsAccepted.useQuery();
+  const { mutateAsync: setTermsAccepted } =
+    trpcReact.setTermsAccepted.useMutation({
+      onError: (error) => {
+        toast({
+          variant: 'destructive',
+          title: '規約同意の保存に失敗しました',
+          description: error.message,
+        });
+      },
+    });
+  const { mutateAsync: initializeSentryMain } =
+    trpcReact.initializeSentry.useMutation({
+      onError: (error) => {
+        toast({
+          variant: 'destructive',
+          title: 'Sentryの初期化に失敗しました',
+          description: error.message,
+        });
+      },
+    });
+
+  useEffect(() => {
+    const checkTermsAcceptance = async () => {
+      if (!termsStatus) return;
+
+      const { accepted, version } = termsStatus;
+      const currentVersion = terms.version;
+      console.log('termsStatus', termsStatus);
+
+      if (!accepted) {
+        setShowTerms(true);
+        setIsUpdate(false);
+        setHasAcceptedTerms(false);
+      } else if (version !== currentVersion) {
+        setShowTerms(true);
+        setIsUpdate(true);
+        setHasAcceptedTerms(false);
+      } else {
+        setHasAcceptedTerms(true);
+        // 規約同意済みの場合のみSentryを初期化
+        await initializeSentry();
+      }
+    };
+
+    checkTermsAcceptance();
+  }, [termsStatus]);
+
+  const initializeSentry = async () => {
+    // レンダラープロセスのSentryを初期化
+    if (termsStatus?.accepted && process.env.NODE_ENV === 'production') {
+      initSentry({
+        dsn: process.env.VITE_SENTRY_DSN,
+        enableNative: true,
+      });
+      // メインプロセスのSentryを初期化
+      await initializeSentryMain();
+    }
+  };
+
+  const handleTermsAccept = async () => {
+    await setTermsAccepted({
+      accepted: true,
+      version: terms.version,
+    });
+    setShowTerms(false);
+    setHasAcceptedTerms(true);
+    // 規約同意時にSentryを初期化
+    await initializeSentry();
+  };
+
+  if (!hasAcceptedTerms) {
+    return (
+      <div className="h-screen flex flex-col overflow-hidden bg-white dark:bg-gray-900">
+        <TermsModal
+          open={showTerms}
+          onAccept={handleTermsAccept}
+          isUpdate={isUpdate}
+          canClose={false}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-screen flex flex-col overflow-hidden bg-white dark:bg-gray-900">
+      <ToasterWrapper />
+      <Contents>
+        <PhotoGallery />
+      </Contents>
+    </div>
+  );
+}
 
 function App() {
   return (
     <ErrorBoundary>
       <TrpcWrapper>
         <ThemeProvider>
-          <div className="h-screen flex flex-col overflow-hidden bg-white dark:bg-gray-900">
-            <ToasterWrapper />
-            <Contents>
-              <PhotoGallery />
-            </Contents>
-          </div>
+          <AppContent />
         </ThemeProvider>
       </TrpcWrapper>
     </ErrorBoundary>

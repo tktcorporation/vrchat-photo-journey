@@ -105,4 +105,9 @@ export interface Translations {
     checking: string;
   };
   yearlyVisitors: string;
+  terms: {
+    title: string;
+    updateTitle: string;
+    accept: string;
+  };
 }
