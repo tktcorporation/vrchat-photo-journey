@@ -1,7 +1,8 @@
 import { trpcReact } from '@/trpc';
 import { format } from 'date-fns';
-import { Calendar, Laptop, MapPin, Users } from 'lucide-react';
+import { Calendar, ExternalLink, Laptop, MapPin, Users } from 'lucide-react';
 import React, { memo, useRef, useState, useEffect } from 'react';
+import type { ReactPortal } from 'react';
 import { createPortal } from 'react-dom';
 
 /**
@@ -165,7 +166,7 @@ export const LocationGroupHeader = ({
       ref={containerRef}
       className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden"
     >
-      <div className="relative h-48 overflow-hidden">
+      <div className="relative h-48 overflow-hidden group">
         <div
           className={`absolute inset-0 ${
             !isImageLoaded || !details?.thumbnailImageUrl
@@ -174,54 +175,81 @@ export const LocationGroupHeader = ({
           }`}
         >
           {details?.thumbnailImageUrl && isVisible && (
-            <img
-              src={details.thumbnailImageUrl}
-              alt={details.name}
-              className={`w-full h-full object-cover transition-opacity duration-300 ${
-                isImageLoaded ? 'opacity-100' : 'opacity-0'
-              }`}
-              loading="lazy"
-              onLoad={() => setIsImageLoaded(true)}
-            />
+            <>
+              <div
+                className="absolute inset-0 scale-110 transition-transform duration-700 group-hover:scale-105"
+                style={{
+                  backgroundImage: `url(${details.thumbnailImageUrl})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  filter: 'blur(8px)',
+                }}
+              />
+              <img
+                src={details.imageUrl}
+                alt={details.name}
+                className={`relative w-full h-full object-cover transition-all duration-700 group-hover:scale-105 ${
+                  isImageLoaded ? 'opacity-100' : 'opacity-0'
+                }`}
+                loading="lazy"
+                onLoad={() => setIsImageLoaded(true)}
+              />
+            </>
           )}
         </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 p-4 text-white">
           <div className="flex items-center justify-between">
-            <h3 className="text-2xl font-bold flex items-center">
+            <h3 className="text-2xl font-bold flex items-center group/title">
               <MapPin className="h-5 w-5 mr-2 flex-shrink-0" />
-              {worldName}
+              <a
+                href={`https://vrchat.com/home/world/${worldId}/info`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:underline flex items-center"
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+              >
+                {worldName}
+                <ExternalLink className="h-4 w-4 ml-1 opacity-0 group-hover/title:opacity-100 transition-opacity" />
+              </a>
               <span className="ml-3 text-sm font-normal opacity-90">
                 ({photoCount}枚)
               </span>
             </h3>
-            <div className="flex items-center text-sm">
+            <div className="flex items-center text-sm backdrop-blur-sm bg-black/20 px-3 py-1 rounded-full">
               <Calendar className="h-4 w-4 mr-1.5" />
               {formattedDate}
             </div>
           </div>
-          <p className="text-sm opacity-90 mt-1">
-            {details?.authorName && details.authorName}
-            <span className="ml-2 text-xs opacity-75">
-              Instance: {worldInstanceId}
-            </span>
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
+            <div className="flex items-center">
+              {details?.authorName && (
+                <span className="opacity-90">By {details.authorName}</span>
+              )}
+              <span className="mx-2 opacity-50">•</span>
+              <span className="opacity-75 text-xs">
+                Instance: {worldInstanceId}
+              </span>
+            </div>
             {details?.unityPackages && details.unityPackages.length > 0 && (
-              <span className="ml-2 flex items-center gap-1">
+              <div className="flex items-center gap-1">
                 {Array.from(
                   new Set(details.unityPackages.map((pkg) => pkg.platform)),
                 ).map((platform) => (
                   <PlatformBadge key={platform} platform={platform} />
                 ))}
-              </span>
+              </div>
             )}
             {worldError && (
-              <span className="text-yellow-500 dark:text-yellow-400">
+              <span className="text-yellow-500 dark:text-yellow-400 text-xs">
                 (ワールド情報は削除されています)
               </span>
             )}
-          </p>
+          </div>
           {!isPlayersLoading && players && players.length > 0 && (
-            <div className="flex items-center mt-2 text-sm">
+            <div className="flex items-center mt-2 text-sm backdrop-blur-sm bg-black/20 self-start px-3 py-1 rounded-full">
               <Users className="h-4 w-4 mr-1.5" />
               <span
                 ref={playerListRef}
@@ -231,83 +259,58 @@ export const LocationGroupHeader = ({
                 onMouseLeave={() => setIsHovered(false)}
                 onMouseMove={handleMouseMove}
               >
-                <span className="opacity-75">一緒にいた人: </span>
                 {players.length <= 6 ? (
                   <>
                     {players.map((p: Player, index) => (
                       <React.Fragment key={p.id}>
                         <span className="opacity-90">{p.playerName}</span>
                         {index < players.length - 1 && (
-                          <span className="opacity-50"> , </span>
+                          <span className="opacity-50"> • </span>
                         )}
                       </React.Fragment>
                     ))}
-                    {createPortal(
-                      <div
-                        style={{
-                          position: 'fixed',
-                          visibility: isHovered ? 'visible' : 'hidden',
-                          opacity: isHovered ? 1 : 0,
-                          transition: 'opacity 200ms',
-                          top: tooltipPosition.top,
-                          left: tooltipPosition.left,
-                        }}
-                        className="z-50 p-4 bg-gray-900 text-white text-xs rounded-lg shadow-lg"
-                      >
-                        <div className="flex flex-wrap gap-2 max-w-[600px]">
-                          {players.map((p: Player) => (
-                            <span
-                              key={p.id}
-                              className="bg-gray-800 px-3 py-1 rounded-md"
-                            >
-                              {p.playerName}
-                            </span>
-                          ))}
-                        </div>
-                      </div>,
-                      document.body,
-                    )}
                   </>
                 ) : (
                   <>
                     {players.slice(0, 6).map((p: Player, index) => (
                       <React.Fragment key={p.id}>
                         <span className="opacity-90">{p.playerName}</span>
-                        {index < 5 && <span className="opacity-50"> , </span>}
+                        {index < 5 && <span className="opacity-50"> • </span>}
                       </React.Fragment>
                     ))}
-                    <span className="opacity-75">
-                      {' '}
+                    <span className="opacity-75 ml-1">
                       他{players.length - 6}人
                     </span>
-                    {createPortal(
-                      <div
-                        style={{
-                          position: 'fixed',
-                          visibility: isHovered ? 'visible' : 'hidden',
-                          opacity: isHovered ? 1 : 0,
-                          transition: 'opacity 200ms',
-                          top: tooltipPosition.top,
-                          left: tooltipPosition.left,
-                        }}
-                        className="z-50 p-4 bg-gray-900 text-white text-xs rounded-lg shadow-lg"
-                      >
-                        <div className="flex flex-wrap gap-2 max-w-[600px]">
-                          {players.map((p: Player) => (
-                            <span
-                              key={p.id}
-                              className="bg-gray-800 px-3 py-1 rounded-md"
-                            >
-                              {p.playerName}
-                            </span>
-                          ))}
-                        </div>
-                      </div>,
-                      document.body,
-                    )}
                   </>
                 )}
               </span>
+              {
+                createPortal(
+                  <div
+                    style={{
+                      position: 'fixed',
+                      visibility: isHovered ? 'visible' : 'hidden',
+                      opacity: isHovered ? 1 : 0,
+                      transition: 'opacity 200ms',
+                      top: tooltipPosition.top,
+                      left: tooltipPosition.left,
+                    }}
+                    className="z-50 p-4 bg-black/90 backdrop-blur-md text-white text-xs rounded-lg shadow-lg"
+                  >
+                    <div className="flex flex-wrap gap-2 max-w-[600px]">
+                      {players.map((p: Player) => (
+                        <span
+                          key={p.id}
+                          className="bg-white/10 px-3 py-1 rounded-full"
+                        >
+                          {p.playerName}
+                        </span>
+                      ))}
+                    </div>
+                  </div>,
+                  document.body,
+                ) as ReactPortal
+              }
             </div>
           )}
         </div>
