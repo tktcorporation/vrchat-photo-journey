@@ -63,6 +63,8 @@ export const LocationGroupHeader = ({
   const playerListRef = useRef<HTMLSpanElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const visibilityTimeoutRef = useRef<NodeJS.Timeout>();
+  const openUrlMutation =
+    trpcReact.electronUtil.openUrlInDefaultBrowser.useMutation();
 
   const handleMouseMove = (event: React.MouseEvent) => {
     setTooltipPosition({
@@ -202,18 +204,19 @@ export const LocationGroupHeader = ({
           <div className="flex items-center justify-between">
             <h3 className="text-2xl font-bold flex items-center group/title">
               <MapPin className="h-5 w-5 mr-2 flex-shrink-0" />
-              <a
-                href={`https://vrchat.com/home/world/${worldId}/info`}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                type="button"
                 className="hover:underline flex items-center"
                 onClick={(e) => {
                   e.stopPropagation();
+                  openUrlMutation.mutate(
+                    `https://vrchat.com/home/world/${worldId}/info`,
+                  );
                 }}
               >
                 {worldName}
                 <ExternalLink className="h-4 w-4 ml-1 opacity-0 group-hover/title:opacity-100 transition-opacity" />
-              </a>
+              </button>
               <span className="ml-3 text-sm font-normal opacity-90">
                 ({photoCount}枚)
               </span>
