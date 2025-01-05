@@ -1,7 +1,7 @@
 import readline from 'node:readline';
 import * as datefns from 'date-fns';
 import * as neverthrow from 'neverthrow';
-import { P, match } from 'ts-pattern';
+import { match } from 'ts-pattern';
 import * as fs from '../../lib/wrappedFs';
 
 import path from 'node:path';
@@ -260,6 +260,7 @@ export const appendLoglinesToFile = async (props: {
   logStoreFilePath: VRChatLogStoreFilePath;
 }): Promise<neverthrow.Result<void, Error>> => {
   const isExists = await fs.existsSyncSafe(props.logStoreFilePath.value);
+
   // ファイルが存在しない場合は新規作成
   if (!isExists) {
     const mkdirResult = await fs.mkdirSyncSafe(
@@ -273,45 +274,72 @@ export const appendLoglinesToFile = async (props: {
         return neverthrow.err(error.error);
       }
     }
-  }
-
-  const existingLogsResult = await fs.readFileSyncSafe(
-    props.logStoreFilePath.value,
-  );
-  let existingLogs: string;
-  if (existingLogsResult.isErr()) {
-    const error = match(existingLogsResult.error)
-      .with({ code: 'ENOENT' }, () => null)
-      .with({ code: P.string }, (ee) => ee)
-      .exhaustive();
-    if (error) {
-      return neverthrow.err(error.error);
+    // 新規ファイルの場合は直接書き込み
+    const newLog = `${props.logLines.map((l) => l.value).join('\n')}\n`;
+    const writeResult = await fs.writeFileSyncSafe(
+      props.logStoreFilePath.value,
+      newLog,
+    );
+    if (writeResult.isErr()) {
+      return neverthrow.err(new Error('ログファイルの作成に失敗しました'));
     }
-    existingLogs = '';
-  } else {
-    existingLogs = existingLogsResult.value.toString();
-  }
-  // 既存のログ行と重複している行は追加しない
-  const existingLines = existingLogs.split('\n');
-  const newLines = props.logLines.filter(
-    (line) => !existingLines.includes(line.value),
-  );
-  if (newLines.length === 0) {
     return neverthrow.ok(undefined);
   }
-  // 最終行には改行を追加
-  const newLog = `${newLines.map((l) => l.value).join('\n')}\n`;
-  const writeResult = await fs.appendFileAsync(
-    props.logStoreFilePath.value,
-    newLog,
-  );
-  if (writeResult.isErr()) {
-    const error = match(writeResult.error)
-      .with({ code: 'ENOENT' }, () => new Error('appendFileAsync ENOENT'))
-      .exhaustive();
-    if (error) {
+
+  // 既存のログ行をSetとして保持
+  const existingLines = new Set<string>();
+
+  try {
+    const stream = fs.createReadStream(props.logStoreFilePath.value);
+    const rl = readline.createInterface({
+      input: stream,
+      crlfDelay: Number.POSITIVE_INFINITY,
+    });
+
+    // ストリームでログを読み込み
+    for await (const line of rl) {
+      if (line.trim()) {
+        // 空行をスキップ
+        existingLines.add(line);
+      }
+    }
+
+    // 重複していない新しいログ行のみをフィルタリング
+    const newLines = props.logLines.filter(
+      (line) => !existingLines.has(line.value),
+    );
+
+    if (newLines.length === 0) {
+      return neverthrow.ok(undefined);
+    }
+
+    // 新しいログ行を追加
+    const newLog = `${newLines.map((l) => l.value).join('\n')}\n`;
+    const appendResult = await fs.appendFileAsync(
+      props.logStoreFilePath.value,
+      newLog,
+    );
+
+    if (appendResult.isErr()) {
+      const error = match(appendResult.error)
+        .with(
+          { code: 'ENOENT' },
+          () => new Error('ログファイルが見つかりません'),
+        )
+        .otherwise(
+          (e: { message?: string }) =>
+            new Error(
+              `ログの追記に失敗しました: ${e.message || '不明なエラー'}`,
+            ),
+        );
       return neverthrow.err(error);
     }
+
+    return neverthrow.ok(undefined);
+  } catch (err) {
+    const error = err as Error;
+    return neverthrow.err(
+      new Error(`ログファイルの処理中にエラーが発生しました: ${error.message}`),
+    );
   }
-  return neverthrow.ok(undefined);
 };
