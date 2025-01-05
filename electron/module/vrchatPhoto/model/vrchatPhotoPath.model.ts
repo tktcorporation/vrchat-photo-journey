@@ -149,3 +149,9 @@ export const getCountByYearMonthList = async (): Promise<
     return { photoTakenYear: year, photoTakenMonth: month, photoCount };
   });
 };
+
+export const getLatestVRChatPhoto = async () => {
+  return VRChatPhotoPathModel.findOne({
+    order: [['photoTakenAt', 'DESC']],
+  });
+};

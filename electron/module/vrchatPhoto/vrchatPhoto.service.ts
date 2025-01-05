@@ -66,20 +66,19 @@ export const getVRChatPhotoDirPath = (): VRChatPhotoDirPath => {
   return photoDir;
 };
 
-/**
- * VRChat の写真が保存されている場所を再帰的に取得し、DBに保存する
- */
-export const createVRChatPhotoPathIndex = async () => {
+interface VRChatPhotoInfo {
+  photoPath: string;
+  takenAt: Date;
+  width: number;
+  height: number;
+}
+
+const getVRChatPhotoList = async (): Promise<VRChatPhotoInfo[]> => {
   // 写真の保存箇所を取得
   const photoDir = getVRChatPhotoDirPath();
 
   // 保存箇所のpathから写真のpathを再帰的に取得
-  const photoList: {
-    photoPath: string;
-    photoTakenAt: Date;
-    width: number;
-    height: number;
-  }[] = [];
+  const photoList: VRChatPhotoInfo[] = [];
 
   // {photoDir}/**/VRChat_2023-11-08_15-11-42.163_2560x1440.png のようなファイル名のリストを取得
   const photoPathList = await glob(`${photoDir.value}/**/VRChat_*.png`);
@@ -93,28 +92,43 @@ export const createVRChatPhotoPathIndex = async () => {
       continue;
     }
 
-    const photoTakenAt =
+    const takenAt =
       // ファイル名の日時はlocal time なので、そのままparseする
       dateFns.parse(matchResult[1], 'yyyy-MM-dd_HH-mm-ss.SSS', new Date());
 
     // 画像のメタデータを取得
     const metadata = await sharp(photoPath).metadata();
-    const photoHeight = metadata.height ?? 720;
-    const photoWidth = metadata.width ?? 1280;
+    const height = metadata.height ?? 720;
+    const width = metadata.width ?? 1280;
 
     photoList.push({
       photoPath,
-      photoTakenAt,
-      width: photoWidth,
-      height: photoHeight,
+      takenAt,
+      width,
+      height,
     });
   }
 
-  console.log(`photoList.length: ${photoList.length}`);
+  return photoList;
+};
+
+export const createVRChatPhotoPathIndex = async (
+  lastProcessedDate?: string | null,
+) => {
+  const photoList = await getVRChatPhotoList();
+  const filteredPhotoList = lastProcessedDate
+    ? photoList.filter((photo) => photo.takenAt > new Date(lastProcessedDate))
+    : photoList;
 
   // DBに保存
-  const result = await model.createOrUpdateListVRChatPhotoPath(photoList);
-  return result;
+  return model.createOrUpdateListVRChatPhotoPath(
+    filteredPhotoList.map((photo) => ({
+      photoPath: photo.photoPath,
+      photoTakenAt: photo.takenAt,
+      width: photo.width,
+      height: photo.height,
+    })),
+  );
 };
 
 export const getVRChatPhotoPathList = async (query?: {
@@ -175,4 +189,9 @@ export const getVRChatPhotoItemData = async (
         .exhaustive(),
     );
   }
+};
+
+export const getLatestPhotoDate = async (): Promise<string | null> => {
+  const latestPhoto = await model.getLatestVRChatPhoto();
+  return latestPhoto?.photoTakenAt.toISOString() ?? null;
 };

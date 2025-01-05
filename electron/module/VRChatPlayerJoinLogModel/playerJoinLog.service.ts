@@ -42,3 +42,12 @@ export const getVRChatPlayerJoinLogListByJoinDateTime = async (props: {
     updatedAt: model.updatedAt,
   }));
 };
+
+export const getLatestDetectedDate = async (): Promise<string | null> => {
+  const latestLog = await model.findLatestPlayerJoinLog();
+  return latestLog?.joinDateTime.toISOString() ?? null;
+};
+
+export const findLatestPlayerJoinLog = async () => {
+  return model.findLatestPlayerJoinLog();
+};
