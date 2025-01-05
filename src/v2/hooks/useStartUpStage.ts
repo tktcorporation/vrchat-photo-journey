@@ -137,7 +137,13 @@ export const useStartupStage = (callbacks?: ProcessStageCallbacks) => {
     });
 
   const executeLogOperations = useCallback(() => {
-    console.log('executeLogOperations called', { logFilesDirData });
+    console.log('executeLogOperations called', { logFilesDirData, stages });
+
+    if (stages.logsStored !== 'pending') {
+      console.log('Log operations already started or completed');
+      return;
+    }
+
     if (!logFilesDirData) {
       console.log('logFilesDirData is not available');
       return;
@@ -155,6 +161,10 @@ export const useStartupStage = (callbacks?: ProcessStageCallbacks) => {
     }
 
     try {
+      if (stages.logsStored !== 'pending') {
+        console.log('Log operations was started by another call');
+        return;
+      }
       console.log('Starting store logs mutation');
       storeLogsMutation.mutate();
     } catch (error) {
@@ -163,7 +173,7 @@ export const useStartupStage = (callbacks?: ProcessStageCallbacks) => {
         error instanceof Error ? error.message : 'ログの保存に失敗しました';
       updateStage('logsStored', 'error', errorMessage);
     }
-  }, [logFilesDirData]);
+  }, [logFilesDirData, stages, storeLogsMutation, updateStage]);
 
   const retryProcess = useCallback(() => {
     setStages(initialStages);
