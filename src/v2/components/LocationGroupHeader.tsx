@@ -58,7 +58,7 @@ export const LocationGroupHeader = ({
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
   const [isHovered, setIsHovered] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
-  const [isImageLoaded, setIsImageLoaded] = useState(false);
+  const [isImageLoaded, _setIsImageLoaded] = useState(false);
   const [shouldLoadDetails, setShouldLoadDetails] = useState(false);
   const playerListRef = useRef<HTMLSpanElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -184,10 +184,10 @@ export const LocationGroupHeader = ({
                   backgroundImage: `url(${details.thumbnailImageUrl})`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
-                  filter: 'blur(8px)',
+                  filter: 'blur(4px)',
                 }}
               />
-              <img
+              {/* <img
                 src={details.imageUrl}
                 alt={details.name}
                 className={`relative w-full h-full object-cover transition-all duration-700 group-hover:scale-105 ${
@@ -195,7 +195,7 @@ export const LocationGroupHeader = ({
                 }`}
                 loading="lazy"
                 onLoad={() => setIsImageLoaded(true)}
-              />
+              /> */}
             </>
           )}
         </div>
