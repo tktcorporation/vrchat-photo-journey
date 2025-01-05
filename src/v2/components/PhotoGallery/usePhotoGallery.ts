@@ -28,7 +28,6 @@ export function usePhotoGallery(searchQuery: string): {
 
   const photos = useMemo(() => {
     if (!photoList) return [];
-
     return photoList.map((photo) => ({
       id: photo.id,
       url: photo.photoPath,
@@ -39,27 +38,33 @@ export function usePhotoGallery(searchQuery: string): {
       location: {
         name: '',
         description: '',
-        coverImage: '',
-        visitedWith: [],
         joinedAt: photo.photoTakenAt,
       },
     }));
   }, [photoList]);
 
-  const filteredPhotos = useMemo(() => {
-    if (!searchQuery) return photos;
-    const query = searchQuery.toLowerCase();
-    return photos.filter((photo) =>
-      photo.fileName.toLowerCase().includes(query),
-    );
-  }, [photos, searchQuery]);
-
   const {
-    groupedPhotos,
+    groupedPhotos: originalGroupedPhotos,
     isLoading: isGrouping,
     loadMoreGroups,
     debug,
-  } = useGroupPhotos(filteredPhotos);
+  } = useGroupPhotos(photos);
+
+  const groupedPhotos = useMemo(() => {
+    if (!searchQuery) return originalGroupedPhotos;
+
+    const query = searchQuery.toLowerCase();
+    const filteredGroups: GroupedPhotos = {};
+
+    for (const [key, group] of Object.entries(originalGroupedPhotos)) {
+      // ワールド名での検索
+      if (group.worldInfo?.worldName.toLowerCase().includes(query)) {
+        filteredGroups[key] = group;
+      }
+    }
+
+    return filteredGroups;
+  }, [originalGroupedPhotos, searchQuery]);
 
   const isLoading = useMemo(() => {
     if (isLoadingPhotos) return true;
