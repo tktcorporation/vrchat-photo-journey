@@ -130,7 +130,7 @@ const GalleryContent = memo(
       <GalleryErrorBoundary>
         <div
           ref={containerRef}
-          className="flex-1 overflow-y-auto p-4 space-y-4"
+          className="flex-1 overflow-y-auto p-4 space-y-10"
         >
           {/* <div className="bg-gray-100 p-4 rounded-lg text-sm">
             <h3 className="font-bold mb-2">デバッグ情報</h3>
