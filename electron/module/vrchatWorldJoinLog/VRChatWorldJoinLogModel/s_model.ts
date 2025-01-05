@@ -144,3 +144,9 @@ export const findNextVRChatWorldJoinLog = async (dateTime: Date) => {
 
   return vrchatWorldJoinLog;
 };
+
+export const findLatestWorldJoinLog = async () => {
+  return VRChatWorldJoinLogModel.findOne({
+    order: [['joinDateTime', 'DESC']],
+  });
+};

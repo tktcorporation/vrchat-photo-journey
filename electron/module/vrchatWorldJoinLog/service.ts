@@ -53,3 +53,12 @@ export const findNextVRChatWorldJoinLog = async (
 ): Promise<model.VRChatWorldJoinLogModel | null> => {
   return model.findNextVRChatWorldJoinLog(joinDateTime);
 };
+
+export const getLatestJoinDate = async (): Promise<string | null> => {
+  const latestLog = await model.findLatestWorldJoinLog();
+  return latestLog?.joinDateTime.toISOString() ?? null;
+};
+
+export const findLatestWorldJoinLog = async () => {
+  return model.findLatestWorldJoinLog();
+};

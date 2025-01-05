@@ -127,3 +127,9 @@ export const getVRChatPlayerJoinLogListByJoinDateTime = async (
   });
   return playerJoinLogList;
 };
+
+export const findLatestPlayerJoinLog = async () => {
+  return VRChatPlayerJoinLogModel.findOne({
+    order: [['joinDateTime', 'DESC']],
+  });
+};
