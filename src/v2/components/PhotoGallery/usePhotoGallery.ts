@@ -1,14 +1,29 @@
 import { trpcReact } from '@/trpc';
 import { useMemo, useState } from 'react';
 import type { Photo } from '../../types/photo';
-import { useGroupPhotos } from './useGroupPhotos';
+import {
+  type DebugInfo,
+  type GroupedPhotos,
+  useGroupPhotos,
+} from './useGroupPhotos';
 
-export function usePhotoGallery(searchQuery: string) {
+export function usePhotoGallery(searchQuery: string): {
+  groupedPhotos: GroupedPhotos;
+  isLoading: boolean;
+  selectedPhoto: Photo | null;
+  setSelectedPhoto: (photo: Photo | null) => void;
+  loadMoreGroups: () => void;
+  debug: DebugInfo;
+} {
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
   const { data: photoList, isLoading: isLoadingPhotos } =
     trpcReact.vrchatPhoto.getVrchatPhotoPathModelList.useQuery(undefined, {
       staleTime: 1000 * 60 * 5,
       cacheTime: 1000 * 60 * 30,
+      retry: 3,
+      retryDelay: 1000,
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
     });
 
   const photos = useMemo(() => {
@@ -43,13 +58,22 @@ export function usePhotoGallery(searchQuery: string) {
     groupedPhotos,
     isLoading: isGrouping,
     loadMoreGroups,
+    debug,
   } = useGroupPhotos(filteredPhotos);
+
+  const isLoading = useMemo(() => {
+    if (isLoadingPhotos) return true;
+    if (isGrouping) return true;
+    if (!photoList) return true;
+    return false;
+  }, [isLoadingPhotos, isGrouping, photoList]);
 
   return {
     groupedPhotos,
-    isLoading: isLoadingPhotos || isGrouping,
+    isLoading,
     selectedPhoto,
     setSelectedPhoto,
     loadMoreGroups,
+    debug,
   };
 }

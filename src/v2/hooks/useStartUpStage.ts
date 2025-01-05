@@ -31,6 +31,7 @@ interface ProcessStageCallbacks {
 export const useStartupStage = (callbacks?: ProcessStageCallbacks) => {
   const [stages, setStages] = useState<ProcessStages>(initialStages);
   const [error, setError] = useState<ProcessError | null>(null);
+  const [hasNotifiedCompletion, setHasNotifiedCompletion] = useState(false);
 
   const updateStage = useCallback(
     (stage: keyof ProcessStages, status: ProcessStage, errorMsg?: string) => {
@@ -167,6 +168,7 @@ export const useStartupStage = (callbacks?: ProcessStageCallbacks) => {
   const retryProcess = useCallback(() => {
     setStages(initialStages);
     setError(null);
+    setHasNotifiedCompletion(false);
     refetchMigrateRequirement();
   }, [refetchMigrateRequirement]);
 
@@ -240,6 +242,13 @@ export const useStartupStage = (callbacks?: ProcessStageCallbacks) => {
     [stages],
   );
 
+  useEffect(() => {
+    if (completed && !hasNotifiedCompletion) {
+      setHasNotifiedCompletion(true);
+      callbacks?.onComplete?.();
+    }
+  }, [completed, hasNotifiedCompletion, callbacks]);
+
   const finished = useMemo(
     () =>
       Object.values(stages).every(
@@ -248,12 +257,6 @@ export const useStartupStage = (callbacks?: ProcessStageCallbacks) => {
       ),
     [stages],
   );
-
-  useEffect(() => {
-    if (completed) {
-      callbacks?.onComplete?.();
-    }
-  }, [completed, callbacks]);
 
   useEffect(() => {
     console.log('Current stages:', JSON.stringify(stages, null, 2));
