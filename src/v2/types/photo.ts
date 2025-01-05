@@ -6,10 +6,6 @@ export interface Photo {
   height: number;
   takenAt: Date;
   location: {
-    name: string;
-    description: string;
-    coverImage: string;
-    visitedWith: string[];
     joinedAt: Date;
   };
 }
