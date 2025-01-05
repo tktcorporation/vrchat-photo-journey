@@ -134,6 +134,7 @@ const getPlayerJoinListInSameWorld = async (
 export const logInfoRouter = () =>
   trpcRouter({
     loadLogInfoIndex: procedure.mutation(async () => {
+      log.info('loadLogInfoIndex');
       const result = await loadLogInfoIndexFromVRChatLog();
       if (result.isErr()) {
         return neverthrow.err(result.error);

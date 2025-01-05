@@ -1,5 +1,6 @@
 import * as neverthrow from 'neverthrow';
 import { match } from 'ts-pattern';
+import * as log from './../../lib/logger';
 import { procedure, router as trpcRouter } from './../../trpc';
 import * as vrchatLogFileDirService from './../vrchatLogFileDir/service';
 import * as vrchatLogService from './service';
@@ -60,6 +61,7 @@ const appendLoglinesToFileFromLogFilePathList = async (): Promise<
 export const vrchatLogRouter = () =>
   trpcRouter({
     appendLoglinesToFileFromLogFilePathList: procedure.mutation(async () => {
+      log.info('appendLoglinesToFileFromLogFilePathList');
       const result = await appendLoglinesToFileFromLogFilePathList();
       if (result.isErr()) {
         throw result.error;

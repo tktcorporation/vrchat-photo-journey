@@ -16,11 +16,20 @@ export interface GroupedPhoto {
 
 export type GroupedPhotos = Record<string, GroupedPhoto>;
 
-interface WorldJoinLog {
+export interface WorldJoinLog {
   worldId: string;
   worldName: string;
   worldInstanceId: string;
   joinDateTime: Date;
+}
+
+export interface DebugInfo {
+  totalPhotos: number;
+  loadedPhotos: number;
+  totalGroups: number;
+  loadedGroups: number;
+  remainingPhotos: number;
+  remainingGroups: number;
 }
 
 // 写真をワールドセッションごとにグループ化する純粋な関数
@@ -45,20 +54,32 @@ export function groupPhotosBySession(
   for (let i = 0; i < sortedSessions.length; i++) {
     const currentSession = sortedSessions[i];
     const prevSession = sortedSessions[i - 1];
+    const nextSession = sortedSessions[i + 1];
 
     // このセッションに属する写真を見つける
     const sessionPhotos = remainingPhotos.filter((photo) => {
       const photoTime = photo.takenAt.getTime();
       const sessionTime = currentSession.joinDateTime.getTime();
       const prevSessionTime = prevSession?.joinDateTime.getTime();
+      const _nextSessionTime = nextSession?.joinDateTime.getTime();
 
       // 最新のセッションの場合
       if (i === 0) {
         return photoTime >= sessionTime;
       }
-
+      // 最後のセッションの場合
+      if (i === sortedSessions.length - 1) {
+        return photoTime <= prevSessionTime && photoTime >= sessionTime;
+      }
       // それ以外のセッションの場合
       return photoTime >= sessionTime && photoTime < prevSessionTime;
+    });
+
+    console.log('Session photos:', {
+      sessionIndex: i,
+      worldName: currentSession.worldName,
+      photoCount: sessionPhotos.length,
+      totalRemaining: remainingPhotos.length,
     });
 
     // 写真の有無に関わらずグループを作成
@@ -80,12 +101,24 @@ export function groupPhotosBySession(
 
   // 最後のセッションに属する写真を処理（残りの写真がある場合のみ）
   if (remainingPhotos.length > 0) {
+    console.log('Processing remaining photos:', {
+      count: remainingPhotos.length,
+      firstPhotoTime: remainingPhotos[0].takenAt,
+      lastPhotoTime: remainingPhotos[remainingPhotos.length - 1].takenAt,
+    });
+
     if (sortedSessions.length > 0) {
+      const lastSession = sortedSessions[sortedSessions.length - 1];
       const lastGroup = groups[groups.length - 1];
+
+      // 最後のセッションの写真として追加
       if (lastGroup) {
+        console.log('Adding to last group:', {
+          originalCount: lastGroup.photos.length,
+          addingCount: remainingPhotos.length,
+        });
         lastGroup.photos = [...lastGroup.photos, ...remainingPhotos];
       } else {
-        const lastSession = sortedSessions[sortedSessions.length - 1];
         groups.push({
           photos: remainingPhotos,
           worldInfo: {
@@ -124,13 +157,23 @@ export function useGroupPhotos(photos: Photo[]): {
   groupedPhotos: GroupedPhotos;
   isLoading: boolean;
   loadMoreGroups: () => void;
+  debug: DebugInfo;
 } {
   const [groupedPhotos, setGroupedPhotos] = useState<GroupedPhotos>({});
-  const [processedCount, setProcessedCount] = useState(0);
+  const [processedGroupCount, setProcessedGroupCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [isComplete, setIsComplete] = useState(false);
   const processingRef = useRef(false);
   const photosRef = useRef(photos);
-  const CHUNK_SIZE = 50;
+  const [debugInfo, setDebugInfo] = useState({
+    totalPhotos: 0,
+    loadedPhotos: 0,
+    totalGroups: 0,
+    loadedGroups: 0,
+    remainingPhotos: 0,
+    remainingGroups: 0,
+  });
+  const GROUPS_PER_CHUNK = 5;
 
   const sortedPhotos = useMemo(() => {
     return [...photos].sort(
@@ -150,94 +193,189 @@ export function useGroupPhotos(photos: Photo[]): {
     );
 
   const processNextChunk = useCallback(() => {
-    if (!joinLogs || processingRef.current) return false;
+    if (!joinLogs || processingRef.current) {
+      console.log('Process blocked:', {
+        noJoinLogs: !joinLogs,
+        isProcessing: processingRef.current,
+      });
+      return false;
+    }
+
     processingRef.current = true;
+    console.log('Processing next chunk, current state:', {
+      processedGroupCount,
+      isComplete,
+      isLoading,
+    });
 
     try {
-      const remainingPhotos = sortedPhotos.slice(processedCount);
-      if (remainingPhotos.length === 0) {
+      // 全てのグループを作成
+      const allGroups = groupPhotosBySession(sortedPhotos, joinLogs);
+
+      // まだ処理していないグループを取得
+      const remainingGroups = allGroups.slice(processedGroupCount);
+      if (remainingGroups.length === 0) {
+        console.log('No remaining groups');
+        setIsComplete(true);
         return false;
       }
 
-      const photosToProcess = remainingPhotos.slice(0, CHUNK_SIZE);
-      const groups = groupPhotosBySession(photosToProcess, joinLogs);
-      const newGroups = convertGroupsToRecord(groups);
+      // 次のチャンクのグループを処理
+      const groupsToProcess = remainingGroups.slice(0, GROUPS_PER_CHUNK);
 
-      setGroupedPhotos((prev) => ({
-        ...prev,
-        ...newGroups,
-      }));
-      setProcessedCount((prev) => prev + photosToProcess.length);
+      // グループ内の写真数をログ
+      groupsToProcess.forEach((group, index) => {
+        console.log(`Group ${processedGroupCount + index} photos:`, {
+          worldName: group.worldInfo?.worldName,
+          photoCount: group.photos.length,
+          firstPhotoTime: group.photos[0]?.takenAt,
+          lastPhotoTime: group.photos[group.photos.length - 1]?.takenAt,
+        });
+      });
 
-      return remainingPhotos.length > CHUNK_SIZE;
+      const newGroups = convertGroupsToRecord(groupsToProcess);
+
+      // 新しいグループの写真数を確認
+      for (const [key, group] of Object.entries(newGroups)) {
+        console.log(`New group ${key} photos:`, {
+          worldName: group.worldInfo?.worldName,
+          photoCount: group.photos.length,
+        });
+      }
+
+      console.log('Processing chunk:', {
+        processedCount: processedGroupCount,
+        newGroupsCount: groupsToProcess.length,
+        remainingCount: remainingGroups.length,
+        totalGroups: allGroups.length,
+        totalPhotosInChunk: groupsToProcess.reduce(
+          (sum, group) => sum + group.photos.length,
+          0,
+        ),
+      });
+
+      // 既存のグループと新しいグループを結合
+      setGroupedPhotos((prev) => {
+        const updated = { ...prev };
+        for (const [key, group] of Object.entries(newGroups)) {
+          if (prev[key]) {
+            // 既存のグループがある場合は写真を結合
+            updated[key] = {
+              ...group,
+              photos: [...prev[key].photos, ...group.photos],
+            };
+          } else {
+            updated[key] = group;
+          }
+        }
+        return updated;
+      });
+
+      // 現在のグループ数を更新
+      const nextProcessedCount = processedGroupCount + groupsToProcess.length;
+      setProcessedGroupCount(nextProcessedCount);
+
+      // デバッグ情報を更新
+      const allLoadedPhotos =
+        Object.values(groupedPhotos).reduce(
+          (sum, group) => sum + group.photos.length,
+          0,
+        ) +
+        groupsToProcess.reduce((sum, group) => sum + group.photos.length, 0);
+
+      const debugData = {
+        totalPhotos: photos.length,
+        loadedPhotos: allLoadedPhotos,
+        totalGroups: allGroups.length,
+        loadedGroups: nextProcessedCount,
+        remainingPhotos: photos.length - allLoadedPhotos,
+        remainingGroups: allGroups.length - nextProcessedCount,
+      };
+
+      console.log('Updating debug info:', debugData);
+      setDebugInfo(debugData);
+
+      // 残りのグループがあるかどうかを確認
+      const hasMore = nextProcessedCount < allGroups.length;
+      if (!hasMore) {
+        console.log('No more groups to load');
+        setIsComplete(true);
+      }
+      return hasMore;
     } finally {
       processingRef.current = false;
     }
-  }, [joinLogs, sortedPhotos, processedCount]);
+  }, [
+    joinLogs,
+    sortedPhotos,
+    processedGroupCount,
+    photos.length,
+    groupedPhotos,
+  ]);
 
   const loadMoreGroups = useCallback(() => {
-    if (isLoading || !joinLogs) return;
+    if (processingRef.current || isComplete) {
+      console.log('Load more blocked:', {
+        isProcessing: processingRef.current,
+        isComplete,
+      });
+      return;
+    }
+
+    if (!joinLogs) {
+      console.log('No join logs available');
+      return;
+    }
+
+    console.log('Starting to load more groups');
     setIsLoading(true);
 
-    requestAnimationFrame(() => {
-      try {
-        const hasMore = processNextChunk();
-        if (!hasMore) {
-          setIsLoading(false);
-        }
-      } catch (error) {
-        console.error('Error processing photos:', error);
-        setIsLoading(false);
-      }
-    });
-  }, [isLoading, processNextChunk, joinLogs]);
+    try {
+      const hasMore = processNextChunk();
+      console.log('Finished loading chunk:', { hasMore });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [processNextChunk, joinLogs, isComplete]);
 
   // 写真データが変更された場合のリセット
   useEffect(() => {
     if (!photos.length) return;
     if (photos === photosRef.current) return;
 
+    console.log('Photos changed, resetting state');
     photosRef.current = photos;
     setGroupedPhotos({});
-    setProcessedCount(0);
-    setIsLoading(true);
+    setProcessedGroupCount(0);
+    setIsComplete(false);
     processingRef.current = false;
+    setIsLoading(true);
 
-    requestAnimationFrame(() => {
-      try {
-        const hasMore = processNextChunk();
-        if (!hasMore) {
-          setIsLoading(false);
-        }
-      } catch (error) {
-        console.error('Error loading data:', error);
-        setIsLoading(false);
-      }
-    });
+    try {
+      processNextChunk();
+    } finally {
+      setIsLoading(false);
+    }
   }, [photos, processNextChunk]);
 
   // 初期データの読み込み
   useEffect(() => {
     if (!photos.length || !joinLogs) return;
-    if (processedCount > 0) return;
+    if (processedGroupCount > 0) return;
 
+    console.log('Loading initial data');
     setIsLoading(true);
-    requestAnimationFrame(() => {
-      try {
-        const hasMore = processNextChunk();
-        if (!hasMore) {
-          setIsLoading(false);
-        }
-      } catch (error) {
-        console.error('Error loading initial data:', error);
-        setIsLoading(false);
-      }
-    });
-  }, [photos, joinLogs, processedCount, processNextChunk]);
+    try {
+      processNextChunk();
+    } finally {
+      setIsLoading(false);
+    }
+  }, [photos, joinLogs, processedGroupCount, processNextChunk]);
 
   return {
     groupedPhotos,
-    isLoading: isLoading || !joinLogs || processedCount === 0,
+    isLoading,
     loadMoreGroups,
+    debug: debugInfo,
   };
 }

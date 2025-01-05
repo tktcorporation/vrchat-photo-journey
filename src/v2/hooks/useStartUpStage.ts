@@ -11,7 +11,7 @@ interface ProcessStages {
   indexLoaded: ProcessStage;
 }
 
-interface ProcessError {
+export interface ProcessError {
   stage: keyof ProcessStages;
   message: string;
 }
@@ -23,14 +23,15 @@ const initialStages: ProcessStages = {
   indexLoaded: 'pending',
 };
 
-interface StartupStageCallbacks {
+interface ProcessStageCallbacks {
   onError?: (error: ProcessError) => void;
   onComplete?: () => void;
 }
 
-export const useStartupStage = (callbacks?: StartupStageCallbacks) => {
+export const useStartupStage = (callbacks?: ProcessStageCallbacks) => {
   const [stages, setStages] = useState<ProcessStages>(initialStages);
   const [error, setError] = useState<ProcessError | null>(null);
+  const [hasNotifiedCompletion, setHasNotifiedCompletion] = useState(false);
 
   const updateStage = useCallback(
     (stage: keyof ProcessStages, status: ProcessStage, errorMsg?: string) => {
@@ -55,39 +56,95 @@ export const useStartupStage = (callbacks?: StartupStageCallbacks) => {
   );
 
   const { data: migrateRequirement, refetch: refetchMigrateRequirement } =
-    trpcReact.settings.isDatabaseReady.useQuery();
+    trpcReact.settings.isDatabaseReady.useQuery(undefined, {
+      onSuccess: (data: boolean) => {
+        console.log('isDatabaseReady query succeeded:', { data });
+      },
+      onError: () => {
+        console.error('isDatabaseReady query failed');
+      },
+    });
 
   const syncRdbMutation = trpcReact.settings.syncDatabase.useMutation({
+    retry: 3,
+    retryDelay: 3000,
+    onMutate: () => {
+      console.log('Starting database sync mutation');
+      updateStage('startingSync', 'inProgress');
+    },
     onSuccess: () => {
+      console.log('Database sync succeeded');
+      updateStage('startingSync', 'success');
       updateStage('syncDone', 'success');
       executeLogOperations();
     },
-    onError: () => updateStage('syncDone', 'error', 'Database Sync Error'),
+    onError: (error) => {
+      console.error('Database sync failed:', error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'データベース同期に失敗しました';
+      updateStage('startingSync', 'error');
+      updateStage('syncDone', 'error', errorMessage);
+    },
   });
 
   const { data: logFilesDirData } = trpcReact.getVRChatLogFilesDir.useQuery();
 
+  const loadLogInfoIndexMutation =
+    trpcReact.logInfo.loadLogInfoIndex.useMutation({
+      onMutate: () => {
+        console.log('Starting loadLogInfoIndex');
+        updateStage('indexLoaded', 'inProgress');
+      },
+      onSuccess: () => {
+        console.log('loadLogInfoIndex succeeded');
+        updateStage('indexLoaded', 'success');
+      },
+      onError: (error) => {
+        console.error('loadLogInfoIndex failed:', error);
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : 'インデックスの読み込みに失敗しました';
+        updateStage('indexLoaded', 'error', errorMessage);
+      },
+      onSettled: () => {
+        console.log('loadLogInfoIndex settled');
+      },
+    });
+
   const storeLogsMutation =
     trpcReact.vrchatLog.appendLoglinesToFileFromLogFilePathList.useMutation({
+      onMutate: () => {
+        console.log('Starting storeLogsMutation');
+        updateStage('logsStored', 'inProgress');
+      },
       onSuccess: () => {
+        console.log('storeLogsMutation succeeded');
         updateStage('logsStored', 'success');
         loadLogInfoIndexMutation.mutate();
       },
-      onError: () => updateStage('logsStored', 'error', 'Storing Logs Error'),
-    });
-
-  const loadLogInfoIndexMutation =
-    trpcReact.logInfo.loadLogInfoIndex.useMutation({
-      onSuccess: () => {
-        updateStage('indexLoaded', 'success');
+      onError: (error) => {
+        console.error('storeLogsMutation failed:', error);
+        const errorMessage =
+          error instanceof Error ? error.message : 'ログの保存に失敗しました';
+        updateStage('logsStored', 'error', errorMessage);
       },
-      onError: () => updateStage('indexLoaded', 'error', 'Loading Index Error'),
+      onSettled: () => {
+        console.log('storeLogsMutation settled');
+      },
     });
 
   const executeLogOperations = useCallback(() => {
-    if (!logFilesDirData) return;
+    console.log('executeLogOperations called', { logFilesDirData });
+    if (!logFilesDirData) {
+      console.log('logFilesDirData is not available');
+      return;
+    }
 
     if (logFilesDirData.error) {
+      console.log('logFilesDirData has error:', logFilesDirData.error);
       const message = match(logFilesDirData.error)
         .with('logFilesNotFound', () => 'ログファイルが見つかりませんでした')
         .with('logFileDirNotFound', () => 'フォルダの読み取りに失敗しました')
@@ -97,27 +154,85 @@ export const useStartupStage = (callbacks?: StartupStageCallbacks) => {
       return;
     }
 
-    storeLogsMutation.mutate();
+    try {
+      console.log('Starting store logs mutation');
+      storeLogsMutation.mutate();
+    } catch (error) {
+      console.error('Error during store logs mutation:', error);
+      const errorMessage =
+        error instanceof Error ? error.message : 'ログの保存に失敗しました';
+      updateStage('logsStored', 'error', errorMessage);
+    }
   }, [logFilesDirData]);
 
   const retryProcess = useCallback(() => {
     setStages(initialStages);
     setError(null);
+    setHasNotifiedCompletion(false);
     refetchMigrateRequirement();
   }, [refetchMigrateRequirement]);
 
   useEffect(() => {
-    if (migrateRequirement === undefined) return;
+    if (migrateRequirement === undefined) {
+      console.log('migrateRequirement is undefined');
+      return;
+    }
+
+    console.log('Migration requirement check:', {
+      migrateRequirement,
+      stages: JSON.stringify(stages),
+    });
 
     if (migrateRequirement) {
-      updateStage('startingSync', 'inProgress');
-      syncRdbMutation.mutate();
-    } else {
-      updateStage('startingSync', 'skipped');
-      updateStage('syncDone', 'skipped');
-      executeLogOperations();
+      if (stages.startingSync !== 'pending') {
+        console.log('Database sync already started or completed');
+        return;
+      }
+
+      console.log('Starting database sync');
+
+      const timeoutId = setTimeout(() => {
+        console.error('Database sync timeout');
+        updateStage('startingSync', 'error');
+        updateStage(
+          'syncDone',
+          'error',
+          'データベース同期がタイムアウトしました',
+        );
+      }, 30000);
+
+      try {
+        syncRdbMutation.mutate(undefined, {
+          onSuccess: () => {
+            clearTimeout(timeoutId);
+          },
+          onError: () => {
+            clearTimeout(timeoutId);
+          },
+          onSettled: () => {
+            console.log('Database sync settled');
+          },
+        });
+      } catch (error) {
+        console.error('Error during sync mutation:', error);
+        clearTimeout(timeoutId);
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : 'データベース同期の開始に失敗しました';
+        updateStage('startingSync', 'error');
+        updateStage('syncDone', 'error', errorMessage);
+      }
+
+      return () => {
+        clearTimeout(timeoutId);
+      };
     }
-  }, [migrateRequirement, executeLogOperations]);
+    console.log('Skipping database sync');
+    updateStage('startingSync', 'skipped');
+    updateStage('syncDone', 'skipped');
+    executeLogOperations();
+  }, [migrateRequirement, stages.startingSync]);
 
   const completed = useMemo(
     () =>
@@ -126,6 +241,13 @@ export const useStartupStage = (callbacks?: StartupStageCallbacks) => {
       ),
     [stages],
   );
+
+  useEffect(() => {
+    if (completed && !hasNotifiedCompletion) {
+      setHasNotifiedCompletion(true);
+      callbacks?.onComplete?.();
+    }
+  }, [completed, hasNotifiedCompletion, callbacks]);
 
   const finished = useMemo(
     () =>
@@ -137,10 +259,8 @@ export const useStartupStage = (callbacks?: StartupStageCallbacks) => {
   );
 
   useEffect(() => {
-    if (completed) {
-      callbacks?.onComplete?.();
-    }
-  }, [completed, callbacks]);
+    console.log('Current stages:', JSON.stringify(stages, null, 2));
+  }, [stages]);
 
   return {
     stages,
