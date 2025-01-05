@@ -17,10 +17,10 @@ const PhotoGrid: React.FC<PhotoGridProps> = React.memo(
     const { visiblePhotos, isLoading } = useVirtualPhotos(photos);
 
     const getColumnCount = useCallback((width: number) => {
-      if (width < 640) return 1;
-      if (width < 1024) return 2;
-      if (width < 1536) return 3;
-      return 4;
+      if (width < 640) return 2;
+      if (width < 1024) return 3;
+      if (width < 1536) return 4;
+      return 5;
     }, []);
 
     const columnCount = useMemo(
@@ -47,9 +47,9 @@ const PhotoGrid: React.FC<PhotoGridProps> = React.memo(
     }
 
     return (
-      <div ref={containerRef} className="px-4">
+      <div ref={containerRef}>
         <div
-          className="grid gap-4"
+          className="grid gap-2"
           style={{
             gridTemplateColumns: `repeat(${columnCount}, minmax(0, 1fr))`,
           }}
@@ -57,7 +57,7 @@ const PhotoGrid: React.FC<PhotoGridProps> = React.memo(
           {photoColumns.map((column, columnIndex) => (
             <div
               key={`column-${columnIndex}-${column[0]?.id ?? columnIndex}`}
-              className="space-y-4"
+              className="space-y-2"
             >
               {column.map((photo) => (
                 <PhotoCard

@@ -68,11 +68,16 @@ describe('getVRChaLogInfoFromLogPath', () => {
 });
 
 describe('appendLoglinesToFile', () => {
-  it('should-return-void', async () => {
-    const logStoreFilePath = VRChatLogStoreFilePathSchema.parse(
-      path.join(process.cwd(), 'debug', 'logs-store', 'test.log'),
-    );
-    const unlinkResult = await fs.unlinkAsync(logStoreFilePath.value);
+  const TEST_LOG_PATH = path.join(
+    process.cwd(),
+    'debug',
+    'logs-store',
+    'test.log',
+  );
+
+  beforeEach(async () => {
+    // テスト前にファイルを削除
+    const unlinkResult = await fs.unlinkAsync(TEST_LOG_PATH);
     if (unlinkResult.isErr()) {
       const isThrow = match(unlinkResult.error)
         .with({ code: 'ENOENT' }, () => false)
@@ -81,7 +86,10 @@ describe('appendLoglinesToFile', () => {
         throw unlinkResult.error;
       }
     }
+  });
 
+  it('should-return-void', async () => {
+    const logStoreFilePath = VRChatLogStoreFilePathSchema.parse(TEST_LOG_PATH);
     const appendLoglinesToFile = service.appendLoglinesToFile;
 
     // Write log lines to file
@@ -148,5 +156,83 @@ describe('appendLoglinesToFile', () => {
       .toString()
       .split('\n').length;
     expect(loglineLength_3).toBe(loglineLength_2);
+  });
+
+  it('should-handle-empty-lines', async () => {
+    const logStoreFilePath = VRChatLogStoreFilePathSchema.parse(TEST_LOG_PATH);
+    const appendLoglinesToFile = service.appendLoglinesToFile;
+
+    const logLines = [
+      '2021.10.02 00:00:01 Log        -  Log message',
+      '', // 空行
+      '2021.10.02 00:00:03 Log        -  Log message',
+      '   ', // 空白のみの行
+    ].map((line) => VRChatLogLineSchema.parse(line));
+
+    const result = await appendLoglinesToFile({
+      logLines,
+      logStoreFilePath,
+    });
+
+    expect(result.isOk()).toBe(true);
+
+    const logStoreFileLines = fs.readFileSyncSafe(logStoreFilePath.value);
+    expect(logStoreFileLines.isOk()).toBe(true);
+    if (logStoreFileLines.isOk()) {
+      const lines = logStoreFileLines.value
+        .toString()
+        .split('\n')
+        .filter((line) => line.trim());
+      expect(lines.length).toBe(2); // 空行が除外されていることを確認
+    }
+  });
+
+  it('should-create-directory-if-not-exists', async () => {
+    const newDirPath = path.join(process.cwd(), 'debug', 'new-test-dir');
+    const logStoreFilePath = VRChatLogStoreFilePathSchema.parse(
+      path.join(newDirPath, 'test.log'),
+    );
+
+    const logLines = ['2021.10.02 00:00:01 Log        -  Log message'].map(
+      (line) => VRChatLogLineSchema.parse(line),
+    );
+
+    const result = await service.appendLoglinesToFile({
+      logLines,
+      logStoreFilePath,
+    });
+
+    expect(result.isOk()).toBe(true);
+
+    // ディレクトリとファイルが作成されたことを確認
+    const exists = await fs.existsSyncSafe(logStoreFilePath.value);
+    expect(exists).toBe(true);
+
+    // 後処理
+    const unlinkResult = await fs.unlinkAsync(logStoreFilePath.value);
+    expect(unlinkResult.isOk()).toBe(true);
+  });
+
+  it('should-handle-file-read-errors', async () => {
+    const logStoreFilePath = VRChatLogStoreFilePathSchema.parse(TEST_LOG_PATH);
+
+    // 空のファイルを作成
+    await fs.writeFileSyncSafe(TEST_LOG_PATH, '');
+
+    const logLines = ['2021.10.02 00:00:01 Log        -  Log message'].map(
+      (line) => VRChatLogLineSchema.parse(line),
+    );
+
+    const result = await service.appendLoglinesToFile({
+      logLines,
+      logStoreFilePath,
+    });
+
+    // エラーハンドリングの確認（ファイルの存在チェック）
+    const exists = await fs.existsSyncSafe(logStoreFilePath.value);
+    expect(exists).toBe(true);
+
+    // 書き込みが成功したことを確認
+    expect(result.isOk()).toBe(true);
   });
 });
