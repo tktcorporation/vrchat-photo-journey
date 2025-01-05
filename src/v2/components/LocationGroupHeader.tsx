@@ -168,7 +168,7 @@ export const LocationGroupHeader = ({
       ref={containerRef}
       className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden"
     >
-      <div className="relative h-48 overflow-hidden group">
+      <div className="relative h-36 overflow-hidden group">
         <div
           className={`absolute inset-0 ${
             !isImageLoaded || !details?.thumbnailImageUrl
@@ -202,7 +202,7 @@ export const LocationGroupHeader = ({
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 p-4 text-white">
           <div className="flex items-center justify-between">
-            <h3 className="text-2xl font-bold flex items-center group/title">
+            <h3 className="text-xl font-bold flex items-center group/title">
               <MapPin className="h-5 w-5 mr-2 flex-shrink-0" />
               <button
                 type="button"

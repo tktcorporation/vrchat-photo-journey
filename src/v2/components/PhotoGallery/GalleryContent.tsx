@@ -155,11 +155,13 @@ const GalleryContent = memo(
                 photoCount={group.photos.length}
                 joinDateTime={group.joinDateTime}
               />
-              {group.photos.length > 0 && (
+              {group.photos.length > 0 ? (
                 <PhotoGrid
                   photos={group.photos}
                   onPhotoSelect={setSelectedPhoto}
                 />
+              ) : (
+                <div className="text-gray-500">No Photos</div>
               )}
             </div>
           ))}
