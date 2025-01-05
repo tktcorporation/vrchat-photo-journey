@@ -10,6 +10,8 @@ import { TermsModal } from './components/TermsModal';
 import { terms } from './constants/terms/ja';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { useToast } from './hooks/use-toast';
+import { useStartupStage } from './hooks/useStartUpStage';
+import type { ProcessError } from './hooks/useStartUpStage';
 
 function AppContent() {
   const [showTerms, setShowTerms] = useState(false);
@@ -149,101 +151,40 @@ const ToasterWrapper = () => {
 
 const Contents = (props: { children: React.ReactNode }) => {
   const { toast } = useToast();
-  const {
-    mutate: syncDatabase,
-    isLoading,
-    error,
-    isSuccess,
-  } = trpcReact.settings.syncDatabase.useMutation({
-    retry: 3,
-    retryDelay: 5000,
-    onError: (error) => {
-      console.error('Database sync error:', error);
+  const { stages, errorMessage, retryProcess } = useStartupStage({
+    onError: (error: ProcessError) => {
       toast({
         variant: 'destructive',
-        title: 'データベース同期エラー',
-        description: `${error.message}\n再試行するか、アプリケーションを再起動してください。`,
+        title: 'スタートアップエラー',
+        description: error.message,
+      });
+    },
+    onComplete: () => {
+      toast({
+        title: '準備完了',
+        description: 'アプリケーションの初期化が完了しました',
       });
     },
   });
 
-  useEffect(() => {
-    let isMounted = true;
-    let retryCount = 0;
-    const maxRetries = 3;
-
-    const sync = async () => {
-      try {
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(
-            () => reject(new Error('データベース同期がタイムアウトしました')),
-            30000,
-          );
-        });
-
-        if (!isMounted) return;
-
-        await Promise.race([
-          syncDatabase(undefined, {
-            onSuccess: () => {
-              if (isMounted) {
-                toast({
-                  title: '同期完了',
-                  description: 'データベースの同期が完了しました',
-                });
-              }
-            },
-          }),
-          timeoutPromise,
-        ]);
-      } catch (e) {
-        if (!isMounted) return;
-
-        console.error('Unexpected error during sync:', e);
-
-        if (retryCount < maxRetries) {
-          retryCount++;
-          toast({
-            title: '再試行中',
-            description: `データベース同期を再試行しています (${retryCount}/${maxRetries})`,
-          });
-          setTimeout(sync, 5000);
-        } else {
-          toast({
-            variant: 'destructive',
-            title: 'エラー',
-            description:
-              e instanceof Error
-                ? e.message
-                : '予期せぬエラーが発生しました。アプリケーションを再起動してください。',
-          });
-        }
-      }
-    };
-
-    sync();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  if (error) {
+  if (
+    stages.startingSync === 'error' ||
+    stages.syncDone === 'error' ||
+    stages.logsStored === 'error' ||
+    stages.indexLoaded === 'error'
+  ) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center p-4 max-w-md mx-auto">
           <h2 className="text-xl font-semibold text-red-600 dark:text-red-400">
-            データベース同期エラー
+            初期化エラー
           </h2>
           <p className="mt-2 text-gray-600 dark:text-gray-400">
-            {error.message}
-          </p>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            再試行するか、アプリケーションを再起動してください
+            {errorMessage}
           </p>
           <button
             type="button"
-            onClick={() => syncDatabase()}
+            onClick={retryProcess}
             className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
           >
             再試行
@@ -253,23 +194,35 @@ const Contents = (props: { children: React.ReactNode }) => {
     );
   }
 
-  if (isLoading || !isSuccess) {
+  if (
+    stages.startingSync === 'inProgress' ||
+    stages.syncDone === 'inProgress' ||
+    stages.logsStored === 'inProgress' ||
+    stages.indexLoaded === 'inProgress'
+  ) {
+    const currentStage = (() => {
+      if (stages.indexLoaded === 'inProgress')
+        return 'インデックスを読み込み中...';
+      if (stages.logsStored === 'inProgress') return 'ログを保存中...';
+      if (stages.syncDone === 'inProgress') return 'データベースを同期中...';
+      if (stages.startingSync === 'inProgress')
+        return 'データベースの初期化を開始中...';
+      return '初期化中...';
+    })();
+
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-center p-4 max-w-md mx-auto">
+        <div className="text-center p-4">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white mx-auto" />
-          <p className="mt-2 text-gray-600 dark:text-gray-400">
-            データベースを同期中...
-          </p>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            初回起動時は時間がかかる場合があります
+          <p className="mt-4 text-gray-600 dark:text-gray-400">
+            {currentStage}
           </p>
         </div>
       </div>
     );
   }
 
-  return <div className="h-full">{props.children}</div>;
+  return props.children;
 };
 
 export default App;

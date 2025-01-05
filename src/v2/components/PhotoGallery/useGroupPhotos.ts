@@ -128,6 +128,7 @@ export function useGroupPhotos(photos: Photo[]): {
   const [groupedPhotos, setGroupedPhotos] = useState<GroupedPhotos>({});
   const [processedCount, setProcessedCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [isComplete, setIsComplete] = useState(false);
   const processingRef = useRef(false);
   const photosRef = useRef(photos);
   const CHUNK_SIZE = 50;
@@ -156,6 +157,8 @@ export function useGroupPhotos(photos: Photo[]): {
     try {
       const remainingPhotos = sortedPhotos.slice(processedCount);
       if (remainingPhotos.length === 0) {
+        setIsComplete(true);
+        setIsLoading(false);
         return false;
       }
 
@@ -169,28 +172,44 @@ export function useGroupPhotos(photos: Photo[]): {
       }));
       setProcessedCount((prev) => prev + photosToProcess.length);
 
-      return remainingPhotos.length > CHUNK_SIZE;
+      const hasMore = remainingPhotos.length > CHUNK_SIZE;
+      if (!hasMore) {
+        setIsComplete(true);
+        setIsLoading(false);
+      }
+      return hasMore;
     } finally {
       processingRef.current = false;
     }
   }, [joinLogs, sortedPhotos, processedCount]);
 
   const loadMoreGroups = useCallback(() => {
-    if (isLoading || !joinLogs) return;
-    setIsLoading(true);
+    if (isLoading || !joinLogs || isComplete) return;
 
+    const remainingPhotos = sortedPhotos.slice(processedCount);
+    if (remainingPhotos.length === 0) {
+      setIsComplete(true);
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
     requestAnimationFrame(() => {
       try {
-        const hasMore = processNextChunk();
-        if (!hasMore) {
-          setIsLoading(false);
-        }
+        processNextChunk();
       } catch (error) {
         console.error('Error processing photos:', error);
         setIsLoading(false);
       }
     });
-  }, [isLoading, processNextChunk, joinLogs]);
+  }, [
+    isLoading,
+    processNextChunk,
+    joinLogs,
+    sortedPhotos,
+    processedCount,
+    isComplete,
+  ]);
 
   // 写真データが変更された場合のリセット
   useEffect(() => {
@@ -200,15 +219,13 @@ export function useGroupPhotos(photos: Photo[]): {
     photosRef.current = photos;
     setGroupedPhotos({});
     setProcessedCount(0);
+    setIsComplete(false);
     setIsLoading(true);
     processingRef.current = false;
 
     requestAnimationFrame(() => {
       try {
-        const hasMore = processNextChunk();
-        if (!hasMore) {
-          setIsLoading(false);
-        }
+        processNextChunk();
       } catch (error) {
         console.error('Error loading data:', error);
         setIsLoading(false);
@@ -224,10 +241,7 @@ export function useGroupPhotos(photos: Photo[]): {
     setIsLoading(true);
     requestAnimationFrame(() => {
       try {
-        const hasMore = processNextChunk();
-        if (!hasMore) {
-          setIsLoading(false);
-        }
+        processNextChunk();
       } catch (error) {
         console.error('Error loading initial data:', error);
         setIsLoading(false);
@@ -235,9 +249,11 @@ export function useGroupPhotos(photos: Photo[]): {
     });
   }, [photos, joinLogs, processedCount, processNextChunk]);
 
+  const loading = isLoading || (!isComplete && !joinLogs);
+
   return {
     groupedPhotos,
-    isLoading: isLoading || !joinLogs || processedCount === 0,
+    isLoading: loading,
     loadMoreGroups,
   };
 }
