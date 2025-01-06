@@ -31,6 +31,11 @@ export interface Translations {
       allSettingsDeleted: string;
       logFilePathSet: string;
     };
+    contextMenu: {
+      copyPhotoData: string;
+      openInPhotoApp: string;
+      showInExplorer: string;
+    };
   };
   settings: {
     tabs: {

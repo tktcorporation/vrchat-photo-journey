@@ -1,6 +1,6 @@
+import { Toaster } from '@/components/ui/toaster';
 import { trpcReact } from '@/trpc';
 import TrpcWrapper from '@/trpcWrapper';
-import { Toaster } from '@/v2/components/ui/toaster';
 import { init as initSentry } from '@sentry/electron/renderer';
 import type React from 'react';
 import { useEffect, useState } from 'react';

@@ -18,6 +18,11 @@ const ja: Translations = {
       allSettingsDeleted: '設定をすべて削除しました',
       logFilePathSet: 'VRChatのログファイルの保存先を設定しました',
     },
+    contextMenu: {
+      copyPhotoData: 'コピー',
+      openInPhotoApp: '写真アプリで開く',
+      showInExplorer: 'フォルダを開く',
+    },
   },
   settings: {
     tabs: {

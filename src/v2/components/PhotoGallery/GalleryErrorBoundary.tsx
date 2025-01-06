@@ -1,8 +1,8 @@
 import { trpcReact } from '@/trpc';
 import { AlertCircle } from 'lucide-react';
 import React from 'react';
+import { Button } from '../../../components/ui/button';
 import PathSettings from '../settings/PathSettings';
-import { Button } from '../ui/button';
 
 interface Props {
   children: React.ReactNode;

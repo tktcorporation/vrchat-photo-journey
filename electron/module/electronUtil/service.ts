@@ -42,4 +42,13 @@ const openUrlInDefaultBrowser = (url: string) => {
   return shell.openExternal(url);
 };
 
-export { openPathInExplorer, openGetDirDialog, openUrlInDefaultBrowser };
+const openPhotoPathWithPhotoApp = (path: string) => {
+  return shell.openPath(path);
+};
+
+export {
+  openPathInExplorer,
+  openGetDirDialog,
+  openUrlInDefaultBrowser,
+  openPhotoPathWithPhotoApp,
+};
