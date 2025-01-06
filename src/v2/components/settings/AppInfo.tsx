@@ -2,8 +2,8 @@ import { trpcReact } from '@/trpc';
 import { ArrowUpRight, Info } from 'lucide-react';
 import React, { memo } from 'react';
 import packageJson from '../../../../package.json';
+import { Button } from '../../../components/ui/button';
 import { useI18n } from '../../i18n/store';
-import { Button } from '../ui/button';
 
 const AppInfo = memo(() => {
   const { t } = useI18n();

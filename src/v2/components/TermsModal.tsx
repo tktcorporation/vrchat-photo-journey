@@ -2,10 +2,8 @@ import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 import { useState } from 'react';
 import * as React from 'react';
-import { terms as jaTerms } from '../constants/terms/ja';
-import { useI18n } from '../i18n/store';
-import { cn } from '../lib/utils';
-import { Button } from './ui/button';
+import { cn } from '../../components/lib/utils';
+import { Button } from '../../components/ui/button';
 import {
   DialogContent as BaseDialogContent,
   Dialog,
@@ -15,8 +13,10 @@ import {
   DialogOverlay,
   DialogPortal,
   DialogTitle,
-} from './ui/dialog';
-import { ScrollArea } from './ui/scroll-area';
+} from '../../components/ui/dialog';
+import { ScrollArea } from '../../components/ui/scroll-area';
+import { terms as jaTerms } from '../constants/terms/ja';
+import { useI18n } from '../i18n/store';
 
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
