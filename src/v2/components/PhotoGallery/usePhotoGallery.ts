@@ -1,5 +1,5 @@
 import { trpcReact } from '@/trpc';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import type { Photo } from '../../types/photo';
 import {
   type DebugInfo,
@@ -16,18 +16,34 @@ export function usePhotoGallery(searchQuery: string): {
   debug: DebugInfo;
 } {
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
+  const loadingRef = useRef(false);
+  const lastPhotoDateRef = useRef<Date | null>(null);
+
   const { data: photoList, isLoading: isLoadingPhotos } =
-    trpcReact.vrchatPhoto.getVrchatPhotoPathModelList.useQuery(undefined, {
-      staleTime: 1000 * 60 * 5,
-      cacheTime: 1000 * 60 * 30,
-      retry: 3,
-      retryDelay: 1000,
-      refetchOnMount: false,
-      refetchOnWindowFocus: false,
-    });
+    trpcReact.vrchatPhoto.getVrchatPhotoPathModelList.useQuery(
+      {
+        orderByPhotoTakenAt: 'desc',
+        ...(lastPhotoDateRef.current && {
+          ltPhotoTakenAt: lastPhotoDateRef.current,
+        }),
+      },
+      {
+        staleTime: 1000 * 60 * 5,
+        cacheTime: 1000 * 60 * 30,
+        retry: 3,
+        retryDelay: 1000,
+        refetchOnMount: false,
+        refetchOnWindowFocus: false,
+        keepPreviousData: true,
+      },
+    );
 
   const photos = useMemo(() => {
     if (!photoList) return [];
+    if (photoList.length > 0) {
+      const lastPhoto = photoList[photoList.length - 1];
+      lastPhotoDateRef.current = lastPhoto.photoTakenAt;
+    }
     return photoList.map((photo) => ({
       id: photo.id,
       url: photo.photoPath,
@@ -57,14 +73,29 @@ export function usePhotoGallery(searchQuery: string): {
     const filteredGroups: GroupedPhotos = {};
 
     for (const [key, group] of Object.entries(originalGroupedPhotos)) {
-      // ワールド名での検索
-      if (group.worldInfo?.worldName.toLowerCase().includes(query)) {
+      if (
+        group.worldInfo?.worldName.toLowerCase().includes(query) ||
+        group.photos.some((photo) =>
+          photo.fileName.toLowerCase().includes(query),
+        )
+      ) {
         filteredGroups[key] = group;
       }
     }
 
     return filteredGroups;
   }, [originalGroupedPhotos, searchQuery]);
+
+  const loadMore = useCallback(() => {
+    if (loadingRef.current || isLoadingPhotos) return;
+
+    loadingRef.current = true;
+    loadMoreGroups();
+
+    setTimeout(() => {
+      loadingRef.current = false;
+    }, 500);
+  }, [isLoadingPhotos, loadMoreGroups]);
 
   const isLoading = useMemo(() => {
     if (isLoadingPhotos) return true;
@@ -78,7 +109,7 @@ export function usePhotoGallery(searchQuery: string): {
     isLoading,
     selectedPhoto,
     setSelectedPhoto,
-    loadMoreGroups,
+    loadMoreGroups: loadMore,
     debug,
   };
 }

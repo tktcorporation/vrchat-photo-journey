@@ -1,15 +1,20 @@
-import { memo, useCallback, useEffect, useRef } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
+import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import LocationGroupHeader from '../LocationGroupHeader';
 import PhotoGrid from '../PhotoGrid';
 import PhotoModal from '../PhotoModal';
 import { GalleryErrorBoundary } from './GalleryErrorBoundary';
-import type { DebugInfo } from './useGroupPhotos';
+import { MeasurePhotoGroup } from './MeasurePhotoGroup';
 import { usePhotoGallery } from './usePhotoGallery';
 
 interface GalleryContentProps {
   searchQuery: string;
   showEmptyGroups: boolean;
 }
+
+const SCROLL_THRESHOLD = 200;
+const GROUP_SPACING = 160;
+const CONTAINER_PADDING = 16;
 
 const GalleryContent = memo(
   ({ searchQuery, showEmptyGroups }: GalleryContentProps) => {
@@ -24,147 +29,144 @@ const GalleryContent = memo(
     const containerRef = useRef<HTMLDivElement>(null);
     const loadingRef = useRef(false);
     const hasMoreRef = useRef(debug.remainingGroups > 0);
-    const scrollTimeoutRef = useRef<number | null>(null);
+    const groupSizesRef = useRef<Map<string, number>>(new Map());
+
+    const filteredGroups = useMemo(
+      () =>
+        Object.entries(groupedPhotos).filter(
+          ([_, group]) => showEmptyGroups || group.photos.length > 0,
+        ),
+      [groupedPhotos, showEmptyGroups],
+    );
+
+    const virtualizer = useVirtualizer({
+      count: filteredGroups.length,
+      getScrollElement: () => containerRef.current,
+      estimateSize: useCallback(
+        (index) => {
+          const [key] = filteredGroups[index];
+          return (groupSizesRef.current.get(key) ?? 400) + GROUP_SPACING;
+        },
+        [filteredGroups],
+      ),
+      overscan: 5,
+      measureElement: useCallback((element: HTMLElement) => {
+        const height = element.getBoundingClientRect().height;
+        const key = element.getAttribute('data-key');
+        if (key) {
+          groupSizesRef.current.set(key, height);
+        }
+        return height + GROUP_SPACING;
+      }, []),
+    });
 
     const checkAndLoadMore = useCallback(() => {
-      if (!containerRef.current || loadingRef.current || isLoading) {
-        console.log('Check blocked:', {
-          noContainer: !containerRef.current,
-          isLoading: loadingRef.current,
-          globalLoading: isLoading,
-        });
-        return;
-      }
-      if (!hasMoreRef.current) {
-        console.log('No more content to load');
+      if (
+        !containerRef.current ||
+        loadingRef.current ||
+        isLoading ||
+        !hasMoreRef.current
+      ) {
         return;
       }
 
       const container = containerRef.current;
       const { scrollTop, scrollHeight, clientHeight } = container;
-      const threshold = 200;
       const remaining = scrollHeight - (scrollTop + clientHeight);
 
-      console.log('Checking scroll position:', {
-        scrollTop,
-        scrollHeight,
-        clientHeight,
-        threshold,
-        remaining,
-        debug,
-      });
-
-      if (remaining < threshold) {
-        console.log('Triggering load more');
+      if (remaining < SCROLL_THRESHOLD) {
         loadingRef.current = true;
         loadMoreGroups();
         setTimeout(() => {
           loadingRef.current = false;
         }, 500);
       }
-    }, [isLoading, loadMoreGroups, debug]);
-
-    const handleScroll = useCallback(() => {
-      if (scrollTimeoutRef.current !== null) {
-        window.clearTimeout(scrollTimeoutRef.current);
-      }
-
-      scrollTimeoutRef.current = window.setTimeout(() => {
-        checkAndLoadMore();
-        scrollTimeoutRef.current = null;
-      }, 50);
-    }, [checkAndLoadMore]);
+    }, [isLoading, loadMoreGroups]);
 
     useEffect(() => {
       hasMoreRef.current = debug.remainingGroups > 0;
-      console.log('Updated hasMore:', {
-        remainingGroups: debug.remainingGroups,
-        hasMore: hasMoreRef.current,
-      });
     }, [debug.remainingGroups]);
 
     useEffect(() => {
       const container = containerRef.current;
       if (!container) return;
 
-      container.addEventListener('scroll', handleScroll);
+      const observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              checkAndLoadMore();
+            }
+          }
+        },
+        { rootMargin: '200px' },
+      );
 
-      const initialCheckTimeout = setTimeout(() => {
-        if (
-          container.scrollHeight <= container.clientHeight &&
-          hasMoreRef.current
-        ) {
-          console.log('Initial load - content fits without scroll');
-          loadMoreGroups();
-        } else if (
-          container.scrollTop + container.clientHeight >=
-          container.scrollHeight - 200
-        ) {
-          console.log('Initial load - scrolled to bottom');
-          loadMoreGroups();
-        }
-      }, 100);
+      const sentinel = document.createElement('div');
+      sentinel.style.height = '1px';
+      container.appendChild(sentinel);
+      observer.observe(sentinel);
 
       return () => {
-        container.removeEventListener('scroll', handleScroll);
-        if (scrollTimeoutRef.current !== null) {
-          window.clearTimeout(scrollTimeoutRef.current);
-        }
-        clearTimeout(initialCheckTimeout);
+        observer.disconnect();
+        sentinel.remove();
       };
-    }, [handleScroll, loadMoreGroups]);
-
-    useEffect(() => {
-      const initialTimeout = setTimeout(() => {
-        checkAndLoadMore();
-      }, 200);
-
-      return () => clearTimeout(initialTimeout);
     }, [checkAndLoadMore]);
-
-    const filteredGroups = Object.entries(groupedPhotos).filter(
-      ([_, group]) => showEmptyGroups || group.photos.length > 0,
-    );
 
     return (
       <GalleryErrorBoundary>
-        <div
-          ref={containerRef}
-          className="flex-1 overflow-y-auto p-4 space-y-10"
-        >
-          {/* <div className="bg-gray-100 p-4 rounded-lg text-sm">
-            <h3 className="font-bold mb-2">デバッグ情報</h3>
-            <div className="grid grid-cols-2 gap-2">
-              <div>総写真数: {debug.totalPhotos}</div>
-              <div>読み込み済み: {debug.loadedPhotos}</div>
-              <div>総グループ数: {debug.totalGroups}</div>
-              <div>読み込み済みグループ: {debug.loadedGroups}</div>
-              <div>残り写真数: {debug.remainingPhotos}</div>
-              <div>残りグループ数: {debug.remainingGroups}</div>
-              <div>読み込み中: {isLoading ? 'はい' : 'いいえ'}</div>
-              <div>追加読み込み可能: {hasMoreRef.current ? 'はい' : 'いいえ'}</div>
-            </div>
-          </div> */}
-
-          {filteredGroups.map(([key, group]) => (
-            <div key={key} className="space-y-4">
-              <LocationGroupHeader
-                worldId={group.worldInfo?.worldId ?? null}
-                worldName={group.worldInfo?.worldName ?? null}
-                worldInstanceId={group.worldInfo?.worldInstanceId ?? null}
-                photoCount={group.photos.length}
-                joinDateTime={group.joinDateTime}
-              />
-              {group.photos.length > 0 ? (
-                <PhotoGrid
-                  photos={group.photos}
-                  onPhotoSelect={setSelectedPhoto}
-                />
-              ) : (
-                <div className="text-gray-500">No Photos</div>
-              )}
-            </div>
-          ))}
+        <div ref={containerRef} className="flex-1 overflow-y-auto p-4">
+          <div
+            style={{
+              height: `${virtualizer.getTotalSize()}px`,
+              width: '100%',
+              position: 'relative',
+            }}
+          >
+            {virtualizer.getVirtualItems().map((virtualRow) => {
+              const [key, group] = filteredGroups[virtualRow.index];
+              return (
+                <div
+                  key={key}
+                  data-key={key}
+                  ref={virtualizer.measureElement}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    transform: `translateY(${virtualRow.start}px)`,
+                    paddingBottom: `${GROUP_SPACING - CONTAINER_PADDING}px`,
+                  }}
+                >
+                  <div className="space-y-6">
+                    <LocationGroupHeader
+                      worldId={group.worldInfo?.worldId ?? null}
+                      worldName={group.worldInfo?.worldName ?? null}
+                      worldInstanceId={group.worldInfo?.worldInstanceId ?? null}
+                      photoCount={group.photos.length}
+                      joinDateTime={group.joinDateTime}
+                    />
+                    {group.photos.length > 0 ? (
+                      <PhotoGrid
+                        photos={group.photos}
+                        onPhotoSelect={setSelectedPhoto}
+                      />
+                    ) : (
+                      <div className="text-gray-500">No Photos</div>
+                    )}
+                  </div>
+                  <MeasurePhotoGroup
+                    photos={group.photos}
+                    onMeasure={(height) => {
+                      groupSizesRef.current.set(key, height);
+                      virtualizer.measure();
+                    }}
+                  />
+                </div>
+              );
+            })}
+          </div>
           {isLoading && (
             <div className="flex justify-center py-4">
               <div className="text-gray-500">写真を読み込み中...</div>
