@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [unreleased]
+
+### 🚀 Features
+
+- Context-menu で写真の操作を行えるようにする (#176)
+- Photo表示の効率化 (#178)
+
 ## [0.3.0-alpha.1] - 2025-01-05
 
 ### 🚀 Features
