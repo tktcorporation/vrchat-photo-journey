@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Photo } from '../../types/photo';
 
 interface MeasurePhotoGroupProps {
@@ -16,13 +16,12 @@ export function MeasurePhotoGroup({
   onMeasure,
 }: MeasurePhotoGroupProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState(0);
+  const previousHeightRef = useRef<number>(0);
 
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    const calculateGridHeight = () => {
-      const containerWidth = containerRef.current?.clientWidth ?? 0;
-      if (containerWidth === 0) return 0;
+  const calculateGridHeight = useCallback(
+    (width: number) => {
+      if (width === 0) return 0;
 
       let totalHeight = HEADER_HEIGHT + CONTAINER_PADDING;
       let currentRowWidth = 0;
@@ -33,12 +32,12 @@ export function MeasurePhotoGroup({
         const photoWidth = TARGET_ROW_HEIGHT * aspectRatio;
 
         if (
-          currentRowWidth + photoWidth + GAP > containerWidth &&
+          currentRowWidth + photoWidth + GAP > width &&
           currentRowPhotos > 0
         ) {
           // 行の高さを計算して追加
           const scale =
-            (containerWidth - (currentRowPhotos - 1) * GAP) / currentRowWidth;
+            (width - (currentRowPhotos - 1) * GAP) / currentRowWidth;
           totalHeight += TARGET_ROW_HEIGHT * scale + GAP;
           currentRowWidth = 0;
           currentRowPhotos = 0;
@@ -54,29 +53,41 @@ export function MeasurePhotoGroup({
           totalHeight += TARGET_ROW_HEIGHT + GAP;
         } else {
           const scale =
-            (containerWidth - (currentRowPhotos - 1) * GAP) / currentRowWidth;
+            (width - (currentRowPhotos - 1) * GAP) / currentRowWidth;
           totalHeight += TARGET_ROW_HEIGHT * scale + GAP;
         }
       }
 
       return totalHeight;
-    };
+    },
+    [photos],
+  );
 
-    const resizeObserver = new ResizeObserver(() => {
-      const height = calculateGridHeight();
-      onMeasure(height);
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      const width = entries[0]?.contentRect.width ?? 0;
+      setContainerWidth(width);
     });
 
     resizeObserver.observe(containerRef.current);
-
-    // 初回計算
-    const height = calculateGridHeight();
-    onMeasure(height);
+    setContainerWidth(containerRef.current.clientWidth);
 
     return () => {
       resizeObserver.disconnect();
     };
-  }, [photos, onMeasure]);
+  }, []);
+
+  useEffect(() => {
+    if (containerWidth === 0) return;
+
+    const newHeight = calculateGridHeight(containerWidth);
+    if (newHeight !== previousHeightRef.current) {
+      previousHeightRef.current = newHeight;
+      onMeasure(newHeight);
+    }
+  }, [containerWidth, calculateGridHeight, onMeasure]);
 
   return <div ref={containerRef} className="w-full" />;
 }

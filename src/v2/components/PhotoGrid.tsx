@@ -19,19 +19,23 @@ interface LayoutPhoto extends Photo {
 
 export default function PhotoGrid({ photos, onPhotoSelect }: PhotoGridProps) {
   const layout = useMemo(() => {
-    const rows: LayoutPhoto[][] = [];
-    let currentRow: LayoutPhoto[] = [];
+    const rows: (LayoutPhoto & { rowIndex: number })[][] = [];
+    let currentRow: (LayoutPhoto & { rowIndex: number })[] = [];
     let rowWidth = 0;
+    let rowIndex = 0;
     const containerWidth = window.innerWidth - 48; // パディングを考慮
 
     // 写真をレイアウト用に変換
-    const layoutPhotos: LayoutPhoto[] = photos.map((photo) => ({
-      ...photo,
-      width: photo.width || 1920,
-      height: photo.height || 1080,
-      displayWidth: 0,
-      displayHeight: 0,
-    }));
+    const layoutPhotos: (LayoutPhoto & { rowIndex: number })[] = photos.map(
+      (photo) => ({
+        ...photo,
+        width: photo.width || 1920,
+        height: photo.height || 1080,
+        displayWidth: 0,
+        displayHeight: 0,
+        rowIndex: 0,
+      }),
+    );
 
     // 写真を行に分配
     for (const photo of layoutPhotos) {
@@ -48,16 +52,19 @@ export default function PhotoGrid({ photos, onPhotoSelect }: PhotoGridProps) {
         for (const p of currentRow) {
           p.displayHeight = TARGET_ROW_HEIGHT * scale;
           p.displayWidth = p.displayHeight * (p.width / p.height);
+          p.rowIndex = rowIndex;
         }
         rows.push(currentRow);
         currentRow = [];
         rowWidth = 0;
+        rowIndex++;
       }
 
       currentRow.push({
         ...photo,
         displayWidth: photoWidth,
         displayHeight: TARGET_ROW_HEIGHT,
+        rowIndex,
       });
       rowWidth += photoWidth + GAP;
     }
@@ -70,6 +77,7 @@ export default function PhotoGrid({ photos, onPhotoSelect }: PhotoGridProps) {
         const aspectRatio = photo.width / photo.height;
         photo.displayHeight = TARGET_ROW_HEIGHT;
         photo.displayWidth = TARGET_ROW_HEIGHT * aspectRatio;
+        photo.rowIndex = rowIndex;
       } else {
         // 最後の行もアスペクト比を調整
         const scale =
@@ -77,6 +85,7 @@ export default function PhotoGrid({ photos, onPhotoSelect }: PhotoGridProps) {
         for (const p of currentRow) {
           p.displayHeight = TARGET_ROW_HEIGHT * scale;
           p.displayWidth = p.displayHeight * (p.width / p.height);
+          p.rowIndex = rowIndex;
         }
       }
       rows.push(currentRow);
@@ -87,31 +96,37 @@ export default function PhotoGrid({ photos, onPhotoSelect }: PhotoGridProps) {
 
   return (
     <div className="space-y-1">
-      {layout.map((row) => (
-        <div
-          key={row[0]?.id ?? Math.random()}
-          className="flex gap-1"
-          style={{
-            height: row[0]?.displayHeight ?? TARGET_ROW_HEIGHT,
-          }}
-        >
-          {row.map((photo, index) => (
-            <div
-              key={photo.id}
-              style={{
-                width: photo.displayWidth,
-                flexShrink: 0,
-              }}
-            >
-              <PhotoCard
-                photo={photo}
-                onSelect={onPhotoSelect}
-                priority={index === 0}
-              />
-            </div>
-          ))}
-        </div>
-      ))}
+      {layout.map((row) => {
+        const rowKey = `row-${row[0]?.rowIndex}-${row[0]?.id}`;
+        return (
+          <div
+            key={rowKey}
+            className="flex gap-1"
+            style={{
+              height: row[0]?.displayHeight ?? TARGET_ROW_HEIGHT,
+            }}
+          >
+            {row.map((photo, index) => {
+              const photoKey = `photo-${photo.rowIndex}-${photo.id}-${index}`;
+              return (
+                <div
+                  key={photoKey}
+                  style={{
+                    width: photo.displayWidth,
+                    flexShrink: 0,
+                  }}
+                >
+                  <PhotoCard
+                    photo={photo}
+                    onSelect={onPhotoSelect}
+                    priority={index === 0}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        );
+      })}
     </div>
   );
 }
