@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Photo } from '../types/photo';
 import PhotoCard from './PhotoCard';
 
@@ -18,115 +18,133 @@ interface LayoutPhoto extends Photo {
 }
 
 export default function PhotoGrid({ photos, onPhotoSelect }: PhotoGridProps) {
-  const layout = useMemo(() => {
-    const rows: (LayoutPhoto & { rowIndex: number })[][] = [];
-    let currentRow: (LayoutPhoto & { rowIndex: number })[] = [];
-    let rowWidth = 0;
-    let rowIndex = 0;
-    const containerWidth = window.innerWidth - 48; // パディングを考慮
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState(0);
 
-    // 写真をレイアウト用に変換
-    const layoutPhotos: (LayoutPhoto & { rowIndex: number })[] = photos.map(
-      (photo) => ({
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const updateWidth = () => {
+      if (containerRef.current) {
+        setContainerWidth(containerRef.current.clientWidth);
+      }
+    };
+
+    const resizeObserver = new ResizeObserver(updateWidth);
+    resizeObserver.observe(containerRef.current);
+    updateWidth();
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
+
+  const calculateLayout = useCallback(
+    (width: number) => {
+      if (width === 0) return [];
+
+      const rows: LayoutPhoto[][] = [];
+      let currentRow: LayoutPhoto[] = [];
+      let rowWidth = 0;
+
+      // 写真をレイアウト用に変換
+      const layoutPhotos: LayoutPhoto[] = photos.map((photo) => ({
         ...photo,
         width: photo.width || 1920,
         height: photo.height || 1080,
         displayWidth: 0,
         displayHeight: 0,
-        rowIndex: 0,
-      }),
-    );
+      }));
 
-    // 写真を行に分配
-    for (const photo of layoutPhotos) {
-      const aspectRatio = photo.width / photo.height;
-      const photoWidth = TARGET_ROW_HEIGHT * aspectRatio;
+      // 写真を行に分配
+      for (const photo of layoutPhotos) {
+        const aspectRatio = photo.width / photo.height;
+        const photoWidth = TARGET_ROW_HEIGHT * aspectRatio;
 
-      if (
-        rowWidth + photoWidth + GAP > containerWidth &&
-        currentRow.length > 0
-      ) {
-        // 現在の行を確定
-        const scale =
-          (containerWidth - (currentRow.length - 1) * GAP) / rowWidth;
-        for (const p of currentRow) {
-          p.displayHeight = TARGET_ROW_HEIGHT * scale;
-          p.displayWidth = p.displayHeight * (p.width / p.height);
-          p.rowIndex = rowIndex;
+        if (rowWidth + photoWidth + GAP > width && currentRow.length > 0) {
+          // 現在の行を確定
+          const scale = (width - (currentRow.length - 1) * GAP) / rowWidth;
+          for (const p of currentRow) {
+            p.displayHeight = TARGET_ROW_HEIGHT * scale;
+            p.displayWidth = p.displayHeight * (p.width / p.height);
+          }
+          rows.push(currentRow);
+          currentRow = [];
+          rowWidth = 0;
+        }
+
+        currentRow.push({
+          ...photo,
+          displayWidth: photoWidth,
+          displayHeight: TARGET_ROW_HEIGHT,
+        });
+        rowWidth += photoWidth + GAP;
+      }
+
+      // 最後の行を処理
+      if (currentRow.length > 0) {
+        if (currentRow.length === 1 || rows.length === 0) {
+          // 1枚だけの場合は特別処理
+          const photo = currentRow[0];
+          const aspectRatio = photo.width / photo.height;
+          photo.displayHeight = TARGET_ROW_HEIGHT;
+          photo.displayWidth = Math.min(TARGET_ROW_HEIGHT * aspectRatio, width);
+        } else {
+          // 最後の行もアスペクト比を調整
+          const scale = (width - (currentRow.length - 1) * GAP) / rowWidth;
+          for (const p of currentRow) {
+            p.displayHeight = TARGET_ROW_HEIGHT * scale;
+            p.displayWidth = p.displayHeight * (p.width / p.height);
+          }
         }
         rows.push(currentRow);
-        currentRow = [];
-        rowWidth = 0;
-        rowIndex++;
       }
 
-      currentRow.push({
-        ...photo,
-        displayWidth: photoWidth,
-        displayHeight: TARGET_ROW_HEIGHT,
-        rowIndex,
-      });
-      rowWidth += photoWidth + GAP;
-    }
+      return rows;
+    },
+    [photos],
+  );
 
-    // 最後の行を処理
-    if (currentRow.length > 0) {
-      if (currentRow.length === 1 || rows.length === 0) {
-        // 1枚だけの場合は特別処理
-        const photo = currentRow[0];
-        const aspectRatio = photo.width / photo.height;
-        photo.displayHeight = TARGET_ROW_HEIGHT;
-        photo.displayWidth = TARGET_ROW_HEIGHT * aspectRatio;
-        photo.rowIndex = rowIndex;
-      } else {
-        // 最後の行もアスペクト比を調整
-        const scale =
-          (containerWidth - (currentRow.length - 1) * GAP) / rowWidth;
-        for (const p of currentRow) {
-          p.displayHeight = TARGET_ROW_HEIGHT * scale;
-          p.displayWidth = p.displayHeight * (p.width / p.height);
-          p.rowIndex = rowIndex;
-        }
-      }
-      rows.push(currentRow);
-    }
-
-    return rows;
-  }, [photos]);
+  const layout = useMemo(
+    () => calculateLayout(containerWidth),
+    [calculateLayout, containerWidth],
+  );
 
   return (
-    <div className="space-y-1">
-      {layout.map((row) => {
-        const rowKey = `row-${row[0]?.rowIndex}-${row[0]?.id}`;
-        return (
-          <div
-            key={rowKey}
-            className="flex gap-1"
-            style={{
-              height: row[0]?.displayHeight ?? TARGET_ROW_HEIGHT,
-            }}
-          >
-            {row.map((photo, index) => {
-              const photoKey = `photo-${photo.rowIndex}-${photo.id}-${index}`;
-              return (
-                <div
-                  key={photoKey}
-                  style={{
-                    width: photo.displayWidth,
-                    flexShrink: 0,
-                  }}
-                >
-                  <PhotoCard
-                    photo={photo}
-                    onSelect={onPhotoSelect}
-                    priority={index === 0}
-                  />
-                </div>
-              );
-            })}
-          </div>
-        );
-      })}
+    <div ref={containerRef} className="w-full">
+      <div className="space-y-1">
+        {layout.map((row, rowIndex) => {
+          const rowKey = `row-${rowIndex}-${row[0]?.id}`;
+          return (
+            <div
+              key={rowKey}
+              className="flex gap-1"
+              style={{
+                height: row[0]?.displayHeight ?? TARGET_ROW_HEIGHT,
+              }}
+            >
+              {row.map((photo, index) => {
+                const photoKey = `photo-${rowIndex}-${photo.id}-${index}`;
+                return (
+                  <div
+                    key={photoKey}
+                    style={{
+                      width: photo.displayWidth,
+                      flexShrink: 0,
+                    }}
+                  >
+                    <PhotoCard
+                      photo={photo}
+                      onSelect={onPhotoSelect}
+                      priority={index === 0}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

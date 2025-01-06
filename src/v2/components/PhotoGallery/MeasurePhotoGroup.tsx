@@ -18,6 +18,7 @@ export function MeasurePhotoGroup({
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
   const previousHeightRef = useRef<number>(0);
+  const resizeTimeoutRef = useRef<number>();
 
   const calculateGridHeight = useCallback(
     (width: number) => {
@@ -58,7 +59,7 @@ export function MeasurePhotoGroup({
         }
       }
 
-      return totalHeight;
+      return Math.ceil(totalHeight);
     },
     [photos],
   );
@@ -66,15 +67,26 @@ export function MeasurePhotoGroup({
   useEffect(() => {
     if (!containerRef.current) return;
 
-    const resizeObserver = new ResizeObserver((entries) => {
-      const width = entries[0]?.contentRect.width ?? 0;
-      setContainerWidth(width);
-    });
+    const handleResize = () => {
+      if (resizeTimeoutRef.current) {
+        window.clearTimeout(resizeTimeoutRef.current);
+      }
 
+      resizeTimeoutRef.current = window.setTimeout(() => {
+        if (containerRef.current) {
+          setContainerWidth(containerRef.current.clientWidth);
+        }
+      }, 100);
+    };
+
+    const resizeObserver = new ResizeObserver(handleResize);
     resizeObserver.observe(containerRef.current);
     setContainerWidth(containerRef.current.clientWidth);
 
     return () => {
+      if (resizeTimeoutRef.current) {
+        window.clearTimeout(resizeTimeoutRef.current);
+      }
       resizeObserver.disconnect();
     };
   }, []);
