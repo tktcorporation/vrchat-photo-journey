@@ -1,110 +1,117 @@
-import React, { useCallback, useMemo } from 'react';
-import { useResizeObserver } from '../hooks/useResizeObserver';
-import { useVirtualPhotos } from '../hooks/useVirtualPhotos';
+import { useMemo } from 'react';
 import type { Photo } from '../types/photo';
 import PhotoCard from './PhotoCard';
 
 interface PhotoGridProps {
   photos: Photo[];
   onPhotoSelect: (photo: Photo) => void;
-  layout?: 'horizontal' | 'vertical';
 }
 
-const PhotoGrid: React.FC<PhotoGridProps> = React.memo(
-  ({ photos, onPhotoSelect }) => {
-    const [containerRef, { width: containerWidth }] =
-      useResizeObserver<HTMLDivElement>();
-    const { visiblePhotos, isLoading } = useVirtualPhotos(photos);
+const TARGET_ROW_HEIGHT = 200; // 目標の行の高さ
+const GAP = 4; // 写真間のギャップ
 
-    const getColumnCount = useCallback((width: number) => {
-      if (width < 640) return 2;
-      if (width < 1024) return 3;
-      if (width < 1536) return 4;
-      return 5;
-    }, []);
+interface LayoutPhoto extends Photo {
+  width: number;
+  height: number;
+  displayWidth: number;
+  displayHeight: number;
+}
 
-    const columnCount = useMemo(
-      () => getColumnCount(containerWidth || window.innerWidth),
-      [containerWidth, getColumnCount],
-    );
+export default function PhotoGrid({ photos, onPhotoSelect }: PhotoGridProps) {
+  const layout = useMemo(() => {
+    const rows: LayoutPhoto[][] = [];
+    let currentRow: LayoutPhoto[] = [];
+    let rowWidth = 0;
+    const containerWidth = window.innerWidth - 48; // パディングを考慮
 
-    const photoColumns = useMemo(() => {
-      const columns: Photo[][] = Array.from({ length: columnCount }, () => []);
+    // 写真をレイアウト用に変換
+    const layoutPhotos: LayoutPhoto[] = photos.map((photo) => ({
+      ...photo,
+      width: photo.width || 1920,
+      height: photo.height || 1080,
+      displayWidth: 0,
+      displayHeight: 0,
+    }));
 
-      visiblePhotos.forEach((photo, index) => {
-        columns[index % columnCount].push(photo);
+    // 写真を行に分配
+    for (const photo of layoutPhotos) {
+      const aspectRatio = photo.width / photo.height;
+      const photoWidth = TARGET_ROW_HEIGHT * aspectRatio;
+
+      if (
+        rowWidth + photoWidth + GAP > containerWidth &&
+        currentRow.length > 0
+      ) {
+        // 現在の行を確定
+        const scale =
+          (containerWidth - (currentRow.length - 1) * GAP) / rowWidth;
+        for (const p of currentRow) {
+          p.displayHeight = TARGET_ROW_HEIGHT * scale;
+          p.displayWidth = p.displayHeight * (p.width / p.height);
+        }
+        rows.push(currentRow);
+        currentRow = [];
+        rowWidth = 0;
+      }
+
+      currentRow.push({
+        ...photo,
+        displayWidth: photoWidth,
+        displayHeight: TARGET_ROW_HEIGHT,
       });
-
-      return columns;
-    }, [visiblePhotos, columnCount]);
-
-    if (!photos?.length) {
-      return (
-        <div className="flex items-center justify-center h-48 text-gray-500 dark:text-gray-400">
-          写真が見つかりませんでした
-        </div>
-      );
+      rowWidth += photoWidth + GAP;
     }
 
-    return (
-      <div ref={containerRef}>
+    // 最後の行を処理
+    if (currentRow.length > 0) {
+      if (currentRow.length === 1 || rows.length === 0) {
+        // 1枚だけの場合は特別処理
+        const photo = currentRow[0];
+        const aspectRatio = photo.width / photo.height;
+        photo.displayHeight = TARGET_ROW_HEIGHT;
+        photo.displayWidth = TARGET_ROW_HEIGHT * aspectRatio;
+      } else {
+        // 最後の行もアスペクト比を調整
+        const scale =
+          (containerWidth - (currentRow.length - 1) * GAP) / rowWidth;
+        for (const p of currentRow) {
+          p.displayHeight = TARGET_ROW_HEIGHT * scale;
+          p.displayWidth = p.displayHeight * (p.width / p.height);
+        }
+      }
+      rows.push(currentRow);
+    }
+
+    return rows;
+  }, [photos]);
+
+  return (
+    <div className="space-y-1">
+      {layout.map((row) => (
         <div
-          className="grid gap-2"
+          key={row[0]?.id ?? Math.random()}
+          className="flex gap-1"
           style={{
-            gridTemplateColumns: `repeat(${columnCount}, minmax(0, 1fr))`,
+            height: row[0]?.displayHeight ?? TARGET_ROW_HEIGHT,
           }}
         >
-          {photoColumns.map((column, columnIndex) => (
+          {row.map((photo, index) => (
             <div
-              key={`column-${columnIndex}-${column[0]?.id ?? columnIndex}`}
-              className="space-y-2"
+              key={photo.id}
+              style={{
+                width: photo.displayWidth,
+                flexShrink: 0,
+              }}
             >
-              {column.map((photo) => (
-                <PhotoCard
-                  key={photo.id}
-                  photo={photo}
-                  priority={columnIndex < 2}
-                  onSelect={onPhotoSelect}
-                />
-              ))}
+              <PhotoCard
+                photo={photo}
+                onSelect={onPhotoSelect}
+                priority={index === 0}
+              />
             </div>
           ))}
         </div>
-
-        {isLoading && (
-          <div className="h-20 flex items-center justify-center mt-4">
-            <div className="flex items-center space-x-2 text-gray-500 dark:text-gray-400">
-              <svg
-                className="animate-spin h-5 w-5"
-                viewBox="0 0 24 24"
-                role="img"
-                aria-label="Loading..."
-              >
-                <title>Loading...</title>
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                  fill="none"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                />
-              </svg>
-              <span>写真を読み込み中...</span>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  },
-);
-
-PhotoGrid.displayName = 'PhotoGrid';
-
-export default PhotoGrid;
+      ))}
+    </div>
+  );
+}

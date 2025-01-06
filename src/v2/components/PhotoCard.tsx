@@ -57,7 +57,7 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
     return (
       <div
         ref={elementRef}
-        className="group relative w-full bg-gray-100 dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden cursor-pointer transform transition-all duration-300 hover:shadow-md hover:scale-[1.02]"
+        className="group relative w-full h-full bg-gray-100 dark:bg-gray-800 overflow-hidden cursor-pointer transform transition-all duration-300 hover:brightness-110"
         onClick={() => onSelect(photo)}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
@@ -66,9 +66,6 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
         }}
         role="button"
         tabIndex={0}
-        style={{
-          aspectRatio: `${photo.width} / ${photo.height}`,
-        }}
       >
         <ContextMenu>
           <ContextMenuTrigger className="absolute inset-0">
@@ -88,14 +85,11 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
               />
             )}
 
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-              <div className="absolute bottom-0 left-0 right-0 p-3">
-                <h3 className="text-white font-semibold truncate text-sm">
-                  {photo.url}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute bottom-0 left-0 right-0 p-2">
+                <h3 className="text-white font-medium truncate text-xs">
+                  {photo.fileName}
                 </h3>
-                <div className="mt-1.5 flex flex-wrap gap-1.5">
-                  photo.location.description
-                </div>
               </div>
             </div>
           </ContextMenuTrigger>
