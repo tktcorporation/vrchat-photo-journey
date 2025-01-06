@@ -37,4 +37,9 @@ export const electronUtilRouter = () =>
       clipboard.writeImage(image);
       eventEmitter.emit('toast', 'copied');
     }),
+    openPhotoPathWithPhotoApp: procedure
+      .input(z.string())
+      .mutation(async (ctx) => {
+        await utilsService.openPhotoPathWithPhotoApp(ctx.input);
+      }),
   });
