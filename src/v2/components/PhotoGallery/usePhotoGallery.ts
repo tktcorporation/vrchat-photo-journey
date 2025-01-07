@@ -1,5 +1,5 @@
 import { trpcReact } from '@/trpc';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Photo } from '../../types/photo';
 import {
   type DebugInfo,
@@ -18,6 +18,7 @@ export function usePhotoGallery(searchQuery: string): {
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
   const loadingRef = useRef(false);
   const lastPhotoDateRef = useRef<Date | null>(null);
+  const [photos, setPhotos] = useState<Photo[]>([]);
 
   const { data: photoList, isLoading: isLoadingPhotos } =
     trpcReact.vrchatPhoto.getVrchatPhotoPathModelList.useQuery(
@@ -38,26 +39,43 @@ export function usePhotoGallery(searchQuery: string): {
       },
     );
 
-  const photos = useMemo(() => {
-    if (!photoList) return [];
-    if (photoList.length > 0) {
-      const lastPhoto = photoList[photoList.length - 1];
-      lastPhotoDateRef.current = lastPhoto.photoTakenAt;
-    }
-    return photoList.map((photo) => ({
-      id: photo.id,
-      url: photo.photoPath,
-      fileName: photo.photoPath.split('/').pop() || '',
-      width: photo.width || 1920,
-      height: photo.height || 1080,
-      takenAt: photo.photoTakenAt,
-      location: {
-        name: '',
-        description: '',
-        joinedAt: photo.photoTakenAt,
-      },
-    }));
-  }, [photoList]);
+  // 新しい写真データを処理
+  useEffect(() => {
+    if (!photoList || isLoadingPhotos) return;
+
+    setPhotos((prevPhotos) => {
+      const newPhotos = [...prevPhotos];
+      const seenIds = new Set(newPhotos.map((p) => p.id));
+
+      for (const photo of photoList) {
+        if (!seenIds.has(photo.id)) {
+          newPhotos.push({
+            id: photo.id,
+            url: photo.photoPath,
+            fileName: photo.photoPath.split('/').pop() || '',
+            width: photo.width || 1920,
+            height: photo.height || 1080,
+            takenAt: photo.photoTakenAt,
+            location: {
+              joinedAt: photo.photoTakenAt,
+            },
+          });
+          seenIds.add(photo.id);
+        }
+      }
+
+      // 最後の写真の日付を更新
+      if (photoList.length > 0) {
+        const lastPhoto = photoList[photoList.length - 1];
+        lastPhotoDateRef.current = lastPhoto.photoTakenAt;
+      }
+
+      // 写真を日付の新しい順にソート
+      return newPhotos.sort(
+        (a, b) => b.takenAt.getTime() - a.takenAt.getTime(),
+      );
+    });
+  }, [photoList, isLoadingPhotos]);
 
   const {
     groupedPhotos: originalGroupedPhotos,
@@ -65,6 +83,30 @@ export function usePhotoGallery(searchQuery: string): {
     loadMoreGroups,
     debug,
   } = useGroupPhotos(photos);
+
+  const isLoading = useMemo(() => {
+    if (isLoadingPhotos) return true;
+    if (isGrouping) return true;
+    if (!photoList) return true;
+    return false;
+  }, [isLoadingPhotos, isGrouping, photoList]);
+
+  // デバッグ情報の出力
+  useEffect(() => {
+    console.log('Photos and groups updated:', {
+      photosCount: photos.length,
+      groupsCount: Object.keys(originalGroupedPhotos).length,
+      isLoading,
+      isLoadingPhotos,
+      isGrouping,
+    });
+  }, [
+    photos.length,
+    originalGroupedPhotos,
+    isLoading,
+    isLoadingPhotos,
+    isGrouping,
+  ]);
 
   const groupedPhotos = useMemo(() => {
     if (!searchQuery) return originalGroupedPhotos;
@@ -94,15 +136,8 @@ export function usePhotoGallery(searchQuery: string): {
 
     setTimeout(() => {
       loadingRef.current = false;
-    }, 500);
+    }, 1000);
   }, [isLoadingPhotos, loadMoreGroups]);
-
-  const isLoading = useMemo(() => {
-    if (isLoadingPhotos) return true;
-    if (isGrouping) return true;
-    if (!photoList) return true;
-    return false;
-  }, [isLoadingPhotos, isGrouping, photoList]);
 
   return {
     groupedPhotos,
@@ -110,6 +145,10 @@ export function usePhotoGallery(searchQuery: string): {
     selectedPhoto,
     setSelectedPhoto,
     loadMoreGroups: loadMore,
-    debug,
+    debug: {
+      ...debug,
+      totalPhotos: photos.length,
+      loadedPhotos: photos.length,
+    },
   };
 }

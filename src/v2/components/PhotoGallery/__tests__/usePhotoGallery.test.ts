@@ -22,12 +22,31 @@ const mockPhotos = [
   },
 ] as const;
 
+const mockPhotosNextBatch = [
+  {
+    id: '3',
+    photoPath: '/path/to/photo3.jpg',
+    photoTakenAt: new Date('2023-12-31T23:00:00Z'),
+    width: 1920,
+    height: 1080,
+  },
+  {
+    id: '4',
+    photoPath: '/path/to/photo4.jpg',
+    photoTakenAt: new Date('2023-12-31T22:00:00Z'),
+    width: 1920,
+    height: 1080,
+  },
+] as const;
+
 // モックの設定
 const createMockState = () => {
   let isLoading = true;
-  let photoData: typeof mockPhotos | undefined = undefined;
+  let photoData: typeof mockPhotos | typeof mockPhotosNextBatch | undefined =
+    undefined;
+  let currentBatch = 0;
 
-  const setState = (loading: boolean, data: typeof mockPhotos | undefined) => {
+  const setState = (loading: boolean, data: typeof photoData) => {
     isLoading = loading;
     photoData = data;
   };
@@ -37,42 +56,62 @@ const createMockState = () => {
     isLoading,
   });
 
-  return { setState, getState };
+  const loadNextBatch = () => {
+    currentBatch++;
+    if (currentBatch === 1) {
+      setState(false, mockPhotosNextBatch);
+    }
+  };
+
+  return { setState, getState, loadNextBatch };
 };
 
 const mockState = createMockState();
 
 // useGroupPhotosのモック
 vi.mock('../useGroupPhotos', () => ({
-  useGroupPhotos: (photos: Photo[]) => ({
-    groupedPhotos:
-      photos.length > 0
-        ? {
-            'test-group': {
-              photos: photos.map((p) => ({
-                ...p,
-                location: {
-                  ...p.location,
-                  name: '',
-                  description: '',
-                },
-              })),
-              worldInfo: {
-                worldName: 'Test World',
-              },
-              joinDateTime: photos[0].takenAt,
-            },
-          }
-        : {},
-    isLoading: false,
-    loadMoreGroups: vi.fn(),
-    debug: {
-      totalGroups: photos.length > 0 ? 1 : 0,
-      totalPhotos: photos.length,
-      loadedPhotos: photos.length,
-      remainingGroups: 0,
-    },
-  }),
+  useGroupPhotos: (photos: Photo[]) => {
+    const groups: Record<
+      string,
+      {
+        photos: Photo[];
+        worldInfo: { worldName: string };
+        joinDateTime: Date;
+      }
+    > = {};
+
+    // 最新の写真でグループを作成
+    if (photos.length > 0) {
+      const latestPhoto = photos[0];
+      const key = latestPhoto.takenAt.toISOString().split('T')[0];
+      groups[key] = {
+        photos: photos.map((p) => ({
+          ...p,
+          location: {
+            ...p.location,
+            name: '',
+            description: '',
+          },
+        })),
+        worldInfo: {
+          worldName: 'Test World',
+        },
+        joinDateTime: latestPhoto.takenAt,
+      };
+    }
+
+    return {
+      groupedPhotos: groups,
+      isLoading: false,
+      loadMoreGroups: vi.fn(),
+      debug: {
+        totalGroups: Object.keys(groups).length,
+        totalPhotos: photos.length,
+        loadedPhotos: photos.length,
+        remainingGroups: photos.length > 0 ? 1 : 0,
+      },
+    };
+  },
 }));
 
 vi.mock('./../../../../trpc', () => ({
@@ -158,5 +197,51 @@ describe('usePhotoGallery', () => {
     expect(Object.keys(result.current.groupedPhotos).length).toBe(
       initialGroupCount,
     );
+  });
+
+  it('追加の写真を正しく読み込んでグループ化する', () => {
+    const { result, rerender } = renderHook(() => usePhotoGallery(''));
+
+    // 初期データを読み込む
+    act(() => {
+      mockState.setState(false, mockPhotos);
+      rerender();
+      vi.runAllTimers();
+    });
+
+    // 初期状態の確認
+    expect(result.current.isLoading).toBe(false);
+    expect(Object.keys(result.current.groupedPhotos)).toHaveLength(1);
+    expect(result.current.debug.totalPhotos).toBe(2);
+
+    // 追加データの読み込みをトリガー
+    act(() => {
+      result.current.loadMoreGroups();
+      vi.runAllTimers();
+    });
+
+    // 次のバッチのデータを提供
+    act(() => {
+      mockState.loadNextBatch();
+      rerender();
+      vi.runAllTimers();
+    });
+
+    // 追加データが正しく読み込まれたことを確認
+    expect(result.current.isLoading).toBe(false);
+    expect(Object.keys(result.current.groupedPhotos)).toHaveLength(2);
+    expect(result.current.debug.totalPhotos).toBe(4);
+
+    // グループの内容を確認
+    const groups = Object.values(result.current.groupedPhotos);
+    expect(groups[0].photos).toHaveLength(2); // 最初のグループ
+    expect(groups[1].photos).toHaveLength(2); // 追加されたグループ
+
+    // 写真のIDを確認
+    const allPhotoIds = groups.flatMap((g) => g.photos.map((p) => p.id));
+    expect(allPhotoIds).toContain('1');
+    expect(allPhotoIds).toContain('2');
+    expect(allPhotoIds).toContain('3');
+    expect(allPhotoIds).toContain('4');
   });
 });

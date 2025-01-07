@@ -53,88 +53,78 @@ export function groupPhotosBySession(
   // 各セッションに対してグループを作成
   for (let i = 0; i < sortedSessions.length; i++) {
     const currentSession = sortedSessions[i];
-    const prevSession = sortedSessions[i - 1];
     const nextSession = sortedSessions[i + 1];
 
     // このセッションに属する写真を見つける
     const sessionPhotos = remainingPhotos.filter((photo) => {
       const photoTime = photo.takenAt.getTime();
-      const sessionTime = currentSession.joinDateTime.getTime();
-      const prevSessionTime = prevSession?.joinDateTime.getTime();
-      const _nextSessionTime = nextSession?.joinDateTime.getTime();
+      const sessionStartTime = currentSession.joinDateTime.getTime();
+      const sessionEndTime = nextSession?.joinDateTime.getTime() ?? 0;
 
       // 最新のセッションの場合
       if (i === 0) {
-        return photoTime >= sessionTime;
-      }
-      // 最後のセッションの場合
-      if (i === sortedSessions.length - 1) {
-        return photoTime <= prevSessionTime && photoTime >= sessionTime;
+        return photoTime >= sessionStartTime;
       }
       // それ以外のセッションの場合
-      return photoTime >= sessionTime && photoTime < prevSessionTime;
+      return photoTime >= sessionEndTime && photoTime < sessionStartTime;
     });
 
-    console.log('Session photos:', {
-      sessionIndex: i,
-      worldName: currentSession.worldName,
-      photoCount: sessionPhotos.length,
-      totalRemaining: remainingPhotos.length,
-    });
-
-    // 写真の有無に関わらずグループを作成
-    groups.push({
-      photos: sessionPhotos,
-      worldInfo: {
-        worldId: currentSession.worldId,
+    if (sessionPhotos.length > 0) {
+      console.log('Session photos:', {
+        sessionIndex: i,
         worldName: currentSession.worldName,
-        worldInstanceId: currentSession.worldInstanceId,
-      },
-      joinDateTime: currentSession.joinDateTime,
-    });
+        photoCount: sessionPhotos.length,
+        firstPhotoTime: sessionPhotos[0].takenAt,
+        lastPhotoTime: sessionPhotos[sessionPhotos.length - 1].takenAt,
+        sessionStartTime: currentSession.joinDateTime,
+        sessionEndTime: nextSession?.joinDateTime,
+      });
 
-    // 処理済みの写真を除外
-    remainingPhotos = remainingPhotos.filter(
-      (photo) => !sessionPhotos.includes(photo),
-    );
+      // グループを作成
+      groups.push({
+        photos: sessionPhotos,
+        worldInfo: {
+          worldId: currentSession.worldId,
+          worldName: currentSession.worldName,
+          worldInstanceId: currentSession.worldInstanceId,
+        },
+        joinDateTime: currentSession.joinDateTime,
+      });
+
+      // 処理済みの写真を除外
+      remainingPhotos = remainingPhotos.filter(
+        (photo) => !sessionPhotos.includes(photo),
+      );
+    }
   }
 
-  // 最後のセッションに属する写真を処理（残りの写真がある場合のみ）
+  // 残りの写真を処理（セッションに属さない写真）
   if (remainingPhotos.length > 0) {
-    console.log('Processing remaining photos:', {
+    console.log('Processing unmatched photos:', {
       count: remainingPhotos.length,
       firstPhotoTime: remainingPhotos[0].takenAt,
       lastPhotoTime: remainingPhotos[remainingPhotos.length - 1].takenAt,
     });
 
-    if (sortedSessions.length > 0) {
-      const lastSession = sortedSessions[sortedSessions.length - 1];
-      const lastGroup = groups[groups.length - 1];
+    // 日付でグループ化
+    const photosByDate = remainingPhotos.reduce(
+      (acc, photo) => {
+        const date = photo.takenAt.toISOString().split('T')[0];
+        if (!acc[date]) {
+          acc[date] = [];
+        }
+        acc[date].push(photo);
+        return acc;
+      },
+      {} as Record<string, Photo[]>,
+    );
 
-      // 最後のセッションの写真として追加
-      if (lastGroup) {
-        console.log('Adding to last group:', {
-          originalCount: lastGroup.photos.length,
-          addingCount: remainingPhotos.length,
-        });
-        lastGroup.photos = [...lastGroup.photos, ...remainingPhotos];
-      } else {
-        groups.push({
-          photos: remainingPhotos,
-          worldInfo: {
-            worldId: lastSession.worldId,
-            worldName: lastSession.worldName,
-            worldInstanceId: lastSession.worldInstanceId,
-          },
-          joinDateTime: lastSession.joinDateTime,
-        });
-      }
-    } else {
-      // セッションが存在しない場合、グルーピング不能な写真として扱う
+    // 日付ごとにグループを作成
+    for (const [_date, datePhotos] of Object.entries(photosByDate)) {
       groups.push({
-        photos: remainingPhotos,
+        photos: datePhotos,
         worldInfo: null,
-        joinDateTime: remainingPhotos[0].takenAt,
+        joinDateTime: datePhotos[0].takenAt,
       });
     }
   }
