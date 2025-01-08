@@ -26,18 +26,24 @@ const GalleryContent = memo(
       loadMoreGroups,
       debug,
     } = usePhotoGallery(searchQuery);
+    console.log('groupedPhotos', groupedPhotos);
     const containerRef = useRef<HTMLDivElement>(null);
     const loadingRef = useRef(false);
     const hasMoreRef = useRef(debug.remainingGroups > 0);
     const groupSizesRef = useRef<Map<string, number>>(new Map());
 
-    const filteredGroups = useMemo(
-      () =>
-        Object.entries(groupedPhotos).filter(
-          ([_, group]) => showEmptyGroups || group.photos.length > 0,
-        ),
-      [groupedPhotos, showEmptyGroups],
-    );
+    const filteredGroups = useMemo(() => {
+      const groups = Object.entries(groupedPhotos).filter(
+        ([_, group]) => showEmptyGroups || group.photos.length > 0,
+      );
+      console.log('Filtered groups:', {
+        totalGroups: groups.length,
+        firstGroupKey: groups[0]?.[0],
+        firstGroupPhotos: groups[0]?.[1].photos.length,
+        showEmptyGroups,
+      });
+      return groups;
+    }, [groupedPhotos, showEmptyGroups]);
 
     const virtualizer = useVirtualizer({
       count: filteredGroups.length,
@@ -45,7 +51,16 @@ const GalleryContent = memo(
       estimateSize: useCallback(
         (index) => {
           const [key] = filteredGroups[index];
-          return (groupSizesRef.current.get(key) ?? 400) + GROUP_SPACING;
+          const size = (groupSizesRef.current.get(key) ?? 400) + GROUP_SPACING;
+          if (index === 0) {
+            console.log('First group size:', {
+              key,
+              estimatedSize: size,
+              actualSize: groupSizesRef.current.get(key),
+              photos: filteredGroups[0][1].photos.length,
+            });
+          }
+          return size;
         },
         [filteredGroups],
       ),
@@ -55,6 +70,11 @@ const GalleryContent = memo(
         const key = element.getAttribute('data-key');
         if (key) {
           groupSizesRef.current.set(key, height);
+          console.log('Measured group:', {
+            key,
+            height,
+            previousHeight: groupSizesRef.current.get(key),
+          });
         }
         return height + GROUP_SPACING;
       }, []),
@@ -116,6 +136,20 @@ const GalleryContent = memo(
     return (
       <GalleryErrorBoundary>
         <div ref={containerRef} className="flex-1 overflow-y-auto p-4">
+          {(() => {
+            console.log(
+              'Virtual items:',
+              virtualizer.getVirtualItems().map((item) => ({
+                index: item.index,
+                start: item.start,
+                size: item.size,
+                key: filteredGroups[item.index][0],
+                photoCount: filteredGroups[item.index][1].photos.length,
+                worldName: filteredGroups[item.index][1].worldInfo?.worldName,
+              })),
+            );
+            return null;
+          })()}
           <div
             style={{
               height: `${virtualizer.getTotalSize()}px`,
@@ -153,7 +187,9 @@ const GalleryContent = memo(
                         onPhotoSelect={setSelectedPhoto}
                       />
                     ) : (
-                      <div className="text-gray-500">No Photos</div>
+                      <div className="text-center py-8 text-gray-500 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                        写真がありません
+                      </div>
                     )}
                   </div>
                   <MeasurePhotoGroup

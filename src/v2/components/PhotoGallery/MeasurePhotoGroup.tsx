@@ -25,6 +25,12 @@ export function MeasurePhotoGroup({
       if (width === 0) return 0;
 
       let totalHeight = HEADER_HEIGHT + CONTAINER_PADDING;
+
+      // 写真がない場合は固定の高さを返す
+      if (photos.length === 0) {
+        return totalHeight + 100; // 空のグループの高さ
+      }
+
       let currentRowWidth = 0;
       let currentRowPhotos = 0;
 

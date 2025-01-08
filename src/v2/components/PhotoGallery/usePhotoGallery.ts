@@ -109,6 +109,7 @@ export function usePhotoGallery(searchQuery: string): {
   ]);
 
   const groupedPhotos = useMemo(() => {
+    console.log('originalGroupedPhotos', originalGroupedPhotos);
     if (!searchQuery) return originalGroupedPhotos;
 
     const query = searchQuery.toLowerCase();
