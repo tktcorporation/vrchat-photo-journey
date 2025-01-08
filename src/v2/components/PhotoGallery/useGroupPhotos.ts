@@ -42,47 +42,61 @@ export function groupPhotosBySession(
     (a, b) => b.takenAt.getTime() - a.takenAt.getTime(),
   );
 
-  // セッションを新しい順にソート
-  const sortedSessions = [...joinLogs].sort(
+  // joinLogsを新しい順にソート
+  const sortedLogs = [...joinLogs].sort(
     (a, b) => b.joinDateTime.getTime() - a.joinDateTime.getTime(),
   );
 
+  // 各セッションに対してグループを作成
   const groups: GroupedPhoto[] = [];
   let remainingPhotos = [...sortedPhotos];
 
+  console.log('Initial state:', {
+    totalPhotos: photos.length,
+    totalSessions: joinLogs.length,
+    firstSessionTime: sortedLogs[0]?.joinDateTime,
+    firstPhotoTime: sortedPhotos[0]?.takenAt,
+  });
+
   // 各セッションに対してグループを作成
-  for (let i = 0; i < sortedSessions.length; i++) {
-    const currentSession = sortedSessions[i];
-    const prevSession = sortedSessions[i - 1];
-    const nextSession = sortedSessions[i + 1];
+  for (let i = 0; i < sortedLogs.length; i++) {
+    const currentSession = sortedLogs[i];
+    const nextSession = sortedLogs[i + 1];
 
     // このセッションに属する写真を見つける
     const sessionPhotos = remainingPhotos.filter((photo) => {
       const photoTime = photo.takenAt.getTime();
-      const sessionTime = currentSession.joinDateTime.getTime();
-      const prevSessionTime = prevSession?.joinDateTime.getTime();
-      const _nextSessionTime = nextSession?.joinDateTime.getTime();
+      const sessionStartTime = currentSession.joinDateTime.getTime();
+      const nextSessionTime = nextSession?.joinDateTime.getTime();
 
-      // 最新のセッションの場合
-      if (i === 0) {
-        return photoTime >= sessionTime;
-      }
-      // 最後のセッションの場合
-      if (i === sortedSessions.length - 1) {
-        return photoTime <= prevSessionTime && photoTime >= sessionTime;
-      }
-      // それ以外のセッションの場合
-      return photoTime >= sessionTime && photoTime < prevSessionTime;
+      // 写真の時間がこのセッションの開始時間以前で、
+      // 次のセッションの開始時間より後（または次のセッションがない）場合に
+      // このセッションに属すると判定
+      return (
+        photoTime <= sessionStartTime &&
+        (!nextSessionTime || photoTime > nextSessionTime)
+      );
     });
 
-    console.log('Session photos:', {
-      sessionIndex: i,
+    console.log('Processing session:', {
+      index: i,
       worldName: currentSession.worldName,
-      photoCount: sessionPhotos.length,
-      totalRemaining: remainingPhotos.length,
+      sessionStartTime: currentSession.joinDateTime,
+      sessionTimeStamp: currentSession.joinDateTime.getTime(),
+      nextSessionTime: nextSession?.joinDateTime,
+      nextSessionTimeStamp: nextSession?.joinDateTime.getTime(),
+      foundPhotos: sessionPhotos.length,
+      remainingPhotos: remainingPhotos.length,
+      photoTimeRange:
+        sessionPhotos.length > 0
+          ? {
+              first: sessionPhotos[0].takenAt,
+              last: sessionPhotos[sessionPhotos.length - 1].takenAt,
+            }
+          : null,
     });
 
-    // 写真の有無に関わらずグループを作成
+    // セッションが空でも必ずグループを作成
     groups.push({
       photos: sessionPhotos,
       worldInfo: {
@@ -99,45 +113,63 @@ export function groupPhotosBySession(
     );
   }
 
-  // 最後のセッションに属する写真を処理（残りの写真がある場合のみ）
+  // 残りの写真を最も近いセッションに割り当て
   if (remainingPhotos.length > 0) {
-    console.log('Processing remaining photos:', {
+    console.log('Processing unmatched photos:', {
       count: remainingPhotos.length,
       firstPhotoTime: remainingPhotos[0].takenAt,
       lastPhotoTime: remainingPhotos[remainingPhotos.length - 1].takenAt,
+      timeRange: {
+        first: remainingPhotos[0].takenAt.getTime(),
+        last: remainingPhotos[remainingPhotos.length - 1].takenAt.getTime(),
+      },
     });
 
-    if (sortedSessions.length > 0) {
-      const lastSession = sortedSessions[sortedSessions.length - 1];
-      const lastGroup = groups[groups.length - 1];
+    // 各写真に対して最も近いセッションを見つける
+    for (const photo of remainingPhotos) {
+      let closestSession = sortedLogs[0];
+      let minTimeDiff = Math.abs(
+        photo.takenAt.getTime() - sortedLogs[0].joinDateTime.getTime(),
+      );
 
-      // 最後のセッションの写真として追加
-      if (lastGroup) {
-        console.log('Adding to last group:', {
-          originalCount: lastGroup.photos.length,
-          addingCount: remainingPhotos.length,
-        });
-        lastGroup.photos = [...lastGroup.photos, ...remainingPhotos];
-      } else {
-        groups.push({
-          photos: remainingPhotos,
-          worldInfo: {
-            worldId: lastSession.worldId,
-            worldName: lastSession.worldName,
-            worldInstanceId: lastSession.worldInstanceId,
-          },
-          joinDateTime: lastSession.joinDateTime,
-        });
+      // 最も時間差が小さいセッションを探す
+      for (const session of sortedLogs) {
+        const timeDiff = Math.abs(
+          photo.takenAt.getTime() - session.joinDateTime.getTime(),
+        );
+        if (timeDiff < minTimeDiff) {
+          minTimeDiff = timeDiff;
+          closestSession = session;
+        }
       }
-    } else {
-      // セッションが存在しない場合、グルーピング不能な写真として扱う
-      groups.push({
-        photos: remainingPhotos,
-        worldInfo: null,
-        joinDateTime: remainingPhotos[0].takenAt,
-      });
+
+      // 最も近いセッションのグループを見つけて写真を追加
+      const groupIndex = groups.findIndex(
+        (group) =>
+          group.worldInfo?.worldInstanceId === closestSession.worldInstanceId &&
+          group.joinDateTime.getTime() ===
+            closestSession.joinDateTime.getTime(),
+      );
+      if (groupIndex !== -1) {
+        groups[groupIndex].photos.push(photo);
+        // 写真を時間順にソート
+        groups[groupIndex].photos.sort(
+          (a, b) => b.takenAt.getTime() - a.takenAt.getTime(),
+        );
+      }
     }
   }
+
+  console.log(
+    'Final groups:',
+    groups.map((group) => ({
+      worldName: group.worldInfo?.worldName,
+      photoCount: group.photos.length,
+      joinDateTime: group.joinDateTime,
+      firstPhotoTime: group.photos[0]?.takenAt,
+      lastPhotoTime: group.photos[group.photos.length - 1]?.takenAt,
+    })),
+  );
 
   return groups;
 }
@@ -146,7 +178,7 @@ export function groupPhotosBySession(
 function convertGroupsToRecord(groups: GroupedPhoto[]): GroupedPhotos {
   return groups.reduce<GroupedPhotos>((acc, group) => {
     const key = group.worldInfo
-      ? `${group.worldInfo.worldInstanceId}/${group.joinDateTime.getTime()}`
+      ? `${group.worldInfo.worldId}/${group.joinDateTime.getTime()}`
       : `ungrouped/${group.joinDateTime.getTime()}`;
     acc[key] = group;
     return acc;
@@ -165,6 +197,8 @@ export function useGroupPhotos(photos: Photo[]): {
   const [isComplete, setIsComplete] = useState(false);
   const processingRef = useRef(false);
   const photosRef = useRef(photos);
+  const allGroupsRef = useRef<GroupedPhoto[] | null>(null);
+  const processingQueueRef = useRef<(() => Promise<void>)[]>([]);
   const [debugInfo, setDebugInfo] = useState({
     totalPhotos: 0,
     loadedPhotos: 0,
@@ -192,133 +226,112 @@ export function useGroupPhotos(photos: Photo[]): {
       },
     );
 
-  const processNextChunk = useCallback(() => {
-    if (!joinLogs || processingRef.current) {
-      console.log('Process blocked:', {
-        noJoinLogs: !joinLogs,
-        isProcessing: processingRef.current,
-      });
-      return false;
-    }
+  // キューの処理を行う関数
+  const processQueue = useCallback(async () => {
+    if (processingRef.current) return;
 
-    processingRef.current = true;
-    console.log('Processing next chunk, current state:', {
-      processedGroupCount,
-      isComplete,
-      isLoading,
-    });
-
-    try {
-      // 全てのグループを作成
-      const allGroups = groupPhotosBySession(sortedPhotos, joinLogs);
-
-      // まだ処理していないグループを取得
-      const remainingGroups = allGroups.slice(processedGroupCount);
-      if (remainingGroups.length === 0) {
-        console.log('No remaining groups');
-        setIsComplete(true);
-        return false;
-      }
-
-      // 次のチャンクのグループを処理
-      const groupsToProcess = remainingGroups.slice(0, GROUPS_PER_CHUNK);
-
-      // グループ内の写真数をログ
-      groupsToProcess.forEach((group, index) => {
-        console.log(`Group ${processedGroupCount + index} photos:`, {
-          worldName: group.worldInfo?.worldName,
-          photoCount: group.photos.length,
-          firstPhotoTime: group.photos[0]?.takenAt,
-          lastPhotoTime: group.photos[group.photos.length - 1]?.takenAt,
-        });
-      });
-
-      const newGroups = convertGroupsToRecord(groupsToProcess);
-
-      // 新しいグループの写真数を確認
-      for (const [key, group] of Object.entries(newGroups)) {
-        console.log(`New group ${key} photos:`, {
-          worldName: group.worldInfo?.worldName,
-          photoCount: group.photos.length,
-        });
-      }
-
-      console.log('Processing chunk:', {
-        processedCount: processedGroupCount,
-        newGroupsCount: groupsToProcess.length,
-        remainingCount: remainingGroups.length,
-        totalGroups: allGroups.length,
-        totalPhotosInChunk: groupsToProcess.reduce(
-          (sum, group) => sum + group.photos.length,
-          0,
-        ),
-      });
-
-      // 既存のグループと新しいグループを結合
-      setGroupedPhotos((prev) => {
-        const updated = { ...prev };
-        for (const [key, group] of Object.entries(newGroups)) {
-          if (prev[key]) {
-            // 既存のグループがある場合は写真を結合
-            updated[key] = {
-              ...group,
-              photos: [...prev[key].photos, ...group.photos],
-            };
-          } else {
-            updated[key] = group;
-          }
+    while (processingQueueRef.current.length > 0) {
+      processingRef.current = true;
+      const nextProcess = processingQueueRef.current.shift();
+      if (nextProcess) {
+        try {
+          await nextProcess();
+        } catch (error) {
+          console.error('Error processing queue:', error);
         }
-        return updated;
-      });
-
-      // 現在のグループ数を更新
-      const nextProcessedCount = processedGroupCount + groupsToProcess.length;
-      setProcessedGroupCount(nextProcessedCount);
-
-      // デバッグ情報を更新
-      const allLoadedPhotos =
-        Object.values(groupedPhotos).reduce(
-          (sum, group) => sum + group.photos.length,
-          0,
-        ) +
-        groupsToProcess.reduce((sum, group) => sum + group.photos.length, 0);
-
-      const debugData = {
-        totalPhotos: photos.length,
-        loadedPhotos: allLoadedPhotos,
-        totalGroups: allGroups.length,
-        loadedGroups: nextProcessedCount,
-        remainingPhotos: photos.length - allLoadedPhotos,
-        remainingGroups: allGroups.length - nextProcessedCount,
-      };
-
-      console.log('Updating debug info:', debugData);
-      setDebugInfo(debugData);
-
-      // 残りのグループがあるかどうかを確認
-      const hasMore = nextProcessedCount < allGroups.length;
-      if (!hasMore) {
-        console.log('No more groups to load');
-        setIsComplete(true);
       }
-      return hasMore;
-    } finally {
       processingRef.current = false;
     }
-  }, [
-    joinLogs,
-    sortedPhotos,
-    processedGroupCount,
-    photos.length,
-    groupedPhotos,
-  ]);
+  }, []);
+
+  const processNextChunk = useCallback(
+    (fixedProcessedGroupCount: number) => {
+      if (!joinLogs) {
+        console.log('No join logs available');
+        return Promise.resolve(false);
+      }
+
+      return new Promise<boolean>((resolve) => {
+        console.log('Processing next chunk, current state:', {
+          fixedProcessedGroupCount,
+          isComplete,
+          isLoading,
+        });
+
+        try {
+          // 初回のみグループを作成
+          if (!allGroupsRef.current) {
+            const firstGroup = groupPhotosBySession(sortedPhotos, joinLogs);
+            console.log('Creating all groups for the first time: ', firstGroup);
+            allGroupsRef.current = firstGroup;
+          }
+
+          // まだ処理していないグループを取得
+          const remainingGroups = allGroupsRef.current.slice(
+            fixedProcessedGroupCount,
+          );
+          if (remainingGroups.length === 0) {
+            console.log('No remaining groups');
+            setIsComplete(true);
+            resolve(false);
+            return;
+          }
+
+          // 次のチャンクのグループを処理
+          const groupsToProcess = remainingGroups.slice(0, GROUPS_PER_CHUNK);
+          const newGroups = convertGroupsToRecord(groupsToProcess);
+
+          setGroupedPhotos((prev) => ({
+            ...prev,
+            ...newGroups,
+          }));
+
+          // 処理済みのグループ数を更新
+          const nextProcessedCount =
+            fixedProcessedGroupCount + groupsToProcess.length;
+          setProcessedGroupCount(nextProcessedCount);
+
+          // デバッグ情報を更新
+          const allLoadedPhotos =
+            Object.values(groupedPhotos).reduce(
+              (sum, group) => sum + group.photos.length,
+              0,
+            ) +
+            groupsToProcess.reduce(
+              (sum, group) => sum + group.photos.length,
+              0,
+            );
+
+          const debugData = {
+            totalPhotos: photos.length,
+            loadedPhotos: allLoadedPhotos,
+            totalGroups: allGroupsRef.current.length,
+            loadedGroups: nextProcessedCount,
+            remainingPhotos: photos.length - allLoadedPhotos,
+            remainingGroups: allGroupsRef.current.length - nextProcessedCount,
+          };
+
+          setDebugInfo(debugData);
+          resolve(nextProcessedCount < allGroupsRef.current.length);
+        } catch (error) {
+          console.error('Error in processNextChunk:', error);
+          resolve(false);
+        }
+      });
+    },
+    [
+      joinLogs,
+      sortedPhotos,
+      photos.length,
+      groupedPhotos,
+      isComplete,
+      isLoading,
+    ],
+  );
 
   const loadMoreGroups = useCallback(() => {
-    if (processingRef.current || isComplete) {
-      console.log('Load more blocked:', {
-        isProcessing: processingRef.current,
-        isComplete,
-      });
+    if (isComplete) {
+      console.log('Load more blocked: processing complete');
       return;
     }
 
@@ -327,16 +340,19 @@ export function useGroupPhotos(photos: Photo[]): {
       return;
     }
 
-    console.log('Starting to load more groups');
-    setIsLoading(true);
+    console.log('Queueing next chunk processing');
+    const processPromise = async () => {
+      setIsLoading(true);
+      try {
+        await processNextChunk(processedGroupCount);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-    try {
-      const hasMore = processNextChunk();
-      console.log('Finished loading chunk:', { hasMore });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [processNextChunk, joinLogs, isComplete]);
+    processingQueueRef.current.push(processPromise);
+    processQueue();
+  }, [processNextChunk, joinLogs, isComplete, processQueue]);
 
   // 写真データが変更された場合のリセット
   useEffect(() => {
@@ -345,18 +361,25 @@ export function useGroupPhotos(photos: Photo[]): {
 
     console.log('Photos changed, resetting state');
     photosRef.current = photos;
+    allGroupsRef.current = null;
     setGroupedPhotos({});
     setProcessedGroupCount(0);
     setIsComplete(false);
     processingRef.current = false;
+    processingQueueRef.current = [];
     setIsLoading(true);
 
-    try {
-      processNextChunk();
-    } finally {
-      setIsLoading(false);
-    }
-  }, [photos, processNextChunk]);
+    const initializePromise = async () => {
+      try {
+        await processNextChunk(0);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    processingQueueRef.current.push(initializePromise);
+    processQueue();
+  }, [photos, processNextChunk, processQueue]);
 
   // 初期データの読み込み
   useEffect(() => {
@@ -364,13 +387,18 @@ export function useGroupPhotos(photos: Photo[]): {
     if (processedGroupCount > 0) return;
 
     console.log('Loading initial data');
-    setIsLoading(true);
-    try {
-      processNextChunk();
-    } finally {
-      setIsLoading(false);
-    }
-  }, [photos, joinLogs, processedGroupCount, processNextChunk]);
+    const initialLoadPromise = async () => {
+      setIsLoading(true);
+      try {
+        await processNextChunk(0);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    processingQueueRef.current.push(initialLoadPromise);
+    processQueue();
+  }, [photos, joinLogs, processedGroupCount, processNextChunk, processQueue]);
 
   return {
     groupedPhotos,

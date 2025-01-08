@@ -4730,7 +4730,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/vite",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/vite/LICENSE.md"
   },
-  "vrchat-photo-journey@0.2.0-alpha.7": {
+  "vrchat-photo-journey@0.3.0-alpha.1": {
     "licenses": "UNKNOWN",
     "repository": "https://github.com/tktcorporation/add-world-name-to-vrc-photo",
     "publisher": "tktcorporation",
@@ -4743,8 +4743,8 @@
     "publisher": "Domenic Denicola",
     "email": "d@domenic.me",
     "url": "https://domenic.me/",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/webidl-conversions",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/webidl-conversions/LICENSE.md"
+    "path": "/workspaces/vrchat-photo-journey/node_modules/node-fetch/node_modules/webidl-conversions",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/node-fetch/node_modules/webidl-conversions/LICENSE.md"
   },
   "webpack-sources@3.2.3": {
     "licenses": "MIT",
@@ -4765,8 +4765,8 @@
     "repository": "https://github.com/jsdom/whatwg-url",
     "publisher": "Sebastian Mayr",
     "email": "github@smayr.name",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/whatwg-url",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/whatwg-url/LICENSE.txt"
+    "path": "/workspaces/vrchat-photo-journey/node_modules/node-fetch/node_modules/whatwg-url",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/node-fetch/node_modules/whatwg-url/LICENSE.txt"
   },
   "which@2.0.2": {
     "licenses": "ISC",
