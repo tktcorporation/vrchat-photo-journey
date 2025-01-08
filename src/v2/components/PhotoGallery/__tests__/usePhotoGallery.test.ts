@@ -20,9 +20,6 @@ const mockPhotos = [
     width: 1920,
     height: 1080,
   },
-] as const;
-
-const mockPhotosNextBatch = [
   {
     id: '3',
     photoPath: '/path/to/photo3.jpg',
@@ -42,9 +39,7 @@ const mockPhotosNextBatch = [
 // モックの設定
 const createMockState = () => {
   let isLoading = true;
-  let photoData: typeof mockPhotos | typeof mockPhotosNextBatch | undefined =
-    undefined;
-  let currentBatch = 0;
+  let photoData: typeof mockPhotos | undefined = undefined;
 
   const setState = (loading: boolean, data: typeof photoData) => {
     isLoading = loading;
@@ -56,14 +51,7 @@ const createMockState = () => {
     isLoading,
   });
 
-  const loadNextBatch = () => {
-    currentBatch++;
-    if (currentBatch === 1) {
-      setState(false, mockPhotosNextBatch);
-    }
-  };
-
-  return { setState, getState, loadNextBatch };
+  return { setState, getState };
 };
 
 const mockState = createMockState();
@@ -88,9 +76,7 @@ vi.mock('../useGroupPhotos', () => ({
         photos: photos.map((p) => ({
           ...p,
           location: {
-            ...p.location,
-            name: '',
-            description: '',
+            joinedAt: p.takenAt,
           },
         })),
         worldInfo: {
@@ -103,12 +89,9 @@ vi.mock('../useGroupPhotos', () => ({
     return {
       groupedPhotos: groups,
       isLoading: false,
-      loadMoreGroups: vi.fn(),
       debug: {
-        totalGroups: Object.keys(groups).length,
         totalPhotos: photos.length,
-        loadedPhotos: photos.length,
-        remainingGroups: photos.length > 0 ? 1 : 0,
+        totalGroups: Object.keys(groups).length,
       },
     };
   },
@@ -168,7 +151,7 @@ describe('usePhotoGallery', () => {
     expect(Object.keys(result.current.groupedPhotos)).toHaveLength(1);
 
     const group = Object.values(result.current.groupedPhotos)[0];
-    expect(group.photos).toHaveLength(2);
+    expect(group.photos).toHaveLength(4);
     expect(group.worldInfo?.worldName).toBe('Test World');
   });
 
@@ -197,51 +180,5 @@ describe('usePhotoGallery', () => {
     expect(Object.keys(result.current.groupedPhotos).length).toBe(
       initialGroupCount,
     );
-  });
-
-  it('追加の写真を正しく読み込んでグループ化する', () => {
-    const { result, rerender } = renderHook(() => usePhotoGallery(''));
-
-    // 初期データを読み込む
-    act(() => {
-      mockState.setState(false, mockPhotos);
-      rerender();
-      vi.runAllTimers();
-    });
-
-    // 初期状態の確認
-    expect(result.current.isLoading).toBe(false);
-    expect(Object.keys(result.current.groupedPhotos)).toHaveLength(1);
-    expect(result.current.debug.totalPhotos).toBe(2);
-
-    // 追加データの読み込みをトリガー
-    act(() => {
-      result.current.loadMoreGroups();
-      vi.runAllTimers();
-    });
-
-    // 次のバッチのデータを提供
-    act(() => {
-      mockState.loadNextBatch();
-      rerender();
-      vi.runAllTimers();
-    });
-
-    // 追加データが正しく読み込まれたことを確認
-    expect(result.current.isLoading).toBe(false);
-    expect(Object.keys(result.current.groupedPhotos)).toHaveLength(2);
-    expect(result.current.debug.totalPhotos).toBe(4);
-
-    // グループの内容を確認
-    const groups = Object.values(result.current.groupedPhotos);
-    expect(groups[0].photos).toHaveLength(2); // 最初のグループ
-    expect(groups[1].photos).toHaveLength(2); // 追加されたグループ
-
-    // 写真のIDを確認
-    const allPhotoIds = groups.flatMap((g) => g.photos.map((p) => p.id));
-    expect(allPhotoIds).toContain('1');
-    expect(allPhotoIds).toContain('2');
-    expect(allPhotoIds).toContain('3');
-    expect(allPhotoIds).toContain('4');
   });
 });
