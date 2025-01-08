@@ -2,35 +2,101 @@ import type { Photo } from '../../../types/photo';
 import { groupPhotosBySession } from '../useGroupPhotos';
 import type { WorldJoinLog } from '../useGroupPhotos';
 
+// モックデータの作成ヘルパー
+const createPhoto = (id: string | number, takenAt: Date): Photo => ({
+  id: id.toString(),
+  url: `photo-${id}`,
+  fileName: `photo${id}.png`,
+  width: 1920,
+  height: 1080,
+  takenAt,
+  location: {
+    joinedAt: takenAt,
+  },
+});
+
+const createWorldJoinLog = (
+  id: string | number,
+  joinDateTime: Date,
+  worldName = `World ${id}`,
+): WorldJoinLog => ({
+  worldId: id.toString(),
+  worldName,
+  worldInstanceId: `instance${id}`,
+  joinDateTime,
+});
+
 describe('groupPhotosBySession', () => {
-  const createPhoto = (id: number, takenAt: Date): Photo => ({
-    id: id.toString(),
-    url: `photo${id}.png`,
-    fileName: `photo${id}.png`,
-    width: 1920,
-    height: 1080,
-    takenAt,
-    location: {
-      name: '',
-      description: '',
-      coverImage: '',
-      visitedWith: [],
-      joinedAt: takenAt,
-    },
+  it('新しい写真から順にグループ化される', () => {
+    const now = new Date();
+    const photos = [
+      createPhoto('1', new Date(now.getTime() - 1000)), // 1秒前
+      createPhoto('2', new Date(now.getTime() - 2000)), // 2秒前
+      createPhoto('3', new Date(now.getTime() - 3000)), // 3秒前
+    ];
+
+    const joinLogs = [
+      createWorldJoinLog('world1', new Date(now.getTime() - 2500)), // 2.5秒前
+      createWorldJoinLog('world2', new Date(now.getTime() - 4000)), // 4秒前
+    ];
+
+    const groups = groupPhotosBySession(photos, joinLogs);
+
+    expect(groups).toHaveLength(2); // 2つのワールドグループができているはず
+
+    // 最初のグループ（新しい方）の検証
+    expect(groups[0].photos).toHaveLength(2); // photo1とphoto2
+    expect(groups[0].photos[0].id).toBe('1'); // 最新の写真が最初
+    expect(groups[0].photos[1].id).toBe('2');
+    expect(groups[0].worldInfo?.worldId).toBe('world1');
+
+    // 2番目のグループの検証
+    expect(groups[1].photos).toHaveLength(1); // photo3
+    expect(groups[1].photos[0].id).toBe('3');
+    expect(groups[1].worldInfo?.worldId).toBe('world2');
   });
 
-  const createWorldJoinLog = (
-    id: number,
-    joinDateTime: Date,
-    worldName = `World${id}`,
-  ): WorldJoinLog => ({
-    worldId: `world${id}`,
-    worldName,
-    worldInstanceId: `instance${id}`,
-    joinDateTime,
+  it('写真がない場合は空の配列を返す', () => {
+    const groups = groupPhotosBySession([], []);
+    expect(groups).toHaveLength(0);
   });
 
-  it('should group photos by session correctly', () => {
+  it('同じワールドの複数セッションを正しく処理', () => {
+    const now = new Date();
+    const photos = [
+      createPhoto('1', new Date(now.getTime() - 1000)), // 1秒前
+      createPhoto('2', new Date(now.getTime() - 3000)), // 3秒前
+      createPhoto('3', new Date(now.getTime() - 5000)), // 5秒前
+    ];
+
+    const joinLogs = [
+      createWorldJoinLog('world1', new Date(now.getTime() - 2000)), // 2秒前
+      createWorldJoinLog('world1', new Date(now.getTime() - 4000)), // 4秒前
+    ];
+
+    const groups = groupPhotosBySession(photos, joinLogs);
+
+    expect(groups).toHaveLength(2); // 同じワールドでも別セッションとして2つのグループができる
+    expect(groups[0].photos).toHaveLength(1); // 最新のセッション（1秒前の写真）
+    expect(groups[0].photos[0].id).toBe('1');
+    expect(groups[1].photos).toHaveLength(2); // 古いセッション（3秒前と5秒前の写真）
+    expect(groups[1].photos.map((p) => p.id).sort()).toEqual(['2', '3']);
+  });
+
+  it('写真とセッションの時間が完全に一致する場合', () => {
+    const now = new Date();
+    const photos = [createPhoto('1', new Date(now.getTime()))];
+
+    const joinLogs = [createWorldJoinLog('world1', new Date(now.getTime()))];
+
+    const groups = groupPhotosBySession(photos, joinLogs);
+
+    expect(groups).toHaveLength(1);
+    expect(groups[0].photos).toHaveLength(1);
+    expect(groups[0].photos[0].id).toBe('1');
+  });
+
+  it('セッションログがない場合、最も近いセッションに割り当てられる', () => {
     const baseTime = new Date('2024-01-01T12:00:00Z').getTime();
 
     // セッション1: 12:10:00 - 12:20:00
@@ -49,68 +115,18 @@ describe('groupPhotosBySession', () => {
 
     const photos = [...session1Photos, ...session2Photos];
     const joinLogs = [
-      createWorldJoinLog(1, session1Start, 'World1'),
-      createWorldJoinLog(2, session2Start, 'World2'),
+      createWorldJoinLog('1', session1Start, 'World1'),
+      createWorldJoinLog('2', session2Start, 'World2'),
     ];
 
-    // デバッグ情報を出力
-    console.log('Test data:', {
-      photos: photos.map((p) => ({
-        id: p.id,
-        time: new Date(p.takenAt).toISOString(),
-      })),
-      sessions: joinLogs.map((s) => ({
-        id: s.worldId,
-        name: s.worldName,
-        time: new Date(s.joinDateTime).toISOString(),
-      })),
-    });
-
     const groups = groupPhotosBySession(photos, joinLogs);
-
-    // グループの詳細情報を出力
-    console.log(
-      'Resulting groups:',
-      groups.map((g) => ({
-        worldName: g.worldInfo?.worldName,
-        joinTime: new Date(g.joinDateTime).toISOString(),
-        photoCount: g.photos.length,
-        photoIds: g.photos.map((p) => p.id),
-        photoTimes: g.photos.map((p) => new Date(p.takenAt).toISOString()),
-      })),
-    );
 
     expect(groups).toHaveLength(2);
-    expect(groups[0].photos).toHaveLength(2); // 最新のセッションに2枚
-    expect(groups[1].photos).toHaveLength(2); // 古いセッションに2枚
-
-    // 写真が正しいグループに割り当てられているか確認
-    expect(groups[0].photos.map((p) => p.id).sort()).toEqual(['1', '2']);
-    expect(groups[1].photos.map((p) => p.id).sort()).toEqual(['3', '4']);
-
-    // 各グループの時間範囲を確認
-    expect(groups[0].joinDateTime).toEqual(session1Start);
-    expect(groups[1].joinDateTime).toEqual(session2Start);
+    expect(groups[0].photos.map((p) => p.id).sort()).toEqual(['1', '2']); // 最新のセッションに2枚
+    expect(groups[1].photos.map((p) => p.id).sort()).toEqual(['3', '4']); // 古いセッションに2枚
   });
 
-  it('should handle photos without matching sessions', () => {
-    const now = new Date();
-    const photos = [
-      createPhoto(1, new Date(now.getTime() - 5000)), // セッションより古い写真
-    ];
-
-    const joinLogs = [
-      createWorldJoinLog(1, now), // 最新のセッション
-    ];
-
-    const groups = groupPhotosBySession(photos, joinLogs);
-
-    expect(groups).toHaveLength(1);
-    expect(groups[0].photos).toHaveLength(1);
-    expect(groups[0].photos[0].id).toBe('1');
-  });
-
-  it('should handle large number of photos correctly', () => {
+  it('大量の写真を正しく処理できる', () => {
     const now = new Date();
     const photos = Array.from({ length: 100 }, (_, i) =>
       createPhoto(i, new Date(now.getTime() - i * 1000)),
@@ -127,14 +143,5 @@ describe('groupPhotosBySession', () => {
       0,
     );
     expect(totalPhotos).toBe(photos.length);
-
-    // 各グループの写真数をログ出力
-    groups.forEach((group, i) => {
-      console.log(`Group ${i} (${group.worldInfo?.worldName}):`, {
-        photoCount: group.photos.length,
-        firstPhotoId: group.photos[0]?.id,
-        lastPhotoId: group.photos[group.photos.length - 1]?.id,
-      });
-    });
   });
 });

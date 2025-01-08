@@ -1,5 +1,5 @@
 import { trpcReact } from '@/trpc';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { Photo } from '../../types/photo';
 import {
   type DebugInfo,
@@ -12,21 +12,14 @@ export function usePhotoGallery(searchQuery: string): {
   isLoading: boolean;
   selectedPhoto: Photo | null;
   setSelectedPhoto: (photo: Photo | null) => void;
-  loadMoreGroups: () => void;
   debug: DebugInfo;
 } {
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
-  const loadingRef = useRef(false);
-  const lastPhotoDateRef = useRef<Date | null>(null);
-  const [photos, setPhotos] = useState<Photo[]>([]);
 
   const { data: photoList, isLoading: isLoadingPhotos } =
     trpcReact.vrchatPhoto.getVrchatPhotoPathModelList.useQuery(
       {
         orderByPhotoTakenAt: 'desc',
-        ...(lastPhotoDateRef.current && {
-          ltPhotoTakenAt: lastPhotoDateRef.current,
-        }),
       },
       {
         staleTime: 1000 * 60 * 5,
@@ -35,52 +28,28 @@ export function usePhotoGallery(searchQuery: string): {
         retryDelay: 1000,
         refetchOnMount: false,
         refetchOnWindowFocus: false,
-        keepPreviousData: true,
       },
     );
 
-  // 新しい写真データを処理
-  useEffect(() => {
-    if (!photoList || isLoadingPhotos) return;
+  const photos = useMemo(() => {
+    if (!photoList) return [];
 
-    setPhotos((prevPhotos) => {
-      const newPhotos = [...prevPhotos];
-      const seenIds = new Set(newPhotos.map((p) => p.id));
-
-      for (const photo of photoList) {
-        if (!seenIds.has(photo.id)) {
-          newPhotos.push({
-            id: photo.id,
-            url: photo.photoPath,
-            fileName: photo.photoPath.split('/').pop() || '',
-            width: photo.width || 1920,
-            height: photo.height || 1080,
-            takenAt: photo.photoTakenAt,
-            location: {
-              joinedAt: photo.photoTakenAt,
-            },
-          });
-          seenIds.add(photo.id);
-        }
-      }
-
-      // 最後の写真の日付を更新
-      if (photoList.length > 0) {
-        const lastPhoto = photoList[photoList.length - 1];
-        lastPhotoDateRef.current = lastPhoto.photoTakenAt;
-      }
-
-      // 写真を日付の新しい順にソート
-      return newPhotos.sort(
-        (a, b) => b.takenAt.getTime() - a.takenAt.getTime(),
-      );
-    });
-  }, [photoList, isLoadingPhotos]);
+    return photoList.map((photo) => ({
+      id: photo.id,
+      url: photo.photoPath,
+      fileName: photo.photoPath.split('/').pop() || '',
+      width: photo.width || 1920,
+      height: photo.height || 1080,
+      takenAt: photo.photoTakenAt,
+      location: {
+        joinedAt: photo.photoTakenAt,
+      },
+    }));
+  }, [photoList]);
 
   const {
     groupedPhotos: originalGroupedPhotos,
     isLoading: isGrouping,
-    loadMoreGroups,
     debug,
   } = useGroupPhotos(photos);
 
@@ -91,25 +60,7 @@ export function usePhotoGallery(searchQuery: string): {
     return false;
   }, [isLoadingPhotos, isGrouping, photoList]);
 
-  // デバッグ情報の出力
-  useEffect(() => {
-    console.log('Photos and groups updated:', {
-      photosCount: photos.length,
-      groupsCount: Object.keys(originalGroupedPhotos).length,
-      isLoading,
-      isLoadingPhotos,
-      isGrouping,
-    });
-  }, [
-    photos.length,
-    originalGroupedPhotos,
-    isLoading,
-    isLoadingPhotos,
-    isGrouping,
-  ]);
-
   const groupedPhotos = useMemo(() => {
-    console.log('originalGroupedPhotos', originalGroupedPhotos);
     if (!searchQuery) return originalGroupedPhotos;
 
     const query = searchQuery.toLowerCase();
@@ -129,27 +80,11 @@ export function usePhotoGallery(searchQuery: string): {
     return filteredGroups;
   }, [originalGroupedPhotos, searchQuery]);
 
-  const loadMore = useCallback(() => {
-    if (loadingRef.current || isLoadingPhotos) return;
-
-    loadingRef.current = true;
-    loadMoreGroups();
-
-    setTimeout(() => {
-      loadingRef.current = false;
-    }, 1000);
-  }, [isLoadingPhotos, loadMoreGroups]);
-
   return {
     groupedPhotos,
     isLoading,
     selectedPhoto,
     setSelectedPhoto,
-    loadMoreGroups: loadMore,
-    debug: {
-      ...debug,
-      totalPhotos: photos.length,
-      loadedPhotos: photos.length,
-    },
+    debug,
   };
 }
