@@ -1,12 +1,11 @@
 import path from 'node:path';
 /// <reference types="vitest" />
-import { defineConfig } from 'vitest/config';
+import { defaultExclude, defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
     globals: true,
-    environment: 'jsdom',
-    include: ['src/**/*.{test,spec}.{js,jsx,ts,tsx}'],
+    exclude: [...defaultExclude, 'playwright/**/*'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -18,10 +17,23 @@ export default defineConfig({
         'src/test/**/*',
       ],
     },
+    deps: {
+      optimizer: {
+        web: {
+          include: ['@sentry/electron/main'],
+          enabled: true,
+        },
+      },
+      interopDefault: true,
+    },
+    setupFiles: ['./vitest.setup.ts'],
   },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+  },
+  optimizeDeps: {
+    include: ['electron'],
   },
 });
