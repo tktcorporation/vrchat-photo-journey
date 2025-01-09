@@ -135,7 +135,9 @@ export const logInfoRouter = () =>
   trpcRouter({
     loadLogInfoIndex: procedure.mutation(async () => {
       log.info('loadLogInfoIndex');
-      const result = await loadLogInfoIndexFromVRChatLog();
+      const result = await loadLogInfoIndexFromVRChatLog({
+        excludeOldLogLoad: true,
+      });
       if (result.isErr()) {
         return neverthrow.err(result.error);
       }
