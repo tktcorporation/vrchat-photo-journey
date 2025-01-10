@@ -146,6 +146,8 @@ export const __forceSyncRDBClient = async () => {
     throw new Error('NODE_ENV is not test');
   }
 
+  // TODO: データベースのバックアップを行う
+
   await executeSyncRDB({ force: true });
 };
 
