@@ -4,6 +4,7 @@ import {
   type InferAttributes,
   type InferCreationAttributes,
   Model,
+  Op,
 } from '@sequelize/core';
 import {
   Attribute,
@@ -67,4 +68,22 @@ export const createVRChatWorldJoinLogFromPhoto = async (
   );
 
   return vrchatWorldJoinLog;
+};
+
+export const findVRChatWorldJoinLogFromPhotoList = async (query?: {
+  gtJoinDateTime?: Date;
+  ltJoinDateTime?: Date;
+  orderByJoinDateTime: 'asc' | 'desc';
+}): Promise<VRChatWorldJoinLogFromPhotoModel[]> => {
+  const logs = await VRChatWorldJoinLogFromPhotoModel.findAll({
+    where: {
+      joinDateTime: {
+        ...(query?.gtJoinDateTime && { [Op.gt]: query.gtJoinDateTime }),
+        ...(query?.ltJoinDateTime && { [Op.lt]: query.ltJoinDateTime }),
+      },
+    },
+    order: [['joinDateTime', query?.orderByJoinDateTime ?? 'asc']],
+  });
+
+  return logs;
 };

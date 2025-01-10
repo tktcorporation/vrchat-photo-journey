@@ -35,7 +35,7 @@ export const findVRChatWorldJoinLogList = async ({
       worldInstanceId: m.worldInstanceId,
       joinDateTime: m.joinDateTime,
       createdAt: m.createdAt as Date,
-      updatedAt: m.updatedAt as Date,
+      updatedAt: m.updatedAt as Date | null,
     };
   });
 };

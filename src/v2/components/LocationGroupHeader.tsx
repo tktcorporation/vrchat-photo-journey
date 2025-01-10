@@ -214,7 +214,7 @@ export const LocationGroupHeader = ({
                   );
                 }}
               >
-                {worldName}
+                {details?.name || worldName}
                 <ExternalLink className="h-4 w-4 ml-1 opacity-0 group-hover/title:opacity-100 transition-opacity" />
               </button>
               <span className="ml-3 text-sm font-normal opacity-90">

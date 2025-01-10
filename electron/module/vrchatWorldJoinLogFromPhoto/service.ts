@@ -13,3 +13,20 @@ export const createVRChatWorldJoinLogFromPhoto = async (
 
   return createdLogs;
 };
+
+export const findVRChatWorldJoinLogFromPhotoList = async (query?: {
+  gtJoinDateTime?: Date;
+  ltJoinDateTime?: Date;
+  orderByJoinDateTime: 'asc' | 'desc';
+}) => {
+  const modelList = await Model.findVRChatWorldJoinLogFromPhotoList(query);
+  return modelList.map((m) => {
+    return {
+      id: m.id as string,
+      worldId: m.worldId,
+      joinDate: m.joinDateTime,
+      createdAt: m.createdAt as Date,
+      updatedAt: m.updatedAt as Date | null,
+    };
+  });
+};
