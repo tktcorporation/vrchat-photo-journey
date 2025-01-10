@@ -90,6 +90,9 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
                 <h3 className="text-white font-medium truncate text-xs">
                   {photo.fileName}
                 </h3>
+                <p className="text-white font-medium truncate text-xs">
+                  {photo.participants.join(', ')}
+                </p>
               </div>
             </div>
           </ContextMenuTrigger>

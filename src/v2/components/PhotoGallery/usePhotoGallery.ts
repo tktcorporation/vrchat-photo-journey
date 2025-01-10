@@ -44,6 +44,7 @@ export function usePhotoGallery(searchQuery: string): {
       location: {
         joinedAt: photo.photoTakenAt,
       },
+      participants: photo.participants || [], // New field to store information about who was present in the photo
     }));
   }, [photoList]);
 
