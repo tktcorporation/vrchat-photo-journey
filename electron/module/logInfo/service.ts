@@ -27,9 +27,9 @@ export const loadLogInfoIndexFromVRChatLog = async ({
 }: { excludeOldLogLoad: boolean }) => {
   const logStoreFilePath = getLogStoreFilePath();
 
-  // 旧Appの形式のログファイル(写真)からログ情報を取得
+  // 旧Appの形式のログファイル(写真)からログ情報を保存
   const vrChatPhotoDirPath = await getVRChatPhotoDirPath();
-  const logInfoListFromPhoto = await importLogLinesFromLogPhotoDirPath({
+  await importLogLinesFromLogPhotoDirPath({
     vrChatPhotoDirPath,
   });
 
@@ -41,7 +41,7 @@ export const loadLogInfoIndexFromVRChatLog = async ({
     return neverthrow.err(logInfoListFromLogFile.error);
   }
 
-  const logInfoList = logInfoListFromLogFile.value.concat(logInfoListFromPhoto);
+  const logInfoList = logInfoListFromLogFile.value;
 
   const newLogs = await match(excludeOldLogLoad)
     // DBの最新日時以降のログのみをフィルタリング

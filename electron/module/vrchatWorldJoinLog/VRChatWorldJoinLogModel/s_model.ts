@@ -54,6 +54,8 @@ export class VRChatWorldJoinLogModel extends Model<
   @WorldInstanceIdJoinDateTimeIndex
   declare joinDateTime: Date;
 
+  @Attribute(DataTypes.DATE)
+  @Default(DataTypes.NOW)
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }

@@ -49,7 +49,8 @@ export class VRChatPhotoPathModel extends Model<
   declare width: number;
 
   // declare fileCreatedAt: Date;
-
+  @Attribute(DataTypes.DATE)
+  @Default(DataTypes.NOW)
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }

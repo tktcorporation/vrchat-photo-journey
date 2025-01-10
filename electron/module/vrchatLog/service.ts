@@ -12,6 +12,7 @@ import type {
 } from '../vrchatLogFileDir/model';
 import * as vrchatLogFileDirService from '../vrchatLogFileDir/service';
 import type { VRChatPhotoDirPath } from '../vrchatPhoto/valueObjects';
+import { createVRChatWorldJoinLogFromPhoto } from '../vrchatWorldJoinLogFromPhoto/service';
 import { VRChatLogFileError } from './error';
 import {
   type VRChatLogLine,
@@ -346,6 +347,7 @@ export const appendLoglinesToFile = async (props: {
 };
 
 import { glob } from 'glob';
+import type { VRChatWorldJoinLogFromPhoto } from '../vrchatWorldJoinLogFromPhoto/vrchatWorldJoinLogFromPhoto.model';
 /**
  * 旧Appで生成したログファイル(写真)をインポートする
  *
@@ -355,10 +357,10 @@ import { glob } from 'glob';
  *
  * VRChatWorldJoinLog に変換して返す
  */
-export const importLogLinesFromLogPhotoDirPath = async ({
+export const getLogLinesFromLogPhotoDirPath = async ({
   vrChatPhotoDirPath,
 }: { vrChatPhotoDirPath: VRChatPhotoDirPath }): Promise<
-  VRChatWorldJoinLog[]
+  VRChatWorldJoinLogFromPhoto[]
 > => {
   // 正規表現にマッチするファイルを再起的に取得していく
   const logPhotoFilePathList = await glob(
@@ -378,18 +380,33 @@ export const importLogLinesFromLogPhotoDirPath = async ({
         return null;
       }
       return {
-        logType: 'worldJoin' as const,
         // ファイル名の日時はlocal time なので、そのままparseする
         joinDate: datefns.parse(
           matches[1],
           'yyyy-MM-dd_HH-mm-ss.SSS',
           new Date(),
         ),
-        worldInstanceId: '-',
         worldId: `wrld_${matches[2]}` as WorldId,
-        worldName: '-',
       };
     })
     .filter((log) => log !== null);
   return worldJoinLogList;
+};
+
+/**
+ * 写真として保存されているワールドへのJoinログをデータベースに保存する
+ */
+export const importLogLinesFromLogPhotoDirPath = async ({
+  vrChatPhotoDirPath,
+}: { vrChatPhotoDirPath: VRChatPhotoDirPath }): Promise<void> => {
+  const logLines = await getLogLinesFromLogPhotoDirPath({
+    vrChatPhotoDirPath,
+  });
+
+  const worldJoinLogs: VRChatWorldJoinLogFromPhoto[] = logLines.map((log) => ({
+    joinDate: log.joinDate,
+    worldId: log.worldId,
+  }));
+
+  await createVRChatWorldJoinLogFromPhoto(worldJoinLogs);
 };
