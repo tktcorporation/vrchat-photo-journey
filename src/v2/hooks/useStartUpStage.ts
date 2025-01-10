@@ -1,3 +1,4 @@
+import { invalidatePhotoGalleryQueries } from '@/queryClient';
 import { trpcReact } from '@/trpc';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { match } from 'ts-pattern';
@@ -90,16 +91,18 @@ export const useStartupStage = (callbacks?: ProcessStageCallbacks) => {
   });
 
   const { data: logFilesDirData } = trpcReact.getVRChatLogFilesDir.useQuery();
+  const utils = trpcReact.useUtils();
 
   const loadLogInfoIndexMutation =
     trpcReact.logInfo.loadLogInfoIndex.useMutation({
-      onMutate: () => {
-        console.log('Starting loadLogInfoIndex');
+      onMutate: (input) => {
+        console.log('Starting loadLogInfoIndex', { input });
         updateStage('indexLoaded', 'inProgress');
       },
       onSuccess: () => {
         console.log('loadLogInfoIndex succeeded');
         updateStage('indexLoaded', 'success');
+        invalidatePhotoGalleryQueries(utils);
       },
       onError: (error) => {
         console.error('loadLogInfoIndex failed:', error);
@@ -123,7 +126,7 @@ export const useStartupStage = (callbacks?: ProcessStageCallbacks) => {
       onSuccess: () => {
         console.log('storeLogsMutation succeeded');
         updateStage('logsStored', 'success');
-        loadLogInfoIndexMutation.mutate();
+        loadLogInfoIndexMutation.mutate({ excludeOldLogLoad: true });
       },
       onError: (error) => {
         console.error('storeLogsMutation failed:', error);

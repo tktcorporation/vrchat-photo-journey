@@ -1,5 +1,6 @@
+import { invalidatePhotoGalleryQueries } from '@/queryClient';
 import { trpcReact } from '@/trpc';
-import { AlertCircle, FileText, FolderOpen } from 'lucide-react';
+import { AlertCircle, FileText, FolderOpen, RefreshCw } from 'lucide-react';
 import React, { memo, useState } from 'react';
 import { match } from 'ts-pattern';
 import { useI18n } from '../../i18n/store';
@@ -8,6 +9,7 @@ const PathSettingsComponent = memo(() => {
   const { t } = useI18n();
   const [_isValidating, setIsValidating] = useState(false);
   const [_validationError, setValidationError] = useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Photo directory queries and mutations
   const { data: photoDir, refetch: refetchPhotoDir } =
@@ -19,11 +21,23 @@ const PathSettingsComponent = memo(() => {
   const _clearPhotoDirectoryMutation =
     trpcReact.vrchatPhoto.clearVRChatPhotoDirPathInSettingStore.useMutation();
 
+  const utils = trpcReact.useUtils();
+
   // Log file queries and mutations
   const { data: logFilesDir, refetch: refetchLogFilesDir } =
     trpcReact.getVRChatLogFilesDir.useQuery();
   const setLogPathMutation =
     trpcReact.setVRChatLogFilesDirByDialog.useMutation();
+
+  const { mutate: loadLogInfo } =
+    trpcReact.logInfo.loadLogInfoIndex.useMutation({
+      onSuccess: () => {
+        invalidatePhotoGalleryQueries(utils);
+      },
+      onSettled: () => {
+        setIsRefreshing(false);
+      },
+    });
 
   // 写真パスの検証状態を保持
   const [photoValidationResult, _setPhotoValidationResult] = useState<
@@ -112,6 +126,13 @@ const PathSettingsComponent = memo(() => {
     }
   };
 
+  const handleRefreshAll = async () => {
+    if (!isRefreshing) {
+      setIsRefreshing(true);
+      loadLogInfo({ excludeOldLogLoad: false });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="space-y-4">
@@ -191,6 +212,29 @@ const PathSettingsComponent = memo(() => {
                   .exhaustive()}
               </div>
             )}
+          </div>
+
+          {/* Refresh All Section */}
+          <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex flex-col gap-2">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                設定したVRChatのログファイルから、過去のワールド訪問履歴を含む全てのインデックスを再構築します。
+                初回設定時や、インデックスの不整合が発生した場合に使用してください。
+              </p>
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={handleRefreshAll}
+                  disabled={isRefreshing}
+                  className="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-200 disabled:opacity-50"
+                >
+                  <RefreshCw
+                    className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`}
+                  />
+                  {t('common.refresh')}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

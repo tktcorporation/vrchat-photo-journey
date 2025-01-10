@@ -1,3 +1,4 @@
+import { invalidatePhotoGalleryQueries } from '@/queryClient';
 import { trpcReact } from '@/trpc';
 import { Eye, EyeOff, RefreshCw, Settings } from 'lucide-react';
 import { memo, useState } from 'react';
@@ -21,8 +22,12 @@ const Header = memo(
   }: HeaderProps) => {
     const { t } = useI18n();
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const utils = trpcReact.useUtils();
     const { mutate: loadLogInfo } =
       trpcReact.logInfo.loadLogInfoIndex.useMutation({
+        onSuccess: () => {
+          invalidatePhotoGalleryQueries(utils);
+        },
         onSettled: () => {
           setIsRefreshing(false);
         },
@@ -31,7 +36,7 @@ const Header = memo(
     const handleRefresh = async () => {
       if (!isRefreshing) {
         setIsRefreshing(true);
-        loadLogInfo();
+        loadLogInfo({ excludeOldLogLoad: true });
       }
     };
 
