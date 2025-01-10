@@ -6,6 +6,7 @@ import { uuidv7 } from 'uuidv7';
 import { VRChatPlayerJoinLogModel } from '../module/VRChatPlayerJoinLogModel/playerJoinInfoLog.model';
 import { VRChatPhotoPathModel } from '../module/vrchatPhoto/model/vrchatPhotoPath.model';
 import { VRChatWorldJoinLogModel } from '../module/vrchatWorldJoinLog/VRChatWorldJoinLogModel/s_model';
+import { VRChatWorldJoinLogFromPhotoModel } from '../module/vrchatWorldJoinLogFromPhoto/vrchatWorldJoinLogFromPhoto.model';
 import * as settingService from './../module/settings/service';
 import * as log from './logger';
 import { Migrations } from './sequelize/migrations.model';
@@ -26,6 +27,7 @@ const _newRDBClient = (props: { db_url: string }) => {
     },
     models: [
       VRChatWorldJoinLogModel,
+      VRChatWorldJoinLogFromPhotoModel,
       VRChatPlayerJoinLogModel,
       VRChatPhotoPathModel,
       Migrations,
@@ -143,6 +145,8 @@ export const __forceSyncRDBClient = async () => {
   if (process.env.NODE_ENV !== 'test') {
     throw new Error('NODE_ENV is not test');
   }
+
+  // TODO: データベースのバックアップを行う
 
   await executeSyncRDB({ force: true });
 };

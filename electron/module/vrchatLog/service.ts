@@ -11,6 +11,8 @@ import type {
   VRChatLogFilesDirPath,
 } from '../vrchatLogFileDir/model';
 import * as vrchatLogFileDirService from '../vrchatLogFileDir/service';
+import type { VRChatPhotoDirPath } from '../vrchatPhoto/valueObjects';
+import { createVRChatWorldJoinLogFromPhoto } from '../vrchatWorldJoinLogFromPhoto/service';
 import { VRChatLogFileError } from './error';
 import {
   type VRChatLogLine,
@@ -342,4 +344,69 @@ export const appendLoglinesToFile = async (props: {
       new Error(`ログファイルの処理中にエラーが発生しました: ${error.message}`),
     );
   }
+};
+
+import { glob } from 'glob';
+import type { VRChatWorldJoinLogFromPhoto } from '../vrchatWorldJoinLogFromPhoto/vrchatWorldJoinLogFromPhoto.model';
+/**
+ * 旧Appで生成したログファイル(写真)をインポートする
+ *
+ * 写真のあるディレクトリに 下記の形式で保存されているので、parse して
+ * `VRChat_2025-01-06_23-18-51.000_wrld_f5db5fd3-7541-407e-a218-04fbdd84f2b7.jpeg`
+ * r/VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_wrld_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}.[a-z]{3}
+ *
+ * VRChatWorldJoinLog に変換して返す
+ */
+export const getLogLinesFromLogPhotoDirPath = async ({
+  vrChatPhotoDirPath,
+}: { vrChatPhotoDirPath: VRChatPhotoDirPath }): Promise<
+  VRChatWorldJoinLogFromPhoto[]
+> => {
+  // 正規表現にマッチするファイルを再起的に取得していく
+  const logPhotoFilePathList = await glob(
+    path.join(vrChatPhotoDirPath.value, '**/VRChat_*_wrld_*'),
+    {
+      matchBase: true,
+    },
+  );
+  // r/VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_wrld_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}.[a-z]
+  // を parse して VRChatWorldJoinLog に変換する
+  const worldJoinLogList = logPhotoFilePathList
+    .map((filePath) => {
+      const regex =
+        /VRChat_(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.\d{3})_wrld_([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\.[a-z]+/;
+      const matches = filePath.match(regex);
+      if (!matches) {
+        return null;
+      }
+      return {
+        // ファイル名の日時はlocal time なので、そのままparseする
+        joinDate: datefns.parse(
+          matches[1],
+          'yyyy-MM-dd_HH-mm-ss.SSS',
+          new Date(),
+        ),
+        worldId: `wrld_${matches[2]}` as WorldId,
+      };
+    })
+    .filter((log) => log !== null);
+  return worldJoinLogList;
+};
+
+/**
+ * 写真として保存されているワールドへのJoinログをデータベースに保存する
+ */
+export const importLogLinesFromLogPhotoDirPath = async ({
+  vrChatPhotoDirPath,
+}: { vrChatPhotoDirPath: VRChatPhotoDirPath }): Promise<void> => {
+  const logLines = await getLogLinesFromLogPhotoDirPath({
+    vrChatPhotoDirPath,
+  });
+
+  const worldJoinLogs: VRChatWorldJoinLogFromPhoto[] = logLines.map((log) => ({
+    joinDate: log.joinDate,
+    worldId: log.worldId,
+  }));
+
+  await createVRChatWorldJoinLogFromPhoto(worldJoinLogs);
 };

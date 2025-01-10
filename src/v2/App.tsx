@@ -196,9 +196,13 @@ const Contents = (props: { children: React.ReactNode }) => {
 
   if (
     stages.startingSync === 'inProgress' ||
+    stages.startingSync === 'pending' ||
     stages.syncDone === 'inProgress' ||
+    stages.syncDone === 'pending' ||
     stages.logsStored === 'inProgress' ||
-    stages.indexLoaded === 'inProgress'
+    stages.logsStored === 'pending' ||
+    stages.indexLoaded === 'inProgress' ||
+    stages.indexLoaded === 'pending'
   ) {
     const currentStage = (() => {
       if (stages.indexLoaded === 'inProgress')

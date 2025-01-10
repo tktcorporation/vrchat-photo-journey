@@ -133,13 +133,21 @@ const getPlayerJoinListInSameWorld = async (
 
 export const logInfoRouter = () =>
   trpcRouter({
-    loadLogInfoIndex: procedure.mutation(async () => {
-      log.info('loadLogInfoIndex');
-      const result = await loadLogInfoIndexFromVRChatLog();
-      if (result.isErr()) {
-        return neverthrow.err(result.error);
-      }
-    }),
+    loadLogInfoIndex: procedure
+      .input(
+        z.object({
+          excludeOldLogLoad: z.boolean(),
+        }),
+      )
+      .mutation(async (ctx) => {
+        log.info('loadLogInfoIndex');
+        const result = await loadLogInfoIndexFromVRChatLog({
+          excludeOldLogLoad: ctx.input.excludeOldLogLoad,
+        });
+        if (result.isErr()) {
+          return neverthrow.err(result.error);
+        }
+      }),
     getVRCWorldJoinLogList: procedure.query(async () => {
       const joinLogList = await getVRCWorldJoinLogList();
       return joinLogList;

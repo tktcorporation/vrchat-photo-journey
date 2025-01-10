@@ -278,7 +278,9 @@ const setTimeEventEmitter = (
       return;
     }
 
-    const result = await loadLogInfoIndexFromVRChatLog();
+    const result = await loadLogInfoIndexFromVRChatLog({
+      excludeOldLogLoad: true,
+    });
 
     if (result.isErr()) {
       const error = result.error;

@@ -8,6 +8,7 @@ import {
 import {
   Attribute,
   AutoIncrement,
+  Default,
   NotNull,
   PrimaryKey,
 } from '@sequelize/core/decorators-legacy';
@@ -29,6 +30,8 @@ export class Migrations extends Model<
   @NotNull
   declare migratedAt: Date;
 
+  @Attribute(DataTypes.DATE)
+  @Default(DataTypes.NOW)
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }
