@@ -16,6 +16,7 @@ import {
 import { uuidv7 } from 'uuidv7';
 
 import type { WorldId } from '../vrchatLog/type';
+import * as log from './../../lib/logger';
 
 export interface VRChatWorldJoinLogFromPhoto {
   joinDate: Date;
@@ -67,6 +68,9 @@ export const createVRChatWorldJoinLogFromPhoto = async (
     joinDateTime: logInfo.joinDate,
     worldId: logInfo.worldId,
   }));
+  log.info('vrchatWorldJoinLogFromPhotoList');
+  log.info(`newLogsLength: ${newLogs.length}`);
+  log.info(`newLogsHead: ${JSON.stringify(newLogs[0])}`);
 
   if (newLogs.length === 0) {
     return [];
