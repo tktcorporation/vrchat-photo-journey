@@ -3,14 +3,6 @@ import { procedure, router as trpcRouter } from '../../trpc';
 import { findVRChatWorldJoinLogFromPhotoList } from '../vrchatWorldJoinLogFromPhoto/service';
 import { findVRChatWorldJoinLogList } from './service';
 
-type Context = {
-  input: {
-    gtJoinDateTime?: Date;
-    ltJoinDateTime?: Date;
-    orderByJoinDateTime: 'asc' | 'desc';
-  };
-};
-
 export const vrchatWorldJoinLogRouter = () =>
   trpcRouter({
     /**
@@ -29,9 +21,9 @@ export const vrchatWorldJoinLogRouter = () =>
         }),
       )
       .query(
-        async (
-          ctx: Context,
-        ): Promise<
+        async ({
+          input,
+        }): Promise<
           {
             id: string;
             worldId: string;
@@ -44,14 +36,14 @@ export const vrchatWorldJoinLogRouter = () =>
         > => {
           const [normalLogs, photoLogs] = await Promise.all([
             findVRChatWorldJoinLogList({
-              gtJoinDateTime: ctx.input.gtJoinDateTime,
-              ltJoinDateTime: ctx.input.ltJoinDateTime,
-              orderByJoinDateTime: ctx.input.orderByJoinDateTime,
+              gtJoinDateTime: input.gtJoinDateTime,
+              ltJoinDateTime: input.ltJoinDateTime,
+              orderByJoinDateTime: input.orderByJoinDateTime,
             }),
             findVRChatWorldJoinLogFromPhotoList({
-              gtJoinDateTime: ctx.input.gtJoinDateTime,
-              ltJoinDateTime: ctx.input.ltJoinDateTime,
-              orderByJoinDateTime: ctx.input.orderByJoinDateTime,
+              gtJoinDateTime: input.gtJoinDateTime,
+              ltJoinDateTime: input.ltJoinDateTime,
+              orderByJoinDateTime: input.orderByJoinDateTime,
             }),
           ]);
 
@@ -82,7 +74,7 @@ export const vrchatWorldJoinLogRouter = () =>
             (a, b) => {
               const comparison =
                 a.joinDateTime.getTime() - b.joinDateTime.getTime();
-              return ctx.input.orderByJoinDateTime === 'asc'
+              return input.orderByJoinDateTime === 'asc'
                 ? comparison
                 : -comparison;
             },
