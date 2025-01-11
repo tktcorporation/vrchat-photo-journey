@@ -1,51 +1,54 @@
 name: Update Changelog
 
 on:
-  push:
-    tags:
-      # - 'v*'
-      - '*'
-
-permissions:
-  contents: write
-  pull-requests: write
+  pull_request:
+    types: [opened, synchronize]
+    branches:
+      - main
 
 jobs:
-  changelog:
-    name: Generate changelog
+  update-changelog:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Get version from tag
-        id: get-version
-        uses: battila7/get-version-action@v2
+          ref: ${{ github.head_ref }}
 
-      - name: Generate changelog
-        uses: orhun/git-cliff-action@v4
+      - name: Get version info
+        id: version_info
+        run: |
+          # mainブランチのpackage.jsonのバージョンを取得
+          git fetch origin main
+          main_version=$(git show origin/main:package.json | node -p "require('/dev/stdin').version")
+          echo "main_version=$main_version" >> $GITHUB_OUTPUT
+          
+          # 現在のブランチのバージョンを取得
+          current_version=$(node -p "require('./package.json').version")
+          echo "current_version=$current_version" >> $GITHUB_OUTPUT
+          
+          # バージョンが異なるかチェック
+          if [ "$main_version" != "$current_version" ]; then
+            echo "version_changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "version_changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate Changelog
+        if: steps.version_info.outputs.version_changed == 'true'
+        uses: orhun/git-cliff-action@v2
         with:
           config: cliff.toml
-        env:
-          OUTPUT: CHANGELOG.md
+          args: --output CHANGELOG.md
 
-      - name: Commit changes
+      - name: Commit Changes
+        if: steps.version_info.outputs.version_changed == 'true'
         run: |
-          VERSION=${{ steps.get-version.outputs.version-without-v }}
-          BRANCH="release/${VERSION}"
-          git config user.name 'github-actions[bot]'
-          git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git switch -c $BRANCH
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
           git add CHANGELOG.md
-          git commit -m "Bump version to $VERSION"
-          git push --set-upstream origin $BRANCH
-
-      - name: Create Pull Request
-        run: |
-          VERSION=${{ steps.get-version.outputs.version-without-v }}
-          BRANCH="release/${VERSION}"
-          gh pr create --title "Update CHABGELOG.md" --body "Update CHABGELOG.md for $VERSION" --base main --head $BRANCH --delete-branch
-          
+          git commit -m "doc: update changelog for version ${{ steps.version_info.outputs.current_version }}"
+          git push origin ${{ github.head_ref }} 
