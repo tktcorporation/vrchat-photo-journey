@@ -363,15 +363,13 @@ export const getLogLinesFromLogPhotoDirPath = async ({
 }: { vrChatPhotoDirPath: VRChatPhotoDirPath }): Promise<
   VRChatWorldJoinLogFromPhoto[]
 > => {
-  console.log('getLogLinesFromLogPhotoDirPath');
+  log.info('getLogLinesFromLogPhotoDirPath');
 
-  console.log(`vrChatPhotoDirPath: ${vrChatPhotoDirPath.value}`);
+  log.info(`vrChatPhotoDirPath: ${vrChatPhotoDirPath.value}`);
   const globPath = path.join(vrChatPhotoDirPath.value, '**', 'VRChat_*_wrld_*');
-  console.log(`globPath: ${globPath}`);
+  log.info(`globPath: ${globPath}`);
   // 正規表現にマッチするファイルを再起的に取得していく
-  const logPhotoFilePathList = await glob(globPath, {
-    matchBase: true,
-  });
+  const logPhotoFilePathList = await glob(globPath);
   log.info(`logPhotoFilePathListLength: ${logPhotoFilePathList.length}`);
   log.info(
     `logPhotoFilePathListHead10: ${logPhotoFilePathList
