@@ -1,7 +1,10 @@
 import { z } from 'zod';
 import { procedure, router as trpcRouter } from '../../trpc';
 import { findVRChatWorldJoinLogFromPhotoList } from '../vrchatWorldJoinLogFromPhoto/service';
-import { findVRChatWorldJoinLogList } from './service';
+import {
+  findVRChatWorldJoinLogList,
+  mergeVRChatWorldJoinLogs,
+} from './service';
 
 export const vrchatWorldJoinLogRouter = () =>
   trpcRouter({
@@ -47,40 +50,19 @@ export const vrchatWorldJoinLogRouter = () =>
             }),
           ]);
 
-          // 写真から取得したログを通常のログの形式に変換
-          const convertedPhotoLogs = photoLogs.map((log) => ({
-            id: log.id,
-            worldId: log.worldId,
-            worldName: log.worldId, // 写真からは取得できない
-            worldInstanceId: '', // 写真からは取得できない
-            joinDateTime: log.joinDate,
-            createdAt: log.createdAt,
-            updatedAt: log.updatedAt,
-          }));
-
-          // 通常のログを純粋なオブジェクトに変換
-          const convertedNormalLogs = normalLogs.map((log) => ({
-            id: log.id,
-            worldId: log.worldId,
-            worldName: log.worldName,
-            worldInstanceId: log.worldInstanceId,
-            joinDateTime: log.joinDateTime,
-            createdAt: log.createdAt,
-            updatedAt: log.updatedAt,
-          }));
+          const mergedLogs = mergeVRChatWorldJoinLogs({
+            normalLogs: normalLogs,
+            photoLogs: photoLogs,
+          });
 
           // 日時でソート
-          const allLogs = [...convertedNormalLogs, ...convertedPhotoLogs].sort(
-            (a, b) => {
-              const comparison =
-                a.joinDateTime.getTime() - b.joinDateTime.getTime();
-              return input.orderByJoinDateTime === 'asc'
-                ? comparison
-                : -comparison;
-            },
-          );
-
-          return allLogs;
+          return mergedLogs.sort((a, b) => {
+            const comparison =
+              a.joinDateTime.getTime() - b.joinDateTime.getTime();
+            return input.orderByJoinDateTime === 'asc'
+              ? comparison
+              : -comparison;
+          });
         },
       ),
   });
