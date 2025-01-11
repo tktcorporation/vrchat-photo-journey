@@ -106,9 +106,7 @@ function AppContent() {
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-white dark:bg-gray-900">
       <ToasterWrapper />
-      <Contents>
-        <PhotoGallery />
-      </Contents>
+      <Contents />
     </div>
   );
 }
@@ -149,7 +147,7 @@ const ToasterWrapper = () => {
   );
 };
 
-const Contents = (props: { children: React.ReactNode }) => {
+const Contents = () => {
   const { toast } = useToast();
   const { stages, errorMessage, retryProcess } = useStartupStage({
     onError: (error: ProcessError) => {
@@ -157,12 +155,6 @@ const Contents = (props: { children: React.ReactNode }) => {
         variant: 'destructive',
         title: 'スタートアップエラー',
         description: error.message,
-      });
-    },
-    onComplete: () => {
-      toast({
-        title: '準備完了',
-        description: 'アプリケーションの初期化が完了しました',
       });
     },
   });
@@ -198,11 +190,7 @@ const Contents = (props: { children: React.ReactNode }) => {
     stages.startingSync === 'inProgress' ||
     stages.startingSync === 'pending' ||
     stages.syncDone === 'inProgress' ||
-    stages.syncDone === 'pending' ||
-    stages.logsStored === 'inProgress' ||
-    stages.logsStored === 'pending' ||
-    stages.indexLoaded === 'inProgress' ||
-    stages.indexLoaded === 'pending'
+    stages.syncDone === 'pending'
   ) {
     const currentStage = (() => {
       if (stages.indexLoaded === 'inProgress')
@@ -226,7 +214,7 @@ const Contents = (props: { children: React.ReactNode }) => {
     );
   }
 
-  return props.children;
+  return <PhotoGallery startUpStages={stages} />;
 };
 
 export default App;

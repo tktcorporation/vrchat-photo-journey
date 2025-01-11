@@ -1,4 +1,5 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { LoaderCircle } from 'lucide-react';
 import { memo, useCallback, useMemo, useRef } from 'react';
 import LocationGroupHeader from '../LocationGroupHeader';
 import PhotoGrid from '../PhotoGrid';
@@ -10,23 +11,33 @@ import { usePhotoGallery } from './usePhotoGallery';
 interface GalleryContentProps {
   searchQuery: string;
   showEmptyGroups: boolean;
+  isLoadingStartupSync: boolean;
 }
 
 const GROUP_SPACING = 160;
 const CONTAINER_PADDING = 16;
 
 const GalleryContent = memo(
-  ({ searchQuery, showEmptyGroups }: GalleryContentProps) => {
-    const { groupedPhotos, isLoading, selectedPhoto, setSelectedPhoto } =
-      usePhotoGallery(searchQuery);
+  ({
+    searchQuery,
+    showEmptyGroups,
+    isLoadingStartupSync,
+  }: GalleryContentProps) => {
+    const {
+      groupedPhotos,
+      isLoading: isLoadingGrouping,
+      selectedPhoto,
+      setSelectedPhoto,
+    } = usePhotoGallery(searchQuery);
     const containerRef = useRef<HTMLDivElement>(null);
     const groupSizesRef = useRef<Map<string, number>>(new Map());
-
     const filteredGroups = useMemo(() => {
       return Object.entries(groupedPhotos).filter(
         ([_, group]) => showEmptyGroups || group.photos.length > 0,
       );
     }, [groupedPhotos, showEmptyGroups]);
+
+    const isLoading = isLoadingGrouping || isLoadingStartupSync;
 
     const virtualizer = useVirtualizer({
       count: filteredGroups.length,
@@ -106,8 +117,9 @@ const GalleryContent = memo(
             })}
           </div>
           {isLoading && (
-            <div className="flex justify-center py-4">
-              <div className="text-gray-500">写真を読み込み中...</div>
+            <div className="fixed bottom-4 right-4 flex items-center space-x-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg">
+              <LoaderCircle className="w-4 h-4 animate-spin text-gray-500" />
+              <div className="text-sm text-gray-500">読み込み中...</div>
             </div>
           )}
         </div>

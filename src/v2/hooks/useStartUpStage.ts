@@ -5,10 +5,45 @@ import { match } from 'ts-pattern';
 
 type ProcessStage = 'pending' | 'inProgress' | 'success' | 'error' | 'skipped';
 
-interface ProcessStages {
+export interface ProcessStages {
+  /**
+   * データベースの同期開始状態を追跡
+   * - pending: 同期開始待ち
+   * - inProgress: 同期開始中
+   * - success: 同期開始成功
+   * - error: 同期開始失敗
+   * - skipped: 同期不要のためスキップ
+   */
   startingSync: ProcessStage;
+
+  /**
+   * データベースの同期完了状態を追跡
+   * - pending: 同期完了待ち
+   * - inProgress: 同期実行中
+   * - success: 同期完了
+   * - error: 同期失敗
+   * - skipped: 同期不要のためスキップ
+   */
   syncDone: ProcessStage;
+
+  /**
+   * VRChatログファイルの保存状態を追跡
+   * - pending: ログ保存待ち
+   * - inProgress: ログ保存中
+   * - success: ログ保存完了
+   * - error: ログ保存失敗
+   * - skipped: ログ保存不要のためスキップ
+   */
   logsStored: ProcessStage;
+
+  /**
+   * ログ情報インデックスの読み込み状態を追跡
+   * - pending: インデックス読み込み待ち
+   * - inProgress: インデックス読み込み中
+   * - success: インデックス読み込み完了
+   * - error: インデックス読み込み失敗
+   * - skipped: インデックス読み込み不要のためスキップ
+   */
   indexLoaded: ProcessStage;
 }
 

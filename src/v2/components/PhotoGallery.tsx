@@ -1,9 +1,10 @@
 import { memo, useState } from 'react';
+import type { ProcessStages } from '../hooks/useStartUpStage';
 import GalleryContent from './PhotoGallery/GalleryContent';
 import Header from './PhotoGallery/Header';
 import SettingsModal from './settings/SettingsModal';
 
-const PhotoGallery = memo(() => {
+const PhotoGallery = memo((props: { startUpStages: ProcessStages }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showSettings, setShowSettings] = useState(false);
   const [showEmptyGroups, setShowEmptyGroups] = useState(true);
@@ -20,6 +21,10 @@ const PhotoGallery = memo(() => {
       <GalleryContent
         searchQuery={searchQuery}
         showEmptyGroups={showEmptyGroups}
+        isLoadingStartupSync={
+          props.startUpStages.logsStored === 'inProgress' ||
+          props.startUpStages.indexLoaded === 'inProgress'
+        }
       />
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
     </div>
