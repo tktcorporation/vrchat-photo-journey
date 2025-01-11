@@ -13,10 +13,12 @@ jobs:
       contents: write
       pull-requests: write
     steps:
-      - uses: actions/checkout@v3
+      - name: checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ github.head_ref }}
+          # Push時に後続のワークフローを実行するために、TOKENを指定する
+          token: ${{ secrets.MY_PERSONAL_ACCESS_TOKEN }}
 
       - name: Get version info
         id: version_info
