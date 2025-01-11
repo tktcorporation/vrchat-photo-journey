@@ -47,18 +47,14 @@ export function usePhotoGallery(searchQuery: string): {
     }));
   }, [photoList]);
 
-  const {
-    groupedPhotos: originalGroupedPhotos,
-    isLoading: isGrouping,
-    debug,
-  } = useGroupPhotos(photos);
+  const { groupedPhotos: originalGroupedPhotos, debug } =
+    useGroupPhotos(photos);
 
   const isLoading = useMemo(() => {
     if (isLoadingPhotos) return true;
-    if (isGrouping) return true;
     if (!photoList) return true;
     return false;
-  }, [isLoadingPhotos, isGrouping, photoList]);
+  }, [isLoadingPhotos, photoList]);
 
   const groupedPhotos = useMemo(() => {
     if (!searchQuery) return originalGroupedPhotos;
