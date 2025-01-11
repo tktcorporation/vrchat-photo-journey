@@ -2,6 +2,7 @@ import readline from 'node:readline';
 import * as datefns from 'date-fns';
 import * as neverthrow from 'neverthrow';
 import { match } from 'ts-pattern';
+import * as log from '../../lib/logger';
 import * as fs from '../../lib/wrappedFs';
 
 import path from 'node:path';
@@ -362,13 +363,22 @@ export const getLogLinesFromLogPhotoDirPath = async ({
 }: { vrChatPhotoDirPath: VRChatPhotoDirPath }): Promise<
   VRChatWorldJoinLogFromPhoto[]
 > => {
+  console.log('getLogLinesFromLogPhotoDirPath');
+
+  console.log(`vrChatPhotoDirPath: ${vrChatPhotoDirPath.value}`);
+  const globPath = path.join(vrChatPhotoDirPath.value, '**', 'VRChat_*_wrld_*');
+  console.log(`globPath: ${globPath}`);
   // 正規表現にマッチするファイルを再起的に取得していく
-  const logPhotoFilePathList = await glob(
-    path.join(vrChatPhotoDirPath.value, '**/VRChat_*_wrld_*'),
-    {
-      matchBase: true,
-    },
+  const logPhotoFilePathList = await glob(globPath, {
+    matchBase: true,
+  });
+  log.info(`logPhotoFilePathListLength: ${logPhotoFilePathList.length}`);
+  log.info(
+    `logPhotoFilePathListHead10: ${logPhotoFilePathList
+      .slice(0, 10)
+      .join('\n')}`,
   );
+
   // r/VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_wrld_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}.[a-z]
   // を parse して VRChatWorldJoinLog に変換する
   const worldJoinLogList = logPhotoFilePathList
@@ -390,6 +400,13 @@ export const getLogLinesFromLogPhotoDirPath = async ({
       };
     })
     .filter((log) => log !== null);
+  log.info(`worldJoinLogListLength: ${worldJoinLogList.length}`);
+  log.info(
+    `worldJoinLogListHead10: ${worldJoinLogList
+      .slice(0, 10)
+      .map((l) => JSON.stringify(l))
+      .join('\n')}`,
+  );
   return worldJoinLogList;
 };
 
