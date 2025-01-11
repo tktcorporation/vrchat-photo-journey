@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [unreleased]
+
+### 🚀 Features
+
+- 初期ロードでのブロッキングを最低限にする (#192)
+
 ## [0.4.0-alpha.1] - 2025-01-10
 
 ### 🚀 Features
