@@ -1,6 +1,4 @@
-import * as fs from 'node:fs';
-import path from 'node:path';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { BaseValueObject } from '../vrchatPhoto/valueObjects';
 import { getLogLinesFromLogPhotoDirPath } from './service';
 
@@ -31,9 +29,7 @@ describe('getLogLinesFromLogPhotoDirPath', () => {
     });
 
     expect(glob).toHaveBeenCalledTimes(1);
-    expect(glob).toHaveBeenCalledWith(
-      path.join('/mock/photo/dir', '**/VRChat_*_wrld_*'),
-    );
+    expect(glob).toHaveBeenCalledWith('/mock/photo/dir/**/VRChat_*_wrld_*');
   });
 
   it('正しい形式のファイル名からワールド訪問ログを抽出できる', async () => {

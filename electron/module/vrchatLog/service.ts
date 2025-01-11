@@ -366,7 +366,11 @@ export const getLogLinesFromLogPhotoDirPath = async ({
   log.info('getLogLinesFromLogPhotoDirPath');
 
   log.info(`vrChatPhotoDirPath: ${vrChatPhotoDirPath.value}`);
-  const globPath = path.join(vrChatPhotoDirPath.value, '**', 'VRChat_*_wrld_*');
+  const globPath = path.posix.join(
+    vrChatPhotoDirPath.value,
+    '**',
+    'VRChat_*_wrld_*',
+  );
   log.info(`globPath: ${globPath}`);
   // 正規表現にマッチするファイルを再起的に取得していく
   const logPhotoFilePathList = await glob(globPath);
