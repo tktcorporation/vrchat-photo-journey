@@ -33,9 +33,6 @@ describe('getLogLinesFromLogPhotoDirPath', () => {
     expect(glob).toHaveBeenCalledTimes(1);
     expect(glob).toHaveBeenCalledWith(
       path.join('/mock/photo/dir', '**/VRChat_*_wrld_*'),
-      {
-        matchBase: true,
-      },
     );
   });
 
