@@ -108,12 +108,14 @@ const ShareModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl w-[95vw] h-[90vh] flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-bold">共有</DialogTitle>
+      <DialogContent className="max-w-2xl h-[90vh] flex flex-col p-0 bg-white dark:bg-gray-800 border-none">
+        <DialogHeader className="px-6 pt-4 border-gray-200 dark:border-gray-700">
+          <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-white">
+            共有
+          </DialogTitle>
         </DialogHeader>
-        <div className="flex-1 min-h-0 flex flex-col space-y-6">
-          <div className="flex-1 min-h-0 shadow-sm">
+        <div className="min-h-0 flex flex-col space-y-6 pb-6 px-6">
+          <div className="min-h-0 rounded-lg overflow-hidden">
             {isLoading ? (
               <div className="flex items-center justify-center h-full">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
@@ -135,7 +137,7 @@ const ShareModal = ({
               type="button"
               onClick={handleCopyToClipboard}
               disabled={isLoading}
-              className="flex-1 sm:flex-none px-4 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              className="flex-1 sm:flex-none px-4 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium dark:bg-blue-600 dark:hover:bg-blue-700"
             >
               クリップボードにコピー
             </button>
@@ -143,7 +145,7 @@ const ShareModal = ({
               type="button"
               onClick={handleDownloadPng}
               disabled={isLoading}
-              className="flex-1 sm:flex-none px-4 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              className="flex-1 sm:flex-none px-4 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium dark:bg-green-600 dark:hover:bg-green-700"
             >
               画像をダウンロード
             </button>
