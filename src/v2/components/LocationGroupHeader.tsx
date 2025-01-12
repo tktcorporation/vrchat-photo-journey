@@ -19,7 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../../components/ui/dialog';
-import { BoldPreview } from '../components/BoldPreview';
+import { BoldPreviewSvg } from '../components/BoldPreview';
 import { copyImageToClipboard, downloadImageAsPng } from '../utils/shareUtils';
 
 /**
@@ -108,52 +108,45 @@ const ShareModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-4xl w-[95vw] h-[90vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle>共有</DialogTitle>
+          <DialogTitle className="text-xl font-bold">共有</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
-          <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+        <div className="flex-1 min-h-0 flex flex-col space-y-6">
+          <div className="flex-1 min-h-0 shadow-sm">
             {isLoading ? (
-              <div className="flex items-center justify-center h-[600px]">
+              <div className="flex items-center justify-center h-full">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
               </div>
             ) : (
-              <BoldPreview
-                worldName={worldName}
-                imageBase64={base64Data}
-                players={players}
-                previewRef={previewRef}
-                showAllPlayers={false}
-              />
+              <div className="w-full h-full flex items-center justify-center">
+                <BoldPreviewSvg
+                  worldName={worldName}
+                  imageBase64={base64Data}
+                  players={players}
+                  previewRef={previewRef}
+                  showAllPlayers={false}
+                />
+              </div>
             )}
           </div>
-          <DialogFooter>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={handleCopyToClipboard}
-                disabled={isLoading}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                クリップボードにコピー
-              </button>
-              <button
-                type="button"
-                onClick={handleDownloadPng}
-                disabled={isLoading}
-                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                画像をダウンロード
-              </button>
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-              >
-                閉じる
-              </button>
-            </div>
+          <DialogFooter className="sm:justify-end gap-3 px-2">
+            <button
+              type="button"
+              onClick={handleCopyToClipboard}
+              disabled={isLoading}
+              className="flex-1 sm:flex-none px-4 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            >
+              クリップボードにコピー
+            </button>
+            <button
+              type="button"
+              onClick={handleDownloadPng}
+              disabled={isLoading}
+              className="flex-1 sm:flex-none px-4 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            >
+              画像をダウンロード
+            </button>
           </DialogFooter>
         </div>
       </DialogContent>

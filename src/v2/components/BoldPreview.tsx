@@ -20,7 +20,7 @@ interface BoldPreviewProps {
   showAllPlayers?: boolean;
 }
 
-export function BoldPreview({
+export function BoldPreviewSvg({
   worldName,
   imageUrl,
   imageBase64,
@@ -124,13 +124,9 @@ export function BoldPreview({
   return (
     <svg
       ref={previewRef}
-      width="800"
-      height={previewHeight}
+      className="max-w-[100%] max-h-[100%]"
       viewBox={`0 0 800 ${previewHeight}`}
       xmlns="http://www.w3.org/2000/svg"
-      style={{
-        background: '#7FB5B5',
-      }}
     >
       <title>VRChat World Join Preview - Bold Style</title>
       <defs>
