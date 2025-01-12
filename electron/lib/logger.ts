@@ -66,4 +66,11 @@ const error = ({ message, stack }: ErrorLogParams): void => {
 
 const electronLogFilePath = log.transports.file.getFile().path;
 
-export { info, debug, error, electronLogFilePath };
+const logger = {
+  info,
+  debug,
+  error,
+  electronLogFilePath,
+};
+
+export { info, debug, error, electronLogFilePath, logger };

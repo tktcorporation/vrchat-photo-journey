@@ -1,9 +1,26 @@
 import { trpcReact } from '@/trpc';
 import { format } from 'date-fns';
-import { Calendar, ExternalLink, Laptop, MapPin, Users } from 'lucide-react';
+import {
+  Calendar,
+  ExternalLink,
+  Laptop,
+  MapPin,
+  Share2,
+  Users,
+  X,
+} from 'lucide-react';
 import React, { memo, useRef, useState, useEffect } from 'react';
 import type { ReactPortal } from 'react';
 import { createPortal } from 'react-dom';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '../../components/ui/dialog';
+import { BoldPreview } from '../components/BoldPreview';
+import { downloadPreview } from '../utils/downloadPreview';
 
 /**
  * LocationGroupHeaderのプロパティ定義
@@ -48,6 +65,82 @@ const PlatformBadge = memo(({ platform }: { platform: string }) => {
 
 PlatformBadge.displayName = 'PlatformBadge';
 
+interface ShareModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  worldName: string | null;
+  imageUrl: string | null;
+  players: Player[] | null;
+}
+
+const ShareModal = ({
+  isOpen,
+  onClose,
+  worldName,
+  imageUrl,
+  players,
+}: ShareModalProps) => {
+  const previewRef = useRef<SVGSVGElement>(null);
+
+  // 画像のBase64変換をバックエンドに依頼
+  const { data: base64Data, isLoading } =
+    trpcReact.vrchatApi.convertImageToBase64.useQuery(imageUrl || '', {
+      enabled: !!imageUrl && isOpen,
+      staleTime: 1000 * 60 * 5, // 5分間キャッシュ
+      cacheTime: 1000 * 60 * 30, // 30分間キャッシュを保持
+    });
+
+  const handleDownload = () => {
+    if (previewRef.current) {
+      downloadPreview(previewRef.current, worldName);
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>共有</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+            {isLoading ? (
+              <div className="flex items-center justify-center h-[600px]">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
+              </div>
+            ) : (
+              <BoldPreview
+                worldName={worldName}
+                imageBase64={base64Data}
+                players={players}
+                previewRef={previewRef}
+                showAllPlayers={false}
+              />
+            )}
+          </div>
+          <DialogFooter>
+            <button
+              type="button"
+              onClick={handleDownload}
+              disabled={isLoading}
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              SVGをダウンロード
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+            >
+              閉じる
+            </button>
+          </DialogFooter>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 export const LocationGroupHeader = ({
   worldId,
   worldName,
@@ -65,6 +158,7 @@ export const LocationGroupHeader = ({
   const visibilityTimeoutRef = useRef<NodeJS.Timeout>();
   const openUrlMutation =
     trpcReact.electronUtil.openUrlInDefaultBrowser.useMutation();
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   const handleMouseMove = (event: React.MouseEvent) => {
     setTooltipPosition({
@@ -221,9 +315,19 @@ export const LocationGroupHeader = ({
                 ({photoCount}枚)
               </span>
             </h3>
-            <div className="flex items-center text-sm backdrop-blur-sm bg-black/20 px-3 py-1 rounded-full">
-              <Calendar className="h-4 w-4 mr-1.5" />
-              {formattedDate}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsShareModalOpen(true)}
+                className="flex items-center text-sm backdrop-blur-sm bg-black/20 px-3 py-1 rounded-full hover:bg-black/30 transition-colors"
+              >
+                <Share2 className="h-4 w-4 mr-1.5" />
+                共有
+              </button>
+              <div className="flex items-center text-sm backdrop-blur-sm bg-black/20 px-3 py-1 rounded-full">
+                <Calendar className="h-4 w-4 mr-1.5" />
+                {formattedDate}
+              </div>
             </div>
           </div>
           <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
@@ -318,6 +422,13 @@ export const LocationGroupHeader = ({
           )}
         </div>
       </div>
+      <ShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        worldName={details?.name || worldName}
+        imageUrl={details?.imageUrl || null}
+        players={players}
+      />
     </div>
   );
 };
