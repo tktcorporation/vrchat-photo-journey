@@ -20,7 +20,6 @@ import {
   DialogTitle,
 } from '../../components/ui/dialog';
 import { BoldPreview } from '../components/BoldPreview';
-import { downloadPreview } from '../utils/downloadPreview';
 
 /**
  * LocationGroupHeaderのプロパティ定義
@@ -90,10 +89,172 @@ const ShareModal = ({
       cacheTime: 1000 * 60 * 30, // 30分間キャッシュを保持
     });
 
-  const handleDownload = () => {
-    if (previewRef.current) {
-      downloadPreview(previewRef.current, worldName);
+  const copyImageMutation =
+    trpcReact.electronUtil.copyImageDataByBase64.useMutation();
+
+  const handleCopyToClipboard = async () => {
+    if (!previewRef.current || !base64Data) return;
+
+    // SVGをクローンして修正
+    const svgElement = previewRef.current.cloneNode(true) as SVGSVGElement;
+
+    // インラインスタイルを追加
+    const styleElement = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'style',
+    );
+    styleElement.textContent = `
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+      text, div {
+        font-family: 'Inter', sans-serif;
+      }
+      foreignObject div {
+        font-family: 'Inter', sans-serif !important;
+      }
+    `;
+    svgElement.insertBefore(styleElement, svgElement.firstChild);
+
+    // foreignObject内のdivにもフォントを直接設定
+    const foreignDivs = svgElement.getElementsByTagName('div');
+    for (const div of foreignDivs) {
+      div.style.fontFamily = 'Inter, sans-serif';
     }
+
+    // SVGをデータURLに変換
+    const svgData = new XMLSerializer().serializeToString(svgElement);
+    const svgBase64 = btoa(unescape(encodeURIComponent(svgData)));
+    const svgDataUrl = `data:image/svg+xml;base64,${svgBase64}`;
+
+    // フォントを読み込む
+    await document.fonts.load('700 1em Inter');
+    await document.fonts.load('600 1em Inter');
+    await document.fonts.load('500 1em Inter');
+    await document.fonts.load('400 1em Inter');
+
+    // 新しい画像として読み込む
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+
+    return new Promise<void>((resolve, reject) => {
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 800 * 2;
+        canvas.height = 600 * 2;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new Error('Failed to get canvas context'));
+          return;
+        }
+
+        // 背景を透明に
+        ctx.fillStyle = 'transparent';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 画像を描画
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        try {
+          // Base64として取得
+          const base64 = canvas.toDataURL('image/png').split(',')[1];
+          copyImageMutation.mutate(base64);
+          resolve();
+        } catch (error) {
+          reject(error);
+        }
+      };
+
+      img.onerror = () => {
+        reject(new Error('Failed to load SVG'));
+      };
+
+      img.src = svgDataUrl;
+    }).catch((error) => {
+      console.error('Failed to copy to clipboard:', error);
+    });
+  };
+
+  const handleDownloadPng = async () => {
+    if (!previewRef.current || !base64Data) return;
+
+    // SVGをクローンして修正
+    const svgElement = previewRef.current.cloneNode(true) as SVGSVGElement;
+
+    // インラインスタイルを追加
+    const styleElement = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'style',
+    );
+    styleElement.textContent = `
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+      text, div {
+        font-family: 'Inter', sans-serif;
+      }
+      foreignObject div {
+        font-family: 'Inter', sans-serif !important;
+      }
+    `;
+    svgElement.insertBefore(styleElement, svgElement.firstChild);
+
+    // foreignObject内のdivにもフォントを直接設定
+    const foreignDivs = svgElement.getElementsByTagName('div');
+    for (const div of foreignDivs) {
+      div.style.fontFamily = 'Inter, sans-serif';
+    }
+
+    // SVGをデータURLに変換
+    const svgData = new XMLSerializer().serializeToString(svgElement);
+    const svgBase64 = btoa(unescape(encodeURIComponent(svgData)));
+    const svgDataUrl = `data:image/svg+xml;base64,${svgBase64}`;
+
+    // フォントを読み込む
+    await document.fonts.load('700 1em Inter');
+    await document.fonts.load('600 1em Inter');
+    await document.fonts.load('500 1em Inter');
+    await document.fonts.load('400 1em Inter');
+
+    // 新しい画像として読み込む
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+
+    return new Promise<void>((resolve, reject) => {
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 800 * 2;
+        canvas.height = 600 * 2;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new Error('Failed to get canvas context'));
+          return;
+        }
+
+        // 背景を透明に
+        ctx.fillStyle = 'transparent';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 画像を描画
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        try {
+          // PNGとしてエクスポート
+          const pngDataUrl = canvas.toDataURL('image/png');
+          const link = document.createElement('a');
+          link.download = `${worldName || 'preview'}.png`;
+          link.href = pngDataUrl;
+          link.click();
+          resolve();
+        } catch (error) {
+          reject(error);
+        }
+      };
+
+      img.onerror = () => {
+        reject(new Error('Failed to load SVG'));
+      };
+
+      img.src = svgDataUrl;
+    }).catch((error) => {
+      console.error('Failed to convert to PNG:', error);
+    });
   };
 
   return (
@@ -119,21 +280,31 @@ const ShareModal = ({
             )}
           </div>
           <DialogFooter>
-            <button
-              type="button"
-              onClick={handleDownload}
-              disabled={isLoading}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              SVGをダウンロード
-            </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-            >
-              閉じる
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={handleCopyToClipboard}
+                disabled={isLoading}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                クリップボードにコピー
+              </button>
+              <button
+                type="button"
+                onClick={handleDownloadPng}
+                disabled={isLoading}
+                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                画像をダウンロード
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              >
+                閉じる
+              </button>
+            </div>
           </DialogFooter>
         </div>
       </DialogContent>
