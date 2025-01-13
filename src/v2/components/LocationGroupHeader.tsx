@@ -28,6 +28,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../../components/ui/dialog';
+import { Label } from '../../components/ui/label';
+import { Switch } from '../../components/ui/switch';
 import { BoldPreviewSvg } from '../components/BoldPreview';
 import { copyImageToClipboard, downloadImageAsPng } from '../utils/shareUtils';
 
@@ -90,6 +92,7 @@ const ShareModal = ({
   players,
 }: ShareModalProps) => {
   const previewRef = useRef<SVGSVGElement>(null);
+  const [showAllPlayers, setShowAllPlayers] = useState(false);
 
   // 画像のBase64変換をバックエンドに依頼
   const { data: base64Data, isLoading } =
@@ -104,7 +107,12 @@ const ShareModal = ({
 
   const handleCopyToClipboard = async () => {
     if (!previewRef.current) return;
-    await copyImageToClipboard(previewRef.current, copyImageMutation.mutate);
+    const filename = worldName ? `${worldName}.png` : 'image.png';
+    await copyImageToClipboard(
+      previewRef.current,
+      (base64) => copyImageMutation.mutate({ base64, filename }),
+      filename,
+    );
   };
 
   const handleDownloadPng = async () => {
@@ -117,7 +125,7 @@ const ShareModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl h-[90vh] flex flex-col p-0 bg-white dark:bg-gray-800 border-none">
+      <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0 bg-white dark:bg-gray-800 border-none">
         <DialogHeader className="px-6 pt-4 pb-2 border-gray-200 dark:border-gray-700 flex flex-row items-center justify-between">
           <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-white">
             共有
@@ -143,47 +151,66 @@ const ShareModal = ({
             </button>
           </div>
         </DialogHeader>
-        <div className="min-h-0 flex flex-col pb-6 px-6 flex-1">
-          <ContextMenu>
-            <ContextMenuTrigger>
-              <div className="min-h-0 rounded-lg overflow-hidden">
-                {isLoading ? (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <LoaderCircle className="h-8 w-8 animate-spin text-blue-500" />
+        <div className="flex flex-col pb-6 px-6 h-[calc(100vh-130px)] items-center justify-center">
+          <div className="h-full aspect-[4/3] overflow-y-auto">
+            <ContextMenu>
+              <ContextMenuTrigger className="w-full">
+                <div className="h-full rounded-lg overflow-y-auto">
+                  <div className="w-full">
+                    {isLoading ? (
+                      <div className="flex items-center justify-center">
+                        <LoaderCircle className="h-8 w-8 animate-spin text-blue-500" />
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center">
+                        <BoldPreviewSvg
+                          worldName={worldName}
+                          imageBase64={base64Data}
+                          players={players}
+                          previewRef={previewRef}
+                          showAllPlayers={showAllPlayers}
+                        />
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <BoldPreviewSvg
-                      worldName={worldName}
-                      imageBase64={base64Data}
-                      players={players}
-                      previewRef={previewRef}
-                      showAllPlayers={false}
-                    />
-                  </div>
-                )}
-              </div>
-            </ContextMenuTrigger>
-            <ContextMenuContent>
-              <ContextMenuItem
-                onClick={handleCopyToClipboard}
-                disabled={isLoading}
-                className="flex items-center gap-2"
-              >
-                <Copy className="h-4 w-4" />
-                <span>クリップボードにコピー</span>
-              </ContextMenuItem>
-              <ContextMenuItem
-                onClick={handleDownloadPng}
-                disabled={isLoading}
-                className="flex items-center gap-2"
-              >
-                <Download className="h-4 w-4" />
-                <span>画像をダウンロード</span>
-              </ContextMenuItem>
-            </ContextMenuContent>
-          </ContextMenu>
+                </div>
+              </ContextMenuTrigger>
+              <ContextMenuContent>
+                <ContextMenuItem
+                  onClick={handleCopyToClipboard}
+                  disabled={isLoading}
+                  className="flex items-center gap-2"
+                >
+                  <Copy className="h-4 w-4" />
+                  <span>クリップボードにコピー</span>
+                </ContextMenuItem>
+                <ContextMenuItem
+                  onClick={handleDownloadPng}
+                  disabled={isLoading}
+                  className="flex items-center gap-2"
+                >
+                  <Download className="h-4 w-4" />
+                  <span>画像をダウンロード</span>
+                </ContextMenuItem>
+              </ContextMenuContent>
+            </ContextMenu>
+          </div>
         </div>
+        <DialogFooter className="px-6 py-4">
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="show-all-players"
+              checked={showAllPlayers}
+              onCheckedChange={setShowAllPlayers}
+            />
+            <Label
+              htmlFor="show-all-players"
+              className="text-sm text-gray-600 dark:text-gray-400 cursor-pointer"
+            >
+              すべてのプレイヤー名を表示
+            </Label>
+          </div>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

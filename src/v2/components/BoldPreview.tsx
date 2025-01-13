@@ -131,7 +131,7 @@ export function BoldPreviewSvg({
       }}
       xmlns="http://www.w3.org/2000/svg"
     >
-      <title>VRChat World Join Preview - Bold Style</title>
+      <title>VRChat World Join Preview</title>
       <defs>
         <>
           <filter id="blur-effect">
