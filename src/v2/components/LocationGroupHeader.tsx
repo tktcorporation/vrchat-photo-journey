@@ -125,7 +125,7 @@ const ShareModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0 bg-white dark:bg-gray-800 border-none">
+      <DialogContent className="h-[90vh] flex flex-col p-0 bg-white dark:bg-gray-800 border-none">
         <DialogHeader className="px-6 pt-4 pb-2 border-gray-200 dark:border-gray-700 flex flex-row items-center justify-between">
           <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-white">
             共有
