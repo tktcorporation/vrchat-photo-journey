@@ -2,6 +2,7 @@ import { trpcReact } from '@/trpc';
 import { format } from 'date-fns';
 import {
   Calendar,
+  CheckIcon,
   Copy,
   Download,
   ExternalLink,
@@ -77,6 +78,47 @@ const PlatformBadge = memo(({ platform }: { platform: string }) => {
 });
 
 PlatformBadge.displayName = 'PlatformBadge';
+
+// プレイヤーリストを表示するコンポーネント
+const PlayerList = memo(
+  ({
+    players,
+    maxVisiblePlayers,
+  }: { players: Player[]; maxVisiblePlayers: number }) => {
+    if (players.length <= maxVisiblePlayers) {
+      return (
+        <>
+          {players.map((p: Player, index) => (
+            <React.Fragment key={p.id}>
+              <span className="opacity-90">{p.playerName}</span>
+              {index < players.length - 1 && (
+                <span className="opacity-50">/</span>
+              )}
+            </React.Fragment>
+          ))}
+        </>
+      );
+    }
+
+    return (
+      <>
+        {players.slice(0, maxVisiblePlayers).map((p: Player, index) => (
+          <React.Fragment key={p.id}>
+            <span className="opacity-90">{p.playerName}</span>
+            {index < maxVisiblePlayers - 1 && (
+              <span className="opacity-50">/</span>
+            )}
+          </React.Fragment>
+        ))}
+        <span className="opacity-75 ml-1">
+          / +{players.length - maxVisiblePlayers} more
+        </span>
+      </>
+    );
+  },
+);
+
+PlayerList.displayName = 'PlayerList';
 
 interface ShareModalProps {
   isOpen: boolean;
@@ -291,7 +333,7 @@ export const LocationGroupHeader = ({
       if (!playerListContainerRef.current || !Array.isArray(players)) return;
 
       const containerWidth = playerListContainerRef.current.offsetWidth;
-      const separatorWidth = 13; // セパレータ（ / ）の幅
+      const separatorWidth = 16; // セパレータ（ / ）の幅
       const moreTextWidth = 60; // "+X more" テキストの幅
 
       // 一時的なDOM要素を作成して実際の幅を計算
@@ -538,42 +580,21 @@ export const LocationGroupHeader = ({
                 tabIndex={0}
                 title={t('locationHeader.clickToCopy')}
               >
-                <div className="flex items-center">
-                  {players.length <= maxVisiblePlayers ? (
-                    <>
-                      {players.map((p: Player, index) => (
-                        <React.Fragment key={p.id}>
-                          <span className="opacity-90">{p.playerName}</span>
-                          {index < players.length - 1 && (
-                            <span className="opacity-50"> / </span>
-                          )}
-                        </React.Fragment>
-                      ))}
-                    </>
-                  ) : (
-                    <>
-                      {players
-                        .slice(0, maxVisiblePlayers)
-                        .map((p: Player, index) => (
-                          <React.Fragment key={p.id}>
-                            <span className="opacity-90">{p.playerName}</span>
-                            {index < maxVisiblePlayers - 1 && (
-                              <span className="opacity-50"> / </span>
-                            )}
-                          </React.Fragment>
-                        ))}
-                      <span className="opacity-75 ml-1">
-                        / +{players.length - maxVisiblePlayers} more
-                      </span>
-                    </>
+                <div className="flex items-center gap-2 w-full">
+                  {!isCopied && (
+                    <PlayerList
+                      players={players}
+                      maxVisiblePlayers={maxVisiblePlayers}
+                    />
                   )}
-                  <span className="ml-2 opacity-0 group-hover/players:opacity-100 transition-opacity">
+                  <span className="ml-2 transition-opacity">
                     {isCopied ? (
                       <span className="text-green-400">
-                        ✓ {t('locationHeader.copied')}
+                        <CheckIcon className="h-4 w-4 inline-block" />{' '}
+                        {t('locationHeader.copied')}
                       </span>
                     ) : (
-                      <Copy className="h-3 w-3 inline-block" />
+                      <Copy className="h-3 w-3 inline-block opacity-0 group-hover/players:opacity-100 transition-opacity" />
                     )}
                   </span>
                 </div>
