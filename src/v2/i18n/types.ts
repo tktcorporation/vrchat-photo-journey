@@ -37,6 +37,18 @@ export interface Translations {
       showInExplorer: string;
     };
   };
+  locationHeader: {
+    ungrouped: string;
+    photoCount: string;
+    share: string;
+    copyToClipboard: string;
+    downloadImage: string;
+    showAllPlayers: string;
+    worldInfoDeleted: string;
+    otherPlayers: string;
+    createdBy: string;
+    instanceId: string;
+  };
   settings: {
     tabs: {
       dataSource: string;

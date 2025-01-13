@@ -5,6 +5,7 @@ import {
   Copy,
   Download,
   ExternalLink,
+  ImageIcon,
   Laptop,
   LoaderCircle,
   MapPin,
@@ -31,6 +32,7 @@ import {
 import { Label } from '../../components/ui/label';
 import { Switch } from '../../components/ui/switch';
 import { BoldPreviewSvg } from '../components/BoldPreview';
+import { useI18n } from '../i18n/store';
 import { copyImageToClipboard, downloadImageAsPng } from '../utils/shareUtils';
 
 /**
@@ -91,6 +93,7 @@ const ShareModal = ({
   imageUrl,
   players,
 }: ShareModalProps) => {
+  const { t } = useI18n();
   const previewRef = useRef<SVGSVGElement>(null);
   const [showAllPlayers, setShowAllPlayers] = useState(false);
 
@@ -128,7 +131,7 @@ const ShareModal = ({
       <DialogContent className="h-[90vh] flex flex-col p-0 bg-white dark:bg-gray-800 border-none">
         <DialogHeader className="px-6 pt-4 pb-2 border-gray-200 dark:border-gray-700 flex flex-row items-center justify-between">
           <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-white">
-            共有
+            {t('locationHeader.share')}
           </DialogTitle>
           <div className="flex items-center gap-2">
             <button
@@ -136,7 +139,7 @@ const ShareModal = ({
               onClick={handleCopyToClipboard}
               disabled={isLoading}
               className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700"
-              title="クリップボードにコピー"
+              title={t('locationHeader.copyToClipboard')}
             >
               <Copy className="h-5 w-5" />
             </button>
@@ -145,7 +148,7 @@ const ShareModal = ({
               onClick={handleDownloadPng}
               disabled={isLoading}
               className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700"
-              title="画像をダウンロード"
+              title={t('locationHeader.downloadImage')}
             >
               <Download className="h-5 w-5" />
             </button>
@@ -182,7 +185,7 @@ const ShareModal = ({
                   className="flex items-center gap-2"
                 >
                   <Copy className="h-4 w-4" />
-                  <span>クリップボードにコピー</span>
+                  <span>{t('locationHeader.copyToClipboard')}</span>
                 </ContextMenuItem>
                 <ContextMenuItem
                   onClick={handleDownloadPng}
@@ -190,7 +193,7 @@ const ShareModal = ({
                   className="flex items-center gap-2"
                 >
                   <Download className="h-4 w-4" />
-                  <span>画像をダウンロード</span>
+                  <span>{t('locationHeader.downloadImage')}</span>
                 </ContextMenuItem>
               </ContextMenuContent>
             </ContextMenu>
@@ -207,7 +210,7 @@ const ShareModal = ({
               htmlFor="show-all-players"
               className="text-sm text-gray-600 dark:text-gray-400 cursor-pointer"
             >
-              すべてのプレイヤー名を表示
+              {t('locationHeader.showAllPlayers')}
             </Label>
           </div>
         </DialogFooter>
@@ -223,6 +226,7 @@ export const LocationGroupHeader = ({
   photoCount,
   joinDateTime,
 }: LocationGroupHeaderProps) => {
+  const { t } = useI18n();
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
   const [isHovered, setIsHovered] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
@@ -322,8 +326,11 @@ export const LocationGroupHeader = ({
     return (
       <header className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4">
         <div className="flex items-center gap-x-2">
-          <h2 className="text-lg font-bold">Ungrouped Photos</h2>
-          <span className="text-sm text-gray-500">{photoCount}枚の写真</span>
+          <h2 className="text-lg font-bold">{t('locationHeader.ungrouped')}</h2>
+          <span className="text-sm text-gray-500">
+            <ImageIcon className="h-4 w-4" />
+            <span>{photoCount}</span>
+          </span>
         </div>
         <div className="mt-1 text-sm text-gray-500">
           <time dateTime={joinDateTime.toISOString()}>{formattedDate}</time>
@@ -386,8 +393,9 @@ export const LocationGroupHeader = ({
                 {details?.name || worldName}
                 <ExternalLink className="h-4 w-4 ml-1 opacity-0 group-hover/title:opacity-100 transition-opacity" />
               </button>
-              <span className="ml-3 text-sm font-normal opacity-90">
-                ({photoCount}枚)
+              <span className="ml-3 text-sm font-normal opacity-90 flex gap-1 items-center">
+                <ImageIcon className="h-5 w-5" />
+                <span>({photoCount})</span>
               </span>
             </h3>
             <div className="flex items-center gap-2">
@@ -397,7 +405,7 @@ export const LocationGroupHeader = ({
                 className="flex items-center text-sm backdrop-blur-sm bg-black/20 px-3 py-1 rounded-full hover:bg-black/30 transition-colors"
               >
                 <Share2 className="h-4 w-4 mr-1.5" />
-                共有
+                {t('locationHeader.share')}
               </button>
               <div className="flex items-center text-sm backdrop-blur-sm bg-black/20 px-3 py-1 rounded-full">
                 <Calendar className="h-4 w-4 mr-1.5" />
@@ -411,9 +419,11 @@ export const LocationGroupHeader = ({
                 <span className="opacity-90">By {details.authorName}</span>
               )}
               <span className="mx-2 opacity-50">•</span>
-              <span className="opacity-75 text-xs">
-                Instance: {worldInstanceId}
-              </span>
+              {worldInstanceId !== null && (
+                <span className="opacity-75 text-xs">
+                  Instance: {worldInstanceId}
+                </span>
+              )}
             </div>
             {details?.unityPackages && details.unityPackages.length > 0 && (
               <div className="flex items-center gap-1">
@@ -426,7 +436,7 @@ export const LocationGroupHeader = ({
             )}
             {worldError && (
               <span className="text-yellow-500 dark:text-yellow-400 text-xs">
-                (ワールド情報は削除されています)
+                ({t('locationHeader.worldInfoDeleted')})
               </span>
             )}
           </div>
@@ -461,7 +471,7 @@ export const LocationGroupHeader = ({
                       </React.Fragment>
                     ))}
                     <span className="opacity-75 ml-1">
-                      他{players.length - 6}人
+                      +{players.length - 6} more
                     </span>
                   </>
                 )}

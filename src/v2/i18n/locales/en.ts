@@ -8,21 +8,33 @@ const en: Translations = {
     noPhotosFound: 'No photos found',
     photos: 'Photos',
     refresh: 'Refresh',
-    showingEmptyGroups: 'Show groups without photos',
-    hidingEmptyGroups: 'Hide groups without photos',
+    showingEmptyGroups: 'Showing empty groups',
+    hidingEmptyGroups: 'Hiding empty groups',
     search: {
       placeholder: 'Search...',
     },
     toast: {
       settingsDeleted: 'Settings deleted',
       allSettingsDeleted: 'All settings deleted',
-      logFilePathSet: 'VRChat log file path has been set',
+      logFilePathSet: 'VRChat log file path set',
     },
     contextMenu: {
       copyPhotoData: 'Copy',
-      openInPhotoApp: 'Open in Photo App',
-      showInExplorer: 'Show in Folder',
+      openInPhotoApp: 'Open in photo app',
+      showInExplorer: 'Show in folder',
     },
+  },
+  locationHeader: {
+    ungrouped: 'Ungrouped Photos',
+    photoCount: '{count} photos',
+    share: 'Share',
+    copyToClipboard: 'Copy to clipboard',
+    downloadImage: 'Download image',
+    showAllPlayers: 'Show all player names',
+    worldInfoDeleted: 'World information has been deleted',
+    otherPlayers: '+{count} more',
+    createdBy: 'By {author}',
+    instanceId: 'Instance: {id}',
   },
   settings: {
     tabs: {

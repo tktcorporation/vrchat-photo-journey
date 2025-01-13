@@ -24,6 +24,18 @@ const ja: Translations = {
       showInExplorer: 'フォルダを開く',
     },
   },
+  locationHeader: {
+    ungrouped: '未グループの写真',
+    photoCount: '{count}枚の写真',
+    share: '共有',
+    copyToClipboard: 'クリップボードにコピー',
+    downloadImage: '画像をダウンロード',
+    showAllPlayers: 'すべてのプレイヤー名を表示',
+    worldInfoDeleted: 'ワールド情報は削除されています',
+    otherPlayers: '他{count}人',
+    createdBy: 'By {author}',
+    instanceId: 'Instance: {id}',
+  },
   settings: {
     tabs: {
       dataSource: 'データソース',
