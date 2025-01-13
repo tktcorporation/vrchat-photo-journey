@@ -37,6 +37,13 @@ export const electronUtilRouter = () =>
       clipboard.writeImage(image);
       eventEmitter.emit('toast', 'copied');
     }),
+    copyImageDataByBase64: procedure.input(z.string()).mutation(async (ctx) => {
+      const image = nativeImage.createFromBuffer(
+        Buffer.from(ctx.input, 'base64'),
+      );
+      clipboard.writeImage(image);
+      eventEmitter.emit('toast', 'copied');
+    }),
     openPhotoPathWithPhotoApp: procedure
       .input(z.string())
       .mutation(async (ctx) => {

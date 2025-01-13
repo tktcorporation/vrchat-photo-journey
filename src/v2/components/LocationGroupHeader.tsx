@@ -1,9 +1,35 @@
 import { trpcReact } from '@/trpc';
 import { format } from 'date-fns';
-import { Calendar, ExternalLink, Laptop, MapPin, Users } from 'lucide-react';
+import {
+  Calendar,
+  Copy,
+  Download,
+  ExternalLink,
+  Laptop,
+  LoaderCircle,
+  MapPin,
+  Share2,
+  Users,
+  X,
+} from 'lucide-react';
 import React, { memo, useRef, useState, useEffect } from 'react';
 import type { ReactPortal } from 'react';
 import { createPortal } from 'react-dom';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from '../../components/ui/context-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '../../components/ui/dialog';
+import { BoldPreviewSvg } from '../components/BoldPreview';
+import { copyImageToClipboard, downloadImageAsPng } from '../utils/shareUtils';
 
 /**
  * LocationGroupHeaderのプロパティ定義
@@ -48,6 +74,121 @@ const PlatformBadge = memo(({ platform }: { platform: string }) => {
 
 PlatformBadge.displayName = 'PlatformBadge';
 
+interface ShareModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  worldName: string | null;
+  imageUrl: string | null;
+  players: Player[] | null;
+}
+
+const ShareModal = ({
+  isOpen,
+  onClose,
+  worldName,
+  imageUrl,
+  players,
+}: ShareModalProps) => {
+  const previewRef = useRef<SVGSVGElement>(null);
+
+  // 画像のBase64変換をバックエンドに依頼
+  const { data: base64Data, isLoading } =
+    trpcReact.vrchatApi.convertImageToBase64.useQuery(imageUrl || '', {
+      enabled: !!imageUrl && isOpen,
+      staleTime: 1000 * 60 * 5, // 5分間キャッシュ
+      cacheTime: 1000 * 60 * 30, // 30分間キャッシュを保持
+    });
+
+  const copyImageMutation =
+    trpcReact.electronUtil.copyImageDataByBase64.useMutation();
+
+  const handleCopyToClipboard = async () => {
+    if (!previewRef.current) return;
+    await copyImageToClipboard(previewRef.current, copyImageMutation.mutate);
+  };
+
+  const handleDownloadPng = async () => {
+    if (!previewRef.current) return;
+    await downloadImageAsPng({
+      svgElement: previewRef.current,
+      worldName,
+    });
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-3xl h-[90vh] flex flex-col p-0 bg-white dark:bg-gray-800 border-none">
+        <DialogHeader className="px-6 pt-4 pb-2 border-gray-200 dark:border-gray-700 flex flex-row items-center justify-between">
+          <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-white">
+            共有
+          </DialogTitle>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleCopyToClipboard}
+              disabled={isLoading}
+              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700"
+              title="クリップボードにコピー"
+            >
+              <Copy className="h-5 w-5" />
+            </button>
+            <button
+              type="button"
+              onClick={handleDownloadPng}
+              disabled={isLoading}
+              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700"
+              title="画像をダウンロード"
+            >
+              <Download className="h-5 w-5" />
+            </button>
+          </div>
+        </DialogHeader>
+        <div className="min-h-0 flex flex-col pb-6 px-6 flex-1">
+          <ContextMenu>
+            <ContextMenuTrigger>
+              <div className="min-h-0 rounded-lg overflow-hidden">
+                {isLoading ? (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <LoaderCircle className="h-8 w-8 animate-spin text-blue-500" />
+                  </div>
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <BoldPreviewSvg
+                      worldName={worldName}
+                      imageBase64={base64Data}
+                      players={players}
+                      previewRef={previewRef}
+                      showAllPlayers={false}
+                    />
+                  </div>
+                )}
+              </div>
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+              <ContextMenuItem
+                onClick={handleCopyToClipboard}
+                disabled={isLoading}
+                className="flex items-center gap-2"
+              >
+                <Copy className="h-4 w-4" />
+                <span>クリップボードにコピー</span>
+              </ContextMenuItem>
+              <ContextMenuItem
+                onClick={handleDownloadPng}
+                disabled={isLoading}
+                className="flex items-center gap-2"
+              >
+                <Download className="h-4 w-4" />
+                <span>画像をダウンロード</span>
+              </ContextMenuItem>
+            </ContextMenuContent>
+          </ContextMenu>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 export const LocationGroupHeader = ({
   worldId,
   worldName,
@@ -65,6 +206,7 @@ export const LocationGroupHeader = ({
   const visibilityTimeoutRef = useRef<NodeJS.Timeout>();
   const openUrlMutation =
     trpcReact.electronUtil.openUrlInDefaultBrowser.useMutation();
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   const handleMouseMove = (event: React.MouseEvent) => {
     setTooltipPosition({
@@ -221,9 +363,19 @@ export const LocationGroupHeader = ({
                 ({photoCount}枚)
               </span>
             </h3>
-            <div className="flex items-center text-sm backdrop-blur-sm bg-black/20 px-3 py-1 rounded-full">
-              <Calendar className="h-4 w-4 mr-1.5" />
-              {formattedDate}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsShareModalOpen(true)}
+                className="flex items-center text-sm backdrop-blur-sm bg-black/20 px-3 py-1 rounded-full hover:bg-black/30 transition-colors"
+              >
+                <Share2 className="h-4 w-4 mr-1.5" />
+                共有
+              </button>
+              <div className="flex items-center text-sm backdrop-blur-sm bg-black/20 px-3 py-1 rounded-full">
+                <Calendar className="h-4 w-4 mr-1.5" />
+                {formattedDate}
+              </div>
             </div>
           </div>
           <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
@@ -318,6 +470,13 @@ export const LocationGroupHeader = ({
           )}
         </div>
       </div>
+      <ShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        worldName={details?.name || worldName}
+        imageUrl={details?.imageUrl || null}
+        players={players}
+      />
     </div>
   );
 };

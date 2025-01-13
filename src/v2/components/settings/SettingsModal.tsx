@@ -4,10 +4,15 @@ import {
   Globe2,
   Settings as SettingsIcon,
   Sun,
-  X,
 } from 'lucide-react';
 import type React from 'react';
 import { memo, useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '../../../components/ui/dialog';
 import { useI18n } from '../../i18n/store';
 import LanguageSelector from '../LanguageSelector';
 import AppInfo from './AppInfo';
@@ -82,43 +87,19 @@ const SettingsModal = memo(({ onClose }: SettingsModalProps) => {
     },
   ];
 
-  const handleContentClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-  };
-
-  const handleContentKeyDown = (e: React.KeyboardEvent) => {
-    e.stopPropagation();
-  };
-
   const ActiveComponent =
     tabs.find((tab) => tab.id === activeTab)?.component || tabs[0].component;
 
   return (
-    <div
-      className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
-      onClick={handleContentClick}
-      onKeyDown={handleContentKeyDown}
-      role="dialog"
-    >
-      <div
-        className="h-[90vh] w-full max-w-2xl flex flex-col bg-white dark:bg-gray-800 rounded-lg shadow-xl"
-        onClick={handleContentClick}
-        onKeyDown={handleContentKeyDown}
-      >
-        <div className="flex-none flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+    <Dialog open onOpenChange={() => onClose()}>
+      <DialogContent className="h-[90vh] max-w-2xl p-0 bg-white dark:bg-gray-800 border-none">
+        <DialogHeader className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <DialogTitle className="text-xl font-semibold text-gray-900 dark:text-white">
             {t('common.settings')}
-          </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-          >
-            <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-          </button>
-        </div>
+          </DialogTitle>
+        </DialogHeader>
 
-        <div className="flex-1 flex">
+        <div className="flex-1 flex h-[calc(90vh-80px)]">
           <div className="flex-none w-48 border-r border-gray-200 dark:border-gray-700">
             <nav className="flex flex-col py-2" aria-label="Tabs">
               {tabs.map(({ id, label, icon: Icon }) => (
@@ -146,8 +127,8 @@ const SettingsModal = memo(({ onClose }: SettingsModalProps) => {
             <ActiveComponent />
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 });
 
