@@ -5,6 +5,7 @@ import {
   Copy,
   Download,
   ExternalLink,
+  ImageIcon,
   Laptop,
   LoaderCircle,
   MapPin,
@@ -31,6 +32,7 @@ import {
 import { Label } from '../../components/ui/label';
 import { Switch } from '../../components/ui/switch';
 import { BoldPreviewSvg } from '../components/BoldPreview';
+import { useI18n } from '../i18n/store';
 import { copyImageToClipboard, downloadImageAsPng } from '../utils/shareUtils';
 
 /**
@@ -91,6 +93,7 @@ const ShareModal = ({
   imageUrl,
   players,
 }: ShareModalProps) => {
+  const { t } = useI18n();
   const previewRef = useRef<SVGSVGElement>(null);
   const [showAllPlayers, setShowAllPlayers] = useState(false);
 
@@ -128,7 +131,7 @@ const ShareModal = ({
       <DialogContent className="h-[90vh] flex flex-col p-0 bg-white dark:bg-gray-800 border-none">
         <DialogHeader className="px-6 pt-4 pb-2 border-gray-200 dark:border-gray-700 flex flex-row items-center justify-between">
           <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-white">
-            共有
+            {t('locationHeader.share')}
           </DialogTitle>
           <div className="flex items-center gap-2">
             <button
@@ -136,7 +139,7 @@ const ShareModal = ({
               onClick={handleCopyToClipboard}
               disabled={isLoading}
               className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700"
-              title="クリップボードにコピー"
+              title={t('locationHeader.copyToClipboard')}
             >
               <Copy className="h-5 w-5" />
             </button>
@@ -145,7 +148,7 @@ const ShareModal = ({
               onClick={handleDownloadPng}
               disabled={isLoading}
               className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700"
-              title="画像をダウンロード"
+              title={t('locationHeader.downloadImage')}
             >
               <Download className="h-5 w-5" />
             </button>
@@ -182,7 +185,7 @@ const ShareModal = ({
                   className="flex items-center gap-2"
                 >
                   <Copy className="h-4 w-4" />
-                  <span>クリップボードにコピー</span>
+                  <span>{t('locationHeader.copyToClipboard')}</span>
                 </ContextMenuItem>
                 <ContextMenuItem
                   onClick={handleDownloadPng}
@@ -190,7 +193,7 @@ const ShareModal = ({
                   className="flex items-center gap-2"
                 >
                   <Download className="h-4 w-4" />
-                  <span>画像をダウンロード</span>
+                  <span>{t('locationHeader.downloadImage')}</span>
                 </ContextMenuItem>
               </ContextMenuContent>
             </ContextMenu>
@@ -207,7 +210,7 @@ const ShareModal = ({
               htmlFor="show-all-players"
               className="text-sm text-gray-600 dark:text-gray-400 cursor-pointer"
             >
-              すべてのプレイヤー名を表示
+              {t('locationHeader.showAllPlayers')}
             </Label>
           </div>
         </DialogFooter>
@@ -223,18 +226,48 @@ export const LocationGroupHeader = ({
   photoCount,
   joinDateTime,
 }: LocationGroupHeaderProps) => {
+  const { t } = useI18n();
+  const openUrlMutation =
+    trpcReact.electronUtil.openUrlInDefaultBrowser.useMutation();
+  const copyTextMutation =
+    trpcReact.electronUtil.copyTextToClipboard.useMutation();
+
+  // State
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
   const [isHovered, setIsHovered] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [isImageLoaded, _setIsImageLoaded] = useState(false);
   const [shouldLoadDetails, setShouldLoadDetails] = useState(false);
+  const [maxVisiblePlayers, setMaxVisiblePlayers] = useState(6);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
+
+  // Refs
   const playerListRef = useRef<HTMLSpanElement>(null);
+  const playerListContainerRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const visibilityTimeoutRef = useRef<NodeJS.Timeout>();
-  const openUrlMutation =
-    trpcReact.electronUtil.openUrlInDefaultBrowser.useMutation();
-  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
+  // Data fetching
+  const { data: details, error: worldError } =
+    trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery(worldId ?? '', {
+      enabled: worldId !== null && shouldLoadDetails,
+      staleTime: 1000 * 60 * 5,
+      cacheTime: 1000 * 60 * 30,
+    });
+
+  const { data: playersResult, isLoading: isPlayersLoading } =
+    trpcReact.logInfo.getPlayerListInSameWorld.useQuery(joinDateTime, {
+      enabled: worldId !== null && shouldLoadDetails,
+      staleTime: 1000 * 60 * 5,
+      cacheTime: 1000 * 60 * 30,
+    });
+
+  // Derived state
+  const formattedDate = format(joinDateTime, 'yyyy年MM月dd日 HH:mm');
+  const players = Array.isArray(playersResult) ? playersResult : null;
+
+  // Event handlers
   const handleMouseMove = (event: React.MouseEvent) => {
     setTooltipPosition({
       top: event.clientY + 16,
@@ -242,12 +275,82 @@ export const LocationGroupHeader = ({
     });
   };
 
+  const handleCopyPlayers = () => {
+    if (!players) return;
+
+    const playerNames = players.map((p) => p.playerName).join('\n');
+    copyTextMutation.mutate(playerNames);
+
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000);
+  };
+
+  // Effects
+  useEffect(() => {
+    const calculateMaxVisiblePlayers = () => {
+      if (!playerListContainerRef.current || !Array.isArray(players)) return;
+
+      const containerWidth = playerListContainerRef.current.offsetWidth;
+      const separatorWidth = 13; // セパレータ（ / ）の幅
+      const moreTextWidth = 60; // "+X more" テキストの幅
+
+      // 一時的なDOM要素を作成して実際の幅を計算
+      const tempDiv = document.createElement('div');
+      tempDiv.style.position = 'absolute';
+      tempDiv.style.visibility = 'hidden';
+      tempDiv.style.whiteSpace = 'nowrap';
+      tempDiv.style.fontSize = '0.875rem'; // text-sm
+      document.body.appendChild(tempDiv);
+
+      let totalWidth = 0;
+      let maxPlayers = 0;
+
+      for (let i = 0; i < players.length; i++) {
+        tempDiv.textContent = players[i].playerName;
+        const playerNameWidth = tempDiv.getBoundingClientRect().width;
+        const widthWithSeparator =
+          playerNameWidth + (i < players.length - 1 ? separatorWidth : 0);
+
+        if (
+          totalWidth +
+            widthWithSeparator +
+            (i < players.length - 1 ? moreTextWidth : 0) >
+          containerWidth
+        ) {
+          break;
+        }
+
+        totalWidth += widthWithSeparator;
+        maxPlayers = i + 1;
+      }
+
+      document.body.removeChild(tempDiv);
+      setMaxVisiblePlayers(Math.max(3, maxPlayers)); // 最低3人は表示
+    };
+
+    // 初回計算
+    calculateMaxVisiblePlayers();
+
+    // ResizeObserverを使用してコンテナのサイズ変更を監視
+    const resizeObserver = new ResizeObserver(calculateMaxVisiblePlayers);
+    if (playerListContainerRef.current) {
+      resizeObserver.observe(playerListContainerRef.current);
+    }
+
+    // ウィンドウリサイズ時も再計算
+    window.addEventListener('resize', calculateMaxVisiblePlayers);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', calculateMaxVisiblePlayers);
+    };
+  }, [players]);
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries.some((entry) => entry.isIntersecting)) {
           setIsVisible(true);
-          // 表示されてから少し待ってからデータを読み込む
           visibilityTimeoutRef.current = setTimeout(() => {
             setShouldLoadDetails(true);
           }, 100);
@@ -297,33 +400,15 @@ export const LocationGroupHeader = ({
     };
   }, []);
 
-  // ワールドの詳細情報を取得
-  const { data: details, error: worldError } =
-    trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery(worldId ?? '', {
-      enabled: worldId !== null && shouldLoadDetails,
-      staleTime: 1000 * 60 * 5,
-      cacheTime: 1000 * 60 * 30,
-    });
-
-  // 同じワールドにいたプレイヤーリストを取得
-  const { data: playersResult, isLoading: isPlayersLoading } =
-    trpcReact.logInfo.getPlayerListInSameWorld.useQuery(joinDateTime, {
-      enabled: worldId !== null && shouldLoadDetails,
-      staleTime: 1000 * 60 * 5,
-      cacheTime: 1000 * 60 * 30,
-    });
-
-  const formattedDate = format(joinDateTime, 'yyyy年MM月dd日 HH:mm');
-
-  // プレイヤーリストがエラーの場合は表示しない
-  const players = Array.isArray(playersResult) ? playersResult : null;
-
   if (worldId === null) {
     return (
       <header className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4">
         <div className="flex items-center gap-x-2">
-          <h2 className="text-lg font-bold">Ungrouped Photos</h2>
-          <span className="text-sm text-gray-500">{photoCount}枚の写真</span>
+          <h2 className="text-lg font-bold">{t('locationHeader.ungrouped')}</h2>
+          <span className="text-sm text-gray-500">
+            <ImageIcon className="h-4 w-4" />
+            <span>{photoCount}</span>
+          </span>
         </div>
         <div className="mt-1 text-sm text-gray-500">
           <time dateTime={joinDateTime.toISOString()}>{formattedDate}</time>
@@ -386,8 +471,9 @@ export const LocationGroupHeader = ({
                 {details?.name || worldName}
                 <ExternalLink className="h-4 w-4 ml-1 opacity-0 group-hover/title:opacity-100 transition-opacity" />
               </button>
-              <span className="ml-3 text-sm font-normal opacity-90">
-                ({photoCount}枚)
+              <span className="ml-3 text-sm font-normal opacity-90 flex gap-1 items-center">
+                <ImageIcon className="h-5 w-5" />
+                <span>({photoCount})</span>
               </span>
             </h3>
             <div className="flex items-center gap-2">
@@ -397,7 +483,7 @@ export const LocationGroupHeader = ({
                 className="flex items-center text-sm backdrop-blur-sm bg-black/20 px-3 py-1 rounded-full hover:bg-black/30 transition-colors"
               >
                 <Share2 className="h-4 w-4 mr-1.5" />
-                共有
+                {t('locationHeader.share')}
               </button>
               <div className="flex items-center text-sm backdrop-blur-sm bg-black/20 px-3 py-1 rounded-full">
                 <Calendar className="h-4 w-4 mr-1.5" />
@@ -411,9 +497,11 @@ export const LocationGroupHeader = ({
                 <span className="opacity-90">By {details.authorName}</span>
               )}
               <span className="mx-2 opacity-50">•</span>
-              <span className="opacity-75 text-xs">
-                Instance: {worldInstanceId}
-              </span>
+              {worldInstanceId !== null && (
+                <span className="opacity-75 text-xs">
+                  Instance: {worldInstanceId}
+                </span>
+              )}
             </div>
             {details?.unityPackages && details.unityPackages.length > 0 && (
               <div className="flex items-center gap-1">
@@ -426,46 +514,70 @@ export const LocationGroupHeader = ({
             )}
             {worldError && (
               <span className="text-yellow-500 dark:text-yellow-400 text-xs">
-                (ワールド情報は削除されています)
+                ({t('locationHeader.worldInfoDeleted')})
               </span>
             )}
           </div>
           {!isPlayersLoading && players && players.length > 0 && (
-            <div className="flex items-center mt-2 text-sm backdrop-blur-sm bg-black/20 self-start px-3 py-1 rounded-full">
+            <div className="flex items-center mt-2 text-sm backdrop-blur-sm bg-black/20 self-start px-3 py-1 rounded-full w-full">
               <Users className="h-4 w-4 mr-1.5" />
-              <span
-                ref={playerListRef}
-                className="relative cursor-help"
-                title=""
+              <div
+                ref={playerListContainerRef}
+                className="relative cursor-pointer w-full group/players"
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
                 onMouseMove={handleMouseMove}
+                onClick={handleCopyPlayers}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleCopyPlayers();
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                title={t('locationHeader.clickToCopy')}
               >
-                {players.length <= 6 ? (
-                  <>
-                    {players.map((p: Player, index) => (
-                      <React.Fragment key={p.id}>
-                        <span className="opacity-90">{p.playerName}</span>
-                        {index < players.length - 1 && (
-                          <span className="opacity-50"> • </span>
-                        )}
-                      </React.Fragment>
-                    ))}
-                  </>
-                ) : (
-                  <>
-                    {players.slice(0, 6).map((p: Player, index) => (
-                      <React.Fragment key={p.id}>
-                        <span className="opacity-90">{p.playerName}</span>
-                        {index < 5 && <span className="opacity-50"> • </span>}
-                      </React.Fragment>
-                    ))}
-                    <span className="opacity-75 ml-1">
-                      他{players.length - 6}人
-                    </span>
-                  </>
-                )}
-              </span>
+                <div className="flex items-center">
+                  {players.length <= maxVisiblePlayers ? (
+                    <>
+                      {players.map((p: Player, index) => (
+                        <React.Fragment key={p.id}>
+                          <span className="opacity-90">{p.playerName}</span>
+                          {index < players.length - 1 && (
+                            <span className="opacity-50"> / </span>
+                          )}
+                        </React.Fragment>
+                      ))}
+                    </>
+                  ) : (
+                    <>
+                      {players
+                        .slice(0, maxVisiblePlayers)
+                        .map((p: Player, index) => (
+                          <React.Fragment key={p.id}>
+                            <span className="opacity-90">{p.playerName}</span>
+                            {index < maxVisiblePlayers - 1 && (
+                              <span className="opacity-50"> / </span>
+                            )}
+                          </React.Fragment>
+                        ))}
+                      <span className="opacity-75 ml-1">
+                        / +{players.length - maxVisiblePlayers} more
+                      </span>
+                    </>
+                  )}
+                  <span className="ml-2 opacity-0 group-hover/players:opacity-100 transition-opacity">
+                    {isCopied ? (
+                      <span className="text-green-400">
+                        ✓ {t('locationHeader.copied')}
+                      </span>
+                    ) : (
+                      <Copy className="h-3 w-3 inline-block" />
+                    )}
+                  </span>
+                </div>
+              </div>
               {
                 createPortal(
                   <div

@@ -59,13 +59,6 @@ export function BoldPreviewSvg({
   useEffect(() => {
     if (!tempContainerRef.current || !players) return;
 
-    if (showAllPlayers) {
-      setVisiblePlayers(players);
-      setHiddenCount(0);
-      return;
-    }
-
-    const container = tempContainerRef.current;
     const containerWidth = 740;
     const gap = 8;
     const visible: Player[] = [];
@@ -82,11 +75,12 @@ export function BoldPreviewSvg({
     tempDiv.style.padding = '6px 12px';
     tempDiv.style.whiteSpace = 'nowrap';
     tempDiv.style.fontSize = '14px';
-    container.appendChild(tempDiv);
+    tempDiv.style.fontWeight = '500';
+    document.body.appendChild(tempDiv);
 
     for (const player of players) {
       tempDiv.textContent = player.playerName;
-      const width = tempDiv.offsetWidth;
+      const width = tempDiv.getBoundingClientRect().width;
 
       if (currentWidth + width + gap > effectiveWidth) {
         currentRow++;
@@ -95,30 +89,34 @@ export function BoldPreviewSvg({
         currentWidth += width + gap;
       }
 
-      if (currentRow < 2) {
+      if (showAllPlayers || currentRow < 2) {
         visible.push(player);
       } else {
         break;
       }
     }
 
-    container.removeChild(tempDiv);
+    document.body.removeChild(tempDiv);
     setVisiblePlayers(visible);
-    setHiddenCount(players.length - visible.length);
+    setHiddenCount(showAllPlayers ? 0 : players.length - visible.length);
   }, [players, showAllPlayers]);
 
   const calculatePreviewHeight = () => {
     if (!showAllPlayers) return 600;
     const playerCount = players?.length || 0;
-    const estimatedRows = Math.ceil(playerCount / 8);
-    const additionalHeight = Math.max(0, (estimatedRows - 2) * 40);
+    const playersPerRow = Math.floor((740 - 100) / (100 + 8));
+    const additionalRows = Math.max(
+      0,
+      Math.ceil(playerCount / playersPerRow) - 2,
+    );
+    const additionalHeight = additionalRows * 30 + (additionalRows > 0 ? 8 : 0);
     return 600 + additionalHeight;
   };
 
   const previewHeight = calculatePreviewHeight();
   const playersSectionY = 480;
   const playerListHeight = showAllPlayers
-    ? previewHeight - playersSectionY - 40
+    ? previewHeight - playersSectionY - 8
     : 76;
 
   return (
@@ -328,7 +326,7 @@ export function BoldPreviewSvg({
                   boxSizing: 'border-box',
                 }}
               >
-                +{hiddenCount}人
+                <span>+{hiddenCount} more</span>
               </div>
             )}
           </div>
