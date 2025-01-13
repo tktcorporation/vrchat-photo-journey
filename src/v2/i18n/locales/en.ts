@@ -35,6 +35,8 @@ const en: Translations = {
     otherPlayers: '+{count} more',
     createdBy: 'By {author}',
     instanceId: 'Instance: {id}',
+    clickToCopy: 'Click to copy',
+    copied: 'Copied',
   },
   settings: {
     tabs: {

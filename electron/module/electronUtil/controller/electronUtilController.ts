@@ -33,6 +33,10 @@ export const electronUtilRouter = () =>
         .extname(ctx.input)
         .replace('.', '')};base64,${photoBuf.toString('base64')}`;
     }),
+    copyTextToClipboard: procedure.input(z.string()).mutation(async (ctx) => {
+      clipboard.writeText(ctx.input);
+      eventEmitter.emit('toast', 'copied');
+    }),
     copyImageDataByPath: procedure.input(z.string()).mutation(async (ctx) => {
       const photoBuf = await sharp(ctx.input).toBuffer();
       const image = nativeImage.createFromBuffer(photoBuf);

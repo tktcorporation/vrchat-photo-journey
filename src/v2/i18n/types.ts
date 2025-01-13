@@ -48,6 +48,8 @@ export interface Translations {
     otherPlayers: string;
     createdBy: string;
     instanceId: string;
+    clickToCopy: string;
+    copied: string;
   };
   settings: {
     tabs: {

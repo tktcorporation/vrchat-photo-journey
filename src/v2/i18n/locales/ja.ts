@@ -31,10 +31,12 @@ const ja: Translations = {
     copyToClipboard: 'クリップボードにコピー',
     downloadImage: '画像をダウンロード',
     showAllPlayers: 'すべてのプレイヤー名を表示',
-    worldInfoDeleted: 'ワールド情報は削除されています',
+    worldInfoDeleted: 'ワールド情報が削除されています',
     otherPlayers: '他{count}人',
     createdBy: 'By {author}',
     instanceId: 'Instance: {id}',
+    clickToCopy: 'クリックでプレイヤー名一覧をコピー',
+    copied: 'コピーしました',
   },
   settings: {
     tabs: {
