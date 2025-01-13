@@ -126,9 +126,12 @@ export function BoldPreviewSvg({
       ref={previewRef}
       className="max-w-[100%] max-h-[100%]"
       viewBox={`0 0 800 ${previewHeight}`}
+      style={{
+        background: '#7FB5B5',
+      }}
       xmlns="http://www.w3.org/2000/svg"
     >
-      <title>VRChat World Join Preview - Bold Style</title>
+      <title>VRChat World Join Preview</title>
       <defs>
         <>
           <filter id="blur-effect">

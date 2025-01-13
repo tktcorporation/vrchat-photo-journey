@@ -96,7 +96,8 @@ const processImage = async (
  */
 export const copyImageToClipboard = async (
   svgElement: SVGSVGElement,
-  copyImageMutation: (base64: string) => void,
+  copyImageMutation: (base64: string, filename?: string) => void,
+  filename?: string,
 ): Promise<void> => {
   if (!svgElement) return;
 
@@ -105,7 +106,7 @@ export const copyImageToClipboard = async (
 
   return processImage(svgDataUrl, (canvas) => {
     const base64 = canvas.toDataURL('image/png').split(',')[1];
-    copyImageMutation(base64);
+    copyImageMutation(base64, filename);
   }).catch((error) => {
     console.error('Failed to copy to clipboard:', error);
   });
