@@ -6,6 +6,7 @@ import {
   Download,
   ExternalLink,
   Laptop,
+  LoaderCircle,
   MapPin,
   Share2,
   Users,
@@ -147,8 +148,8 @@ const ShareModal = ({
             <ContextMenuTrigger>
               <div className="min-h-0 rounded-lg overflow-hidden">
                 {isLoading ? (
-                  <div className="flex items-center justify-center h-full">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
+                  <div className="w-full h-full flex items-center justify-center">
+                    <LoaderCircle className="h-8 w-8 animate-spin text-blue-500" />
                   </div>
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
