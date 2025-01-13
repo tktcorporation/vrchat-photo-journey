@@ -46,7 +46,7 @@ export const electronUtilRouter = () =>
     copyImageDataByBase64: procedure
       .input(
         z.object({
-          base64: z.string(),
+          svgData: z.string(),
           filename: z.string().optional(),
         }),
       )
@@ -58,25 +58,28 @@ export const electronUtilRouter = () =>
         const tempFilePath = path.join(tempDir, filename);
 
         try {
-          // Base64をバッファに変換
-          const buffer = Buffer.from(ctx.input.base64, 'base64');
-
           // SVGの高さを抽出
-          const svgString = buffer.toString('utf-8');
-          const heightMatch = svgString.match(/viewBox="0 0 800 (\d+)"/);
+          const heightMatch = ctx.input.svgData.match(
+            /viewBox="0 0 800 (\d+)"/,
+          );
           const height = heightMatch ? Number.parseInt(heightMatch[1]) : 600;
 
-          // SVGを指定サイズでPNGに変換
-          const sharpInstance = sharp(Buffer.from(svgString)).resize(
-            800,
-            height,
+          // SVGを2倍サイズでPNGに変換
+          const sharpInstance = sharp(Buffer.from(ctx.input.svgData)).resize(
+            800 * 2,
+            height * 2,
             {
               fit: 'fill',
             },
           );
 
-          // PNGとして保存
-          await sharpInstance.toFile(tempFilePath);
+          // PNGとして保存（高品質設定）
+          await sharpInstance
+            .png({
+              quality: 100,
+              compressionLevel: 9,
+            })
+            .toFile(tempFilePath);
 
           // 一時ファイルをクリップボードにコピー
           const image = nativeImage.createFromPath(tempFilePath);

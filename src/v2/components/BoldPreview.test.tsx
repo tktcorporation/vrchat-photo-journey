@@ -86,8 +86,8 @@ describe('BoldPreviewSvg', () => {
     // 最後のプレイヤーが表示されていないことを確認
     expect(container.textContent).not.toContain('Player 19');
 
-    // "+N人" の要素が存在することを確認
-    expect(container.textContent).toMatch(/\+\d+人/);
+    // "+N more" の要素が存在することを確認
+    expect(container.textContent).toMatch(/\+\d+ more/);
   });
 
   it('showAllPlayers=trueの場合、行の途中のプレイヤーも表示されること', () => {

@@ -1,5 +1,18 @@
 import type { SVGProps } from 'react';
 
+declare global {
+  interface Window {
+    electron: {
+      electronUtil: {
+        copyImageDataByBase64: (params: {
+          svgData: string;
+          filename?: string;
+        }) => Promise<void>;
+      };
+    };
+  }
+}
+
 interface ShareImageOptions {
   svgElement: SVGSVGElement;
   worldName?: string | null;
@@ -33,64 +46,15 @@ const processSvgElement = async (
     div.style.fontFamily = 'Inter, sans-serif';
   }
 
-  // SVGをデータURLに変換
-  const svgData = new XMLSerializer().serializeToString(svgElement);
-  const svgBase64 = btoa(unescape(encodeURIComponent(svgData)));
-  const svgDataUrl = `data:image/svg+xml;base64,${svgBase64}`;
-
   // フォントを読み込む
   await document.fonts.load('700 1em Inter');
   await document.fonts.load('600 1em Inter');
   await document.fonts.load('500 1em Inter');
   await document.fonts.load('400 1em Inter');
 
-  return svgDataUrl;
-};
-
-/**
- * SVGを画像として処理し、指定されたコールバックを実行する
- */
-const processImage = async (
-  svgDataUrl: string,
-  callback: (canvas: HTMLCanvasElement) => void,
-  height: number,
-): Promise<void> => {
-  return new Promise<void>((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      // 2倍のサイズで作成（高解像度対応）
-      canvas.width = 800 * 2;
-      canvas.height = height * 2;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        reject(new Error('Failed to get canvas context'));
-        return;
-      }
-
-      // 背景を透明に
-      ctx.fillStyle = 'transparent';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // 画像を描画
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-      try {
-        callback(canvas);
-        resolve();
-      } catch (error) {
-        reject(error);
-      }
-    };
-
-    img.onerror = () => {
-      reject(new Error('Failed to load SVG'));
-    };
-
-    img.src = svgDataUrl;
-  });
+  // SVGをシリアライズ
+  const svgData = new XMLSerializer().serializeToString(svgElement);
+  return svgData;
 };
 
 /**
@@ -98,36 +62,14 @@ const processImage = async (
  */
 export const copyImageToClipboard = async (
   svgElement: SVGSVGElement,
-  copyImageMutation: (base64: string, filename?: string) => void,
+  copyImageMutation: (svgData: string, filename?: string) => void,
   filename?: string,
 ): Promise<void> => {
   if (!svgElement) return;
 
   const clonedSvg = svgElement.cloneNode(true) as SVGSVGElement;
-  const height = extractSvgHeight(clonedSvg);
-  const svgDataUrl = await processSvgElement(clonedSvg);
-
-  return processImage(
-    svgDataUrl,
-    (canvas) => {
-      const base64 = canvas.toDataURL('image/png').split(',')[1];
-      copyImageMutation(base64, filename);
-    },
-    height,
-  ).catch((error) => {
-    console.error('Failed to copy to clipboard:', error);
-  });
-};
-
-/**
- * SVGの高さを抽出する
- */
-const extractSvgHeight = (svgElement: SVGSVGElement): number => {
-  const viewBox = svgElement.getAttribute('viewBox');
-  if (!viewBox) return 600;
-
-  const [, , , height] = viewBox.split(' ').map(Number);
-  return height || 600;
+  const svgData = await processSvgElement(clonedSvg);
+  copyImageMutation(svgData, filename);
 };
 
 /**
@@ -140,20 +82,11 @@ export const downloadImageAsPng = async (
   if (!svgElement) return;
 
   const clonedSvg = svgElement.cloneNode(true) as SVGSVGElement;
-  const height = extractSvgHeight(clonedSvg);
-  const svgDataUrl = await processSvgElement(clonedSvg);
+  const svgData = await processSvgElement(clonedSvg);
 
-  return processImage(
-    svgDataUrl,
-    (canvas) => {
-      const pngDataUrl = canvas.toDataURL('image/png');
-      const link = document.createElement('a');
-      link.download = `${worldName || 'preview'}.png`;
-      link.href = pngDataUrl;
-      link.click();
-    },
-    height,
-  ).catch((error) => {
-    console.error('Failed to convert to PNG:', error);
+  // バックエンドのAPIを呼び出してPNGデータを取得
+  await window.electron.electronUtil.copyImageDataByBase64({
+    svgData,
+    filename: `${worldName || 'preview'}.png`,
   });
 };
