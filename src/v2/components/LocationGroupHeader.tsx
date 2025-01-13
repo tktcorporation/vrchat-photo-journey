@@ -2,6 +2,8 @@ import { trpcReact } from '@/trpc';
 import { format } from 'date-fns';
 import {
   Calendar,
+  Copy,
+  Download,
   ExternalLink,
   Laptop,
   MapPin,
@@ -12,6 +14,12 @@ import {
 import React, { memo, useRef, useState, useEffect } from 'react';
 import type { ReactPortal } from 'react';
 import { createPortal } from 'react-dom';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from '../../components/ui/context-menu';
 import {
   Dialog,
   DialogContent,
@@ -108,48 +116,72 @@ const ShareModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl h-[90vh] flex flex-col p-0 bg-white dark:bg-gray-800 border-none">
-        <DialogHeader className="px-6 pt-4 border-gray-200 dark:border-gray-700">
+      <DialogContent className="max-w-3xl h-[90vh] flex flex-col p-0 bg-white dark:bg-gray-800 border-none">
+        <DialogHeader className="px-6 pt-4 pb-2 border-gray-200 dark:border-gray-700 flex flex-row items-center justify-between">
           <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-white">
             共有
           </DialogTitle>
-        </DialogHeader>
-        <div className="min-h-0 flex flex-col space-y-6 pb-6 px-6">
-          <div className="min-h-0 rounded-lg overflow-hidden">
-            {isLoading ? (
-              <div className="flex items-center justify-center h-full">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
-              </div>
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <BoldPreviewSvg
-                  worldName={worldName}
-                  imageBase64={base64Data}
-                  players={players}
-                  previewRef={previewRef}
-                  showAllPlayers={false}
-                />
-              </div>
-            )}
-          </div>
-          <DialogFooter className="sm:justify-end gap-3 px-2">
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={handleCopyToClipboard}
               disabled={isLoading}
-              className="flex-1 sm:flex-none px-4 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium dark:bg-blue-600 dark:hover:bg-blue-700"
+              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700"
+              title="クリップボードにコピー"
             >
-              クリップボードにコピー
+              <Copy className="h-5 w-5" />
             </button>
             <button
               type="button"
               onClick={handleDownloadPng}
               disabled={isLoading}
-              className="flex-1 sm:flex-none px-4 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium dark:bg-green-600 dark:hover:bg-green-700"
+              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700"
+              title="画像をダウンロード"
             >
-              画像をダウンロード
+              <Download className="h-5 w-5" />
             </button>
-          </DialogFooter>
+          </div>
+        </DialogHeader>
+        <div className="min-h-0 flex flex-col pb-6 px-6 flex-1">
+          <ContextMenu>
+            <ContextMenuTrigger>
+              <div className="min-h-0 rounded-lg overflow-hidden">
+                {isLoading ? (
+                  <div className="flex items-center justify-center h-full">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
+                  </div>
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <BoldPreviewSvg
+                      worldName={worldName}
+                      imageBase64={base64Data}
+                      players={players}
+                      previewRef={previewRef}
+                      showAllPlayers={false}
+                    />
+                  </div>
+                )}
+              </div>
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+              <ContextMenuItem
+                onClick={handleCopyToClipboard}
+                disabled={isLoading}
+                className="flex items-center gap-2"
+              >
+                <Copy className="h-4 w-4" />
+                <span>クリップボードにコピー</span>
+              </ContextMenuItem>
+              <ContextMenuItem
+                onClick={handleDownloadPng}
+                disabled={isLoading}
+                className="flex items-center gap-2"
+              >
+                <Download className="h-4 w-4" />
+                <span>画像をダウンロード</span>
+              </ContextMenuItem>
+            </ContextMenuContent>
+          </ContextMenu>
         </div>
       </DialogContent>
     </Dialog>
