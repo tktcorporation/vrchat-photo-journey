@@ -155,7 +155,7 @@ const ShareModal = ({
     const filename = worldName ? `${worldName}.png` : 'image.png';
     await copyImageToClipboard(
       previewRef.current,
-      (base64) => copyImageMutation.mutate({ base64, filename }),
+      (svgData) => copyImageMutation.mutate({ svgData, filename }),
       filename,
     );
   };
