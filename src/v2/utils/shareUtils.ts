@@ -53,6 +53,7 @@ const processSvgElement = async (
 const processImage = async (
   svgDataUrl: string,
   callback: (canvas: HTMLCanvasElement) => void,
+  height: number,
 ): Promise<void> => {
   return new Promise<void>((resolve, reject) => {
     const img = new Image();
@@ -60,8 +61,9 @@ const processImage = async (
 
     img.onload = () => {
       const canvas = document.createElement('canvas');
+      // 2倍のサイズで作成（高解像度対応）
       canvas.width = 800 * 2;
-      canvas.height = 600 * 2;
+      canvas.height = height * 2;
       const ctx = canvas.getContext('2d');
       if (!ctx) {
         reject(new Error('Failed to get canvas context'));
@@ -102,14 +104,30 @@ export const copyImageToClipboard = async (
   if (!svgElement) return;
 
   const clonedSvg = svgElement.cloneNode(true) as SVGSVGElement;
+  const height = extractSvgHeight(clonedSvg);
   const svgDataUrl = await processSvgElement(clonedSvg);
 
-  return processImage(svgDataUrl, (canvas) => {
-    const base64 = canvas.toDataURL('image/png').split(',')[1];
-    copyImageMutation(base64, filename);
-  }).catch((error) => {
+  return processImage(
+    svgDataUrl,
+    (canvas) => {
+      const base64 = canvas.toDataURL('image/png').split(',')[1];
+      copyImageMutation(base64, filename);
+    },
+    height,
+  ).catch((error) => {
     console.error('Failed to copy to clipboard:', error);
   });
+};
+
+/**
+ * SVGの高さを抽出する
+ */
+const extractSvgHeight = (svgElement: SVGSVGElement): number => {
+  const viewBox = svgElement.getAttribute('viewBox');
+  if (!viewBox) return 600;
+
+  const [, , , height] = viewBox.split(' ').map(Number);
+  return height || 600;
 };
 
 /**
@@ -122,15 +140,20 @@ export const downloadImageAsPng = async (
   if (!svgElement) return;
 
   const clonedSvg = svgElement.cloneNode(true) as SVGSVGElement;
+  const height = extractSvgHeight(clonedSvg);
   const svgDataUrl = await processSvgElement(clonedSvg);
 
-  return processImage(svgDataUrl, (canvas) => {
-    const pngDataUrl = canvas.toDataURL('image/png');
-    const link = document.createElement('a');
-    link.download = `${worldName || 'preview'}.png`;
-    link.href = pngDataUrl;
-    link.click();
-  }).catch((error) => {
+  return processImage(
+    svgDataUrl,
+    (canvas) => {
+      const pngDataUrl = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.download = `${worldName || 'preview'}.png`;
+      link.href = pngDataUrl;
+      link.click();
+    },
+    height,
+  ).catch((error) => {
     console.error('Failed to convert to PNG:', error);
   });
 };
