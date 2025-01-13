@@ -57,8 +57,22 @@ export const electronUtilRouter = () =>
           // Base64をバッファに変換
           const buffer = Buffer.from(ctx.input.base64, 'base64');
 
-          // 一時ファイルに保存
-          await fs.writeFile(tempFilePath, new Uint8Array(buffer));
+          // SVGの高さを抽出
+          const svgString = buffer.toString('utf-8');
+          const heightMatch = svgString.match(/viewBox="0 0 800 (\d+)"/);
+          const height = heightMatch ? Number.parseInt(heightMatch[1]) : 600;
+
+          // SVGを指定サイズでPNGに変換
+          const sharpInstance = sharp(Buffer.from(svgString)).resize(
+            800,
+            height,
+            {
+              fit: 'fill',
+            },
+          );
+
+          // PNGとして保存
+          await sharpInstance.toFile(tempFilePath);
 
           // 一時ファイルをクリップボードにコピー
           const image = nativeImage.createFromPath(tempFilePath);

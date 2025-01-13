@@ -92,7 +92,7 @@ const SettingsModal = memo(({ onClose }: SettingsModalProps) => {
 
   return (
     <Dialog open onOpenChange={() => onClose()}>
-      <DialogContent className="h-[90vh] max-w-2xl p-0 bg-white dark:bg-gray-800 border-none">
+      <DialogContent className="h-[90vh] min-w-[600px] p-0 bg-white dark:bg-gray-800 border-none">
         <DialogHeader className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <DialogTitle className="text-xl font-semibold text-gray-900 dark:text-white">
             {t('common.settings')}
