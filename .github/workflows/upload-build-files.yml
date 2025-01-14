@@ -36,7 +36,7 @@ jobs:
       - name: Check tag format
         id: check-tag-format
         run: |
-          if [[ "${GITHUB_REF##*/}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+.+ ]]; then
+          if [[ "${GITHUB_REF##*/}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+.* ]]; then
             echo "is-semver=true" >> $GITHUB_OUTPUT
           else
             echo "is-semver=false" >> $GITHUB_OUTPUT
