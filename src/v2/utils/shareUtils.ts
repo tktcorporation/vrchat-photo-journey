@@ -1,21 +1,12 @@
-import type { SVGProps } from 'react';
-
-declare global {
-  interface Window {
-    electron: {
-      electronUtil: {
-        copyImageDataByBase64: (params: {
-          svgData: string;
-          filename?: string;
-        }) => Promise<void>;
-      };
-    };
-  }
-}
-
 interface ShareImageOptions {
   svgElement: SVGSVGElement;
-  worldName?: string | null;
+  filenameExcludeExtension: string;
+  downloadOrCopyMutation: {
+    mutateAsync: (params: {
+      pngBase64: string;
+      filename: string;
+    }) => Promise<void>;
+  };
 }
 
 /**
@@ -23,7 +14,7 @@ interface ShareImageOptions {
  */
 const processSvgElement = async (
   svgElement: SVGSVGElement,
-): Promise<string> => {
+): Promise<HTMLCanvasElement> => {
   // インラインスタイルを追加
   const styleElement = document.createElementNS(
     'http://www.w3.org/2000/svg',
@@ -46,47 +37,89 @@ const processSvgElement = async (
     div.style.fontFamily = 'Inter, sans-serif';
   }
 
+  // SVGをデータURLに変換
+  const svgData = new XMLSerializer().serializeToString(svgElement);
+  const svgBase64 = btoa(unescape(encodeURIComponent(svgData)));
+  const svgDataUrl = `data:image/svg+xml;base64,${svgBase64}`;
+
   // フォントを読み込む
   await document.fonts.load('700 1em Inter');
   await document.fonts.load('600 1em Inter');
   await document.fonts.load('500 1em Inter');
   await document.fonts.load('400 1em Inter');
 
-  // SVGをシリアライズ
-  const svgData = new XMLSerializer().serializeToString(svgElement);
-  return svgData;
+  // SVGをcanvasに描画
+  return new Promise<HTMLCanvasElement>((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+
+    const { width, height } = extractSvgWidthAndHeight(svgElement);
+
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = width * 2;
+      canvas.height = height * 2;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        reject(new Error('Failed to get canvas context'));
+        return;
+      }
+
+      // 背景を白に設定
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // 画像を描画
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas);
+    };
+
+    img.onerror = () => {
+      reject(new Error('Failed to load SVG'));
+    };
+
+    img.src = svgDataUrl;
+  });
 };
 
 /**
- * 画像をクリップボードにコピーするための処理
+ * SVGの縦横幅を抽出する
  */
-export const copyImageToClipboard = async (
+const extractSvgWidthAndHeight = (
   svgElement: SVGSVGElement,
-  copyImageMutation: (svgData: string, filename?: string) => void,
-  filename?: string,
-): Promise<void> => {
-  if (!svgElement) return;
+): { width: number; height: number } => {
+  const viewBox = svgElement.getAttribute('viewBox');
+  if (!viewBox) return { width: 800, height: 600 };
 
-  const clonedSvg = svgElement.cloneNode(true) as SVGSVGElement;
-  const svgData = await processSvgElement(clonedSvg);
-  copyImageMutation(svgData, filename);
+  const [, , width, height] = viewBox.split(' ').map(Number);
+  return { width: width || 800, height: height || 600 };
 };
 
 /**
- * 画像をPNGとしてダウンロードするための処理
+ * 画像をPNGとしてダウンロードまたはクリップボードにコピーするための処理
  */
-export const downloadImageAsPng = async (
+export const downloadOrCopyImageAsPng = async (
   options: ShareImageOptions,
 ): Promise<void> => {
-  const { svgElement, worldName } = options;
-  if (!svgElement) return;
+  const { svgElement, filenameExcludeExtension, downloadOrCopyMutation } =
+    options;
+  if (!svgElement) {
+    console.error(
+      'Failed to convert to PNG:',
+      new Error('SVG element is null'),
+    );
+    return;
+  }
 
   const clonedSvg = svgElement.cloneNode(true) as SVGSVGElement;
-  const svgData = await processSvgElement(clonedSvg);
-
-  // バックエンドのAPIを呼び出してPNGデータを取得
-  await window.electron.electronUtil.copyImageDataByBase64({
-    svgData,
-    filename: `${worldName || 'preview'}.png`,
-  });
+  try {
+    const canvas = await processSvgElement(clonedSvg);
+    const base64 = canvas.toDataURL('image/png').split(',')[1];
+    await downloadOrCopyMutation.mutateAsync({
+      pngBase64: base64,
+      filename: `${filenameExcludeExtension || 'image'}.png`,
+    });
+  } catch (error) {
+    console.error('Failed to convert to PNG:', error);
+  }
 };

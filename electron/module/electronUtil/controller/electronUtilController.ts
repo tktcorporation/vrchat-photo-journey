@@ -1,6 +1,6 @@
 import * as fs from 'node:fs/promises';
 import * as os from 'node:os';
-import { clipboard, nativeImage } from 'electron';
+import { clipboard, dialog, nativeImage } from 'electron';
 import * as path from 'pathe';
 import sharp from 'sharp';
 import z from 'zod';
@@ -43,53 +43,61 @@ export const electronUtilRouter = () =>
       clipboard.writeImage(image);
       eventEmitter.emit('toast', 'copied');
     }),
-    copyImageDataByBase64: procedure
+    downloadImageAsPng: procedure
       .input(
         z.object({
-          svgData: z.string(),
-          filename: z.string().optional(),
+          pngBase64: z.string(),
+          filename: z.string(),
         }),
       )
       .mutation(async (ctx) => {
-        const tempDir = await fs.mkdtemp(
-          path.join(os.tmpdir(), 'vrchat-photo-'),
+        await handlePngBase64(
+          ctx.input.pngBase64,
+          ctx.input.filename,
+          async (tempPngPath) => {
+            // 保存先をユーザーに選択させる
+            const { filePath, canceled } = await dialog.showSaveDialog({
+              defaultPath: path.join(
+                os.homedir(),
+                'Downloads',
+                ctx.input.filename,
+              ),
+              filters: [
+                { name: 'PNG Image', extensions: ['png'] },
+                { name: 'All Files', extensions: ['*'] },
+              ],
+            });
+
+            if (canceled || !filePath) {
+              return;
+            }
+
+            // 選択されたパスにファイルをコピー
+            await fs.copyFile(tempPngPath, filePath);
+
+            eventEmitter.emit('toast', 'downloaded');
+          },
         );
-        const filename = ctx.input.filename || 'image.png';
-        const tempFilePath = path.join(tempDir, filename);
+      }),
+    copyImageDataByBase64: procedure
+      .input(
+        z.object({
+          pngBase64: z.string(),
+          filename: z.string(),
+        }),
+      )
+      .mutation(async (ctx) => {
+        handlePngBase64(
+          ctx.input.pngBase64,
+          ctx.input.filename,
+          async (tempPngPath) => {
+            // 一時ファイルをクリップボードにコピー
+            const image = nativeImage.createFromPath(tempPngPath);
+            clipboard.writeImage(image);
 
-        try {
-          // SVGの高さを抽出
-          const heightMatch = ctx.input.svgData.match(
-            /viewBox="0 0 800 (\d+)"/,
-          );
-          const height = heightMatch ? Number.parseInt(heightMatch[1]) : 600;
-
-          // SVGを2倍サイズでPNGに変換
-          const sharpInstance = sharp(Buffer.from(ctx.input.svgData)).resize(
-            800 * 2,
-            height * 2,
-            {
-              fit: 'fill',
-            },
-          );
-
-          // PNGとして保存（高品質設定）
-          await sharpInstance
-            .png({
-              quality: 100,
-              compressionLevel: 9,
-            })
-            .toFile(tempFilePath);
-
-          // 一時ファイルをクリップボードにコピー
-          const image = nativeImage.createFromPath(tempFilePath);
-          clipboard.writeImage(image);
-
-          eventEmitter.emit('toast', 'copied');
-        } finally {
-          // 一時ファイルとディレクトリを削除
-          await fs.rm(tempDir, { recursive: true, force: true });
-        }
+            eventEmitter.emit('toast', 'copied');
+          },
+        );
       }),
     openPhotoPathWithPhotoApp: procedure
       .input(z.string())
@@ -97,3 +105,37 @@ export const electronUtilRouter = () =>
         await utilsService.openPhotoPathWithPhotoApp(ctx.input);
       }),
   });
+
+const handlePngBase64 = async (
+  pngBase64: string,
+  filename: string,
+  callback: (tempPngPath: string) => Promise<void>,
+) => {
+  let tempDir = '';
+  try {
+    // 一時ディレクトリを作成
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'vrchat-photo-'));
+    const tempFilePath = path.join(tempDir, filename);
+
+    // Base64データをバッファに変換
+    const imageBuffer = Buffer.from(pngBase64, 'base64');
+
+    // ファイルに保存
+    await fs.writeFile(tempFilePath, new Uint8Array(imageBuffer));
+
+    // コールバックを実行し、完了を待つ
+    await callback(tempFilePath);
+  } catch (error) {
+    console.error('Failed to handle png file:', error);
+    throw new Error('Failed to handle png file', { cause: error });
+  } finally {
+    // 一時ディレクトリが存在する場合のみ削除を試みる
+    if (tempDir) {
+      try {
+        await fs.rm(tempDir, { recursive: true, force: true });
+      } catch (cleanupError) {
+        console.error('Failed to cleanup temporary directory:', cleanupError);
+      }
+    }
+  }
+};
