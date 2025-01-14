@@ -85,34 +85,29 @@ const PlayerList = memo(
     players,
     maxVisiblePlayers,
   }: { players: Player[]; maxVisiblePlayers: number }) => {
-    if (players.length <= maxVisiblePlayers) {
-      return (
-        <>
-          {players.map((p: Player, index) => (
-            <React.Fragment key={p.id}>
-              <span className="opacity-90">{p.playerName}</span>
-              {index < players.length - 1 && (
-                <span className="opacity-50">/</span>
-              )}
-            </React.Fragment>
-          ))}
-        </>
-      );
-    }
+    const visiblePlayers = players.slice(
+      0,
+      players.length <= maxVisiblePlayers ? players.length : maxVisiblePlayers,
+    );
+    const remainingCount = players.length - maxVisiblePlayers;
+    const showMoreCount = players.length > maxVisiblePlayers;
 
     return (
       <>
-        {players.slice(0, maxVisiblePlayers).map((p: Player, index) => (
+        {visiblePlayers.map((p: Player, index) => (
           <React.Fragment key={p.id}>
             <span className="opacity-90">{p.playerName}</span>
-            {index < maxVisiblePlayers - 1 && (
+            {index < visiblePlayers.length - 1 && (
               <span className="opacity-50">/</span>
             )}
           </React.Fragment>
         ))}
-        <span className="opacity-75 ml-1">
-          / +{players.length - maxVisiblePlayers} more
-        </span>
+        {showMoreCount && (
+          <>
+            <span className="opacity-50">/</span>
+            <span className="opacity-75">+{remainingCount} more</span>
+          </>
+        )}
       </>
     );
   },
@@ -336,7 +331,7 @@ export const LocationGroupHeader = ({
 
       const containerWidth = playerListContainerRef.current.offsetWidth;
       const separatorWidth = 16; // セパレータ（ / ）の幅
-      const moreTextWidth = 60; // "+X more" テキストの幅
+      const moreTextWidth = 82; // "/ +X more" テキストの幅
 
       // 一時的なDOM要素を作成して実際の幅を計算
       const tempDiv = document.createElement('div');
@@ -590,13 +585,11 @@ export const LocationGroupHeader = ({
                     />
                   )}
                   <span className="ml-2 transition-opacity">
-                    {isCopied ? (
+                    {isCopied && (
                       <span className="text-green-400">
                         <CheckIcon className="h-4 w-4 inline-block" />{' '}
                         {t('locationHeader.copied')}
                       </span>
-                    ) : (
-                      <Copy className="h-3 w-3 inline-block opacity-0 group-hover/players:opacity-100 transition-opacity" />
                     )}
                   </span>
                 </div>
