@@ -34,7 +34,7 @@ import { Label } from '../../components/ui/label';
 import { Switch } from '../../components/ui/switch';
 import { BoldPreviewSvg } from '../components/BoldPreview';
 import { useI18n } from '../i18n/store';
-import { copyImageToClipboard, downloadImageAsPng } from '../utils/shareUtils';
+import { downloadOrCopyImageAsPng } from '../utils/shareUtils';
 
 /**
  * LocationGroupHeaderのプロパティ定義
@@ -149,22 +149,24 @@ const ShareModal = ({
 
   const copyImageMutation =
     trpcReact.electronUtil.copyImageDataByBase64.useMutation();
+  const downloadImageMutation =
+    trpcReact.electronUtil.downloadImageAsPng.useMutation();
 
   const handleCopyToClipboard = async () => {
     if (!previewRef.current) return;
-    const filename = worldName ? `${worldName}.png` : 'image.png';
-    await copyImageToClipboard(
-      previewRef.current,
-      (svgData) => copyImageMutation.mutate({ svgData, filename }),
-      filename,
-    );
+    await downloadOrCopyImageAsPng({
+      svgElement: previewRef.current,
+      filenameExcludeExtension: worldName || 'image',
+      downloadOrCopyMutation: copyImageMutation,
+    });
   };
 
   const handleDownloadPng = async () => {
     if (!previewRef.current) return;
-    await downloadImageAsPng({
+    await downloadOrCopyImageAsPng({
       svgElement: previewRef.current,
-      worldName,
+      filenameExcludeExtension: worldName || 'image',
+      downloadOrCopyMutation: downloadImageMutation,
     });
   };
 

@@ -1,132 +1,151 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { copyImageToClipboard, downloadImageAsPng } from './shareUtils';
+import { downloadOrCopyImageAsPng } from './shareUtils';
+
+// XMLSerializerのモック
+class MockXMLSerializer {
+  serializeToString() {
+    return '<svg>test</svg>';
+  }
+}
+global.XMLSerializer = MockXMLSerializer as typeof XMLSerializer;
+
+// DOMのモックを設定
+const mockDocument = {
+  createElement: vi.fn(),
+  createElementNS: vi.fn(),
+  fonts: {
+    load: vi.fn().mockResolvedValue(undefined),
+  },
+};
+
+// グローバルなdocumentオブジェクトをモック
+global.document = mockDocument as unknown as Document;
+
+// btoa関数のモック
+global.btoa = vi.fn().mockReturnValue('test-base64');
+
+// Image constructorのモック
+class MockImage {
+  onload = () => {};
+  onerror = () => {};
+  src = '';
+  crossOrigin = '';
+
+  constructor() {
+    setTimeout(() => this.onload(), 0);
+  }
+}
+global.Image = MockImage as unknown as typeof Image;
 
 describe('shareUtils', () => {
   beforeEach(() => {
-    // document.fontsのモック
-    Object.defineProperty(document, 'fonts', {
-      value: {
-        load: vi.fn().mockResolvedValue(undefined),
-      },
-      configurable: true,
+    // モックをリセット
+    vi.clearAllMocks();
+
+    // canvasのモック
+    const mockCanvas = {
+      width: 800 * 2,
+      height: 600 * 2,
+      getContext: vi.fn().mockReturnValue({
+        fillStyle: '',
+        fillRect: vi.fn(),
+        drawImage: vi.fn(),
+      }),
+      toDataURL: vi.fn().mockReturnValue('data:image/png;base64,test123'),
+    };
+
+    // createElementのモック実装
+    mockDocument.createElement.mockImplementation((tagName: string) => {
+      if (tagName === 'canvas') {
+        return mockCanvas;
+      }
+      return {} as HTMLElement;
     });
 
-    // window.electronのモック
-    Object.defineProperty(window, 'electron', {
-      value: {
-        electronUtil: {
-          copyImageDataByBase64: vi.fn().mockResolvedValue(undefined),
-        },
+    // createElementNSのモック実装
+    mockDocument.createElementNS.mockImplementation(
+      (_namespace: string, tagName: string) => {
+        if (tagName === 'svg') {
+          return {
+            setAttribute: vi.fn(),
+            insertBefore: vi.fn(),
+            getElementsByTagName: vi.fn().mockReturnValue([]),
+            cloneNode: vi.fn().mockReturnValue({
+              setAttribute: vi.fn(),
+              insertBefore: vi.fn(),
+              getElementsByTagName: vi.fn().mockReturnValue([]),
+            }),
+          };
+        }
+        if (tagName === 'style') {
+          return {
+            textContent: '',
+          };
+        }
+        return {} as Element;
       },
-      configurable: true,
-    });
+    );
   });
 
-  describe('copyImageToClipboard', () => {
-    let mockCopyImageMutation: ReturnType<typeof vi.fn>;
-
-    beforeEach(() => {
-      // コピー関数のモック作成
-      mockCopyImageMutation = vi.fn();
-    });
-
-    it('should generate valid SVG data', async () => {
-      // 最小限のSVG要素を作成（2倍サイズ）
+  describe('downloadOrCopyImageAsPng', () => {
+    it('should process SVG element correctly', async () => {
+      const copyImageMutation = vi.fn().mockResolvedValue(undefined);
       const svgElement = document.createElementNS(
         'http://www.w3.org/2000/svg',
         'svg',
       );
-      svgElement.setAttribute('viewBox', '0 0 1600 1200');
-      svgElement.innerHTML = '<rect width="1600" height="1200" fill="white" />';
 
-      // テスト実行
-      await copyImageToClipboard(svgElement, mockCopyImageMutation);
-
-      // copyImageMutationが有効なSVGデータで呼ばれたことを確認
-      expect(mockCopyImageMutation).toHaveBeenCalled();
-      const [svgData] = mockCopyImageMutation.mock.calls[0];
-
-      // SVGデータが正しい形式であることを確認
-      expect(svgData).toContain('<svg');
-      expect(svgData).toContain('viewBox="0 0 1600 1200"');
-      expect(svgData).toContain(
-        '<rect width="1600" height="1200" fill="white"',
-      );
-      expect(svgData).toContain('</svg>');
-
-      // フォントスタイルが含まれていることを確認
-      expect(svgData).toContain('@import url');
-      expect(svgData).toContain('Inter');
-    });
-
-    it('should handle null SVG element', async () => {
-      await copyImageToClipboard(
-        null as unknown as SVGSVGElement,
-        mockCopyImageMutation,
-      );
-      expect(mockCopyImageMutation).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('downloadImageAsPng', () => {
-    it('should call electronUtil.copyImageDataByBase64 with SVG data', async () => {
-      // 最小限のSVG要素を作成
-      const svgElement = document.createElementNS(
-        'http://www.w3.org/2000/svg',
-        'svg',
-      );
-      svgElement.setAttribute('viewBox', '0 0 800 600');
-      svgElement.innerHTML = '<rect width="800" height="600" fill="white" />';
-
-      // テスト実行
-      await downloadImageAsPng({
+      // 関数を実行
+      await downloadOrCopyImageAsPng({
         svgElement,
-        worldName: 'test-world',
+        filenameExcludeExtension: 'test',
+        downloadOrCopyMutation: {
+          mutateAsync: copyImageMutation,
+        },
       });
 
-      // electronUtil.copyImageDataByBase64が正しく呼ばれたことを確認
-      expect(
-        window.electron.electronUtil.copyImageDataByBase64,
-      ).toHaveBeenCalled();
-      const [params] = (
-        window.electron.electronUtil.copyImageDataByBase64 as ReturnType<
-          typeof vi.fn
-        >
-      ).mock.calls[0];
-
-      // パラメータが正しいことを確認
-      expect(params.filename).toBe('test-world.png');
-      expect(params.svgData).toContain('<svg');
-      expect(params.svgData).toContain('viewBox="0 0 800 600"');
+      // copyImageMutationが正しく呼ばれたか確認
+      expect(copyImageMutation).toHaveBeenCalledWith(
+        expect.objectContaining({
+          filename: 'test.png',
+          pngBase64: expect.any(String),
+        }),
+      );
     });
 
     it('should handle null SVG element', async () => {
-      await downloadImageAsPng({
-        svgElement: null as unknown as SVGSVGElement,
-      });
-      expect(
-        window.electron.electronUtil.copyImageDataByBase64,
-      ).not.toHaveBeenCalled();
+      const copyImageMutation = vi.fn().mockResolvedValue(undefined);
+      await expect(
+        downloadOrCopyImageAsPng({
+          svgElement: null as unknown as SVGSVGElement,
+          filenameExcludeExtension: 'test',
+          downloadOrCopyMutation: {
+            mutateAsync: copyImageMutation,
+          },
+        }),
+      ).rejects.toThrow();
     });
 
-    it('should use default filename when worldName is not provided', async () => {
+    it('should handle mutation error', async () => {
+      const error = new Error('Failed to copy image');
+      const copyImageMutation = vi.fn().mockRejectedValue(error);
       const svgElement = document.createElementNS(
         'http://www.w3.org/2000/svg',
         'svg',
       );
-      svgElement.setAttribute('viewBox', '0 0 800 600');
+      const consoleSpy = vi.spyOn(console, 'error');
 
-      await downloadImageAsPng({ svgElement });
+      await downloadOrCopyImageAsPng({
+        svgElement,
+        filenameExcludeExtension: 'test',
+        downloadOrCopyMutation: {
+          mutateAsync: copyImageMutation,
+        },
+      });
 
-      expect(
-        window.electron.electronUtil.copyImageDataByBase64,
-      ).toHaveBeenCalled();
-      const [params] = (
-        window.electron.electronUtil.copyImageDataByBase64 as ReturnType<
-          typeof vi.fn
-        >
-      ).mock.calls[0];
-      expect(params.filename).toBe('preview.png');
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to copy image'),
+      );
     });
   });
 });
