@@ -68,10 +68,12 @@ describe('shareUtils', () => {
         if (tagName === 'svg') {
           return {
             setAttribute: vi.fn(),
+            getAttribute: vi.fn().mockReturnValue('0 0 800 600'),
             insertBefore: vi.fn(),
             getElementsByTagName: vi.fn().mockReturnValue([]),
             cloneNode: vi.fn().mockReturnValue({
               setAttribute: vi.fn(),
+              getAttribute: vi.fn().mockReturnValue('0 0 800 600'),
               insertBefore: vi.fn(),
               getElementsByTagName: vi.fn().mockReturnValue([]),
             }),
@@ -115,15 +117,20 @@ describe('shareUtils', () => {
 
     it('should handle null SVG element', async () => {
       const copyImageMutation = vi.fn().mockResolvedValue(undefined);
-      await expect(
-        downloadOrCopyImageAsPng({
-          svgElement: null as unknown as SVGSVGElement,
-          filenameExcludeExtension: 'test',
-          downloadOrCopyMutation: {
-            mutateAsync: copyImageMutation,
-          },
-        }),
-      ).rejects.toThrow();
+      const consoleSpy = vi.spyOn(console, 'error');
+
+      await downloadOrCopyImageAsPng({
+        svgElement: null as unknown as SVGSVGElement,
+        filenameExcludeExtension: 'test',
+        downloadOrCopyMutation: {
+          mutateAsync: copyImageMutation,
+        },
+      });
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Failed to convert to PNG:',
+        expect.any(Error),
+      );
     });
 
     it('should handle mutation error', async () => {
@@ -144,7 +151,8 @@ describe('shareUtils', () => {
       });
 
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Failed to copy image'),
+        'Failed to convert to PNG:',
+        error,
       );
     });
   });

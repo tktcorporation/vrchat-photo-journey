@@ -51,7 +51,7 @@ export const electronUtilRouter = () =>
         }),
       )
       .mutation(async (ctx) => {
-        handlePngBase64(
+        await handlePngBase64(
           ctx.input.pngBase64,
           ctx.input.filename,
           async (tempPngPath) => {
@@ -127,7 +127,7 @@ const handlePngBase64 = async (
     await callback(tempFilePath);
   } catch (error) {
     console.error('Failed to handle png file:', error);
-    throw error;
+    throw new Error('Failed to handle png file', { cause: error });
   } finally {
     // 一時ディレクトリが存在する場合のみ削除を試みる
     if (tempDir) {

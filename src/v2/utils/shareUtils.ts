@@ -103,7 +103,13 @@ export const downloadOrCopyImageAsPng = async (
 ): Promise<void> => {
   const { svgElement, filenameExcludeExtension, downloadOrCopyMutation } =
     options;
-  if (!svgElement) return;
+  if (!svgElement) {
+    console.error(
+      'Failed to convert to PNG:',
+      new Error('SVG element is null'),
+    );
+    return;
+  }
 
   const clonedSvg = svgElement.cloneNode(true) as SVGSVGElement;
   try {

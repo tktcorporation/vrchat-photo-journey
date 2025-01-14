@@ -1,11 +1,13 @@
 import * as fs from 'node:fs/promises';
 import * as os from 'node:os';
 import * as path from 'node:path';
+import type { inferProcedureInput } from '@trpc/server';
 import { dialog } from 'electron';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { electronUtilRouter } from '../electronUtilController';
 
 vi.mock('node:fs/promises');
+vi.mock('electron-is-dev', () => ({ default: false }));
 vi.mock('electron', () => ({
   clipboard: {
     writeText: vi.fn(),
@@ -23,103 +25,105 @@ vi.mock('electron', () => ({
 describe('electronUtilController', () => {
   const router = electronUtilRouter();
 
-  describe('downloadImageAsSvg', () => {
-    it('should handle SVG with existing style attributes', async () => {
-      const svgData = `
-        <svg style="opacity: 0.8;" viewBox="0 0 800 600">
-          <foreignObject style="overflow: hidden;" x="0" y="0" width="800" height="600">
-            <div>Test Content</div>
-          </foreignObject>
-        </svg>
-      `;
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (fs.mkdtemp as jest.Mock).mockResolvedValue('/tmp/test-dir');
+    (fs.writeFile as jest.Mock).mockResolvedValue(undefined);
+    (fs.copyFile as jest.Mock).mockResolvedValue(undefined);
+    (fs.rm as jest.Mock).mockResolvedValue(undefined);
+  });
 
-      // モックの設定
-      vi.mocked(dialog.showSaveDialog).mockResolvedValue({
-        filePath: '/test/path/image.png',
+  describe('downloadImageAsPng', () => {
+    it('should download image as png', async () => {
+      const mockPath = path.join(os.homedir(), 'Downloads', 'test.png');
+      (dialog.showSaveDialog as jest.Mock).mockResolvedValue({
         canceled: false,
-      });
-      vi.mocked(fs.mkdtemp).mockResolvedValue('/tmp/test-dir');
-      vi.mocked(fs.copyFile).mockResolvedValue();
-      vi.mocked(fs.rm).mockResolvedValue();
-
-      // テスト実行
-      await router.downloadImageAsSvg.mutation({
-        svgData,
-        filename: 'test.png',
+        filePath: mockPath,
       });
 
-      // 一時ディレクトリが作成されたことを確認
-      expect(fs.mkdtemp).toHaveBeenCalled();
+      const resolver = router.downloadImageAsPng._def.resolver as (opts: {
+        ctx: Record<string, unknown>;
+        input: inferProcedureInput<typeof router.downloadImageAsPng>;
+      }) => Promise<void>;
 
-      // ファイルがコピーされたことを確認
-      expect(fs.copyFile).toHaveBeenCalled();
+      await resolver({
+        ctx: {},
+        input: {
+          pngBase64: 'test-base64',
+          filename: 'test.png',
+        },
+      });
 
-      // 一時ディレクトリが削除されたことを確認
-      expect(fs.rm).toHaveBeenCalled();
+      // 一時ファイルの作成を確認
+      expect(fs.writeFile).toHaveBeenCalledWith(
+        path.join('/tmp/test-dir', 'test.png'),
+        expect.any(Uint8Array),
+      );
+
+      // 一時ファイルから保存先へのコピーを確認
+      expect(fs.copyFile).toHaveBeenCalledWith(
+        path.join('/tmp/test-dir', 'test.png'),
+        mockPath,
+      );
+
+      // 一時ディレクトリの削除を確認
+      expect(fs.rm).toHaveBeenCalledWith('/tmp/test-dir', {
+        recursive: true,
+        force: true,
+      });
     });
 
-    it('should handle SVG without style attributes', async () => {
-      const svgData = `
-        <svg viewBox="0 0 800 600">
-          <foreignObject x="0" y="0" width="800" height="600">
-            <div>Test Content</div>
-          </foreignObject>
-        </svg>
-      `;
-
-      // モックの設定
-      vi.mocked(dialog.showSaveDialog).mockResolvedValue({
-        filePath: '/test/path/image.png',
-        canceled: false,
-      });
-      vi.mocked(fs.mkdtemp).mockResolvedValue('/tmp/test-dir');
-      vi.mocked(fs.copyFile).mockResolvedValue();
-      vi.mocked(fs.rm).mockResolvedValue();
-
-      // テスト実行
-      await router.downloadImageAsSvg.mutation({
-        svgData,
-        filename: 'test.png',
-      });
-
-      // 一時ディレクトリが作成されたことを確認
-      expect(fs.mkdtemp).toHaveBeenCalled();
-
-      // ファイルがコピーされたことを確認
-      expect(fs.copyFile).toHaveBeenCalled();
-
-      // 一時ディレクトリが削除されたことを確認
-      expect(fs.rm).toHaveBeenCalled();
-    });
-
-    it('should handle dialog cancellation', async () => {
-      const svgData = `
-        <svg viewBox="0 0 800 600">
-          <rect width="800" height="600" fill="white" />
-        </svg>
-      `;
-
-      // キャンセルされた場合のモック
-      vi.mocked(dialog.showSaveDialog).mockResolvedValue({
+    it('should handle dialog cancel', async () => {
+      (dialog.showSaveDialog as jest.Mock).mockResolvedValue({
         canceled: true,
-        filePath: undefined,
-      });
-      vi.mocked(fs.mkdtemp).mockResolvedValue('/tmp/test-dir');
-      vi.mocked(fs.rm).mockResolvedValue();
-
-      // テスト実行
-      await router.downloadImageAsSvg.mutation({
-        svgData,
-        filename: 'test.png',
       });
 
-      // 一時ディレクトリが作成されたことを確認
-      expect(fs.mkdtemp).toHaveBeenCalled();
+      const resolver = router.downloadImageAsPng._def.resolver as (opts: {
+        ctx: Record<string, unknown>;
+        input: inferProcedureInput<typeof router.downloadImageAsPng>;
+      }) => Promise<void>;
 
-      // ファイルがコピーされていないことを確認
+      await resolver({
+        ctx: {},
+        input: {
+          pngBase64: 'test-base64',
+          filename: 'test.png',
+        },
+      });
+
+      // 一時ファイルの作成は行われる
+      expect(fs.writeFile).toHaveBeenCalled();
+      // コピーは行われない
       expect(fs.copyFile).not.toHaveBeenCalled();
+      // 一時ディレクトリは削除される
+      expect(fs.rm).toHaveBeenCalled();
+    });
 
-      // 一時ディレクトリが削除されたことを確認
+    it('should handle write error', async () => {
+      const mockPath = path.join(os.homedir(), 'Downloads', 'test.png');
+      (dialog.showSaveDialog as jest.Mock).mockResolvedValue({
+        canceled: false,
+        filePath: mockPath,
+      });
+      const mockError = new Error('Write error');
+      (fs.copyFile as jest.Mock).mockRejectedValue(mockError);
+
+      const resolver = router.downloadImageAsPng._def.resolver as (opts: {
+        ctx: Record<string, unknown>;
+        input: inferProcedureInput<typeof router.downloadImageAsPng>;
+      }) => Promise<void>;
+
+      await expect(
+        resolver({
+          ctx: {},
+          input: {
+            pngBase64: 'test-base64',
+            filename: 'test.png',
+          },
+        }),
+      ).rejects.toThrow('Failed to handle png file');
+
+      // エラー後も一時ディレクトリは削除される
       expect(fs.rm).toHaveBeenCalled();
     });
   });
