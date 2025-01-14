@@ -53,10 +53,12 @@ const processSvgElement = async (
     const img = new Image();
     img.crossOrigin = 'anonymous';
 
+    const { width, height } = extractSvgWidthAndHeight(svgElement);
+
     img.onload = () => {
       const canvas = document.createElement('canvas');
-      canvas.width = 800 * 2;
-      canvas.height = 600 * 2;
+      canvas.width = width * 2;
+      canvas.height = height * 2;
       const ctx = canvas.getContext('2d');
       if (!ctx) {
         reject(new Error('Failed to get canvas context'));
@@ -78,6 +80,19 @@ const processSvgElement = async (
 
     img.src = svgDataUrl;
   });
+};
+
+/**
+ * SVGの縦横幅を抽出する
+ */
+const extractSvgWidthAndHeight = (
+  svgElement: SVGSVGElement,
+): { width: number; height: number } => {
+  const viewBox = svgElement.getAttribute('viewBox');
+  if (!viewBox) return { width: 800, height: 600 };
+
+  const [, , width, height] = viewBox.split(' ').map(Number);
+  return { width: width || 800, height: height || 600 };
 };
 
 /**
