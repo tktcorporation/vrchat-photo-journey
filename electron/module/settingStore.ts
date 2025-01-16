@@ -7,6 +7,7 @@ type storeName = 'v0-settings' | 'test-settings';
 const settingStoreKey = [
   'logFilesDir',
   'vrchatPhotoDir',
+  'vrchatPhotoExtraDirList',
   'removeAdjacentDuplicateWorldEntriesFlag',
   'backgroundFileCreateFlag',
   'termsAccepted',
@@ -161,12 +162,28 @@ const setSettingStore = (name: storeName) => {
     getStr: getStr(get),
     getBool: getBool(get),
   };
+  const getVRChatPhotoExtraDirList = () => (): string[] => {
+    const value = get('vrchatPhotoExtraDirList');
+    if (!Array.isArray(value)) {
+      return [];
+    }
+    return value.filter((item): item is string => typeof item === 'string');
+  };
+
+  const setVRChatPhotoExtraDirList =
+    (set: (key: SettingStoreKey, value: unknown) => void) =>
+    (dirPaths: string[]) => {
+      set('vrchatPhotoExtraDirList', dirPaths);
+    };
+
   const _settingStore = {
     __store: store,
     getLogFilesDir: getLogFilesDir(getS),
     setLogFilesDir: setLogFilesDir(set),
     getVRChatPhotoDir: getVRChatPhotoDir(getS),
     setVRChatPhotoDir: setVRChatPhotoDir(set),
+    getVRChatPhotoExtraDirList: getVRChatPhotoExtraDirList(),
+    setVRChatPhotoExtraDirList: setVRChatPhotoExtraDirList(set),
     getRemoveAdjacentDuplicateWorldEntriesFlag:
       getRemoveAdjacentDuplicateWorldEntriesFlag(getB),
     setRemoveAdjacentDuplicateWorldEntriesFlag:
@@ -234,6 +251,8 @@ export interface SettingStore {
   setLogFilesDir: (dirPath: string) => void;
   getVRChatPhotoDir: () => string | null;
   setVRChatPhotoDir: (dirPath: string) => void;
+  getVRChatPhotoExtraDirList: () => string[];
+  setVRChatPhotoExtraDirList: (dirPaths: string[]) => void;
   getRemoveAdjacentDuplicateWorldEntriesFlag: () => boolean | null;
   setRemoveAdjacentDuplicateWorldEntriesFlag: (flag: boolean) => void;
   getBackgroundFileCreateFlag: () => boolean | null;

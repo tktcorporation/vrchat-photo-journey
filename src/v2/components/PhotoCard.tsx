@@ -68,12 +68,19 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
 
     const handleShare = async (e: React.MouseEvent) => {
       e.stopPropagation();
-      if (!photoData?.data) return;
+      if (!photoData?.data) {
+        console.error('Photo data is not available');
+        return;
+      }
 
       try {
+        const base64Data = photoData.data.includes('base64,')
+          ? photoData.data.split('base64,')[1]
+          : photoData.data;
+
         const previewImage = await generatePreviewPng({
           worldName: worldInfo?.name ?? 'Unknown World',
-          imageBase64: photoData.data,
+          imageBase64: base64Data,
           players: match(players)
             .with(P.nullish, () => [])
             .with({ errorMessage: 'RECENT_JOIN_LOG_NOT_FOUND' }, () => [])
@@ -85,13 +92,14 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
           showAllPlayers: false,
         });
 
-        // クリップボードにコピー
-        copyMutation.mutate({
+        await copyMutation.mutateAsync({
           pngBase64: previewImage,
           filename: `${photo.fileName}_share.png`,
         });
+
+        console.log('Image successfully copied to clipboard');
       } catch (error) {
-        console.error('Failed to generate share image:', error);
+        console.error('Failed to generate or copy share image:', error);
       }
     };
 
