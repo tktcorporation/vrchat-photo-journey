@@ -69,18 +69,26 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
     const handleShare = async (e: React.MouseEvent) => {
       e.stopPropagation();
       if (!photoData?.data) {
-        console.error('Photo data is not available');
+        console.error('写真データが利用できません');
         return;
       }
 
       try {
-        const base64Data = photoData.data.includes('base64,')
-          ? photoData.data.split('base64,')[1]
-          : photoData.data;
+        if (typeof photoData.data !== 'string') {
+          throw new Error('写真データが文字列形式ではありません');
+        }
+
+        const cleanBase64 = photoData.data.replace(
+          /^data:image\/[^;]+;base64,/,
+          '',
+        );
+        if (!cleanBase64.match(/^[A-Za-z0-9+/]*={0,2}$/)) {
+          throw new Error('不正なBase64形式です');
+        }
 
         const previewImage = await generatePreviewPng({
           worldName: worldInfo?.name ?? 'Unknown World',
-          imageBase64: base64Data,
+          imageBase64: cleanBase64,
           players: match(players)
             .with(P.nullish, () => [])
             .with({ errorMessage: 'RECENT_JOIN_LOG_NOT_FOUND' }, () => [])
@@ -92,14 +100,33 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
           showAllPlayers: false,
         });
 
+        if (!previewImage || typeof previewImage !== 'string') {
+          throw new Error('プレビュー画像の生成に失敗しました');
+        }
+
+        const base64WithPrefix = previewImage.startsWith('data:image/')
+          ? previewImage
+          : `data:image/png;base64,${previewImage}`;
+
+        if (
+          !base64WithPrefix.match(
+            /^data:image\/[^;]+;base64,[A-Za-z0-9+/]*={0,2}$/,
+          )
+        ) {
+          throw new Error('生成された画像が不正なBase64形式です');
+        }
+
         await copyMutation.mutateAsync({
-          pngBase64: previewImage,
+          pngBase64: base64WithPrefix,
           filename: `${photo.fileName}_share.png`,
         });
 
-        console.log('Image successfully copied to clipboard');
+        console.log('画像をクリップボードにコピーしました');
       } catch (error) {
-        console.error('Failed to generate or copy share image:', error);
+        console.error('共有画像の生成またはコピーに失敗しました:', error);
+        if (error instanceof Error) {
+          console.error('エラーの詳細:', error.message);
+        }
       }
     };
 
