@@ -1,4 +1,4 @@
-import * as valueObjects from './valueObjects';
+import * as valueObjects from './../../../shared/valueObjects';
 
 describe('valueObjects', () => {
   describe('VRChatPhotoFileNameWithExt', () => {

@@ -2,7 +2,7 @@ import { trpcReact } from '@/trpc';
 import pathe from 'pathe';
 import { useMemo, useState } from 'react';
 import type { Photo } from '../../types/photo';
-import { VRChatPhotoFileNameWithExtSchema } from './../../../../electron/module/logInfo/valueObjects';
+import { VRChatPhotoFileNameWithExtSchema } from './../../../../shared/valueObjects';
 import {
   type DebugInfo,
   type GroupedPhotos,
@@ -36,19 +36,29 @@ export function usePhotoGallery(searchQuery: string): {
   const photos = useMemo(() => {
     if (!photoList) return [];
 
-    return photoList.map((photo) => ({
-      id: photo.id,
-      url: photo.photoPath,
-      fileNameWithExt: VRChatPhotoFileNameWithExtSchema.parse(
-        pathe.parse(photo.photoPath).base,
-      ),
-      width: photo.width || 1920,
-      height: photo.height || 1080,
-      takenAt: photo.photoTakenAt,
-      location: {
-        joinedAt: photo.photoTakenAt,
-      },
-    }));
+    return photoList
+      .map((photo) => {
+        try {
+          const parsedFileName = VRChatPhotoFileNameWithExtSchema.parse(
+            pathe.parse(photo.photoPath).base,
+          );
+          return {
+            id: photo.id,
+            url: photo.photoPath,
+            fileNameWithExt: parsedFileName,
+            width: photo.width || 1920,
+            height: photo.height || 1080,
+            takenAt: photo.photoTakenAt,
+            location: {
+              joinedAt: photo.photoTakenAt,
+            },
+          };
+        } catch (error) {
+          console.warn(`Invalid photo file name: ${photo.photoPath}`, error);
+          return null;
+        }
+      })
+      .filter((photo): photo is NonNullable<typeof photo> => photo !== null);
   }, [photoList]);
 
   const { groupedPhotos: originalGroupedPhotos, debug } =

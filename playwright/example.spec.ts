@@ -4,7 +4,7 @@ import { _electron, test } from '@playwright/test';
 const launchElectronApp = async () => {
   // Launch Electron app.
   const electronApp = await _electron.launch({
-    args: [require.resolve('../main/index.js')],
+    args: [path.join(__dirname, '../main/index.js')],
   });
 
   return electronApp;

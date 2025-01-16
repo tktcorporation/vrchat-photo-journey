@@ -39,6 +39,7 @@ class VRChatPhotoFileNameWithExt extends BaseValueObject<
 }
 
 export type { VRChatPhotoFileNameWithExt };
+
 export const VRChatPhotoFileNameWithExtSchema = z
   .string()
   .regex(
