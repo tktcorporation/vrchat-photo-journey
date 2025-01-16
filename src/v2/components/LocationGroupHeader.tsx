@@ -179,7 +179,7 @@ const ShareModal = ({
     if (!previewBase64) return;
     await downloadOrCopyImageAsPng({
       pngBase64: previewBase64,
-      filenameExcludeExtension: worldName || 'image',
+      filenameWithoutExt: worldName || 'image',
       downloadOrCopyMutation: copyImageMutation,
     });
   };
@@ -188,7 +188,7 @@ const ShareModal = ({
     if (!previewBase64) return;
     await downloadOrCopyImageAsPng({
       pngBase64: previewBase64,
-      filenameExcludeExtension: worldName || 'image',
+      filenameWithoutExt: worldName || 'image',
       downloadOrCopyMutation: downloadImageMutation,
     });
   };

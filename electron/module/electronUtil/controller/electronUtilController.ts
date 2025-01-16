@@ -47,20 +47,22 @@ export const electronUtilRouter = () =>
       .input(
         z.object({
           pngBase64: z.string(),
-          filename: z.string(),
+          filenameWithoutExt: z.string(),
         }),
       )
       .mutation(async (ctx) => {
         await handlePngBase64(
-          ctx.input.pngBase64,
-          ctx.input.filename,
+          {
+            filenameWithoutExt: ctx.input.filenameWithoutExt,
+            pngBase64: ctx.input.pngBase64,
+          },
           async (tempPngPath) => {
             // 保存先をユーザーに選択させる
             const { filePath, canceled } = await dialog.showSaveDialog({
               defaultPath: path.join(
                 os.homedir(),
                 'Downloads',
-                ctx.input.filename,
+                `${ctx.input.filenameWithoutExt}.png`,
               ),
               filters: [
                 { name: 'PNG Image', extensions: ['png'] },
@@ -83,13 +85,15 @@ export const electronUtilRouter = () =>
       .input(
         z.object({
           pngBase64: z.string(),
-          filename: z.string(),
+          filenameWithoutExt: z.string(),
         }),
       )
       .mutation(async (ctx) => {
         handlePngBase64(
-          ctx.input.pngBase64,
-          ctx.input.filename,
+          {
+            filenameWithoutExt: ctx.input.filenameWithoutExt,
+            pngBase64: ctx.input.pngBase64,
+          },
           async (tempPngPath) => {
             // 一時ファイルをクリップボードにコピー
             const image = nativeImage.createFromPath(tempPngPath);
@@ -107,15 +111,20 @@ export const electronUtilRouter = () =>
   });
 
 const handlePngBase64 = async (
-  pngBase64: string,
-  filename: string,
+  {
+    filenameWithoutExt,
+    pngBase64,
+  }: {
+    filenameWithoutExt: string;
+    pngBase64: string;
+  },
   callback: (tempPngPath: string) => Promise<void>,
 ) => {
   let tempDir = '';
   try {
     // 一時ディレクトリを作成
     tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'vrchat-photo-'));
-    const tempFilePath = path.join(tempDir, filename);
+    const tempFilePath = path.join(tempDir, `${filenameWithoutExt}.png`);
 
     // Base64データをバッファに変換
     const imageBuffer = Buffer.from(pngBase64, 'base64');

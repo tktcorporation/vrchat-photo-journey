@@ -1,10 +1,10 @@
 interface ShareImageOptions {
   pngBase64: string;
-  filenameExcludeExtension: string;
+  filenameWithoutExt: string;
   downloadOrCopyMutation: {
     mutateAsync: (params: {
       pngBase64: string;
-      filename: string;
+      filenameWithoutExt: string;
     }) => Promise<void>;
   };
 }
@@ -110,12 +110,11 @@ export const generatePngBase64FromSvgElement = async (
 export const downloadOrCopyImageAsPng = async (
   options: ShareImageOptions,
 ): Promise<void> => {
-  const { pngBase64, filenameExcludeExtension, downloadOrCopyMutation } =
-    options;
+  const { pngBase64, filenameWithoutExt, downloadOrCopyMutation } = options;
   try {
     await downloadOrCopyMutation.mutateAsync({
       pngBase64,
-      filename: `${filenameExcludeExtension || 'image'}.png`,
+      filenameWithoutExt,
     });
   } catch (error) {
     console.error('Failed to convert to PNG:', error);
