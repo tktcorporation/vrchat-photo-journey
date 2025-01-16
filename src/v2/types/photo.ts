@@ -1,4 +1,4 @@
-import type { VRChatPhotoFileNameWithExt } from './../../../electron/module/logInfo/valueObjects';
+import type { VRChatPhotoFileNameWithExt } from './../../../shared/valueObjects';
 
 export interface Photo {
   id: number | string;

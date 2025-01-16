@@ -15,6 +15,8 @@ export default ({ command }: ConfigEnv): UserConfig => {
       resolve: {
         alias: {
           '@': srcRoot,
+          '@electron': join(__dirname, 'electron'),
+          '@shared': join(__dirname, 'shared'),
         },
       },
       build: {
@@ -49,6 +51,8 @@ export default ({ command }: ConfigEnv): UserConfig => {
     resolve: {
       alias: {
         '@': srcRoot,
+        '@electron': join(__dirname, 'electron'),
+        '@shared': join(__dirname, 'shared'),
       },
     },
     build: {
