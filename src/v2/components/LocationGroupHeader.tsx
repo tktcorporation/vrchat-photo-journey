@@ -34,6 +34,7 @@ import { Label } from '../../components/ui/label';
 import { Switch } from '../../components/ui/switch';
 import { BoldPreviewSvg } from '../components/BoldPreview';
 import { useI18n } from '../i18n/store';
+import { generatePreviewPng } from '../utils/previewGenerator';
 import { downloadOrCopyImageAsPng } from '../utils/shareUtils';
 
 /**
@@ -131,8 +132,9 @@ const ShareModal = ({
   players,
 }: ShareModalProps) => {
   const { t } = useI18n();
-  const previewRef = useRef<SVGSVGElement>(null);
   const [showAllPlayers, setShowAllPlayers] = useState(false);
+  const [previewBase64, setPreviewBase64] = useState<string | null>(null);
+  const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
 
   // 画像のBase64変換をバックエンドに依頼
   const { data: base64Data, isLoading } =
@@ -147,19 +149,45 @@ const ShareModal = ({
   const downloadImageMutation =
     trpcReact.electronUtil.downloadImageAsPng.useMutation();
 
+  // プレビュー画像を生成する関数
+  const generatePreview = async () => {
+    if (!base64Data || !worldName) return;
+    setIsGeneratingPreview(true);
+    try {
+      const pngBase64 = await generatePreviewPng({
+        worldName,
+        imageBase64: base64Data,
+        players,
+        showAllPlayers,
+      });
+      setPreviewBase64(pngBase64);
+    } catch (error) {
+      console.error('Failed to generate preview:', error);
+    } finally {
+      setIsGeneratingPreview(false);
+    }
+  };
+
+  // base64Dataが変更されたら、プレビューを生成
+  useEffect(() => {
+    if (base64Data) {
+      generatePreview();
+    }
+  }, [base64Data, worldName, players, showAllPlayers]);
+
   const handleCopyToClipboard = async () => {
-    if (!previewRef.current) return;
+    if (!previewBase64) return;
     await downloadOrCopyImageAsPng({
-      svgElement: previewRef.current,
+      pngBase64: previewBase64,
       filenameExcludeExtension: worldName || 'image',
       downloadOrCopyMutation: copyImageMutation,
     });
   };
 
   const handleDownloadPng = async () => {
-    if (!previewRef.current) return;
+    if (!previewBase64) return;
     await downloadOrCopyImageAsPng({
-      svgElement: previewRef.current,
+      pngBase64: previewBase64,
       filenameExcludeExtension: worldName || 'image',
       downloadOrCopyMutation: downloadImageMutation,
     });
@@ -199,19 +227,19 @@ const ShareModal = ({
               <ContextMenuTrigger className="w-full">
                 <div className="h-full rounded-lg overflow-y-auto">
                   <div className="w-full">
-                    {isLoading ? (
+                    {isLoading || isGeneratingPreview ? (
                       <div className="flex items-center justify-center">
                         <LoaderCircle className="h-8 w-8 animate-spin text-blue-500" />
                       </div>
                     ) : (
                       <div className="flex items-center justify-center">
-                        <BoldPreviewSvg
-                          worldName={worldName}
-                          imageBase64={base64Data}
-                          players={players}
-                          previewRef={previewRef}
-                          showAllPlayers={showAllPlayers}
-                        />
+                        {previewBase64 && (
+                          <img
+                            src={`data:image/png;base64,${previewBase64}`}
+                            alt={worldName || 'Preview'}
+                            className="max-w-full h-auto"
+                          />
+                        )}
                       </div>
                     )}
                   </div>

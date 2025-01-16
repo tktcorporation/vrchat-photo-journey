@@ -1,5 +1,5 @@
 interface ShareImageOptions {
-  svgElement: SVGSVGElement;
+  pngBase64: string;
   filenameExcludeExtension: string;
   downloadOrCopyMutation: {
     mutateAsync: (params: {
@@ -95,28 +95,26 @@ const extractSvgWidthAndHeight = (
   return { width: width || 800, height: height || 600 };
 };
 
+export const generatePngBase64FromSvgElement = async (
+  svgElement: SVGSVGElement,
+): Promise<string> => {
+  const clonedSvg = svgElement.cloneNode(true) as SVGSVGElement;
+  const canvas = await processSvgElement(clonedSvg);
+  const base64 = canvas.toDataURL('image/png').split(',')[1];
+  return base64;
+};
+
 /**
  * 画像をPNGとしてダウンロードまたはクリップボードにコピーするための処理
  */
 export const downloadOrCopyImageAsPng = async (
   options: ShareImageOptions,
 ): Promise<void> => {
-  const { svgElement, filenameExcludeExtension, downloadOrCopyMutation } =
+  const { pngBase64, filenameExcludeExtension, downloadOrCopyMutation } =
     options;
-  if (!svgElement) {
-    console.error(
-      'Failed to convert to PNG:',
-      new Error('SVG element is null'),
-    );
-    return;
-  }
-
-  const clonedSvg = svgElement.cloneNode(true) as SVGSVGElement;
   try {
-    const canvas = await processSvgElement(clonedSvg);
-    const base64 = canvas.toDataURL('image/png').split(',')[1];
     await downloadOrCopyMutation.mutateAsync({
-      pngBase64: base64,
+      pngBase64,
       filename: `${filenameExcludeExtension || 'image'}.png`,
     });
   } catch (error) {
