@@ -119,7 +119,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose }) => {
             <ProgressiveImage
               src={photo.url}
               placeholderSrc={placeholderUrl}
-              alt={photo.fileName}
+              alt={photo.fileNameWithExt.value}
               className="w-full h-full object-contain"
               loading="eager"
             />
@@ -142,7 +142,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose }) => {
                   photo.location.name
                 </h2>
                 <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">
-                  {photo.fileName}
+                  {photo.fileNameWithExt.value}
                 </p>
               </div>
 
