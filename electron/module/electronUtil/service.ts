@@ -23,19 +23,25 @@ export const getApplicationLogPath = (): string => {
 const openGetDirDialog = async (): Promise<
   neverthrow.Result<string, 'canceled'>
 > => {
-  return dialog
-    .showOpenDialog({
-      properties: ['openDirectory'],
-    })
-    .then((result) => {
-      if (!result.canceled) {
-        return neverthrow.ok(result.filePaths[0]);
-      }
-      return neverthrow.err('canceled' as const);
-    })
-    .catch((err) => {
-      throw err;
-    });
+  const result = await dialog.showOpenDialog({
+    properties: ['openDirectory'],
+  });
+  if (result.canceled) {
+    return neverthrow.err('canceled');
+  }
+  return neverthrow.ok(result.filePaths[0]);
+};
+
+const openGetFileDialog = async (
+  properties: Array<'openDirectory' | 'openFile' | 'multiSelections'>,
+): Promise<neverthrow.Result<string[], 'canceled'>> => {
+  const result = await dialog.showOpenDialog({
+    properties,
+  });
+  if (result.canceled) {
+    return neverthrow.err('canceled');
+  }
+  return neverthrow.ok(result.filePaths);
 };
 
 const openUrlInDefaultBrowser = (url: string) => {
@@ -49,6 +55,7 @@ const openPhotoPathWithPhotoApp = (path: string) => {
 export {
   openPathInExplorer,
   openGetDirDialog,
+  openGetFileDialog,
   openUrlInDefaultBrowser,
   openPhotoPathWithPhotoApp,
 };

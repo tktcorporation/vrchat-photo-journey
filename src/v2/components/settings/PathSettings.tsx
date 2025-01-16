@@ -1,8 +1,9 @@
 import { invalidatePhotoGalleryQueries } from '@/queryClient';
 import { trpcReact } from '@/trpc';
-import { AlertCircle, FileText, FolderOpen, RefreshCw } from 'lucide-react';
+import { AlertCircle, FolderOpen, Plus, RefreshCw, Trash } from 'lucide-react';
 import React, { memo, useState } from 'react';
 import { match } from 'ts-pattern';
+import { useVRChatPhotoExtraDirList } from '../../hooks/useVRChatPhotoExtraDirList';
 import { useI18n } from '../../i18n/store';
 
 const PathSettingsComponent = memo(() => {
@@ -20,6 +21,9 @@ const PathSettingsComponent = memo(() => {
     trpcReact.vrchatPhoto.setVRChatPhotoDirPathToSettingStore.useMutation();
   const _clearPhotoDirectoryMutation =
     trpcReact.vrchatPhoto.clearVRChatPhotoDirPathInSettingStore.useMutation();
+
+  const [extraDirs, setExtraDirs] = useVRChatPhotoExtraDirList();
+  const showOpenDialogMutation = trpcReact.showOpenDialog.useMutation();
 
   const utils = trpcReact.useUtils();
 
@@ -133,6 +137,21 @@ const PathSettingsComponent = memo(() => {
     }
   };
 
+  const handleBrowseExtraDirectory = async () => {
+    const result = await showOpenDialogMutation.mutateAsync({
+      properties: ['openDirectory'],
+    });
+    if (!result.canceled && result.filePaths.length > 0) {
+      setExtraDirs([...extraDirs, result.filePaths[0]]);
+    }
+  };
+
+  const handleRemoveExtraDirectory = (index: number) => {
+    const newDirs = [...extraDirs];
+    newDirs.splice(index, 1);
+    setExtraDirs(newDirs);
+  };
+
   return (
     <div className="space-y-6">
       <div className="space-y-4">
@@ -236,6 +255,39 @@ const PathSettingsComponent = memo(() => {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+          追加の写真フォルダ
+        </label>
+        <div className="mt-1 space-y-2">
+          {extraDirs.map((dir: string, index: number) => (
+            <div key={`extra-dir-${dir}`} className="flex rounded-md shadow-sm">
+              <input
+                type="text"
+                value={dir}
+                readOnly
+                className="flex-1 block w-full rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white"
+              />
+              <button
+                type="button"
+                onClick={() => handleRemoveExtraDirectory(index)}
+                className="px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-r-md text-sm text-gray-700 dark:text-gray-200 border border-l-0 border-gray-300 dark:border-gray-600"
+              >
+                <Trash className="h-4 w-4" />
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={handleBrowseExtraDirectory}
+            className="flex items-center px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-200"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            フォルダを追加
+          </button>
         </div>
       </div>
     </div>

@@ -190,3 +190,12 @@ export const createReadStream = (
 ): fs.ReadStream => {
   return fs.createReadStream(filePath, options);
 };
+
+export const readdir = async (path: string): Promise<string[]> => {
+  try {
+    return await promisify(fs.readdir)(path);
+  } catch (error) {
+    console.error(`Failed to read directory: ${path}`, error);
+    return [];
+  }
+};

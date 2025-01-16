@@ -4,6 +4,7 @@ import z from 'zod';
 import { init as initSentry } from '@sentry/electron/main';
 import { backgroundSettingsRouter } from './module/backgroundSettings/controller/backgroundSettingsController';
 import { electronUtilRouter } from './module/electronUtil/controller/electronUtilController';
+import { openGetFileDialog } from './module/electronUtil/service';
 import { logInfoRouter } from './module/logInfo/logInfoCointroller';
 import * as service from './module/service';
 import { initSettingStore } from './module/settingStore';
@@ -160,6 +161,38 @@ export const router = trpcRouter({
       });
     }
   }),
+  getVRChatPhotoExtraDirList: procedure.query(() => {
+    return settingStore.getVRChatPhotoExtraDirList();
+  }),
+  setVRChatPhotoExtraDirList: procedure
+    .input(z.array(z.string()))
+    .mutation(({ input }) => {
+      settingStore.setVRChatPhotoExtraDirList(input);
+      return true;
+    }),
+  showOpenDialog: procedure
+    .input(
+      z.object({
+        properties: z.array(z.string()),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const result = await openGetFileDialog(
+        input.properties as Array<
+          'openDirectory' | 'openFile' | 'multiSelections'
+        >,
+      );
+      return result.match(
+        (filePaths) => ({
+          canceled: false,
+          filePaths,
+        }),
+        () => ({
+          canceled: true,
+          filePaths: [],
+        }),
+      );
+    }),
 });
 
 export type AppRouter = typeof router;
