@@ -5,6 +5,7 @@ import {
   ContextMenuTrigger,
 } from '@/components/ui/context-menu';
 import { trpcReact } from '@/trpc';
+import pathe from 'pathe';
 import type React from 'react';
 import { memo, useRef } from 'react';
 import { P, match } from 'ts-pattern';
@@ -118,7 +119,7 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
 
         await copyMutation.mutateAsync({
           pngBase64: base64WithPrefix,
-          filenameWithoutExt: `${photo.fileName}_share`,
+          filenameWithoutExt: `${photo.fileNameWithExt.value}_share`,
         });
 
         console.log('画像をクリップボードにコピーしました');
@@ -149,7 +150,7 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
               <ProgressiveImage
                 src={photoData?.data || ''}
                 placeholderSrc={placeholderUrl}
-                alt={photo.fileName || ''}
+                alt={photo.fileNameWithExt.value}
                 className="absolute inset-0 w-full h-full object-cover"
                 loading={priority ? 'eager' : 'lazy'}
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -164,7 +165,7 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
               <div className="absolute bottom-0 left-0 right-0 p-2">
                 <h3 className="text-white font-medium truncate text-xs">
-                  {photo.fileName}
+                  {photo.fileNameWithExt.value}
                 </h3>
               </div>
             </div>

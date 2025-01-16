@@ -1,6 +1,8 @@
 import { trpcReact } from '@/trpc';
+import pathe from 'pathe';
 import { useMemo, useState } from 'react';
 import type { Photo } from '../../types/photo';
+import { VRChatPhotoFileNameWithExtSchema } from './../../../../electron/module/logInfo/valueObjects';
 import {
   type DebugInfo,
   type GroupedPhotos,
@@ -37,7 +39,9 @@ export function usePhotoGallery(searchQuery: string): {
     return photoList.map((photo) => ({
       id: photo.id,
       url: photo.photoPath,
-      fileName: photo.photoPath.split('/').pop() || '',
+      fileNameWithExt: VRChatPhotoFileNameWithExtSchema.parse(
+        pathe.parse(photo.photoPath).base,
+      ),
       width: photo.width || 1920,
       height: photo.height || 1080,
       takenAt: photo.photoTakenAt,
@@ -66,7 +70,7 @@ export function usePhotoGallery(searchQuery: string): {
       if (
         group.worldInfo?.worldName.toLowerCase().includes(query) ||
         group.photos.some((photo) =>
-          photo.fileName.toLowerCase().includes(query),
+          photo.fileNameWithExt.value.toLowerCase().includes(query),
         )
       ) {
         filteredGroups[key] = group;

@@ -8,38 +8,40 @@ import { usePhotoGallery } from '../usePhotoGallery';
 const mockPhotos = [
   {
     id: '1',
-    photoPath: '/path/to/photo1.jpg',
+    photoPath: '/path/to/VRChat_2024-01-01_01-00-00.000_1920x1080.png',
     photoTakenAt: new Date('2024-01-01T01:00:00Z'),
     width: 1920,
     height: 1080,
   },
   {
     id: '2',
-    photoPath: '/path/to/photo2.jpg',
+    photoPath: '/path/to/VRChat_2024-01-01_00-00-00.000_1920x1080.png',
     photoTakenAt: new Date('2024-01-01T00:00:00Z'),
     width: 1920,
     height: 1080,
   },
   {
     id: '3',
-    photoPath: '/path/to/photo3.jpg',
+    photoPath: '/path/to/VRChat_2023-12-31_23-00-00.000_1920x1080.png',
     photoTakenAt: new Date('2023-12-31T23:00:00Z'),
     width: 1920,
     height: 1080,
   },
   {
     id: '4',
-    photoPath: '/path/to/photo4.jpg',
+    photoPath: '/path/to/VRChat_2023-12-31_22-00-00.000_1920x1080.png',
     photoTakenAt: new Date('2023-12-31T22:00:00Z'),
     width: 1920,
     height: 1080,
   },
-] as const;
+];
+
+type MockPhotoType = (typeof mockPhotos)[number];
 
 // モックの設定
 const createMockState = () => {
   let isLoading = true;
-  let photoData: typeof mockPhotos | undefined = undefined;
+  let photoData: MockPhotoType[] | undefined = undefined;
 
   const setState = (loading: boolean, data: typeof photoData) => {
     isLoading = loading;
@@ -179,6 +181,56 @@ describe('usePhotoGallery', () => {
     rerender({ searchQuery: '' });
     expect(Object.keys(result.current.groupedPhotos).length).toBe(
       initialGroupCount,
+    );
+  });
+
+  it('Windows形式とUNIX形式のパスを正しく処理する', () => {
+    const windowsStylePhotos = [
+      {
+        id: '1',
+        photoPath:
+          'C:\\Users\\test\\VRChat\\2024\\01\\VRChat_2024-01-01_00-00-00.000_1920x1080.png',
+        photoTakenAt: new Date('2024-01-01T00:00:00Z'),
+        width: 1920,
+        height: 1080,
+      },
+    ];
+
+    const unixStylePhotos = [
+      {
+        id: '2',
+        photoPath:
+          '/home/test/VRChat/2024/01/VRChat_2024-01-01_00-00-00.000_1920x1080.png',
+        photoTakenAt: new Date('2024-01-01T00:00:00Z'),
+        width: 1920,
+        height: 1080,
+      },
+    ];
+
+    const { result, rerender } = renderHook(() => usePhotoGallery(''));
+
+    // Windowsスタイルのパスをテスト
+    act(() => {
+      mockState.setState(false, windowsStylePhotos);
+      rerender();
+      vi.runAllTimers();
+    });
+
+    let group = Object.values(result.current.groupedPhotos)[0];
+    expect(group.photos[0].fileNameWithExt.value).toBe(
+      'VRChat_2024-01-01_00-00-00.000_1920x1080.png',
+    );
+
+    // UNIXスタイルのパスをテスト
+    act(() => {
+      mockState.setState(false, unixStylePhotos);
+      rerender();
+      vi.runAllTimers();
+    });
+
+    group = Object.values(result.current.groupedPhotos)[0];
+    expect(group.photos[0].fileNameWithExt.value).toBe(
+      'VRChat_2024-01-01_00-00-00.000_1920x1080.png',
     );
   });
 });
