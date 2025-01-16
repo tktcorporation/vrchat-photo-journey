@@ -52,7 +52,7 @@ describe('electronUtilController', () => {
         ctx: {},
         input: {
           pngBase64: 'test-base64',
-          filename: 'test.png',
+          filenameWithoutExt: 'test',
         },
       });
 
@@ -88,7 +88,7 @@ describe('electronUtilController', () => {
         ctx: {},
         input: {
           pngBase64: 'test-base64',
-          filename: 'test.png',
+          filenameWithoutExt: 'test',
         },
       });
 
@@ -122,7 +122,7 @@ describe('electronUtilController', () => {
           ctx: {},
           input: {
             pngBase64: 'test-base64',
-            filename: 'test.png',
+            filenameWithoutExt: 'test',
           },
         }),
       ).rejects.toThrow('Failed to handle png file');
