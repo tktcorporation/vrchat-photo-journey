@@ -118,7 +118,7 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
 
         await copyMutation.mutateAsync({
           pngBase64: base64WithPrefix,
-          filename: `${photo.fileName}_share.png`,
+          filenameWithoutExt: `${photo.fileName}_share`,
         });
 
         console.log('画像をクリップボードにコピーしました');
