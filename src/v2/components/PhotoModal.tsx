@@ -165,7 +165,16 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose }) => {
                   <Users className="h-4 w-4 mr-2 flex-shrink-0 mt-0.5" />
                   <div>
                     <div className="mb-1">一緒に訪れた人</div>
-                    <div className="flex flex-wrap gap-1" />
+                    <div className="flex flex-wrap gap-1">
+                      {photo.participants.map((participant, index) => (
+                        <span
+                          key={index}
+                          className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
+                        >
+                          {participant}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>

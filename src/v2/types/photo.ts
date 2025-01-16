@@ -10,4 +10,5 @@ export interface Photo {
   location: {
     joinedAt: Date;
   };
+  participants: string[]; // New field to store information about who was present in the photo
 }
