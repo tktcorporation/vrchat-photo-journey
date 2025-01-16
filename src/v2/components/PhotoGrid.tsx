@@ -4,6 +4,7 @@ import PhotoCard from './PhotoCard';
 
 interface PhotoGridProps {
   photos: Photo[];
+  worldId: string | null;
   onPhotoSelect: (photo: Photo) => void;
 }
 
@@ -17,7 +18,11 @@ interface LayoutPhoto extends Photo {
   displayHeight: number;
 }
 
-export default function PhotoGrid({ photos, onPhotoSelect }: PhotoGridProps) {
+export default function PhotoGrid({
+  photos,
+  worldId,
+  onPhotoSelect,
+}: PhotoGridProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
 
@@ -135,6 +140,7 @@ export default function PhotoGrid({ photos, onPhotoSelect }: PhotoGridProps) {
                   >
                     <PhotoCard
                       photo={photo}
+                      worldId={worldId}
                       onSelect={onPhotoSelect}
                       priority={index === 0}
                     />

@@ -7,19 +7,22 @@ import {
 import { trpcReact } from '@/trpc';
 import type React from 'react';
 import { memo, useRef } from 'react';
+import { P, match } from 'ts-pattern';
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
 import { useI18n } from '../i18n/store';
 import type { Photo } from '../types/photo';
+import { generatePreviewPng } from '../utils/previewGenerator';
 import ProgressiveImage from './ProgressiveImage';
 
 interface PhotoCardProps {
   photo: Photo;
+  worldId: string | null;
   priority?: boolean;
   onSelect: (photo: Photo) => void;
 }
 
 const PhotoCard: React.FC<PhotoCardProps> = memo(
-  ({ photo, priority = false, onSelect }) => {
+  ({ photo, worldId, priority = false, onSelect }) => {
     const { t } = useI18n();
     const elementRef = useRef<HTMLDivElement>(null);
     const isIntersecting = useIntersectionObserver(elementRef, {
@@ -52,6 +55,44 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
     const handleOpenInExplorer = (e: React.MouseEvent) => {
       e.stopPropagation();
       openDirOnExplorerMutation.mutate(photo.url);
+    };
+
+    const { data: worldInfo } =
+      trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery(worldId ?? '', {
+        enabled: !!worldId,
+      });
+    const { data: players } =
+      trpcReact.logInfo.getPlayerListInSameWorld.useQuery(photo.takenAt);
+    const copyMutation =
+      trpcReact.electronUtil.copyImageDataByBase64.useMutation();
+
+    const handleShare = async (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (!photoData?.data) return;
+
+      try {
+        const previewImage = await generatePreviewPng({
+          worldName: worldInfo?.name ?? 'Unknown World',
+          imageBase64: photoData.data,
+          players: match(players)
+            .with(P.nullish, () => [])
+            .with({ errorMessage: 'RECENT_JOIN_LOG_NOT_FOUND' }, () => [])
+            .otherwise((players) =>
+              players.map((player) => ({
+                playerName: player.playerName,
+              })),
+            ),
+          showAllPlayers: false,
+        });
+
+        // クリップボードにコピー
+        copyMutation.mutate({
+          pngBase64: previewImage,
+          filename: `${photo.fileName}_share.png`,
+        });
+      } catch (error) {
+        console.error('Failed to generate share image:', error);
+      }
     };
 
     return (
@@ -94,6 +135,9 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
             </div>
           </ContextMenuTrigger>
           <ContextMenuContent onClick={(e) => e.stopPropagation()}>
+            <ContextMenuItem onClick={handleShare}>
+              {t('common.contextMenu.shareImage')}
+            </ContextMenuItem>
             <ContextMenuItem onClick={handleCopyPhotoData}>
               {t('common.contextMenu.copyPhotoData')}
             </ContextMenuItem>

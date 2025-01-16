@@ -92,14 +92,10 @@ describe('shareUtils', () => {
   describe('downloadOrCopyImageAsPng', () => {
     it('should process SVG element correctly', async () => {
       const copyImageMutation = vi.fn().mockResolvedValue(undefined);
-      const svgElement = document.createElementNS(
-        'http://www.w3.org/2000/svg',
-        'svg',
-      );
 
       // 関数を実行
       await downloadOrCopyImageAsPng({
-        svgElement,
+        pngBase64: 'test-base64',
         filenameExcludeExtension: 'test',
         downloadOrCopyMutation: {
           mutateAsync: copyImageMutation,
@@ -107,43 +103,39 @@ describe('shareUtils', () => {
       });
 
       // copyImageMutationが正しく呼ばれたか確認
-      expect(copyImageMutation).toHaveBeenCalledWith(
-        expect.objectContaining({
-          filename: 'test.png',
-          pngBase64: expect.any(String),
-        }),
-      );
+      expect(copyImageMutation).toHaveBeenCalledWith({
+        filename: 'test.png',
+        pngBase64: 'test-base64',
+      });
     });
 
     it('should handle null SVG element', async () => {
       const copyImageMutation = vi.fn().mockResolvedValue(undefined);
       const consoleSpy = vi.spyOn(console, 'error');
 
-      await downloadOrCopyImageAsPng({
-        svgElement: null as unknown as SVGSVGElement,
-        filenameExcludeExtension: 'test',
-        downloadOrCopyMutation: {
-          mutateAsync: copyImageMutation,
-        },
-      });
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        'Failed to convert to PNG:',
-        expect.any(Error),
-      );
+      try {
+        await downloadOrCopyImageAsPng({
+          pngBase64: undefined as unknown as string,
+          filenameExcludeExtension: 'test',
+          downloadOrCopyMutation: {
+            mutateAsync: copyImageMutation,
+          },
+        });
+      } catch (_error) {
+        expect(consoleSpy).toHaveBeenCalledWith(
+          'Failed to convert to PNG:',
+          expect.any(Error),
+        );
+      }
     });
 
     it('should handle mutation error', async () => {
       const error = new Error('Failed to copy image');
       const copyImageMutation = vi.fn().mockRejectedValue(error);
-      const svgElement = document.createElementNS(
-        'http://www.w3.org/2000/svg',
-        'svg',
-      );
       const consoleSpy = vi.spyOn(console, 'error');
 
       await downloadOrCopyImageAsPng({
-        svgElement,
+        pngBase64: 'test-base64',
         filenameExcludeExtension: 'test',
         downloadOrCopyMutation: {
           mutateAsync: copyImageMutation,

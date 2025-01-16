@@ -4,6 +4,7 @@ import PhotoCard from './PhotoCard';
 
 interface VirtualGridRowProps {
   photos: Photo[];
+  worldId: string | null;
   start: number;
   height: number;
   isPriority?: boolean;
@@ -11,7 +12,14 @@ interface VirtualGridRowProps {
 }
 
 const VirtualGridRow: React.FC<VirtualGridRowProps> = React.memo(
-  ({ photos = [], start, height, isPriority = false, onPhotoSelect }) => {
+  ({
+    photos = [],
+    worldId,
+    start,
+    height,
+    isPriority = false,
+    onPhotoSelect,
+  }) => {
     if (!photos || photos.length === 0) return null;
 
     // Calculate relative widths for photos in the row
@@ -56,6 +64,7 @@ const VirtualGridRow: React.FC<VirtualGridRowProps> = React.memo(
           >
             <PhotoCard
               photo={photo}
+              worldId={worldId}
               priority={isPriority}
               onSelect={onPhotoSelect}
             />

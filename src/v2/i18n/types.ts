@@ -35,6 +35,7 @@ export interface Translations {
       copyPhotoData: string;
       openInPhotoApp: string;
       showInExplorer: string;
+      shareImage: string;
     };
   };
   locationHeader: {

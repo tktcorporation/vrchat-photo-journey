@@ -19,9 +19,10 @@ const en: Translations = {
       logFilePathSet: 'VRChat log file path set',
     },
     contextMenu: {
-      copyPhotoData: 'Copy',
-      openInPhotoApp: 'Open in photo app',
-      showInExplorer: 'Show in folder',
+      copyPhotoData: 'Copy Photo Data',
+      openInPhotoApp: 'Open in Photo App',
+      showInExplorer: 'Show in Explorer',
+      shareImage: 'Share Image',
     },
   },
   locationHeader: {
