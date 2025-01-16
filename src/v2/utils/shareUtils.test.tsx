@@ -96,7 +96,7 @@ describe('shareUtils', () => {
       // 関数を実行
       await downloadOrCopyImageAsPng({
         pngBase64: 'test-base64',
-        filenameExcludeExtension: 'test',
+        filenameWithoutExt: 'test',
         downloadOrCopyMutation: {
           mutateAsync: copyImageMutation,
         },
@@ -104,7 +104,7 @@ describe('shareUtils', () => {
 
       // copyImageMutationが正しく呼ばれたか確認
       expect(copyImageMutation).toHaveBeenCalledWith({
-        filename: 'test.png',
+        filenameWithoutExt: 'test',
         pngBase64: 'test-base64',
       });
     });
@@ -113,20 +113,20 @@ describe('shareUtils', () => {
       const copyImageMutation = vi.fn().mockResolvedValue(undefined);
       const consoleSpy = vi.spyOn(console, 'error');
 
-      try {
-        await downloadOrCopyImageAsPng({
+      await expect(
+        downloadOrCopyImageAsPng({
           pngBase64: undefined as unknown as string,
-          filenameExcludeExtension: 'test',
+          filenameWithoutExt: 'test',
           downloadOrCopyMutation: {
             mutateAsync: copyImageMutation,
           },
-        });
-      } catch (_error) {
-        expect(consoleSpy).toHaveBeenCalledWith(
-          'Failed to convert to PNG:',
-          expect.any(Error),
-        );
-      }
+        }),
+      ).rejects.toThrow('Failed to convert to PNG');
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Failed to convert to PNG:',
+        'No PNG base64 data',
+      );
     });
 
     it('should handle mutation error', async () => {
@@ -134,13 +134,15 @@ describe('shareUtils', () => {
       const copyImageMutation = vi.fn().mockRejectedValue(error);
       const consoleSpy = vi.spyOn(console, 'error');
 
-      await downloadOrCopyImageAsPng({
-        pngBase64: 'test-base64',
-        filenameExcludeExtension: 'test',
-        downloadOrCopyMutation: {
-          mutateAsync: copyImageMutation,
-        },
-      });
+      await expect(
+        downloadOrCopyImageAsPng({
+          pngBase64: 'test-base64',
+          filenameWithoutExt: 'test',
+          downloadOrCopyMutation: {
+            mutateAsync: copyImageMutation,
+          },
+        }),
+      ).rejects.toThrow('Failed to convert to PNG');
 
       expect(consoleSpy).toHaveBeenCalledWith(
         'Failed to convert to PNG:',

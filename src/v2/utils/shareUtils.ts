@@ -107,10 +107,16 @@ export const generatePngBase64FromSvgElement = async (
 /**
  * 画像をPNGとしてダウンロードまたはクリップボードにコピーするための処理
  */
-export const downloadOrCopyImageAsPng = async (
-  options: ShareImageOptions,
-): Promise<void> => {
-  const { pngBase64, filenameWithoutExt, downloadOrCopyMutation } = options;
+export const downloadOrCopyImageAsPng = async ({
+  pngBase64,
+  filenameWithoutExt,
+  downloadOrCopyMutation,
+}: ShareImageOptions): Promise<void> => {
+  if (!pngBase64) {
+    console.error('Failed to convert to PNG:', 'No PNG base64 data');
+    throw new Error('Failed to convert to PNG');
+  }
+
   try {
     await downloadOrCopyMutation.mutateAsync({
       pngBase64,
@@ -118,5 +124,6 @@ export const downloadOrCopyImageAsPng = async (
     });
   } catch (error) {
     console.error('Failed to convert to PNG:', error);
+    throw new Error('Failed to convert to PNG');
   }
 };
