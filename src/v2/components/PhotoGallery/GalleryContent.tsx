@@ -96,6 +96,7 @@ const GalleryContent = memo(
                     />
                     {group.photos.length > 0 ? (
                       <PhotoGrid
+                        worldId={group.worldInfo?.worldId ?? null}
                         photos={group.photos}
                         onPhotoSelect={setSelectedPhoto}
                       />

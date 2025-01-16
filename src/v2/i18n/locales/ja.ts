@@ -19,9 +19,10 @@ const ja: Translations = {
       logFilePathSet: 'VRChatのログファイルの保存先を設定しました',
     },
     contextMenu: {
-      copyPhotoData: 'コピー',
+      copyPhotoData: '写真データをコピー',
       openInPhotoApp: '写真アプリで開く',
-      showInExplorer: 'フォルダを開く',
+      showInExplorer: 'フォルダで表示',
+      shareImage: '写真をシェア',
     },
   },
   locationHeader: {
