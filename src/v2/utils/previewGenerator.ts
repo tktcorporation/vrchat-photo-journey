@@ -193,89 +193,35 @@ function generatePlayerElements(
   let remainingCount = 0;
 
   if (!showAllPlayers) {
-    // 2行に収まるプレイヤーを計算（+N moreを含む）
-    displayPlayers = [];
-    let tempRow = 0;
+    // +N moreの固定幅を事前に設定
+    const moreFixedWidth = 120;
+    const availableWidth = maxLineWidth - moreFixedWidth;
 
-    // +N moreの幅を事前計算
-    const getMoreWidth = (count: number) => {
-      const moreText = `+${count} more`;
-      const moreTextWidth = [...moreText].reduce((width, char) => {
-        return width + (/[\u3000-\u9fff]/.test(char) ? 16 : 8);
-      }, 0);
-      return moreTextWidth + 24;
-    };
-
-    // 最初に2行分のプレイヤーを仮配置
+    // プレイヤーを2行に配置していく
     const tempPlayers: typeof players = [];
-    let row1Width = 0;
-    let row2Width = 0;
-    let lastFitIndex = -1;
+    let currentWidth = 0;
+    let isSecondRow = false;
 
-    for (let i = 0; i < players.length; i++) {
-      const playerWidth = playerWidths[i];
+    for (const [index, width] of playerWidths.entries()) {
+      const effectiveWidth = isSecondRow ? availableWidth : maxLineWidth;
 
-      if (row1Width + playerWidth <= maxLineWidth) {
-        row1Width += playerWidth + 8;
-        tempPlayers.push(players[i]);
-        continue;
-      }
-
-      if (tempRow === 0) {
-        tempRow = 1;
-        row2Width = playerWidth + 8;
-        tempPlayers.push(players[i]);
-        continue;
-      }
-
-      if (row2Width + playerWidth <= maxLineWidth) {
-        row2Width += playerWidth + 8;
-        tempPlayers.push(players[i]);
-        lastFitIndex = i;
+      if (currentWidth + width <= effectiveWidth) {
+        tempPlayers.push(players[index]);
+        currentWidth += width + 8;
+      } else if (!isSecondRow) {
+        // 1行目が埋まったら2行目へ
+        isSecondRow = true;
+        currentWidth = width + 8;
+        tempPlayers.push(players[index]);
       } else {
+        // 2行目も埋まったら終了
         break;
       }
     }
 
-    // 残りのプレイヤー数を計算
-    const remainingPlayersCount = players.length - (lastFitIndex + 1);
-    if (remainingPlayersCount > 0) {
-      // +N moreの幅を計算（余裕を持たせる）
-      const moreWidth = getMoreWidth(remainingPlayersCount) + 32; // より大きな余裕を持たせる
-
-      // 2行目に+N moreを追加できるかチェック
-      if (row2Width + moreWidth <= maxLineWidth - 32) {
-        // 2行目自体にも余裕を持たせる
-        displayPlayers = tempPlayers;
-        remainingCount = remainingPlayersCount;
-      } else {
-        // 2行目の最後のプレイヤーを削除して+N moreを入れる
-        while (
-          tempPlayers.length > 0 &&
-          row2Width + moreWidth > maxLineWidth - 32
-        ) {
-          const lastPlayer = tempPlayers.pop();
-          if (!lastPlayer) break;
-
-          // プレイヤー名の幅を正確に計算
-          const lastWidth =
-            [...lastPlayer.playerName].reduce((width, char) => {
-              return width + (/[\u3000-\u9fff]/.test(char) ? 16 : 8);
-            }, 0) + 24;
-
-          // 実際のスペースも含めて減算
-          if (tempPlayers.length > 0) {
-            row2Width -= lastWidth + 8;
-          } else {
-            row2Width -= lastWidth;
-          }
-        }
-        displayPlayers = tempPlayers;
-        remainingCount = players.length - tempPlayers.length;
-      }
-    } else {
-      displayPlayers = tempPlayers;
-    }
+    // 全プレイヤーが表示可能か判定
+    displayPlayers = tempPlayers;
+    remainingCount = players.length - tempPlayers.length;
   } else {
     displayPlayers = players;
   }
