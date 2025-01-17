@@ -2,7 +2,7 @@ import { trpcReact } from '@/trpc';
 import pathe from 'pathe';
 import { useMemo, useState } from 'react';
 import type { Photo } from '../../types/photo';
-import { VRChatPhotoFileNameWithExtSchema } from './../../../../shared/valueObjects';
+import { VRChatPhotoFileNameWithExtSchema } from './../../../valueObjects';
 import {
   type DebugInfo,
   type GroupedPhotos,
