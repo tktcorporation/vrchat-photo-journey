@@ -23,6 +23,7 @@ const ja: Translations = {
       openInPhotoApp: '写真アプリで開く',
       showInExplorer: 'フォルダで表示',
       shareImage: '写真をシェア',
+      downloadImage: 'シェア画像をダウンロード',
     },
   },
   locationHeader: {

@@ -66,15 +66,18 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
       trpcReact.logInfo.getPlayerListInSameWorld.useQuery(photo.takenAt);
     const copyMutation =
       trpcReact.electronUtil.copyImageDataByBase64.useMutation();
+    const downloadMutation =
+      trpcReact.electronUtil.downloadImageAsPng.useMutation();
 
-    const handleShare = async (e: React.MouseEvent) => {
-      e.stopPropagation();
-      if (!photoData?.data) {
-        console.error('写真データが利用できません');
-        return;
-      }
+    const handleShare =
+      (type: 'clipboard' | 'download') => async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        console.log('handleShare', type);
+        if (!photoData?.data) {
+          console.error('写真データが利用できません');
+          return;
+        }
 
-      try {
         if (typeof photoData.data !== 'string') {
           throw new Error('写真データが文字列形式ではありません');
         }
@@ -117,19 +120,19 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
           throw new Error('生成された画像が不正なBase64形式です');
         }
 
-        await copyMutation.mutateAsync({
-          pngBase64: base64WithPrefix,
-          filenameWithoutExt: `${photo.fileNameWithExt.value}_share`,
-        });
-
-        console.log('画像をクリップボードにコピーしました');
-      } catch (error) {
-        console.error('共有画像の生成またはコピーに失敗しました:', error);
-        if (error instanceof Error) {
-          console.error('エラーの詳細:', error.message);
+        if (type === 'clipboard') {
+          await copyMutation.mutateAsync({
+            pngBase64: base64WithPrefix,
+            filenameWithoutExt: `${photo.fileNameWithExt.value}_share`,
+          });
+        } else {
+          await downloadMutation.mutateAsync({
+            pngBase64: base64WithPrefix,
+            filenameWithoutExt: `${photo.fileNameWithExt.value}_share`,
+          });
         }
-      }
-    };
+        console.log('共有画像の生成とコピーが完了しました');
+      };
 
     return (
       <div
@@ -171,8 +174,11 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
             </div>
           </ContextMenuTrigger>
           <ContextMenuContent onClick={(e) => e.stopPropagation()}>
-            <ContextMenuItem onClick={handleShare}>
+            <ContextMenuItem onClick={handleShare('clipboard')}>
               {t('common.contextMenu.shareImage')}
+            </ContextMenuItem>
+            <ContextMenuItem onClick={handleShare('download')}>
+              {t('common.contextMenu.downloadImage')}
             </ContextMenuItem>
             <ContextMenuItem onClick={handleCopyPhotoData}>
               {t('common.contextMenu.copyPhotoData')}

@@ -122,12 +122,15 @@ const handlePngBase64 = async (
 ) => {
   let tempDir = '';
   try {
+    // Base64データからプレフィックスを除去
+    const base64Data = pngBase64.replace(/^data:image\/[^;]+;base64,/, '');
+
     // 一時ディレクトリを作成
     tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'vrchat-photo-'));
     const tempFilePath = path.join(tempDir, `${filenameWithoutExt}.png`);
 
     // Base64データをバッファに変換
-    const imageBuffer = Buffer.from(pngBase64, 'base64');
+    const imageBuffer = Buffer.from(base64Data, 'base64');
 
     // ファイルに保存
     await fs.writeFile(tempFilePath, new Uint8Array(imageBuffer));
@@ -136,6 +139,7 @@ const handlePngBase64 = async (
     await callback(tempFilePath);
   } catch (error) {
     console.error('Failed to handle png file:', error);
+    eventEmitter.emit('toast', 'error');
     throw new Error('Failed to handle png file', { cause: error });
   } finally {
     // 一時ディレクトリが存在する場合のみ削除を試みる

@@ -23,6 +23,7 @@ const en: Translations = {
       openInPhotoApp: 'Open in Photo App',
       showInExplorer: 'Show in Explorer',
       shareImage: 'Share Image',
+      downloadImage: 'Download Image',
     },
   },
   locationHeader: {
