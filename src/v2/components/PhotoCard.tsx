@@ -34,9 +34,17 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
     const shouldLoad = priority || isIntersecting;
     const placeholderUrl = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${photo.width} ${photo.height}'%3E%3Crect width='100%25' height='100%25' fill='%23f3f4f6'/%3E%3C/svg%3E`;
 
+    const validatePhotoPathMutation =
+      trpcReact.vrchatPhoto.validateVRChatPhotoPath.useMutation();
+
     const { data: photoData } =
       trpcReact.vrchatPhoto.getVRChatPhotoItemData.useQuery(photo.url, {
         enabled: shouldLoad,
+        onSuccess: (result) => {
+          if (result.error === 'InputFileIsMissing') {
+            validatePhotoPathMutation.mutate(photo.url);
+          }
+        },
       });
 
     const mutation = trpcReact.electronUtil.copyImageDataByPath.useMutation();
