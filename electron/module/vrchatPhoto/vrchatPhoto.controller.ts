@@ -113,8 +113,22 @@ export const vrchatPhotoRouter = () =>
       console.log(result.value);
       return result.value;
     }),
+    getVRChatPhotoItemDataMutation: procedure
+      .input(z.object({ photoPath: z.string(), width: z.number().optional() }))
+      .mutation(async (ctx) => {
+        const result = await vrchatPhotoService.getVRChatPhotoItemData(
+          ctx.input,
+        );
+        if (result.isErr()) {
+          throw result.error;
+        }
+        return result.value;
+      }),
     getVRChatPhotoItemData: procedure.input(z.string()).query(async (ctx) => {
-      const result = await vrchatPhotoService.getVRChatPhotoItemData(ctx.input);
+      const result = await vrchatPhotoService.getVRChatPhotoItemData({
+        photoPath: ctx.input,
+        width: 256,
+      });
       if (result.isErr()) {
         return {
           data: null,
