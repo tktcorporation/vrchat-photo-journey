@@ -181,14 +181,21 @@ export const validateVRChatPhotoPathModel = async ({
   return 'VALID';
 };
 
-export const getVRChatPhotoItemData = async (
-  input: string,
-): Promise<neverthrow.Result<string, 'InputFileIsMissing'>> => {
+export const getVRChatPhotoItemData = async ({
+  photoPath,
+  width,
+}: {
+  photoPath: string;
+  // 指定しない場合は元画像のサイズをそのまま返す
+  width?: number;
+}): Promise<neverthrow.Result<string, 'InputFileIsMissing'>> => {
   try {
-    const photoBuf = await sharp(input).resize(256).toBuffer();
+    const photoBuf = await sharp(photoPath)
+      .resize(width ?? undefined)
+      .toBuffer();
     return neverthrow.ok(
       `data:image/${path
-        .extname(input)
+        .extname(photoPath)
         .replace('.', '')};base64,${photoBuf.toString('base64')}`,
     );
   } catch (error) {

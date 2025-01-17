@@ -68,24 +68,19 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
       trpcReact.electronUtil.copyImageDataByBase64.useMutation();
     const downloadMutation =
       trpcReact.electronUtil.downloadImageAsPng.useMutation();
+    const getVRChatPhotoItemDataMutation =
+      trpcReact.vrchatPhoto.getVRChatPhotoItemDataMutation.useMutation();
 
     const handleShare =
       (type: 'clipboard' | 'download') => async (e: React.MouseEvent) => {
         e.stopPropagation();
         console.log('handleShare', type);
-        if (!photoData?.data) {
-          console.error('写真データが利用できません');
-          return;
-        }
+        const data = await getVRChatPhotoItemDataMutation.mutateAsync({
+          photoPath: photo.url,
+          width: undefined,
+        });
 
-        if (typeof photoData.data !== 'string') {
-          throw new Error('写真データが文字列形式ではありません');
-        }
-
-        const cleanBase64 = photoData.data.replace(
-          /^data:image\/[^;]+;base64,/,
-          '',
-        );
+        const cleanBase64 = data.replace(/^data:image\/[^;]+;base64,/, '');
         if (!cleanBase64.match(/^[A-Za-z0-9+/]*={0,2}$/)) {
           throw new Error('不正なBase64形式です');
         }
