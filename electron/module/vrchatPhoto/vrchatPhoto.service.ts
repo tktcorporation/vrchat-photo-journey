@@ -7,6 +7,7 @@ import sharp from 'sharp';
 import { P, match } from 'ts-pattern';
 import * as fs from '../../lib/wrappedFs';
 import { getSettingStore } from '../settingStore';
+import { logger } from './../../lib/logger';
 import * as model from './model/vrchatPhotoPath.model';
 import {
   type VRChatPhotoDirPath,
@@ -116,11 +117,13 @@ export const getVRChatPhotoList = async (
 };
 
 export const createVRChatPhotoPathIndex = async (
-  lastProcessedDate?: string | null,
+  lastProcessedDate?: Date | null,
 ) => {
   const mainPhotoList = await getVRChatPhotoList();
+  logger.info('mainPhotoList', mainPhotoList.length);
   const settingStore = getSettingStore();
   const extraDirs = settingStore.getVRChatPhotoExtraDirList();
+  logger.info('extraDirs', extraDirs.length);
 
   // 追加ディレクトリからの写真リストを取得
   const extraPhotoLists = await Promise.all(
@@ -131,11 +134,10 @@ export const createVRChatPhotoPathIndex = async (
 
   // メインディレクトリと追加ディレクトリの写真リストを結合
   const allPhotoList = [...mainPhotoList, ...extraPhotoLists.flat()];
+  logger.info('allPhotoList', allPhotoList.length);
 
   const filteredPhotoList = lastProcessedDate
-    ? allPhotoList.filter(
-        (photo) => photo.takenAt > new Date(lastProcessedDate),
-      )
+    ? allPhotoList.filter((photo) => photo.takenAt > lastProcessedDate)
     : allPhotoList;
 
   // DBに保存
@@ -216,7 +218,7 @@ export const getVRChatPhotoItemData = async ({
   }
 };
 
-export const getLatestPhotoDate = async (): Promise<string | null> => {
+export const getLatestPhotoDate = async (): Promise<Date | null> => {
   const latestPhoto = await model.getLatestVRChatPhoto();
-  return latestPhoto?.photoTakenAt.toISOString() ?? null;
+  return latestPhoto?.photoTakenAt ?? null;
 };
