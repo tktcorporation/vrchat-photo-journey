@@ -55,12 +55,12 @@ export const loadLogInfoIndexFromVRChatLog = async ({
         if (log.logType === 'worldJoin') {
           return (
             !latestWorldJoinDate ||
-            new Date(log.joinDate) > new Date(latestWorldJoinDate.joinDateTime)
+            log.joinDate > latestWorldJoinDate.joinDateTime
           );
         }
         return (
           !latestPlayerJoinDate ||
-          new Date(log.joinDate) > new Date(latestPlayerJoinDate.joinDateTime)
+          log.joinDate > latestPlayerJoinDate.joinDateTime
         );
       });
     })
@@ -97,12 +97,12 @@ export const loadLogInfoIndexFromVRChatLog = async ({
 
   // 写真のインデックスも同様にexcludeOldLogLoadに応じて最新日時以降のみを処理
 
-  const latestPhoto = await match(excludeOldLogLoad)
+  const latestPhotoDate = await match(excludeOldLogLoad)
     .with(true, async () => await vrchatPhotoService.getLatestPhotoDate())
     .with(false, () => null)
     .exhaustive();
   const photoResults =
-    await vrchatPhotoService.createVRChatPhotoPathIndex(latestPhoto);
+    await vrchatPhotoService.createVRChatPhotoPathIndex(latestPhotoDate);
   results.createdVRChatPhotoPathModelList = photoResults;
 
   return neverthrow.ok(results);
