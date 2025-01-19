@@ -151,6 +151,10 @@ const clearStoredSetting =
 
 import path from 'node:path';
 import * as log from './../lib/logger';
+import {
+  type VRChatPhotoDirPath,
+  VRChatPhotoDirPathSchema,
+} from './vrchatPhoto/valueObjects';
 let settingStore: ReturnType<typeof setSettingStore> | null = null;
 const setSettingStore = (name: storeName) => {
   const store = new Store({ name });
@@ -162,12 +166,15 @@ const setSettingStore = (name: storeName) => {
     getStr: getStr(get),
     getBool: getBool(get),
   };
-  const getVRChatPhotoExtraDirList = () => (): string[] => {
+  const getVRChatPhotoExtraDirList = () => (): VRChatPhotoDirPath[] => {
     const value = get('vrchatPhotoExtraDirList');
     if (!Array.isArray(value)) {
       return [];
     }
-    return value.filter((item): item is string => typeof item === 'string');
+    const parsedValue = value.filter(
+      (item): item is string => typeof item === 'string',
+    );
+    return parsedValue.map((item) => VRChatPhotoDirPathSchema.parse(item));
   };
 
   const setVRChatPhotoExtraDirList =
@@ -251,7 +258,7 @@ export interface SettingStore {
   setLogFilesDir: (dirPath: string) => void;
   getVRChatPhotoDir: () => string | null;
   setVRChatPhotoDir: (dirPath: string) => void;
-  getVRChatPhotoExtraDirList: () => string[];
+  getVRChatPhotoExtraDirList: () => VRChatPhotoDirPath[];
   setVRChatPhotoExtraDirList: (dirPaths: string[]) => void;
   getRemoveAdjacentDuplicateWorldEntriesFlag: () => boolean | null;
   setRemoveAdjacentDuplicateWorldEntriesFlag: (flag: boolean) => void;
