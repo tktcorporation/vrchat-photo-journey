@@ -79,12 +79,19 @@ export const getVRChatPhotoList = async (
 ): Promise<VRChatPhotoInfo[]> => {
   const settingStore = getSettingStore();
   const targetDir = dirPath || settingStore.getVRChatPhotoDir();
+  logger.info('targetDir', targetDir);
   if (!targetDir) {
     return [];
   }
 
+  // Windows環境でもパスの区切り文字を/に統一
+  const normalizedTargetDir = path
+    .normalize(targetDir)
+    .split(path.sep)
+    .join('/');
+  logger.info('normalizedTargetDir', normalizedTargetDir);
   // {photoDir}/**/VRChat_2023-11-08_15-11-42.163_2560x1440.png のようなファイル名のリストを取得
-  const photoPathList = await glob(`${targetDir}/**/VRChat_*.png`);
+  const photoPathList = await glob(`${normalizedTargetDir}/**/VRChat_*.png`);
 
   // ファイル名から日時を取得
   const photoList: VRChatPhotoInfo[] = [];
@@ -100,17 +107,31 @@ export const getVRChatPhotoList = async (
       // ファイル名の日時はlocal time なので、そのままparseする
       dateFns.parse(matchResult[1], 'yyyy-MM-dd_HH-mm-ss.SSS', new Date());
 
-    // 画像のメタデータを取得
-    const metadata = await sharp(photoPath).metadata();
-    const height = metadata.height ?? 720;
-    const width = metadata.width ?? 1280;
+    try {
+      // 画像のメタデータを取得
+      const metadata = await sharp(photoPath).metadata();
+      const height = metadata.height ?? 720;
+      const width = metadata.width ?? 1280;
 
-    photoList.push({
-      photoPath,
-      takenAt,
-      width,
-      height,
-    });
+      photoList.push({
+        photoPath,
+        takenAt,
+        width,
+        height,
+      });
+    } catch (error) {
+      logger.error({
+        message: `Failed to get photo metadata for ${photoPath}`,
+        stack: error instanceof Error ? error : new Error('Unknown error'),
+      });
+      // メタデータの取得に失敗しても、デフォルト値で続行
+      photoList.push({
+        photoPath,
+        takenAt,
+        width: 1280,
+        height: 720,
+      });
+    }
   }
 
   return photoList;
