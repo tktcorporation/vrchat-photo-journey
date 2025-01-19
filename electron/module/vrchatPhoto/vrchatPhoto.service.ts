@@ -75,11 +75,9 @@ interface VRChatPhotoInfo {
 }
 
 export const getVRChatPhotoList = async (
-  dirPath?: string,
+  dirPath: VRChatPhotoDirPath,
 ): Promise<VRChatPhotoInfo[]> => {
-  const settingStore = getSettingStore();
-  const targetDir = dirPath || settingStore.getVRChatPhotoDir();
-  logger.info('targetDir', targetDir);
+  const targetDir = dirPath.value;
   if (!targetDir) {
     return [];
   }
@@ -89,7 +87,6 @@ export const getVRChatPhotoList = async (
     .normalize(targetDir)
     .split(path.sep)
     .join('/');
-  logger.info('normalizedTargetDir', normalizedTargetDir);
   // {photoDir}/**/VRChat_2023-11-08_15-11-42.163_2560x1440.png のようなファイル名のリストを取得
   const photoPathList = await glob(`${normalizedTargetDir}/**/VRChat_*.png`);
 
@@ -140,11 +137,10 @@ export const getVRChatPhotoList = async (
 export const createVRChatPhotoPathIndex = async (
   lastProcessedDate?: Date | null,
 ) => {
-  const mainPhotoList = await getVRChatPhotoList();
-  logger.info('mainPhotoList', mainPhotoList.length);
+  const targetDir = getVRChatPhotoDirPath();
+  const mainPhotoList = await getVRChatPhotoList(targetDir);
   const settingStore = getSettingStore();
   const extraDirs = settingStore.getVRChatPhotoExtraDirList();
-  logger.info('extraDirs', extraDirs.length);
 
   // 追加ディレクトリからの写真リストを取得
   const extraPhotoLists = await Promise.all(
@@ -155,7 +151,6 @@ export const createVRChatPhotoPathIndex = async (
 
   // メインディレクトリと追加ディレクトリの写真リストを結合
   const allPhotoList = [...mainPhotoList, ...extraPhotoLists.flat()];
-  logger.info('allPhotoList', allPhotoList.length);
 
   const filteredPhotoList = lastProcessedDate
     ? allPhotoList.filter((photo) => photo.takenAt > lastProcessedDate)
