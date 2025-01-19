@@ -161,8 +161,9 @@ export const router = trpcRouter({
       });
     }
   }),
-  getVRChatPhotoExtraDirList: procedure.query(() => {
-    return settingStore.getVRChatPhotoExtraDirList();
+  getVRChatPhotoExtraDirList: procedure.query((): string[] => {
+    const extraDirs = settingStore.getVRChatPhotoExtraDirList();
+    return extraDirs.map((dir) => dir.value);
   }),
   setVRChatPhotoExtraDirList: procedure
     .input(z.array(z.string()))
