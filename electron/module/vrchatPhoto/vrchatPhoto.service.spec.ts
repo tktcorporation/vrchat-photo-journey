@@ -2,6 +2,7 @@ import { app } from 'electron';
 import { glob } from 'glob';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { type SettingStore, getSettingStore } from '../settingStore';
+import { VRChatPhotoDirPathSchema } from './valueObjects';
 import {
   getVRChatPhotoItemData,
   getVRChatPhotoList,
@@ -22,12 +23,14 @@ vi.mock('glob', () => ({
 }));
 
 vi.mock('sharp', () => {
+  const mockMetadata = vi.fn().mockResolvedValue({ width: 1920, height: 1080 });
+  const mockSharp = vi.fn().mockImplementation(() => ({
+    metadata: mockMetadata,
+    resize: vi.fn().mockReturnThis(),
+    toBuffer: vi.fn().mockResolvedValue(Buffer.from('dummy')),
+  }));
   return {
-    default: vi.fn().mockImplementation(() => ({
-      metadata: vi.fn().mockResolvedValue({ width: 1920, height: 1080 }),
-      resize: vi.fn().mockReturnThis(),
-      toBuffer: vi.fn().mockResolvedValue(Buffer.from('dummy')),
-    })),
+    default: mockSharp,
   };
 });
 
@@ -77,7 +80,16 @@ describe('vrchatPhoto.service', () => {
           .fn()
           .mockReturnValue('C:\\Users\\TestUser\\Pictures\\VRChat'),
         setVRChatPhotoDir: vi.fn(),
-        getVRChatPhotoExtraDirList: vi.fn().mockReturnValue([]),
+        getVRChatPhotoExtraDirList: vi
+          .fn()
+          .mockReturnValue([
+            VRChatPhotoDirPathSchema.parse(
+              'C:\\Users\\TestUser\\Pictures\\VRChat\\Extra1',
+            ),
+            VRChatPhotoDirPathSchema.parse(
+              'C:\\Users\\TestUser\\Pictures\\VRChat\\Extra2',
+            ),
+          ]),
         setVRChatPhotoExtraDirList: vi.fn(),
         clearStoredSetting: vi.fn(),
         getTermsVersion: vi.fn(),
@@ -94,7 +106,9 @@ describe('vrchatPhoto.service', () => {
       };
       vi.mocked(getSettingStore).mockReturnValue(mockSettingStore);
 
-      const result = await getVRChatPhotoList();
+      const result = await getVRChatPhotoList(
+        VRChatPhotoDirPathSchema.parse('C:\\Users\\TestUser\\Pictures\\VRChat'),
+      );
       expect(result).toEqual([]);
       expect(glob).toHaveBeenCalledWith(
         'C:/Users/TestUser/Pictures/VRChat/**/VRChat_*.png',
@@ -122,7 +136,16 @@ describe('vrchatPhoto.service', () => {
           .fn()
           .mockReturnValue('C:\\Users\\TestUser\\Pictures\\VRChat'),
         setVRChatPhotoDir: vi.fn(),
-        getVRChatPhotoExtraDirList: vi.fn().mockReturnValue([]),
+        getVRChatPhotoExtraDirList: vi
+          .fn()
+          .mockReturnValue([
+            VRChatPhotoDirPathSchema.parse(
+              'C:\\Users\\TestUser\\Pictures\\VRChat\\Extra1',
+            ),
+            VRChatPhotoDirPathSchema.parse(
+              'C:\\Users\\TestUser\\Pictures\\VRChat\\Extra2',
+            ),
+          ]),
         setVRChatPhotoExtraDirList: vi.fn(),
         clearStoredSetting: vi.fn(),
         getTermsVersion: vi.fn(),
@@ -139,7 +162,9 @@ describe('vrchatPhoto.service', () => {
       };
       vi.mocked(getSettingStore).mockReturnValue(mockSettingStore);
 
-      const result = await getVRChatPhotoList();
+      const result = await getVRChatPhotoList(
+        VRChatPhotoDirPathSchema.parse('C:\\Users\\TestUser\\Pictures\\VRChat'),
+      );
       expect(result.length).toBe(2);
       expect(glob).toHaveBeenCalledWith(
         'C:/Users/TestUser/Pictures/VRChat/**/VRChat_*.png',

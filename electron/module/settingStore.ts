@@ -258,7 +258,7 @@ export interface SettingStore {
   setLogFilesDir: (dirPath: string) => void;
   getVRChatPhotoDir: () => string | null;
   setVRChatPhotoDir: (dirPath: string) => void;
-  getVRChatPhotoExtraDirList: () => string[];
+  getVRChatPhotoExtraDirList: () => VRChatPhotoDirPath[];
   setVRChatPhotoExtraDirList: (dirPaths: string[]) => void;
   getRemoveAdjacentDuplicateWorldEntriesFlag: () => boolean | null;
   setRemoveAdjacentDuplicateWorldEntriesFlag: (flag: boolean) => void;
