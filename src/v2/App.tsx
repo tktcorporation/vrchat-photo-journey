@@ -32,6 +32,13 @@ function AppContent() {
     });
   const { mutateAsync: initializeSentryMain } =
     trpcReact.initializeSentry.useMutation({
+      onSuccess: () => {
+        // メインプロセスでの初期化が成功した場合のみ、レンダラープロセスでも初期化
+        initSentry({
+          dsn: 'https://0c062396cbe896482888204f42f947ec@o4504163555213312.ingest.us.sentry.io/4508574659837952',
+          environment: process.env.NODE_ENV,
+        });
+      },
       onError: (error) => {
         toast({
           variant: 'destructive',
@@ -59,25 +66,15 @@ function AppContent() {
         setHasAcceptedTerms(false);
       } else {
         setHasAcceptedTerms(true);
-        // 規約同意済みの場合のみSentryを初期化
-        await initializeSentry();
+        // 規約同意済みの場合はSentryを初期化
+        if (process.env.NODE_ENV === 'production') {
+          await initializeSentryMain();
+        }
       }
     };
 
     checkTermsAcceptance();
   }, [termsStatus]);
-
-  const initializeSentry = async () => {
-    // レンダラープロセスのSentryを初期化
-    if (termsStatus?.accepted && process.env.NODE_ENV === 'production') {
-      initSentry({
-        dsn: process.env.VITE_SENTRY_DSN,
-        enableNative: true,
-      });
-      // メインプロセスのSentryを初期化
-      await initializeSentryMain();
-    }
-  };
 
   const handleTermsAccept = async () => {
     await setTermsAccepted({
@@ -87,7 +84,9 @@ function AppContent() {
     setShowTerms(false);
     setHasAcceptedTerms(true);
     // 規約同意時にSentryを初期化
-    await initializeSentry();
+    if (process.env.NODE_ENV === 'production') {
+      await initializeSentryMain();
+    }
   };
 
   if (!hasAcceptedTerms) {
