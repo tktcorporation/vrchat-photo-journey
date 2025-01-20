@@ -156,8 +156,8 @@ export const router = trpcRouter({
     const hasAcceptedTerms = settingStore.getTermsAccepted();
     if (hasAcceptedTerms && process.env.NODE_ENV === 'production') {
       initSentry({
-        dsn: process.env.VITE_SENTRY_DSN,
-        debug: false,
+        dsn: 'https://0c062396cbe896482888204f42f947ec@o4504163555213312.ingest.us.sentry.io/4508574659837952',
+        environment: process.env.NODE_ENV,
       });
     }
   }),
