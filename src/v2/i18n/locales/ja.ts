@@ -76,7 +76,7 @@ const ja: Translations = {
     paths: {
       useDemo: 'デモデータを使用',
       useLocal: 'ローカルファイルを使用',
-      photoDirectory: '写真デォルダ',
+      photoDirectory: '写真フォルダ',
       logFile: 'ログファイル',
       browse: '参照',
       validate: '確認',

@@ -65,7 +65,7 @@ const SettingsModal = memo(({ onClose }: SettingsModalProps) => {
       id: 'paths',
       label: t('settings.tabs.dataSource'),
       icon: FolderOpen,
-      component: PathSettings,
+      component: () => <PathSettings showRefreshAll={true} />,
     },
     {
       id: 'theme',
