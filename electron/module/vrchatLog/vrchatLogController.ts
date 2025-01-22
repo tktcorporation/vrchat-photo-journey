@@ -41,7 +41,13 @@ const appendLoglinesToFileFromLogFilePathList = async (): Promise<
   }
   const logLineList = await vrchatLogService.getLogLinesByLogFilePathList({
     logFilePathList: logFilePathList.value,
-    includesList: ['[Behaviour] OnPlayerJoinComplete', '[Behaviour] Joining '],
+    includesList: [
+      'VRC Analytics Initialized',
+      '[Behaviour] OnPlayerJoinComplete',
+      '[Behaviour] Joining ',
+      '[Behaviour] OnPlayerLeft ',
+      'VRCApplication: HandleApplicationQuit',
+    ],
   });
   if (logLineList.isErr()) {
     return neverthrow.err(logLineList.error);

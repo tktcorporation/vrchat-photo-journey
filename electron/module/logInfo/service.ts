@@ -2,8 +2,11 @@ import * as neverthrow from 'neverthrow';
 import { match } from 'ts-pattern';
 import type { VRChatPlayerJoinLogModel } from '../VRChatPlayerJoinLogModel/playerJoinInfoLog.model';
 import * as playerJoinLogService from '../VRChatPlayerJoinLogModel/playerJoinLog.service';
+import type { VRChatPlayerLeaveLogModel } from '../VRChatPlayerLeaveLogModel/playerLeaveLog.model';
+import * as playerLeaveLogService from '../VRChatPlayerLeaveLogModel/playerLeaveLog.service';
 import {
   type VRChatPlayerJoinLog,
+  type VRChatPlayerLeaveLog,
   type VRChatWorldJoinLog,
   getLogStoreFilePath,
   getVRChaLogInfoByLogFilePathList,
@@ -20,6 +23,7 @@ interface LogProcessingResults {
   createdVRChatPhotoPathModelList: VRChatPhotoPathModel[];
   createdWorldJoinLogModelList: VRChatWorldJoinLogModel[];
   createdPlayerJoinLogModelList: VRChatPlayerJoinLogModel[];
+  createdPlayerLeaveLogModelList: VRChatPlayerLeaveLogModel[];
 }
 
 export const loadLogInfoIndexFromVRChatLog = async ({
@@ -47,10 +51,12 @@ export const loadLogInfoIndexFromVRChatLog = async ({
     // DBの最新日時以降のログのみをフィルタリング
     .with(true, async () => {
       // ログの最新日時を取得
-      const [latestWorldJoinDate, latestPlayerJoinDate] = await Promise.all([
-        worldJoinLogService.findLatestWorldJoinLog(),
-        playerJoinLogService.findLatestPlayerJoinLog(),
-      ]);
+      const [latestWorldJoinDate, latestPlayerJoinDate, latestPlayerLeaveDate] =
+        await Promise.all([
+          worldJoinLogService.findLatestWorldJoinLog(),
+          playerJoinLogService.findLatestPlayerJoinLog(),
+          playerLeaveLogService.findLatestPlayerLeaveLog(),
+        ]);
       return logInfoList.filter((log) => {
         if (log.logType === 'worldJoin') {
           return (
@@ -58,10 +64,19 @@ export const loadLogInfoIndexFromVRChatLog = async ({
             log.joinDate > latestWorldJoinDate.joinDateTime
           );
         }
-        return (
-          !latestPlayerJoinDate ||
-          log.joinDate > latestPlayerJoinDate.joinDateTime
-        );
+        if (log.logType === 'playerJoin') {
+          return (
+            !latestPlayerJoinDate ||
+            log.joinDate > latestPlayerJoinDate.joinDateTime
+          );
+        }
+        if (log.logType === 'playerLeave') {
+          return (
+            !latestPlayerLeaveDate ||
+            log.leaveDate > latestPlayerLeaveDate.leaveDateTime
+          );
+        }
+        return false;
       });
     })
     .with(false, () => logInfoList)
@@ -71,6 +86,7 @@ export const loadLogInfoIndexFromVRChatLog = async ({
     createdVRChatPhotoPathModelList: [],
     createdWorldJoinLogModelList: [],
     createdPlayerJoinLogModelList: [],
+    createdPlayerLeaveLogModelList: [],
   };
 
   // バッチ処理の実装
@@ -83,16 +99,25 @@ export const loadLogInfoIndexFromVRChatLog = async ({
     const playerJoinLogBatch = batch.filter(
       (log): log is VRChatPlayerJoinLog => log.logType === 'playerJoin',
     );
+    const playerLeaveLogBatch = batch.filter(
+      (log): log is VRChatPlayerLeaveLog => log.logType === 'playerLeave',
+    );
 
-    const [worldJoinResults, playerJoinResults] = await Promise.all([
-      worldJoinLogService.createVRChatWorldJoinLogModel(worldJoinLogBatch),
-      playerJoinLogService.createVRChatPlayerJoinLogModel(playerJoinLogBatch),
-    ]);
+    const [worldJoinResults, playerJoinResults, playerLeaveResults] =
+      await Promise.all([
+        worldJoinLogService.createVRChatWorldJoinLogModel(worldJoinLogBatch),
+        playerJoinLogService.createVRChatPlayerJoinLogModel(playerJoinLogBatch),
+        playerLeaveLogService.createVRChatPlayerLeaveLogModel(
+          playerLeaveLogBatch,
+        ),
+      ]);
 
     results.createdWorldJoinLogModelList =
       results.createdWorldJoinLogModelList.concat(worldJoinResults);
     results.createdPlayerJoinLogModelList =
       results.createdPlayerJoinLogModelList.concat(playerJoinResults);
+    results.createdPlayerLeaveLogModelList =
+      results.createdPlayerLeaveLogModelList.concat(playerLeaveResults);
   }
 
   // 写真のインデックスも同様にexcludeOldLogLoadに応じて最新日時以降のみを処理

@@ -10,6 +10,7 @@ import {
   VRChatLogStoreFilePathSchema,
 } from './model';
 import * as service from './service';
+import type { VRChatPlayerLeaveLog } from './service';
 
 describe('getVRChaLogInfoFromLogPath', () => {
   interface VRChatWorldJoinLog {
@@ -28,7 +29,7 @@ describe('getVRChaLogInfoFromLogPath', () => {
     logFilesDir: VRChatLogFilesDirPath,
   ) => Promise<
     neverthrow.Result<
-      (VRChatWorldJoinLog | VRChatPlayerJoinLog)[],
+      (VRChatWorldJoinLog | VRChatPlayerJoinLog | VRChatPlayerLeaveLog)[],
       VRChatLogFileError
     >
   >;
@@ -47,12 +48,13 @@ describe('getVRChaLogInfoFromLogPath', () => {
     }
     expect(result.value.length).toBeGreaterThan(0);
     for (const log of result.value) {
-      expect(log.joinDate).toBeInstanceOf(Date);
       if (log.logType === 'playerJoin') {
+        expect(log.joinDate).toBeInstanceOf(Date);
         expect(log.playerName.length).toBeGreaterThan(0);
         continue;
       }
       if (log.logType === 'worldJoin') {
+        expect(log.joinDate).toBeInstanceOf(Date);
         expect(log.worldId).toMatch(
           /^wrld_[a-zA-Z0-9]+-[a-zA-Z0-9]+-[a-zA-Z0-9]+-[a-zA-Z0-9]+-[a-zA-Z0-9]+$/,
         );
@@ -60,6 +62,11 @@ describe('getVRChaLogInfoFromLogPath', () => {
         // 91889~region(jp)
         expect(log.worldInstanceId).toMatch(/^[0-9]+~.+$/);
         expect(log.worldName.length).toBeGreaterThan(0);
+        continue;
+      }
+      if (log.logType === 'playerLeave') {
+        expect(log.leaveDate).toBeInstanceOf(Date);
+        expect(log.playerName.length).toBeGreaterThan(0);
         continue;
       }
       throw new Error('Unexpected log type');

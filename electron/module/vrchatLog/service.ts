@@ -34,12 +34,18 @@ export interface VRChatPlayerJoinLog {
   joinDate: Date;
   playerName: string;
 }
+export interface VRChatPlayerLeaveLog {
+  logType: 'playerLeave';
+  leaveDate: Date;
+  playerName: string;
+  playerId: string;
+}
 
 export const getVRChaLogInfoFromLogPath = async (
   logFilesDir: VRChatLogFilesDirPath,
 ): Promise<
   neverthrow.Result<
-    (VRChatWorldJoinLog | VRChatPlayerJoinLog)[],
+    (VRChatWorldJoinLog | VRChatPlayerJoinLog | VRChatPlayerLeaveLog)[],
     VRChatLogFileError
   >
 > => {
@@ -66,20 +72,27 @@ export const getVRChaLogInfoByLogFilePathList = async (
   logFilePathList: (VRChatLogFilePath | VRChatLogStoreFilePath)[],
 ): Promise<
   neverthrow.Result<
-    (VRChatWorldJoinLog | VRChatPlayerJoinLog)[],
+    (VRChatWorldJoinLog | VRChatPlayerJoinLog | VRChatPlayerLeaveLog)[],
     VRChatLogFileError
   >
 > => {
   const logLineList = await getLogLinesByLogFilePathList({
     logFilePathList,
-    includesList: ['[Behaviour] OnPlayerJoinComplete', '[Behaviour] Joining '],
+    includesList: [
+      '[Behaviour] OnPlayerJoinComplete',
+      '[Behaviour] Joining ',
+      '[Behaviour] OnPlayerLeft',
+    ],
   });
   if (logLineList.isErr()) {
     return neverthrow.err(logLineList.error);
   }
 
-  const logInfoList: (VRChatWorldJoinLog | VRChatPlayerJoinLog)[] =
-    convertLogLinesToWorldAndPlayerJoinLogInfos(logLineList.value);
+  const logInfoList: (
+    | VRChatWorldJoinLog
+    | VRChatPlayerJoinLog
+    | VRChatPlayerLeaveLog
+  )[] = convertLogLinesToWorldAndPlayerJoinLogInfos(logLineList.value);
 
   return neverthrow.ok(logInfoList);
 };
@@ -142,8 +155,12 @@ const getLogLinesFromLogFileName = async (props: {
 
 const convertLogLinesToWorldAndPlayerJoinLogInfos = (
   logLines: VRChatLogLine[],
-): (VRChatWorldJoinLog | VRChatPlayerJoinLog)[] => {
-  const logInfos: (VRChatWorldJoinLog | VRChatPlayerJoinLog)[] = [];
+): (VRChatWorldJoinLog | VRChatPlayerJoinLog | VRChatPlayerLeaveLog)[] => {
+  const logInfos: (
+    | VRChatWorldJoinLog
+    | VRChatPlayerJoinLog
+    | VRChatPlayerLeaveLog
+  )[] = [];
   for (const [index, l] of logLines.entries()) {
     if (l.value.includes('Joining wrld')) {
       const info = extractWorldJoinInfoFromLogs(logLines, index);
@@ -153,6 +170,15 @@ const convertLogLinesToWorldAndPlayerJoinLogInfos = (
     }
     if (l.value.includes('OnPlayerJoinComplete')) {
       const info = extractPlayerJoinInfoFromLog(l);
+      if (info) {
+        logInfos.push(info);
+      }
+    }
+    if (
+      l.value.includes('OnPlayerLeft') &&
+      !l.value.includes('OnPlayerLeftRoom')
+    ) {
+      const info = extractPlayerLeaveInfoFromLog(l);
       if (info) {
         logInfos.push(info);
       }
@@ -242,6 +268,35 @@ const extractPlayerJoinInfoFromLog = (
     logType: 'playerJoin',
     joinDate: joinDateTime,
     playerName,
+  };
+};
+
+const extractPlayerLeaveInfoFromLog = (
+  logLine: VRChatLogLine,
+): VRChatPlayerLeaveLog => {
+  // 下記のように、プレイヤー名は空白を含む場合がある
+  // 2025.01.08 00:22:04 Log        -  [Behaviour] OnPlayerLeft プレイヤー ⁄ A (usr_34a27988-a7e4-4d5e-a49a-ae5975422779)
+  const regex =
+    /(\d{4}\.\d{2}\.\d{2})\s+(\d{2}:\d{2}:\d{2})\s+Log\s+-\s+\[Behaviour\] OnPlayerLeft (.+) \((usr_[^)]+)\)/;
+  const matches = logLine.value.match(regex);
+  if (!matches) {
+    throw new Error(
+      `Log line did not match the expected format: ${logLine.value}`,
+    );
+  }
+
+  const [, date, time, playerName, playerId] = matches;
+  const leaveDateTime = datefns.parse(
+    `${date.replace(/\./g, '-')} ${time}`,
+    'yyyy-MM-dd HH:mm:ss',
+    new Date(),
+  );
+
+  return {
+    logType: 'playerLeave',
+    leaveDate: leaveDateTime,
+    playerName,
+    playerId,
   };
 };
 
