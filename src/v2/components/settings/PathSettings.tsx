@@ -6,7 +6,10 @@ import { match } from 'ts-pattern';
 import { useVRChatPhotoExtraDirList } from '../../hooks/useVRChatPhotoExtraDirList';
 import { useI18n } from '../../i18n/store';
 
-const PathSettingsComponent = memo(() => {
+interface PathSettingsProps {
+  showRefreshAll: boolean;
+}
+const PathSettingsComponent = memo(({ showRefreshAll }: PathSettingsProps) => {
   const { t } = useI18n();
   const [_isValidating, setIsValidating] = useState(false);
   const [_validationError, setValidationError] = useState<string | null>(null);
@@ -193,6 +196,41 @@ const PathSettingsComponent = memo(() => {
                   .exhaustive()}
               </div>
             )}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                追加で読み込ませる写真フォルダ
+              </label>
+              <div className="mt-1 space-y-2">
+                {extraDirs.map((dir: string, index: number) => (
+                  <div
+                    key={`extra-dir-${dir}`}
+                    className="flex rounded-md shadow-sm"
+                  >
+                    <input
+                      type="text"
+                      value={dir}
+                      readOnly
+                      className="flex-1 block w-full rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveExtraDirectory(index)}
+                      className="px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-r-md text-sm text-gray-700 dark:text-gray-200 border border-l-0 border-gray-300 dark:border-gray-600"
+                    >
+                      <Trash className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={handleBrowseExtraDirectory}
+                  className="flex items-center px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-200"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  フォルダを追加
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* Log File Section */}
@@ -233,61 +271,31 @@ const PathSettingsComponent = memo(() => {
             )}
           </div>
 
-          {/* Refresh All Section */}
-          <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-            <div className="flex flex-col gap-2">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                設定したVRChatのログファイルから、過去のワールド訪問履歴を含む全てのインデックスを再構築します。
-                初回設定時や、インデックスの不整合が発生した場合に使用してください。
-              </p>
-              <div className="flex justify-end">
-                <button
-                  type="button"
-                  onClick={handleRefreshAll}
-                  disabled={isRefreshing}
-                  className="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-200 disabled:opacity-50"
-                >
-                  <RefreshCw
-                    className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`}
-                  />
-                  {t('common.refresh')}
-                </button>
+          {showRefreshAll && (
+            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex flex-col gap-2">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  設定したVRChatのログファイルから、過去のワールド訪問履歴を含む全てのインデックスを再構築します。
+                  初回設定時や、インデックスの不整合が発生した場合に使用してください。
+                </p>
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={handleRefreshAll}
+                    disabled={isRefreshing}
+                    className="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-200 disabled:opacity-50"
+                  >
+                    <RefreshCw
+                      className={`h-4 w-4 ${
+                        isRefreshing ? 'animate-spin' : ''
+                      }`}
+                    />
+                    {t('common.refresh')}
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-          追加の写真フォルダ
-        </label>
-        <div className="mt-1 space-y-2">
-          {extraDirs.map((dir: string, index: number) => (
-            <div key={`extra-dir-${dir}`} className="flex rounded-md shadow-sm">
-              <input
-                type="text"
-                value={dir}
-                readOnly
-                className="flex-1 block w-full rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white"
-              />
-              <button
-                type="button"
-                onClick={() => handleRemoveExtraDirectory(index)}
-                className="px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-r-md text-sm text-gray-700 dark:text-gray-200 border border-l-0 border-gray-300 dark:border-gray-600"
-              >
-                <Trash className="h-4 w-4" />
-              </button>
-            </div>
-          ))}
-          <button
-            type="button"
-            onClick={handleBrowseExtraDirectory}
-            className="flex items-center px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-200"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            フォルダを追加
-          </button>
+          )}
         </div>
       </div>
     </div>

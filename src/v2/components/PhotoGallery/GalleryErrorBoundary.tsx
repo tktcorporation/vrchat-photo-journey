@@ -43,7 +43,7 @@ export class GalleryErrorBoundary extends React.Component<Props, State> {
               </p>
             </div>
 
-            <PathSettings />
+            <PathSettings showRefreshAll={true} />
 
             <div className="mt-6 flex justify-end">
               <Button

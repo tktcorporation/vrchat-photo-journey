@@ -79,9 +79,12 @@ export const getVRChaLogInfoByLogFilePathList = async (
   const logLineList = await getLogLinesByLogFilePathList({
     logFilePathList,
     includesList: [
+      'VRC Analytics Initialized',
       '[Behaviour] OnPlayerJoinComplete',
       '[Behaviour] Joining ',
-      '[Behaviour] OnPlayerLeft',
+      '[Behaviour] OnPlayerJoined ',
+      '[Behaviour] OnPlayerLeft ',
+      'VRCApplication: HandleApplicationQuit',
     ],
   });
   if (logLineList.isErr()) {
