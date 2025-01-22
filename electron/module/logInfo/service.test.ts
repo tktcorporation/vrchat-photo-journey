@@ -1,6 +1,7 @@
 import * as neverthrow from 'neverthrow';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Mock } from 'vitest';
+import * as client from '../../lib/sequelize';
 import type { VRChatPlayerJoinLogModel } from '../VRChatPlayerJoinLogModel/playerJoinInfoLog.model';
 import * as playerJoinLogService from '../VRChatPlayerJoinLogModel/playerJoinLog.service';
 import type {
@@ -19,12 +20,19 @@ vi.mock('../VRChatPlayerJoinLogModel/playerJoinLog.service');
 vi.mock('../vrchatPhoto/vrchatPhoto.service');
 
 describe('loadLogInfoIndexFromVRChatLog', () => {
-  beforeEach(() => {
+  beforeAll(async () => {
+    client.__initTestRDBClient();
+  }, 10000);
+  beforeEach(async () => {
+    await client.__forceSyncRDBClient();
     vi.resetAllMocks();
     // importLogLinesFromLogPhotoDirPathのモックを設定
     vi.mocked(
       vrchatLogService.importLogLinesFromLogPhotoDirPath,
     ).mockResolvedValue([]);
+  });
+  afterAll(async () => {
+    await client.__cleanupTestRDBClient();
   });
 
   it('should process only new logs after latest DB record', async () => {
