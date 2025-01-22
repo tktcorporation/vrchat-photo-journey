@@ -45,6 +45,7 @@ const appendLoglinesToFileFromLogFilePathList = async (): Promise<
       'VRC Analytics Initialized',
       '[Behaviour] OnPlayerJoinComplete',
       '[Behaviour] Joining ',
+      '[Behaviour] OnPlayerJoined ',
       '[Behaviour] OnPlayerLeft ',
       'VRCApplication: HandleApplicationQuit',
     ],
