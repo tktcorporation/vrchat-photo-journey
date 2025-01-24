@@ -5,7 +5,7 @@ export const createVRChatPlayerLeaveLogModel = async (
   leaveLogList: Array<{
     leaveDate: Date;
     playerName: string;
-    playerId: string;
+    playerId: string | null;
   }>,
 ): Promise<VRChatPlayerLeaveLogModel[]> => {
   const newLogs = leaveLogList.map((logInfo) => ({

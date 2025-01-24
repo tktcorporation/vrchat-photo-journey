@@ -157,6 +157,9 @@
 2025.01.07 23:25:33 Log        -  [Behaviour] OnPlayerJoinComplete おいもいも
 
 
+2025.01.07 23:25:44 Log        -  [Behaviour] OnPlayerLeft おいもいも
+
+
 2025.01.07 23:25:34 Log        -  [Behaviour] OnPlayerJoined kurotu (usr_8862b082-dbc8-4b6d-8803-e834f833b498)
 
 
