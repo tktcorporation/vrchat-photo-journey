@@ -33,6 +33,7 @@ export interface VRChatPlayerJoinLog {
   logType: 'playerJoin';
   joinDate: Date;
   playerName: string;
+  playerId: string | null;
 }
 export interface VRChatPlayerLeaveLog {
   logType: 'playerLeave';
@@ -171,7 +172,7 @@ const convertLogLinesToWorldAndPlayerJoinLogInfos = (
         logInfos.push(info);
       }
     }
-    if (l.value.includes('OnPlayerJoinComplete')) {
+    if (l.value.includes('[Behaviour] OnPlayerJoined')) {
       const info = extractPlayerJoinInfoFromLog(l);
       if (info) {
         logInfos.push(info);
@@ -249,18 +250,19 @@ const extractWorldJoinInfoFromLogs = (
   );
 };
 
-const extractPlayerJoinInfoFromLog = (
+export const extractPlayerJoinInfoFromLog = (
   logLine: VRChatLogLine,
 ): VRChatPlayerJoinLog => {
+  // 2025.01.07 23:25:34 Log        -  [Behaviour] OnPlayerJoined プレイヤーA (usr_8862b082-dbc8-4b6d-8803-e834f833b498)
   const regex =
-    /(\d{4}\.\d{2}\.\d{2}) (\d{2}:\d{2}:\d{2}).*\[Behaviour\] OnPlayerJoinComplete (\S+)/;
+    /(\d{4}\.\d{2}\.\d{2}) (\d{2}:\d{2}:\d{2}).*\[Behaviour\] OnPlayerJoined (.+?)(?:\s+\((usr_[^)]+)\))?$/;
   const matches = logLine.value.match(regex);
 
   if (!matches) {
     throw new Error('Log line did not match the expected format');
   }
 
-  const [date, time, playerName] = matches.slice(1);
+  const [date, time, playerName, playerId] = matches.slice(1);
   const joinDateTime = datefns.parse(
     `${date} ${time}`,
     'yyyy.MM.dd HH:mm:ss',
@@ -271,6 +273,7 @@ const extractPlayerJoinInfoFromLog = (
     logType: 'playerJoin',
     joinDate: joinDateTime,
     playerName,
+    playerId: playerId || null,
   };
 };
 
