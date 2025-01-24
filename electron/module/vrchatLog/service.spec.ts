@@ -5,7 +5,7 @@ import * as fs from '../../lib/wrappedFs';
 import type { VRChatLogFilesDirPath } from '../vrchatLogFileDir/model';
 import type { VRChatLogFileError } from './error';
 import {
-  VRChatLogLine,
+  type VRChatLogLine,
   VRChatLogLineSchema,
   VRChatLogStoreFilePathSchema,
 } from './model';
@@ -24,6 +24,7 @@ describe('getVRChaLogInfoFromLogPath', () => {
     logType: 'playerJoin';
     joinDate: Date;
     playerName: string;
+    playerId: string | null;
   }
   type GetVRChaLogInfoFromLogPath = (
     logFilesDir: VRChatLogFilesDirPath,
@@ -47,10 +48,25 @@ describe('getVRChaLogInfoFromLogPath', () => {
       throw new Error('Unexpected error');
     }
     expect(result.value.length).toBeGreaterThan(0);
+    const playerJoinLogs = result.value.filter(
+      (log): log is VRChatPlayerJoinLog => log.logType === 'playerJoin',
+    );
+    expect(playerJoinLogs.length).toBeGreaterThan(0);
+
+    // プレイヤーIDを持つログが少なくとも1つ存在することを確認
+    const hasPlayerIdLog = playerJoinLogs.some((log) =>
+      log.playerId?.startsWith('usr_'),
+    );
+    expect(hasPlayerIdLog).toBe(true);
+
     for (const log of result.value) {
       if (log.logType === 'playerJoin') {
         expect(log.joinDate).toBeInstanceOf(Date);
         expect(log.playerName.length).toBeGreaterThan(0);
+        // プレイヤーIDはnullまたはusr_で始まる文字列
+        expect(log.playerId === null || log.playerId?.startsWith('usr_')).toBe(
+          true,
+        );
         continue;
       }
       if (log.logType === 'worldJoin') {
@@ -241,5 +257,36 @@ describe('appendLoglinesToFile', () => {
 
     // 書き込みが成功したことを確認
     expect(result.isOk()).toBe(true);
+  });
+});
+
+describe('extractPlayerJoinInfoFromLog', () => {
+  it('should extract player join info with player ID', () => {
+    const logLine = VRChatLogLineSchema.parse(
+      '2025.01.07 23:25:34 Log        -  [Behaviour] OnPlayerJoined プレイヤーA (usr_8862b082-dbc8-4b6d-8803-e834f833b498)',
+    );
+    const result = service.extractPlayerJoinInfoFromLog(logLine);
+    expect(result.logType).toBe('playerJoin');
+    expect(result.playerName).toBe('プレイヤーA');
+    expect(result.playerId).toBe('usr_8862b082-dbc8-4b6d-8803-e834f833b498');
+    expect(result.joinDate).toBeInstanceOf(Date);
+  });
+
+  it('should extract player join info without player ID', () => {
+    const logLine = VRChatLogLineSchema.parse(
+      '2025.01.07 23:25:34 Log        -  [Behaviour] OnPlayerJoined プレイヤーB',
+    );
+    const result = service.extractPlayerJoinInfoFromLog(logLine);
+    expect(result.logType).toBe('playerJoin');
+    expect(result.playerName).toBe('プレイヤーB');
+    expect(result.playerId).toBeNull();
+    expect(result.joinDate).toBeInstanceOf(Date);
+  });
+
+  it('should throw error for invalid log format', () => {
+    const logLine = VRChatLogLineSchema.parse('Invalid log format');
+    expect(() => service.extractPlayerJoinInfoFromLog(logLine)).toThrow(
+      'Log line did not match the expected format',
+    );
   });
 });

@@ -7,6 +7,7 @@ import {
   Op,
 } from '@sequelize/core';
 import {
+  AllowNull,
   Attribute,
   Default,
   NotNull,
@@ -38,6 +39,7 @@ export class VRChatPlayerJoinLogModel extends Model<
   declare id: CreationOptional<string>;
 
   @Attribute(DataTypes.STRING)
+  @AllowNull
   declare playerId: string | null;
 
   @Attribute(DataTypes.STRING)
