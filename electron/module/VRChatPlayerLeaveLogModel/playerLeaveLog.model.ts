@@ -6,6 +6,7 @@ import {
   Model,
 } from '@sequelize/core';
 import {
+  AllowNull,
   Attribute,
   Default,
   NotNull,
@@ -31,8 +32,8 @@ export class VRChatPlayerLeaveLogModel extends Model<
   declare playerName: string;
 
   @Attribute(DataTypes.STRING)
-  @NotNull
-  declare playerId: string;
+  @AllowNull
+  declare playerId: string | null;
 
   @Attribute(DataTypes.DATE)
   @Default(DataTypes.NOW)

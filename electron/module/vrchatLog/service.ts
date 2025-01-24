@@ -38,7 +38,7 @@ export interface VRChatPlayerLeaveLog {
   logType: 'playerLeave';
   leaveDate: Date;
   playerName: string;
-  playerId: string;
+  playerId: string | null;
 }
 
 export const getVRChaLogInfoFromLogPath = async (
@@ -280,7 +280,7 @@ const extractPlayerLeaveInfoFromLog = (
   // 下記のように、プレイヤー名は空白を含む場合がある
   // 2025.01.08 00:22:04 Log        -  [Behaviour] OnPlayerLeft プレイヤー ⁄ A (usr_34a27988-a7e4-4d5e-a49a-ae5975422779)
   const regex =
-    /(\d{4}\.\d{2}\.\d{2})\s+(\d{2}:\d{2}:\d{2})\s+Log\s+-\s+\[Behaviour\] OnPlayerLeft (.+) \((usr_[^)]+)\)/;
+    /(\d{4}\.\d{2}\.\d{2})\s+(\d{2}:\d{2}:\d{2})\s+Log\s+-\s+\[Behaviour\] OnPlayerLeft (.+?)(?:\s+\((usr_[^)]+)\))?$/;
   const matches = logLine.value.match(regex);
   if (!matches) {
     throw new Error(
@@ -299,7 +299,7 @@ const extractPlayerLeaveInfoFromLog = (
     logType: 'playerLeave',
     leaveDate: leaveDateTime,
     playerName,
-    playerId,
+    playerId: playerId || null,
   };
 };
 
