@@ -119,6 +119,17 @@ const ja: Translations = {
     updateTitle: '利用規約とプライバシーポリシーの更新',
     accept: '同意する',
   },
+  debug: {
+    sqliteConsole: {
+      title: 'SQLite コンソール',
+      queryLabel: 'SQLクエリ',
+      shortcut: 'Cmd/Ctrl + Enter で実行',
+      placeholder: 'SQLクエリを入力...',
+      execute: '実行',
+      resultLabel: '実行結果',
+      noResult: '結果がここに表示されます...',
+    },
+  },
 };
 
 export default ja;

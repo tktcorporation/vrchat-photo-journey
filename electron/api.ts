@@ -3,6 +3,7 @@ import z from 'zod';
 
 import { init as initSentry } from '@sentry/electron/main';
 import { backgroundSettingsRouter } from './module/backgroundSettings/controller/backgroundSettingsController';
+import { debugRouter } from './module/debug/debugController';
 import { electronUtilRouter } from './module/electronUtil/controller/electronUtilController';
 import { openGetFileDialog } from './module/electronUtil/service';
 import { logInfoRouter } from './module/logInfo/logInfoCointroller';
@@ -35,6 +36,7 @@ export const router = trpcRouter({
   vrchatWorldJoinLog: vrchatWorldJoinLogRouter(),
   logInfo: logInfoRouter(),
   vrchatApi: vrchatApiRouter,
+  debug: debugRouter,
   subscribeToast: procedure.subscription(() => {
     return observable((emit) => {
       function onToast(text: string) {

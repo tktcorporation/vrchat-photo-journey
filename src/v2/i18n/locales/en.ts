@@ -26,6 +26,17 @@ const en: Translations = {
       downloadImage: 'Download Image',
     },
   },
+  debug: {
+    sqliteConsole: {
+      title: 'SQLite Console',
+      queryLabel: 'SQL Query',
+      shortcut: 'Press Cmd/Ctrl + Enter to execute',
+      placeholder: 'Enter SQL query...',
+      execute: 'Execute',
+      resultLabel: 'Result',
+      noResult: 'Results will appear here...',
+    },
+  },
   locationHeader: {
     ungrouped: 'Ungrouped Photos',
     photoCount: '{count} photos',
