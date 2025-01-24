@@ -1,17 +1,39 @@
 import { trpcReact } from '@/trpc';
 import { ArrowUpRight, Info } from 'lucide-react';
-import React, { memo } from 'react';
+import type React from 'react';
+import { memo, useState } from 'react';
 import packageJson from '../../../../package.json';
 import { Button } from '../../../components/ui/button';
 import { useI18n } from '../../i18n/store';
+import SqliteConsole from './SqliteConsole';
 
 const AppInfo = memo(() => {
   const { t } = useI18n();
   const { mutate: openLog } = trpcReact.openElectronLogOnExplorer.useMutation();
   const { data: appVersion } = trpcReact.settings.getAppVersion.useQuery();
+  const [_clickCount, setClickCount] = useState(0);
+  const [showSqlConsole, setShowSqlConsole] = useState(false);
 
   const handleOpenLog = () => {
     openLog();
+  };
+
+  const handleVersionClick = () => {
+    setClickCount((prev) => {
+      const newCount = prev + 1;
+      if (newCount === 7) {
+        setShowSqlConsole(true);
+        return 0;
+      }
+      return newCount;
+    });
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleVersionClick();
+    }
   };
 
   return (
@@ -25,7 +47,13 @@ const AppInfo = memo(() => {
           <span className="text-gray-600 dark:text-gray-400">
             {t('settings.info.version')}
           </span>
-          <span className="font-mono text-gray-900 dark:text-white">
+          <span
+            className="font-mono text-gray-900 dark:text-white cursor-pointer"
+            onClick={handleVersionClick}
+            onKeyDown={handleKeyDown}
+            role="button"
+            tabIndex={0}
+          >
             {appVersion}
           </span>
         </div>
@@ -47,6 +75,11 @@ const AppInfo = memo(() => {
           </Button>
         </div>
       </div>
+
+      <SqliteConsole
+        isOpen={showSqlConsole}
+        onClose={() => setShowSqlConsole(false)}
+      />
     </section>
   );
 });

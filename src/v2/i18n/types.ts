@@ -39,6 +39,17 @@ export interface Translations {
       downloadImage: string;
     };
   };
+  debug: {
+    sqliteConsole: {
+      title: string;
+      queryLabel: string;
+      shortcut: string;
+      placeholder: string;
+      execute: string;
+      resultLabel: string;
+      noResult: string;
+    };
+  };
   locationHeader: {
     ungrouped: string;
     photoCount: string;
