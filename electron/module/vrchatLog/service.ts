@@ -81,7 +81,6 @@ export const getVRChaLogInfoByLogFilePathList = async (
     logFilePathList,
     includesList: [
       'VRC Analytics Initialized',
-      '[Behaviour] OnPlayerJoinComplete',
       '[Behaviour] Joining ',
       '[Behaviour] OnPlayerJoined ',
       '[Behaviour] OnPlayerLeft ',
