@@ -24,6 +24,28 @@ const SqliteConsole: React.FC<SqliteConsoleProps> = ({ isOpen, onClose }) => {
   const { mutateAsync: executeQuery, isLoading } =
     trpcReact.debug.executeSqlite.useMutation();
 
+  const sampleQueries = [
+    {
+      label: 'テーブル一覧',
+      query: "SELECT name FROM sqlite_master WHERE type='table'",
+    },
+    {
+      label: 'プレイヤー参加ログ',
+      query:
+        'SELECT * FROM VRChatPlayerJoinLogModels ORDER BY joinDateTime DESC LIMIT 10',
+    },
+    {
+      label: 'プレイヤー退出ログ',
+      query:
+        'SELECT * FROM VRChatPlayerLeaveLogModels ORDER BY leaveDateTime DESC LIMIT 10',
+    },
+    {
+      label: 'ワールド訪問履歴',
+      query:
+        'SELECT * FROM VRChatWorldJoinLogModels ORDER BY joinDateTime DESC LIMIT 10',
+    },
+  ];
+
   const handleExecute = async () => {
     if (!query.trim()) return;
 
@@ -44,7 +66,7 @@ const SqliteConsole: React.FC<SqliteConsoleProps> = ({ isOpen, onClose }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[800px] h-[80vh] flex flex-col gap-0 p-0">
+      <DialogContent className="w-[800px] h-[80vh] flex flex-col gap-0 p-0 bg-white dark:bg-gray-800">
         <DialogHeader className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <DialogTitle className="flex items-center text-xl font-semibold text-gray-900 dark:text-white">
             <Database className="h-5 w-5 mr-2 text-indigo-600 dark:text-indigo-400" />
@@ -66,6 +88,19 @@ const SqliteConsole: React.FC<SqliteConsoleProps> = ({ isOpen, onClose }) => {
                   'Press Cmd/Ctrl + Enter to execute'}
               </span>
             </div>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {sampleQueries.map((sample) => (
+                <Button
+                  key={sample.label}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setQuery(sample.query)}
+                  className="text-xs"
+                >
+                  {sample.label}
+                </Button>
+              ))}
+            </div>
             <div className="relative">
               <Textarea
                 id="query"
@@ -75,7 +110,7 @@ const SqliteConsole: React.FC<SqliteConsoleProps> = ({ isOpen, onClose }) => {
                 placeholder={
                   t('debug.sqliteConsole.placeholder') || 'Enter SQL query...'
                 }
-                className="font-mono text-sm min-h-[120px] resize-none"
+                className="font-mono text-sm min-h-[120px] resize-none bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
               />
               <Button
                 size="sm"
@@ -93,8 +128,8 @@ const SqliteConsole: React.FC<SqliteConsoleProps> = ({ isOpen, onClose }) => {
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
               {t('debug.sqliteConsole.resultLabel') || 'Result'}
             </label>
-            <div className="flex-1 overflow-auto">
-              <pre className="h-full p-4 rounded-lg bg-gray-50 dark:bg-gray-900/50 font-mono text-sm text-gray-900 dark:text-gray-100">
+            <div className="flex-1 overflow-auto rounded-lg bg-gray-50 dark:bg-gray-900/50">
+              <pre className="h-full p-4 font-mono text-sm text-gray-900 dark:text-white">
                 {result ||
                   t('debug.sqliteConsole.noResult') ||
                   'Results will appear here...'}

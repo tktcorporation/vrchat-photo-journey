@@ -83,6 +83,7 @@ export const createVRChatPlayerJoinLog = async (
     })
     .map((logInfo) => ({
       joinDateTime: logInfo.joinDate,
+      playerId: logInfo.playerId,
       playerName: logInfo.playerName,
     }));
 

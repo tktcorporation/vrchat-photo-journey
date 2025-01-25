@@ -54,10 +54,10 @@ describe('getVRChaLogInfoFromLogPath', () => {
     expect(playerJoinLogs.length).toBeGreaterThan(0);
 
     // プレイヤーIDを持つログが少なくとも1つ存在することを確認
-    const hasPlayerIdLog = playerJoinLogs.some((log) =>
+    const hasPlayerIdLog = playerJoinLogs.filter((log) =>
       log.playerId?.startsWith('usr_'),
     );
-    expect(hasPlayerIdLog).toBe(true);
+    expect(hasPlayerIdLog.length).toBeGreaterThan(0);
 
     for (const log of result.value) {
       if (log.logType === 'playerJoin') {
