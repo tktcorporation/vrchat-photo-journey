@@ -358,8 +358,8 @@ export const LocationGroupHeader = ({
       if (!playerListContainerRef.current || !Array.isArray(players)) return;
 
       const containerWidth = playerListContainerRef.current.offsetWidth;
-      const separatorWidth = 16; // セパレータ（ / ）の幅
-      const moreTextWidth = 82; // "/ +X more" テキストの幅
+      const separatorWidth = 24; // セパレータ（ / ）の幅
+      const moreTextWidth = 72; // "/ +X more" テキストの幅
 
       // 一時的なDOM要素を作成して実際の幅を計算
       const tempDiv = document.createElement('div');
