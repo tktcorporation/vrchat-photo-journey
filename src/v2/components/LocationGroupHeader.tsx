@@ -120,6 +120,7 @@ interface ShareModalProps {
   isOpen: boolean;
   onClose: () => void;
   worldName: string | null;
+  worldId: string;
   imageUrl: string | null;
   players: Player[] | null;
 }
@@ -128,6 +129,7 @@ const ShareModal = ({
   isOpen,
   onClose,
   worldName,
+  worldId,
   imageUrl,
   players,
 }: ShareModalProps) => {
@@ -175,7 +177,7 @@ const ShareModal = ({
     }
   }, [base64Data, worldName, players, showAllPlayers]);
 
-  const handleCopyToClipboard = async () => {
+  const handleCopyShareImageToClipboard = async () => {
     if (!previewBase64) return;
     await downloadOrCopyImageAsPng({
       pngBase64: previewBase64,
@@ -184,11 +186,15 @@ const ShareModal = ({
     });
   };
 
-  const handleDownloadPng = async () => {
+  const handleDownloadShareImagePng = async () => {
     if (!previewBase64) return;
     await downloadOrCopyImageAsPng({
       pngBase64: previewBase64,
-      filenameWithoutExt: worldName || 'image',
+      // VRChat_2023-04-15_06-37-57.856_wrld_bfeb8131-6324-4950-80bf-9fbb2c7cad43.png
+      filenameWithoutExt: `VRChat_${format(
+        new Date(),
+        'yyyy-MM-dd_HH-mm-ss.SSS',
+      )}_${worldId}`,
       downloadOrCopyMutation: downloadImageMutation,
     });
   };
@@ -203,7 +209,7 @@ const ShareModal = ({
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={handleCopyToClipboard}
+              onClick={handleCopyShareImageToClipboard}
               disabled={isLoading}
               className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700"
               title={t('locationHeader.copyToClipboard')}
@@ -212,7 +218,7 @@ const ShareModal = ({
             </button>
             <button
               type="button"
-              onClick={handleDownloadPng}
+              onClick={handleDownloadShareImagePng}
               disabled={isLoading}
               className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700"
               title={t('locationHeader.downloadImage')}
@@ -247,7 +253,7 @@ const ShareModal = ({
               </ContextMenuTrigger>
               <ContextMenuContent>
                 <ContextMenuItem
-                  onClick={handleCopyToClipboard}
+                  onClick={handleCopyShareImageToClipboard}
                   disabled={isLoading}
                   className="flex items-center gap-2"
                 >
@@ -255,7 +261,7 @@ const ShareModal = ({
                   <span>{t('locationHeader.copyToClipboard')}</span>
                 </ContextMenuItem>
                 <ContextMenuItem
-                  onClick={handleDownloadPng}
+                  onClick={handleDownloadShareImagePng}
                   disabled={isLoading}
                   className="flex items-center gap-2"
                 >
@@ -657,6 +663,7 @@ export const LocationGroupHeader = ({
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
         worldName={details?.name || worldName}
+        worldId={worldId}
         imageUrl={details?.imageUrl || null}
         players={players}
       />
