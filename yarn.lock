@@ -2225,6 +2225,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@photostructure/tz-lookup@npm:^9.0.2":
+  version: 9.0.2
+  resolution: "@photostructure/tz-lookup@npm:9.0.2"
+  checksum: 10c0/6708b9e7ee850d6e7b26c6324b60a8eed0a7327ac44c6009cabe5232676bd4cc27f6aec635579c97ff19fd7144cfed36b3509ac2c1076439841b9645ea7b731a
+  languageName: node
+  linkType: hard
+
 "@pkgjs/parseargs@npm:^0.11.0":
   version: 0.11.0
   resolution: "@pkgjs/parseargs@npm:0.11.0"
@@ -4470,6 +4477,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/luxon@npm:^3.4.2":
+  version: 3.4.2
+  resolution: "@types/luxon@npm:3.4.2"
+  checksum: 10c0/d835467de3daf7e17ba78b50bb5a14efd94272439ca067990d71332a54b311544459c69623eddd243b511b28d70194c9591a9ee8cf9c038962c965f991affd7e
+  languageName: node
+  linkType: hard
+
 "@types/ms@npm:*":
   version: 0.7.34
   resolution: "@types/ms@npm:0.7.34"
@@ -5279,6 +5293,13 @@ __metadata:
   version: 1.5.1
   resolution: "base64-js@npm:1.5.1"
   checksum: 10c0/f23823513b63173a001030fae4f2dabe283b99a9d324ade3ad3d148e218134676f1ee8568c877cd79ec1c53158dcf2d2ba527a97c606618928ba99dd930102bf
+  languageName: node
+  linkType: hard
+
+"batch-cluster@npm:^13.0.0":
+  version: 13.0.0
+  resolution: "batch-cluster@npm:13.0.0"
+  checksum: 10c0/d48735c64328440400298ab0259409102cf7538465e337900a360befe75df3019c43523bb7c718caed4f2df0506c2dbf2865873c085d4fe71974727252c6d6a0
   languageName: node
   linkType: hard
 
@@ -6874,6 +6895,40 @@ __metadata:
   languageName: node
   linkType: hard
 
+"exiftool-vendored.exe@npm:12.78.0":
+  version: 12.78.0
+  resolution: "exiftool-vendored.exe@npm:12.78.0"
+  conditions: os=win32
+  languageName: node
+  linkType: hard
+
+"exiftool-vendored.pl@npm:12.78.0":
+  version: 12.78.0
+  resolution: "exiftool-vendored.pl@npm:12.78.0"
+  conditions: "!os=win32"
+  languageName: node
+  linkType: hard
+
+"exiftool-vendored@npm:^24.5.0":
+  version: 24.6.0
+  resolution: "exiftool-vendored@npm:24.6.0"
+  dependencies:
+    "@photostructure/tz-lookup": "npm:^9.0.2"
+    "@types/luxon": "npm:^3.4.2"
+    batch-cluster: "npm:^13.0.0"
+    exiftool-vendored.exe: "npm:12.78.0"
+    exiftool-vendored.pl: "npm:12.78.0"
+    he: "npm:^1.2.0"
+    luxon: "npm:^3.4.4"
+  dependenciesMeta:
+    exiftool-vendored.exe:
+      optional: true
+    exiftool-vendored.pl:
+      optional: true
+  checksum: 10c0/3b2dd17c7457382d853d10487f0f75686c94d1a346ce072c27b148f42dfaad6a7dc79a1a08d2068acf6064c080f3f66fd181688ee5304e0022d996ddd7a4543f
+  languageName: node
+  linkType: hard
+
 "exit@npm:^0.1.2":
   version: 0.1.2
   resolution: "exit@npm:0.1.2"
@@ -7551,6 +7606,15 @@ __metadata:
   dependencies:
     function-bind: "npm:^1.1.2"
   checksum: 10c0/3769d434703b8ac66b209a4cca0737519925bbdb61dd887f93a16372b14694c63ff4e797686d87c90f08168e81082248b9b028bad60d4da9e0d1148766f56eb9
+  languageName: node
+  linkType: hard
+
+"he@npm:^1.2.0":
+  version: 1.2.0
+  resolution: "he@npm:1.2.0"
+  bin:
+    he: bin/he
+  checksum: 10c0/a27d478befe3c8192f006cdd0639a66798979dfa6e2125c6ac582a19a5ebfec62ad83e8382e6036170d873f46e4536a7e795bf8b95bf7c247f4cc0825ccc8c17
   languageName: node
   linkType: hard
 
@@ -8850,6 +8914,13 @@ __metadata:
   peerDependencies:
     react: ^16.5.1 || ^17.0.0 || ^18.0.0
   checksum: 10c0/c3e52e882d42abc034907b06d6198fc5c2b8903212f6fb239b96ab0ab8016eb2e377e23e33920ba4ba216c0c53a635892a536c4af10c6892c41c7220e7e9e2ea
+  languageName: node
+  linkType: hard
+
+"luxon@npm:^3.4.4":
+  version: 3.5.0
+  resolution: "luxon@npm:3.5.0"
+  checksum: 10c0/335789bba95077db831ef99894edadeb23023b3eb2137a1b56acd0d290082b691cf793143d69e30bc069ec95f0b49f36419f48e951c68014f19ffe12045e3494
   languageName: node
   linkType: hard
 
@@ -11817,7 +11888,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tmp-promise@npm:^3.0.2":
+"tmp-promise@npm:^3.0.2, tmp-promise@npm:^3.0.3":
   version: 3.0.3
   resolution: "tmp-promise@npm:3.0.3"
   dependencies:
@@ -12491,6 +12562,7 @@ __metadata:
     electron-trpc: "npm:0.5.2"
     electron-unhandled: "npm:4.0.1"
     electron-updater: "npm:^6.3.9"
+    exiftool-vendored: "npm:^24.5.0"
     framer-motion: "npm:11.2.4"
     git-cliff: "npm:^2.5.0"
     glob: "npm:10.4.3"
@@ -12522,6 +12594,7 @@ __metadata:
     tailwind-merge: "npm:2.3.0"
     tailwindcss: "npm:3.4.3"
     tailwindcss-animate: "npm:1.0.7"
+    tmp-promise: "npm:^3.0.3"
     ts-pattern: "npm:5.1.1"
     ts-prune: "npm:0.10.3"
     typescript: "npm:5.7.2"

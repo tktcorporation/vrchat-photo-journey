@@ -582,6 +582,14 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/sql-common",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/sql-common/LICENSE"
   },
+  "@photostructure/tz-lookup@9.0.2": {
+    "licenses": "CC0-1.0",
+    "repository": "https://github.com/photostructure/tz-lookup",
+    "publisher": "PhotoStructure, Inc.",
+    "email": "tzlookup@photostructure.com",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/@photostructure/tz-lookup",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@photostructure/tz-lookup/LICENSE"
+  },
   "@pkgjs/parseargs@0.11.0": {
     "licenses": "MIT",
     "repository": "https://github.com/pkgjs/parseargs",
@@ -1248,6 +1256,12 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@types/lodash",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@types/lodash/LICENSE"
   },
+  "@types/luxon@3.4.2": {
+    "licenses": "MIT",
+    "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/@types/luxon",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@types/luxon/LICENSE"
+  },
   "@types/ms@0.7.34": {
     "licenses": "MIT",
     "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
@@ -1538,6 +1552,14 @@
     "email": "t.jameson.little@gmail.com",
     "path": "/workspaces/vrchat-photo-journey/node_modules/base64-js",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/base64-js/LICENSE"
+  },
+  "batch-cluster@13.0.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/photostructure/batch-cluster.js",
+    "publisher": "Matthew McEachen",
+    "email": "matthew-batchcluster@photostructure.com",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/batch-cluster",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/batch-cluster/LICENSE"
   },
   "binary-extensions@2.3.0": {
     "licenses": "MIT",
@@ -2210,6 +2232,22 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/matcher/node_modules/escape-string-regexp",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/matcher/node_modules/escape-string-regexp/license"
   },
+  "exiftool-vendored.pl@12.78.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/mceachen/exiftool-vendored.pl",
+    "publisher": "Matthew McEachen",
+    "email": "matthew-exiftoolvendored@mceachen.org",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/exiftool-vendored.pl",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/exiftool-vendored.pl/LICENSE"
+  },
+  "exiftool-vendored@24.6.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/photostructure/exiftool-vendored.js",
+    "publisher": "Matthew McEachen",
+    "email": "matthew-exiftoolvendored@photostructure.com",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/exiftool-vendored",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/exiftool-vendored/LICENSE"
+  },
   "expand-template@2.0.3": {
     "licenses": "(MIT OR WTFPL)",
     "repository": "https://github.com/ralphtheninja/expand-template",
@@ -2554,6 +2592,14 @@
     "email": "ljharb@gmail.com",
     "path": "/workspaces/vrchat-photo-journey/node_modules/hasown",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/hasown/LICENSE"
+  },
+  "he@1.2.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/mathiasbynens/he",
+    "publisher": "Mathias Bynens",
+    "url": "https://mathiasbynens.be/",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/he",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/he/LICENSE-MIT.txt"
   },
   "http-cache-semantics@4.1.1": {
     "licenses": "BSD-2-Clause",
@@ -3037,6 +3083,13 @@
     "publisher": "Eric Fennis",
     "path": "/workspaces/vrchat-photo-journey/node_modules/lucide-react",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/lucide-react/LICENSE"
+  },
+  "luxon@3.5.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/moment/luxon",
+    "publisher": "Isaac Cambron",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/luxon",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/luxon/LICENSE.md"
   },
   "magic-string@0.30.8": {
     "licenses": "MIT",
@@ -4497,6 +4550,22 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/tiny-typed-emitter",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/tiny-typed-emitter/LICENSE"
   },
+  "tmp-promise@3.0.3": {
+    "licenses": "MIT",
+    "repository": "https://github.com/benjamingr/tmp-promise",
+    "publisher": "Benjamin Gruenbaum and Collaborators.",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/tmp-promise",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/tmp-promise/README.md"
+  },
+  "tmp@0.2.3": {
+    "licenses": "MIT",
+    "repository": "https://github.com/raszi/node-tmp",
+    "publisher": "KARASZI István",
+    "email": "github@spam.raszi.hu",
+    "url": "http://raszi.hu/",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/tmp",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/tmp/LICENSE"
+  },
   "to-regex-range@5.0.1": {
     "licenses": "MIT",
     "repository": "https://github.com/micromatch/to-regex-range",
@@ -4730,7 +4799,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/vite",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/vite/LICENSE.md"
   },
-  "vrchat-photo-journey@0.4.0-alpha.2": {
+  "vrchat-photo-journey@0.6.1": {
     "licenses": "UNKNOWN",
     "repository": "https://github.com/tktcorporation/add-world-name-to-vrc-photo",
     "publisher": "tktcorporation",

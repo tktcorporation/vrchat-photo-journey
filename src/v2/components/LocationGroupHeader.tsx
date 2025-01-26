@@ -121,6 +121,7 @@ interface ShareModalProps {
   onClose: () => void;
   worldName: string | null;
   worldId: string;
+  joinDateTime: Date;
   imageUrl: string | null;
   players: Player[] | null;
 }
@@ -130,6 +131,7 @@ const ShareModal = ({
   onClose,
   worldName,
   worldId,
+  joinDateTime,
   imageUrl,
   players,
 }: ShareModalProps) => {
@@ -149,7 +151,7 @@ const ShareModal = ({
   const copyImageMutation =
     trpcReact.electronUtil.copyImageDataByBase64.useMutation();
   const downloadImageMutation =
-    trpcReact.electronUtil.downloadImageAsPng.useMutation();
+    trpcReact.electronUtil.downloadImageAsPhotoLogPng.useMutation();
 
   // プレビュー画像を生成する関数
   const generatePreview = async () => {
@@ -188,14 +190,10 @@ const ShareModal = ({
 
   const handleDownloadShareImagePng = async () => {
     if (!previewBase64) return;
-    await downloadOrCopyImageAsPng({
-      pngBase64: previewBase64,
-      // VRChat_2023-04-15_06-37-57.856_wrld_bfeb8131-6324-4950-80bf-9fbb2c7cad43.png
-      filenameWithoutExt: `VRChat_${format(
-        new Date(),
-        'yyyy-MM-dd_HH-mm-ss.SSS',
-      )}_${worldId}`,
-      downloadOrCopyMutation: downloadImageMutation,
+    await downloadImageMutation.mutateAsync({
+      worldId,
+      joinDateTime,
+      imageBase64: previewBase64,
     });
   };
 
@@ -664,6 +662,7 @@ export const LocationGroupHeader = ({
         onClose={() => setIsShareModalOpen(false)}
         worldName={details?.name || worldName}
         worldId={worldId}
+        joinDateTime={joinDateTime}
         imageUrl={details?.imageUrl || null}
         players={players}
       />
