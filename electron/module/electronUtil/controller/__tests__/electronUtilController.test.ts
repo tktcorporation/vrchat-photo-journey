@@ -60,12 +60,15 @@ describe('electronUtilController', () => {
 
       // 一時ファイルの作成を確認
       expect(fs.writeFile).toHaveBeenCalledWith(
-        expectedTempPath,
+        path.normalize(expectedTempPath),
         expect.any(Uint8Array),
       );
 
       // 一時ファイルから保存先へのコピーを確認
-      expect(fs.copyFile).toHaveBeenCalledWith(expectedTempPath, mockPath);
+      expect(fs.copyFile).toHaveBeenCalledWith(
+        path.normalize(expectedTempPath),
+        path.normalize(mockPath),
+      );
 
       // 一時ディレクトリの削除を確認
       expect(fs.rm).toHaveBeenCalledWith(path.join(os.tmpdir(), 'test-dir'), {
