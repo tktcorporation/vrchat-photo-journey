@@ -4153,6 +4153,14 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/run-parallel",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/run-parallel/LICENSE"
   },
+  "rxjs@7.8.1": {
+    "licenses": "Apache-2.0",
+    "repository": "https://github.com/reactivex/rxjs",
+    "publisher": "Ben Lesh",
+    "email": "ben@benlesh.com",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/rxjs",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/rxjs/LICENSE.txt"
+  },
   "safe-buffer@5.2.1": {
     "licenses": "MIT",
     "repository": "https://github.com/feross/safe-buffer",
