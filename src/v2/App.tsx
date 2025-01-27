@@ -3,6 +3,7 @@ import { trpcReact } from '@/trpc';
 import TrpcWrapper from '@/trpcWrapper';
 import { init as initSentry } from '@sentry/electron/renderer';
 import { useEffect, useState } from 'react';
+import { AppHeader } from './components/AppHeader';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import PhotoGallery from './components/PhotoGallery';
 import { TermsModal } from './components/TermsModal';
@@ -104,6 +105,7 @@ function AppContent() {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-white dark:bg-gray-900">
+      <AppHeader />
       <ToasterWrapper />
       <Contents />
     </div>

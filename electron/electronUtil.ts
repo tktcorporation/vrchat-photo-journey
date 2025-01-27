@@ -67,8 +67,8 @@ function createWindow(): BrowserWindow {
     // y,
     minWidth: WINDOW_CONFIG.MIN_WIDTH,
     minHeight: WINDOW_CONFIG.MIN_HEIGHT,
-    //  change to false to use AppBar
-    frame: true,
+    frame: false,
+    titleBarStyle: 'hidden',
     show: true,
     fullscreenable: true,
     webPreferences: {
@@ -111,8 +111,8 @@ function createWindow(): BrowserWindow {
       return;
     }
     win.isMinimized() ? win.restore() : win.minimize();
-    // or alternatively: win.isVisible() ? win.hide() : win.show()
   });
+
   ipcMain.on('maximize', () => {
     const win = BrowserWindow.getFocusedWindow();
     if (!win) {
