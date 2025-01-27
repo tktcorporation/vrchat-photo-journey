@@ -6360,7 +6360,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron-updater@npm:^6.3.9":
+"electron-updater@npm:6.3.9":
   version: 6.3.9
   resolution: "electron-updater@npm:6.3.9"
   dependencies:
@@ -12323,7 +12323,7 @@ __metadata:
     electron-store: "npm:8.2.0"
     electron-trpc: "npm:0.5.2"
     electron-unhandled: "npm:4.0.1"
-    electron-updater: "npm:^6.3.9"
+    electron-updater: "npm:6.3.9"
     exiftool-vendored: "npm:^24.5.0"
     framer-motion: "npm:11.2.4"
     git-cliff: "npm:^2.5.0"

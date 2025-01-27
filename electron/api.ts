@@ -10,6 +10,7 @@ import { logInfoRouter } from './module/logInfo/logInfoCointroller';
 import * as service from './module/service';
 import { initSettingStore } from './module/settingStore';
 import { settingsRouter } from './module/settings/settingsController';
+import { updaterRouter } from './module/updater/router';
 import { vrchatApiRouter } from './module/vrchatApi/vrchatApiController';
 import { vrchatLogRouter } from './module/vrchatLog/vrchatLogController';
 import { vrchatPhotoRouter } from './module/vrchatPhoto/vrchatPhoto.controller';
@@ -37,6 +38,7 @@ export const router = trpcRouter({
   logInfo: logInfoRouter(),
   vrchatApi: vrchatApiRouter,
   debug: debugRouter,
+  updater: updaterRouter,
   subscribeToast: procedure.subscription(() => {
     return observable((emit) => {
       function onToast(text: string) {

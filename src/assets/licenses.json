@@ -175,7 +175,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@electron/get",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@electron/get/LICENSE"
   },
-  "@esbuild/linux-arm64@0.20.2": {
+  "@esbuild/linux-arm64@0.21.5": {
     "licenses": "MIT",
     "repository": "https://github.com/evanw/esbuild",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@esbuild/linux-arm64",
@@ -2208,7 +2208,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/es6-error",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/es6-error/LICENSE.md"
   },
-  "esbuild@0.20.2": {
+  "esbuild@0.21.5": {
     "licenses": "MIT",
     "repository": "https://github.com/evanw/esbuild",
     "path": "/workspaces/vrchat-photo-journey/node_modules/esbuild",
@@ -4671,7 +4671,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@types/connect/node_modules/undici-types",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@types/connect/node_modules/undici-types/LICENSE"
   },
-  "undici@6.21.0": {
+  "undici@6.21.1": {
     "licenses": "MIT",
     "repository": "https://github.com/nodejs/undici",
     "path": "/workspaces/vrchat-photo-journey/node_modules/undici",
@@ -4792,7 +4792,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/vaul",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/vaul/LICENSE.md"
   },
-  "vite@5.2.14": {
+  "vite@5.4.12": {
     "licenses": "MIT",
     "repository": "https://github.com/vitejs/vite",
     "publisher": "Evan You",

@@ -1,8 +1,33 @@
 import { Button } from '@/components/ui/button';
-import { Minus, Square, X } from 'lucide-react';
+import { Download, Minus, Square, X } from 'lucide-react';
 import type React from 'react';
+import { useEffect, useState } from 'react';
+import { trpcReact as trpc } from '../../trpc';
 
 export const AppHeader: React.FC = () => {
+  const [updateDownloaded, setUpdateDownloaded] = useState(false);
+
+  const { data: updateStatus } = trpc.updater.getUpdateStatus.useQuery(
+    undefined,
+    {
+      refetchInterval: 1000 * 60 * 60 * 24 * 2, // 2日ごとに更新をチェック
+    },
+  );
+
+  const checkForUpdates = trpc.updater.checkForUpdates.useMutation();
+  const quitAndInstall = trpc.updater.quitAndInstall.useMutation();
+
+  useEffect(() => {
+    if (updateStatus) {
+      setUpdateDownloaded(updateStatus.updateDownloaded);
+    }
+  }, [updateStatus]);
+
+  useEffect(() => {
+    // 起動時に更新をチェック
+    checkForUpdates.mutate();
+  }, []);
+
   const handleMinimize = () => {
     window.Main?.Minimize();
   };
@@ -26,6 +51,17 @@ export const AppHeader: React.FC = () => {
         className="flex gap-2"
         style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
       >
+        {updateDownloaded && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => quitAndInstall.mutate()}
+            className="h-6 w-6 p-0 hover:bg-green-100 dark:hover:bg-green-700 text-green-500"
+            title="アップデートをインストール"
+          >
+            <Download className="h-4 w-4" />
+          </Button>
+        )}
         <Button
           variant="ghost"
           size="sm"
