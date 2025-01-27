@@ -56,7 +56,7 @@
   },
   "packageManager": "yarn@4.1.0",
   "engines": {
-    "node": "20",
+    "node": "22",
     "yarn": "4"
   },
   "dependencies": {
@@ -113,6 +113,7 @@
     "react-intersection-observer": "9.8.2",
     "react-router-dom": "6.23.0",
     "react-virtuoso": "4.7.2",
+    "rxjs": "^7.8.1",
     "sharp": "0.33.3",
     "superjson": "1.13.3",
     "tailwind-merge": "2.3.0",

@@ -6,6 +6,9 @@ import * as path from 'pathe';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { electronUtilRouter } from '../electronUtilController';
 
+// パスの正規化のためのヘルパー関数を追加
+const normalizePath = (p: string) => p.replace(/\\/g, '/');
+
 vi.mock('node:fs/promises');
 vi.mock('electron-is-dev', () => ({ default: false }));
 vi.mock('electron', () => ({
@@ -59,13 +62,23 @@ describe('electronUtilController', () => {
       const expectedTempPath = path.join(os.tmpdir(), 'test-dir', 'test.png');
 
       // 一時ファイルの作成を確認
-      expect(fs.writeFile).toHaveBeenCalledWith(
-        expectedTempPath,
-        expect.any(Uint8Array),
+      const writeFilePath = vi.mocked(fs.writeFile).mock.calls[0][0];
+      expect(normalizePath(writeFilePath.toString())).toBe(
+        normalizePath(expectedTempPath),
+      );
+      expect(vi.mocked(fs.writeFile).mock.calls[0][1]).toBeInstanceOf(
+        Uint8Array,
       );
 
       // 一時ファイルから保存先へのコピーを確認
-      expect(fs.copyFile).toHaveBeenCalledWith(expectedTempPath, mockPath);
+      const copyFileSrcPath = vi.mocked(fs.copyFile).mock.calls[0][0];
+      const copyFileDestPath = vi.mocked(fs.copyFile).mock.calls[0][1];
+      expect(normalizePath(copyFileSrcPath.toString())).toBe(
+        normalizePath(expectedTempPath),
+      );
+      expect(normalizePath(copyFileDestPath.toString())).toBe(
+        normalizePath(mockPath),
+      );
 
       // 一時ディレクトリの削除を確認
       expect(fs.rm).toHaveBeenCalledWith(path.join(os.tmpdir(), 'test-dir'), {
