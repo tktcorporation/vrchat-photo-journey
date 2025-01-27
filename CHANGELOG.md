@@ -6,6 +6,19 @@ All notable changes to this project will be documented in this file.
 
 ### 🚀 Features
 
+- シェア画像のファイル名の形式をphotoLogの形式に変更 (#244)
+- Auto-update 機能の実装 (#246)
+
+## [0.6.1] - 2025-01-25
+
+### 🐛 Bug Fixes
+
+- PlayerJoinLog にうまく usrId を記録できていなかった問題を修正 (#242)
+
+## [0.6.0] - 2025-01-25
+
+### 🚀 Features
+
 - 個別の写真からシェア用の画像を生成できるように (#214)
 - 追加の写真フォルダ読み込み対象を設定できるようにする (#215)
 - 個別シェア画像のダウンロードを可能にする(暫定) (#222)
