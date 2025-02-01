@@ -149,6 +149,7 @@ async function extractDominantColors(imageBase64: string): Promise<{
 function generatePlayerElements(
   players: { playerName: string }[] | null,
   showAllPlayers: boolean,
+  subHeaderFontSize: string,
 ): { elements: string; height: number } {
   if (!players || players.length === 0) return { elements: '', height: 0 };
 
@@ -160,7 +161,7 @@ function generatePlayerElements(
       <text
         x="0"
         y="0"
-        font-size="14"
+        font-size="${subHeaderFontSize}"
         font-weight="600"
         fill="rgba(255, 255, 255, 0.6)"
         dominant-baseline="hanging"
@@ -172,20 +173,20 @@ function generatePlayerElements(
     </g>
   `);
 
-  // プレイヤーリストのコンテナを開始
-  elements.push(`<g transform="translate(0, 24)">`);
+  // プレイヤーリストのコンテナを開始（間隔を20pxから24pxに広げる）
+  elements.push(`<g transform="translate(0, 22)">`);
 
   let x = 0;
   let y = 0;
   let currentLineWidth = 0;
   const maxLineWidth = 740;
 
-  // プレイヤー名の幅を事前計算
+  // プレイヤー名の幅を事前計算（フォントサイズを12pxに変更したので、文字幅も調整）
   const playerWidths = players.map((player) => {
     const nameWidth = [...player.playerName].reduce((width, char) => {
-      return width + (/[\u3000-\u9fff]/.test(char) ? 16 : 8);
+      return width + (/[\u3000-\u9fff]/.test(char) ? 14 : 7);
     }, 0);
-    return nameWidth + 24; // パディング込みの幅
+    return nameWidth + 20; // パディング込みの幅も小さく
   });
 
   // 表示するプレイヤーを決定
@@ -194,7 +195,7 @@ function generatePlayerElements(
 
   if (!showAllPlayers) {
     // +N moreの固定幅を事前に設定
-    const moreFixedWidth = 120;
+    const moreFixedWidth = 100; // 小さくした分調整
     const availableWidth = maxLineWidth - moreFixedWidth;
 
     // プレイヤーを2行に配置していく
@@ -207,11 +208,11 @@ function generatePlayerElements(
 
       if (currentWidth + width <= effectiveWidth) {
         tempPlayers.push(players[index]);
-        currentWidth += width + 8;
+        currentWidth += width + 6; // 間隔も小さく
       } else if (!isSecondRow) {
         // 1行目が埋まったら2行目へ
         isSecondRow = true;
-        currentWidth = width + 8;
+        currentWidth = width + 6;
         tempPlayers.push(players[index]);
       } else {
         // 2行目も埋まったら終了
@@ -219,7 +220,6 @@ function generatePlayerElements(
       }
     }
 
-    // 全プレイヤーが表示可能か判定
     displayPlayers = tempPlayers;
     remainingCount = players.length - tempPlayers.length;
   } else {
@@ -230,12 +230,12 @@ function generatePlayerElements(
   for (const player of displayPlayers) {
     const playerWidth =
       [...player.playerName].reduce((width, char) => {
-        return width + (/[\u3000-\u9fff]/.test(char) ? 16 : 8);
-      }, 0) + 24;
+        return width + (/[\u3000-\u9fff]/.test(char) ? 14 : 7);
+      }, 0) + 20;
 
     if (currentLineWidth + playerWidth > maxLineWidth) {
       x = 0;
-      y += 40;
+      y += 30; // 行間隔を小さく
       currentLineWidth = 0;
     }
 
@@ -243,14 +243,14 @@ function generatePlayerElements(
       <g transform="translate(${x}, ${y})">
         <rect
           width="${playerWidth}"
-          height="30"
-          rx="15"
+          height="24"
+          rx="12"
           fill="rgba(0, 0, 0, 0.3)"
         />
         <text
           x="${playerWidth / 2}"
-          y="15"
-          font-size="14"
+          y="12"
+          font-size="12"
           font-weight="500"
           fill="rgba(255, 255, 255, 0.9)"
           text-anchor="middle"
@@ -260,29 +260,29 @@ function generatePlayerElements(
       </g>
     `);
 
-    x += playerWidth + 8;
-    currentLineWidth += playerWidth + 8;
+    x += playerWidth + 6; // 間隔を小さく
+    currentLineWidth += playerWidth + 6;
   }
 
   if (!showAllPlayers && remainingCount > 0) {
     const moreText = `+${remainingCount} more`;
     const moreTextWidth = [...moreText].reduce((width, char) => {
-      return width + (/[\u3000-\u9fff]/.test(char) ? 16 : 8);
+      return width + (/[\u3000-\u9fff]/.test(char) ? 14 : 7);
     }, 0);
-    const moreWidth = moreTextWidth + 24;
+    const moreWidth = moreTextWidth + 20;
 
     elements.push(`
       <g transform="translate(${x}, ${y})">
         <rect
           width="${moreWidth}"
-          height="30"
-          rx="15"
+          height="24"
+          rx="12"
           fill="rgba(0, 0, 0, 0.3)"
         />
         <text
           x="${moreWidth / 2}"
-          y="15"
-          font-size="14"
+          y="12"
+          font-size="12"
           font-weight="500"
           fill="rgba(255, 255, 255, 0.9)"
           text-anchor="middle"
@@ -297,11 +297,11 @@ function generatePlayerElements(
   elements.push('</g>');
 
   // プレイヤーリストの高さを計算
-  const height = y + 30;
+  const height = y + 24;
 
   return {
-    elements: `<g transform="translate(32, 480)">${elements.join('')}</g>`,
-    height: height + 24, // ヘッダー分を追加
+    elements: `<g transform="translate(32, 500)">${elements.join('')}</g>`,
+    height: height + 20,
   };
 }
 
@@ -311,14 +311,23 @@ async function generatePreviewSvg({
   players,
   showAllPlayers,
 }: GeneratePreviewParams): Promise<{ svg: string; height: number }> {
+  const headerFontSize = '20px';
+  const subHeaderFontSize = '14px';
+
   const { elements: playerElements, height: playerListHeight } =
-    generatePlayerElements(players, showAllPlayers);
+    generatePlayerElements(players, showAllPlayers, subHeaderFontSize);
   const colors = await extractDominantColors(imageBase64);
 
   // showAllPlayersがfalseの場合は600px固定、trueの場合は動的に計算
   const totalHeight = showAllPlayers
-    ? Math.max(600, 480 + playerListHeight + 40)
+    ? Math.max(600, 500 + playerListHeight + 40)
     : 600;
+
+  // 中央の画像エリアを736×414に設定
+  const imageWidth = 736;
+  const imageHeight = 414;
+  const imageX = Math.round((800 - imageWidth) / 2); // 中央寄せ
+  const imageY = 70; // 上部の余白を調整
 
   const svg = `<?xml version="1.0" encoding="UTF-8"?>
     <svg
@@ -356,17 +365,17 @@ async function generatePreviewSvg({
         <pattern
           id="main-image"
           patternUnits="userSpaceOnUse"
-          x="80"
-          y="100"
-          width="640"
-          height="360"
+          x="${imageX}"
+          y="${imageY}"
+          width="${imageWidth}"
+          height="${imageHeight}"
         >
           <image
             href="data:image/png;base64,${imageBase64}"
             x="0"
             y="0"
-            width="640"
-            height="360"
+            width="${imageWidth}"
+            height="${imageHeight}"
             preserveAspectRatio="xMidYMid slice"
           />
         </pattern>
@@ -399,31 +408,32 @@ async function generatePreviewSvg({
       />
 
       <rect
-        x="80"
-        y="100"
-        width="640"
-        height="360"
+        x="${imageX}"
+        y="${imageY}"
+        width="${imageWidth}"
+        height="${imageHeight}"
         fill="url(#main-image)"
-        rx="16"
+        rx="12"
       />
 
-      <g transform="translate(32, 32)">
+      <g transform="translate(32, 24)">
         <text
           x="0"
           y="0"
-          font-size="32"
+          font-size="${headerFontSize}"
           font-weight="700"
           fill="white"
           dominant-baseline="hanging"
+          class="header"
         >
           ${worldName}
         </text>
         <rect
           x="0"
-          y="42"
-          width="240"
-          height="4"
-          rx="2"
+          y="26"
+          width="200"
+          height="3"
+          rx="1.5"
           fill="${colors.accent}"
         />
       </g>
