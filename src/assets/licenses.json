@@ -4679,7 +4679,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@types/connect/node_modules/undici-types",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@types/connect/node_modules/undici-types/LICENSE"
   },
-  "undici@6.21.1": {
+  "undici@7.3.0": {
     "licenses": "MIT",
     "repository": "https://github.com/nodejs/undici",
     "path": "/workspaces/vrchat-photo-journey/node_modules/undici",
@@ -4800,14 +4800,14 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/vaul",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/vaul/LICENSE.md"
   },
-  "vite@5.4.12": {
+  "vite@5.4.13": {
     "licenses": "MIT",
     "repository": "https://github.com/vitejs/vite",
     "publisher": "Evan You",
     "path": "/workspaces/vrchat-photo-journey/node_modules/vite",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/vite/LICENSE.md"
   },
-  "vrchat-photo-journey@0.6.1": {
+  "vrchat-photo-journey@0.8.0": {
     "licenses": "UNKNOWN",
     "repository": "https://github.com/tktcorporation/add-world-name-to-vrc-photo",
     "publisher": "tktcorporation",
