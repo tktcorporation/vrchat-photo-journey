@@ -43,7 +43,25 @@ const Header = memo(
     return (
       <header className="flex-none bg-white dark:bg-gray-800 shadow-sm z-50 sticky top-0">
         <div className="max-w-[2000px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-end items-center py-2">
+          <div className="flex justify-between items-center py-2">
+            <div className="flex items-center gap-2 dark:border-gray-700">
+              <button
+                type="button"
+                onClick={onToggleEmptyGroups}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              >
+                {!showEmptyGroups ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+                <span>
+                  {!showEmptyGroups
+                    ? t('common.hidingEmptyGroups')
+                    : t('common.showingEmptyGroups')}
+                </span>
+              </button>
+            </div>
             <div className="flex items-center gap-2">
               <SearchBar onSearch={setSearchQuery} />
               <button
@@ -69,24 +87,6 @@ const Header = memo(
                 <Settings className="h-4 w-4 text-gray-500 dark:text-gray-400" />
               </button>
             </div>
-          </div>
-          <div className="flex items-center gap-2 border-t border-gray-200 dark:border-gray-700 py-2">
-            <button
-              type="button"
-              onClick={onToggleEmptyGroups}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-            >
-              {!showEmptyGroups ? (
-                <EyeOff className="h-4 w-4" />
-              ) : (
-                <Eye className="h-4 w-4" />
-              )}
-              <span>
-                {!showEmptyGroups
-                  ? t('common.hidingEmptyGroups')
-                  : t('common.showingEmptyGroups')}
-              </span>
-            </button>
           </div>
         </div>
       </header>
