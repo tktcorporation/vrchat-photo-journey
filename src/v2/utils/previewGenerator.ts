@@ -320,7 +320,7 @@ async function generatePreviewSvg({
 
   // showAllPlayersがfalseの場合は600px固定、trueの場合は動的に計算
   const totalHeight = showAllPlayers
-    ? Math.max(600, 500 + playerListHeight + 40)
+    ? Math.max(600, 500 + playerListHeight + 24)
     : 600;
 
   // 中央の画像エリアを736×414に設定
@@ -430,7 +430,7 @@ async function generatePreviewSvg({
         </text>
         <rect
           x="0"
-          y="26"
+          y="28"
           width="200"
           height="3"
           rx="1.5"
