@@ -16,7 +16,7 @@ const SearchBar = memo(({ onSearch }: SearchBarProps) => {
       </div>
       <input
         type="text"
-        className="block w-full pl-8 pr-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-800 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+        className="block w-full pl-8 pr-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-800 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
         placeholder={t('common.search.placeholder')}
         onChange={(e) => onSearch(e.target.value)}
       />

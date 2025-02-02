@@ -43,8 +43,8 @@ const Header = memo(
     return (
       <header className="flex-none bg-white dark:bg-gray-800 shadow-sm z-50 sticky top-0">
         <div className="max-w-[2000px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-end items-center py-4">
-            <div className="flex items-center gap-4">
+          <div className="flex justify-end items-center py-2">
+            <div className="flex items-center gap-2">
               <SearchBar onSearch={setSearchQuery} />
               <button
                 type="button"
@@ -55,7 +55,7 @@ const Header = memo(
                 title={t('common.refresh')}
               >
                 <RefreshCw
-                  className={`h-5 w-5 text-gray-500 dark:text-gray-400 ${
+                  className={`h-4 w-4 text-gray-500 dark:text-gray-400 ${
                     isRefreshing ? 'animate-spin' : ''
                   }`}
                 />
@@ -66,11 +66,11 @@ const Header = memo(
                 className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 aria-label={t('common.settings')}
               >
-                <Settings className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                <Settings className="h-4 w-4 text-gray-500 dark:text-gray-400" />
               </button>
             </div>
           </div>
-          <div className="flex items-center gap-2 pb-4 border-t border-gray-200 dark:border-gray-700 pt-2">
+          <div className="flex items-center gap-2 border-t border-gray-200 dark:border-gray-700 py-2">
             <button
               type="button"
               onClick={onToggleEmptyGroups}
