@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Photo } from '../types/photo';
 import PhotoCard from './PhotoCard';
@@ -6,6 +7,8 @@ interface PhotoGridProps {
   photos: Photo[];
   worldId: string | null;
   onPhotoSelect: (photo: Photo) => void;
+  setLastSelectedPhoto: (photo: Photo | null) => void;
+  lastSelectedPhotoId?: string | number;
 }
 
 const TARGET_ROW_HEIGHT = 200; // 目標の行の高さ
@@ -22,6 +25,8 @@ export default function PhotoGrid({
   photos,
   worldId,
   onPhotoSelect,
+  setLastSelectedPhoto,
+  lastSelectedPhotoId,
 }: PhotoGridProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
@@ -137,11 +142,17 @@ export default function PhotoGrid({
                       width: photo.displayWidth,
                       flexShrink: 0,
                     }}
+                    className={clsx(
+                      'relative aspect-video transition-all duration-300',
+                      photo.id === lastSelectedPhotoId &&
+                        'ring-2 ring-blue-400 ring-offset-2 shadow-[0_0_30px_2px_rgba(59,130,246,0.3)] dark:shadow-[0_0_30px_2px_rgba(147,197,253,0.3)]',
+                    )}
                   >
                     <PhotoCard
                       photo={photo}
                       worldId={worldId}
                       onSelect={onPhotoSelect}
+                      setLastSelectedPhoto={setLastSelectedPhoto}
                       priority={index === 0}
                     />
                   </div>

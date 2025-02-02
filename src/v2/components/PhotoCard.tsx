@@ -20,10 +20,11 @@ interface PhotoCardProps {
   worldId: string | null;
   priority?: boolean;
   onSelect: (photo: Photo) => void;
+  setLastSelectedPhoto: (photo: Photo | null) => void;
 }
 
 const PhotoCard: React.FC<PhotoCardProps> = memo(
-  ({ photo, worldId, priority = false, onSelect }) => {
+  ({ photo, worldId, priority = false, onSelect, setLastSelectedPhoto }) => {
     const { t } = useI18n();
     const elementRef = useRef<HTMLDivElement>(null);
     const isIntersecting = useIntersectionObserver(elementRef, {
@@ -137,11 +138,24 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
         console.log('共有画像の生成とコピーが完了しました');
       };
 
+    // コンテキストメニュー用の共通処理
+    const handleMenuAction = (
+      e: React.MouseEvent,
+      handler: (e: React.MouseEvent) => void,
+    ) => {
+      e.stopPropagation();
+      setLastSelectedPhoto(photo);
+      handler(e);
+    };
+
     return (
       <div
         ref={elementRef}
         className="group relative w-full h-full bg-gray-100 dark:bg-gray-800 overflow-hidden cursor-pointer transform transition-all duration-300 hover:brightness-110"
-        onClick={() => onSelect(photo)}
+        onClick={() => {
+          onSelect(photo);
+          setLastSelectedPhoto(photo);
+        }}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             onSelect(photo);
@@ -151,7 +165,10 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
         tabIndex={0}
       >
         <ContextMenu>
-          <ContextMenuTrigger className="absolute inset-0">
+          <ContextMenuTrigger
+            className="absolute inset-0"
+            onContextMenu={() => setLastSelectedPhoto(photo)}
+          >
             {shouldLoad ? (
               <ProgressiveImage
                 src={photoData?.data || ''}
@@ -177,19 +194,29 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
             </div>
           </ContextMenuTrigger>
           <ContextMenuContent onClick={(e) => e.stopPropagation()}>
-            <ContextMenuItem onClick={handleShare('clipboard')}>
+            <ContextMenuItem
+              onClick={(e) => handleMenuAction(e, handleShare('clipboard'))}
+            >
               {t('common.contextMenu.shareImage')}
             </ContextMenuItem>
-            <ContextMenuItem onClick={handleShare('download')}>
+            <ContextMenuItem
+              onClick={(e) => handleMenuAction(e, handleShare('download'))}
+            >
               {t('common.contextMenu.downloadImage')}
             </ContextMenuItem>
-            <ContextMenuItem onClick={handleCopyPhotoData}>
+            <ContextMenuItem
+              onClick={(e) => handleMenuAction(e, handleCopyPhotoData)}
+            >
               {t('common.contextMenu.copyPhotoData')}
             </ContextMenuItem>
-            <ContextMenuItem onClick={handleOpenInPhotoApp}>
+            <ContextMenuItem
+              onClick={(e) => handleMenuAction(e, handleOpenInPhotoApp)}
+            >
               {t('common.contextMenu.openInPhotoApp')}
             </ContextMenuItem>
-            <ContextMenuItem onClick={handleOpenInExplorer}>
+            <ContextMenuItem
+              onClick={(e) => handleMenuAction(e, handleOpenInExplorer)}
+            >
               {t('common.contextMenu.showInExplorer')}
             </ContextMenuItem>
           </ContextMenuContent>
