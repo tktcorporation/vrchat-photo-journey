@@ -6,6 +6,23 @@ All notable changes to this project will be documented in this file.
 
 ### 🚀 Features
 
+- 最後に開いた写真をマークしてわかりやすくする (#257)
+
+### 🚜 Refactor
+
+- ヘッダー部分の余白,デザイン調整 (#255)
+- 表示場所を調整してヘッダー領域の行数を減らす (#256)
+
+## [0.8.0] - 2025-02-01
+
+### 🚀 Features
+
+- シェア画像のスタイルを変更 (#253)
+
+## [0.7.0] - 2025-01-27
+
+### 🚀 Features
+
 - シェア画像のファイル名の形式をphotoLogの形式に変更 (#244)
 - Auto-update 機能の実装 (#246)
 
