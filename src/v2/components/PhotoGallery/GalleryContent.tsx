@@ -14,7 +14,7 @@ interface GalleryContentProps {
   isLoadingStartupSync: boolean;
 }
 
-const GROUP_SPACING = 100;
+const GROUP_SPACING = 76;
 const CONTAINER_PADDING = 16;
 
 const GalleryContent = memo(
