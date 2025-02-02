@@ -473,7 +473,7 @@ export const LocationGroupHeader = ({
 
   if (worldId === null) {
     return (
-      <header className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4">
+      <header className="bg-white dark:bg-gray-800 rounded-t-lg shadow-sm p-4">
         <div className="flex items-center gap-x-2">
           <h2 className="text-lg font-bold">{t('locationHeader.ungrouped')}</h2>
           <span className="text-sm text-gray-500">
@@ -491,7 +491,7 @@ export const LocationGroupHeader = ({
   return (
     <div
       ref={containerRef}
-      className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden"
+      className="bg-white dark:bg-gray-800 rounded-t-lg shadow-sm overflow-hidden"
     >
       <div className="relative h-36 overflow-hidden group">
         <div
