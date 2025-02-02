@@ -14,7 +14,7 @@ interface GalleryContentProps {
   isLoadingStartupSync: boolean;
 }
 
-const GROUP_SPACING = 160;
+const GROUP_SPACING = 76;
 const CONTAINER_PADDING = 16;
 
 const GalleryContent = memo(
@@ -86,7 +86,7 @@ const GalleryContent = memo(
                     paddingBottom: `${GROUP_SPACING - CONTAINER_PADDING}px`,
                   }}
                 >
-                  <div className="space-y-6">
+                  <div className="space-y-2">
                     <LocationGroupHeader
                       worldId={group.worldInfo?.worldId ?? null}
                       worldName={group.worldInfo?.worldName ?? null}

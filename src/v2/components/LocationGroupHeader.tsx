@@ -106,7 +106,7 @@ const PlayerList = memo(
         {showMoreCount && (
           <>
             <span className="opacity-50">/</span>
-            <span className="opacity-75">+{remainingCount} more</span>
+            <span className="opacity-75">+{remainingCount}</span>
           </>
         )}
       </>
@@ -338,6 +338,11 @@ export const LocationGroupHeader = ({
   const formattedDate = format(joinDateTime, 'yyyy年MM月dd日 HH:mm');
   const players = Array.isArray(playersResult) ? playersResult : null;
 
+  // ワールドリンク
+  const worldLink = worldInstanceId
+    ? `https://vrchat.com/home/world/${worldId}?instanceId=${worldInstanceId}`
+    : `https://vrchat.com/home/world/${worldId}/info`;
+
   // Event handlers
   const handleMouseMove = (event: React.MouseEvent) => {
     setTooltipPosition({
@@ -363,7 +368,7 @@ export const LocationGroupHeader = ({
 
       const containerWidth = playerListContainerRef.current.offsetWidth;
       const separatorWidth = 24; // セパレータ（ / ）の幅
-      const moreTextWidth = 72; // "/ +X more" テキストの幅
+      const moreTextWidth = 48; // "/ +X" テキストの幅
 
       // 一時的なDOM要素を作成して実際の幅を計算
       const tempDiv = document.createElement('div');
@@ -473,15 +478,20 @@ export const LocationGroupHeader = ({
 
   if (worldId === null) {
     return (
-      <header className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4">
-        <div className="flex items-center gap-x-2">
-          <h2 className="text-lg font-bold">{t('locationHeader.ungrouped')}</h2>
-          <span className="text-sm text-gray-500">
-            <ImageIcon className="h-4 w-4" />
-            <span>{photoCount}</span>
+      <header className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-t-xl shadow-lg p-6">
+        <div className="flex items-center gap-x-3">
+          <h2 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-gray-100 dark:to-gray-300 bg-clip-text text-transparent">
+            {t('locationHeader.ungrouped')}
+          </h2>
+          <span className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 rounded-full">
+            <ImageIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              {photoCount}
+            </span>
           </span>
         </div>
-        <div className="mt-1 text-sm text-gray-500">
+        <div className="mt-2 text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
+          <Calendar className="h-4 w-4" />
           <time dateTime={joinDateTime.toISOString()}>{formattedDate}</time>
         </div>
       </header>
@@ -491,170 +501,162 @@ export const LocationGroupHeader = ({
   return (
     <div
       ref={containerRef}
-      className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden"
+      className="bg-white dark:bg-gray-800 rounded-t-xl shadow-lg overflow-hidden transition-all duration-500 group/card"
     >
-      <div className="relative h-36 overflow-hidden group">
+      <div className="relative h-28 overflow-hidden">
         <div
           className={`absolute inset-0 ${
             !isImageLoaded || !details?.thumbnailImageUrl
-              ? 'bg-gray-200 dark:bg-gray-700'
+              ? 'bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900'
               : ''
           }`}
         >
           {details?.thumbnailImageUrl && isVisible && (
             <>
               <div
-                className="absolute inset-0 scale-110 transition-transform duration-700 group-hover:scale-105"
+                className="absolute inset-0 scale-110 transition-transform duration-700"
                 style={{
                   backgroundImage: `url(${details.thumbnailImageUrl})`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
-                  filter: 'blur(4px)',
+                  filter: 'blur(16px) saturate(120%) brightness(0.9)',
                 }}
               />
-              {/* <img
-                src={details.imageUrl}
-                alt={details.name}
-                className={`relative w-full h-full object-cover transition-all duration-700 group-hover:scale-105 ${
-                  isImageLoaded ? 'opacity-100' : 'opacity-0'
-                }`}
-                loading="lazy"
-                onLoad={() => setIsImageLoaded(true)}
-              /> */}
+              {/* <div className="absolute inset-0 bg-gradient-to-br from-black/50 via-black/30 to-transparent backdrop-blur-[1px] group-hover/card:backdrop-blur-[2px] transition-all duration-500" /> */}
+              {/* <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-90" /> */}
+              {/* <div className="absolute inset-0">
+                <div className="absolute inset-0 bg-gradient-to-r from-primary-500/30 to-transparent mix-blend-overlay" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.1),transparent_70%)]" />
+              </div> */}
             </>
           )}
         </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 p-4 text-white">
+
+        <div className="absolute inset-x-0 bottom-0 p-4 space-y-3">
+          {/* 1行目: ワールド名とアクション */}
           <div className="flex items-center justify-between">
-            <h3 className="text-xl font-bold flex items-center group/title">
-              <MapPin className="h-5 w-5 mr-2 flex-shrink-0" />
+            <h3 className="text-xl font-bold flex items-center group/title text-white">
               <button
                 type="button"
-                className="hover:underline flex items-center"
+                className="hover:underline flex items-center transition-all duration-300 hover:text-primary-300"
                 onClick={(e) => {
                   e.stopPropagation();
-                  openUrlMutation.mutate(
-                    `https://vrchat.com/home/world/${worldId}/info`,
-                  );
+                  openUrlMutation.mutate(worldLink);
                 }}
               >
-                {details?.name || worldName}
-                <ExternalLink className="h-4 w-4 ml-1 opacity-0 group-hover/title:opacity-100 transition-opacity" />
+                <span className="line-clamp-1">
+                  {details?.name || worldName}
+                </span>
+                <ExternalLink className="h-4 w-4 ml-2 transition-opacity flex-shrink-0" />
               </button>
-              <span className="ml-3 text-sm font-normal opacity-90 flex gap-1 items-center">
-                <ImageIcon className="h-5 w-5" />
-                <span>({photoCount})</span>
-              </span>
             </h3>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="flex items-center text-sm text-white backdrop-blur-sm bg-white/10 dark:bg-black/20 px-3 py-1.5 rounded-full border border-white/10">
+                <Calendar className="h-4 w-4 mr-1.5 text-primary-300" />
+                {formattedDate}
+              </div>
+              {details?.unityPackages && details.unityPackages.length > 0 && (
+                <div className="flex items-center gap-1.5">
+                  {Array.from(
+                    new Set(details.unityPackages.map((pkg) => pkg.platform)),
+                  ).map((platform) => (
+                    <PlatformBadge key={platform} platform={platform} />
+                  ))}
+                </div>
+              )}
               <button
                 type="button"
                 onClick={() => setIsShareModalOpen(true)}
-                className="flex items-center text-sm backdrop-blur-sm bg-black/20 px-3 py-1 rounded-full hover:bg-black/30 transition-colors"
+                className="flex items-center text-sm font-medium text-white backdrop-blur-sm bg-primary-500/20 hover:bg-primary-500/30 dark:bg-primary-500/30 dark:hover:bg-primary-500/40 px-3 py-1.5 rounded-full transition-all duration-300 border border-white/10 hover:border-white/20"
               >
                 <Share2 className="h-4 w-4 mr-1.5" />
-                {t('locationHeader.share')}
               </button>
-              <div className="flex items-center text-sm backdrop-blur-sm bg-black/20 px-3 py-1 rounded-full">
-                <Calendar className="h-4 w-4 mr-1.5" />
-                {formattedDate}
-              </div>
             </div>
           </div>
-          <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
-            <div className="flex items-center">
-              {details?.authorName && (
-                <span className="opacity-90">By {details.authorName}</span>
-              )}
-              <span className="mx-2 opacity-50">•</span>
-              {worldInstanceId !== null && (
-                <span className="opacity-75 text-xs">
-                  Instance: {worldInstanceId}
+
+          {/* 2行目: 写真枚数とプレイヤーリスト */}
+          <div className="flex items-center gap-2 w-full">
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="flex items-center text-sm text-white backdrop-blur-sm bg-white/10 dark:bg-black/20 px-3 py-1.5 rounded-full border border-white/10">
+                <ImageIcon className="h-4 w-4 mr-1.5 text-primary-300" />
+                {photoCount}
+              </div>
+              {worldError && (
+                <span className="text-yellow-400 bg-yellow-500/10 backdrop-blur-sm px-3 py-1.5 rounded-full border border-yellow-500/20 flex items-center gap-2">
+                  <X className="h-4 w-4" />
+                  {t('locationHeader.worldInfoDeleted')}
                 </span>
               )}
             </div>
-            {details?.unityPackages && details.unityPackages.length > 0 && (
-              <div className="flex items-center gap-1">
-                {Array.from(
-                  new Set(details.unityPackages.map((pkg) => pkg.platform)),
-                ).map((platform) => (
-                  <PlatformBadge key={platform} platform={platform} />
-                ))}
-              </div>
-            )}
-            {worldError && (
-              <span className="text-yellow-500 dark:text-yellow-400 text-xs">
-                ({t('locationHeader.worldInfoDeleted')})
-              </span>
-            )}
-          </div>
-          {!isPlayersLoading && players && players.length > 0 && (
-            <div className="flex items-center mt-2 text-sm backdrop-blur-sm bg-black/20 self-start px-3 py-1 rounded-full w-full">
-              <Users className="h-4 w-4 mr-1.5" />
-              <div
-                ref={playerListContainerRef}
-                className="relative cursor-pointer w-full group/players"
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
-                onMouseMove={handleMouseMove}
-                onClick={handleCopyPlayers}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    handleCopyPlayers();
-                  }
-                }}
-                role="button"
-                tabIndex={0}
-                title={t('locationHeader.clickToCopy')}
-              >
-                <div className="flex items-center gap-2 w-full">
-                  {!isCopied && (
-                    <PlayerList
-                      players={players}
-                      maxVisiblePlayers={maxVisiblePlayers}
-                    />
-                  )}
-                  <span className="ml-2 transition-opacity">
-                    {isCopied && (
-                      <span className="text-green-400">
-                        <CheckIcon className="h-4 w-4 inline-block" />{' '}
+
+            {!isPlayersLoading && players && players.length > 0 && (
+              <div className="flex gap-2 items-center text-sm text-white backdrop-blur-sm bg-white/10 hover:bg-white/15 dark:bg-black/20 dark:hover:bg-black/30 px-3 py-1.5 rounded-full transition-all duration-300 border border-white/10 hover:border-white/20 group/players flex-1 min-w-0">
+                <div className="flex items-center gap-1">
+                  <Users className="h-4 w-4 text-primary-300 flex-shrink-0" />
+                  <span>{players.length}</span>
+                </div>
+                <div className="text-gray-400">|</div>
+                <div
+                  ref={playerListContainerRef}
+                  className="relative cursor-pointer flex-1 min-w-0"
+                  onMouseEnter={() => setIsHovered(true)}
+                  onMouseLeave={() => setIsHovered(false)}
+                  onMouseMove={handleMouseMove}
+                  onClick={handleCopyPlayers}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleCopyPlayers();
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  title={t('locationHeader.clickToCopy')}
+                >
+                  <div className="flex items-center gap-2 w-full">
+                    {!isCopied ? (
+                      <PlayerList
+                        players={players}
+                        maxVisiblePlayers={maxVisiblePlayers}
+                      />
+                    ) : (
+                      <span className="text-green-400 flex items-center gap-2">
+                        <CheckIcon className="h-4 w-4" />
                         {t('locationHeader.copied')}
                       </span>
                     )}
-                  </span>
+                  </div>
+                  {players &&
+                    (createPortal(
+                      <div
+                        style={{
+                          position: 'fixed',
+                          visibility: isHovered ? 'visible' : 'hidden',
+                          opacity: isHovered ? 1 : 0,
+                          transition: 'opacity 200ms',
+                          top: tooltipPosition.top,
+                          left: tooltipPosition.left,
+                        }}
+                        className="z-50 p-4 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md text-gray-900 dark:text-gray-100 text-xs rounded-lg shadow-xl border border-gray-200/20 dark:border-gray-700/30"
+                      >
+                        <div className="flex flex-wrap gap-2 max-w-[600px]">
+                          {players.map((p: Player) => (
+                            <span
+                              key={p.id}
+                              className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-full border border-gray-200/50 dark:border-gray-700/50"
+                            >
+                              {p.playerName}
+                            </span>
+                          ))}
+                        </div>
+                      </div>,
+                      document.body,
+                    ) as ReactPortal)}
                 </div>
+                <Copy className="h-4 w-4 ml-2 text-white/50 group-hover/players:text-white/80 transition-colors flex-shrink-0" />
               </div>
-              {
-                createPortal(
-                  <div
-                    style={{
-                      position: 'fixed',
-                      visibility: isHovered ? 'visible' : 'hidden',
-                      opacity: isHovered ? 1 : 0,
-                      transition: 'opacity 200ms',
-                      top: tooltipPosition.top,
-                      left: tooltipPosition.left,
-                    }}
-                    className="z-50 p-4 bg-black/90 backdrop-blur-md text-white text-xs rounded-lg shadow-lg"
-                  >
-                    <div className="flex flex-wrap gap-2 max-w-[600px]">
-                      {players.map((p: Player) => (
-                        <span
-                          key={p.id}
-                          className="bg-white/10 px-3 py-1 rounded-full"
-                        >
-                          {p.playerName}
-                        </span>
-                      ))}
-                    </div>
-                  </div>,
-                  document.body,
-                ) as ReactPortal
-              }
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
       <ShareModal
