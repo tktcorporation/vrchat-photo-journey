@@ -28,6 +28,8 @@ const GalleryContent = memo(
       isLoading: isLoadingGrouping,
       selectedPhoto,
       setSelectedPhoto,
+      lastSelectedPhoto,
+      setLastSelectedPhoto,
     } = usePhotoGallery(searchQuery);
     const containerRef = useRef<HTMLDivElement>(null);
     const groupSizesRef = useRef<Map<string, number>>(new Map());
@@ -99,6 +101,8 @@ const GalleryContent = memo(
                         worldId={group.worldInfo?.worldId ?? null}
                         photos={group.photos}
                         onPhotoSelect={setSelectedPhoto}
+                        setLastSelectedPhoto={setLastSelectedPhoto}
+                        lastSelectedPhotoId={lastSelectedPhoto?.id}
                       />
                     ) : (
                       <div className="text-center py-8 text-gray-500 bg-gray-50 dark:bg-gray-800 rounded-lg">

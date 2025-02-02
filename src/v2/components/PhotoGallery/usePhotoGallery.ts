@@ -1,6 +1,6 @@
 import { trpcReact } from '@/trpc';
 import pathe from 'pathe';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Photo } from '../../types/photo';
 import { VRChatPhotoFileNameWithExtSchema } from './../../../valueObjects';
 import {
@@ -14,9 +14,14 @@ export function usePhotoGallery(searchQuery: string): {
   isLoading: boolean;
   selectedPhoto: Photo | null;
   setSelectedPhoto: (photo: Photo | null) => void;
+  lastSelectedPhoto: Photo | null;
+  setLastSelectedPhoto: (photo: Photo | null) => void;
   debug: DebugInfo;
 } {
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
+  const [lastSelectedPhoto, setLastSelectedPhoto] = useState<Photo | null>(
+    null,
+  );
 
   const { data: photoList, isLoading: isLoadingPhotos } =
     trpcReact.vrchatPhoto.getVrchatPhotoPathModelList.useQuery(
@@ -95,6 +100,8 @@ export function usePhotoGallery(searchQuery: string): {
     isLoading,
     selectedPhoto,
     setSelectedPhoto,
+    lastSelectedPhoto,
+    setLastSelectedPhoto,
     debug,
   };
 }

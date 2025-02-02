@@ -7,8 +7,8 @@ interface VirtualGridRowProps {
   worldId: string | null;
   start: number;
   height: number;
-  isPriority?: boolean;
   onPhotoSelect: (photo: Photo) => void;
+  setLastSelectedPhoto: (photo: Photo | null) => void;
 }
 
 const VirtualGridRow: React.FC<VirtualGridRowProps> = React.memo(
@@ -17,8 +17,8 @@ const VirtualGridRow: React.FC<VirtualGridRowProps> = React.memo(
     worldId,
     start,
     height,
-    isPriority = false,
     onPhotoSelect,
+    setLastSelectedPhoto,
   }) => {
     if (!photos || photos.length === 0) return null;
 
@@ -65,8 +65,8 @@ const VirtualGridRow: React.FC<VirtualGridRowProps> = React.memo(
             <PhotoCard
               photo={photo}
               worldId={worldId}
-              priority={isPriority}
               onSelect={onPhotoSelect}
+              setLastSelectedPhoto={setLastSelectedPhoto}
             />
           </div>
         ))}
