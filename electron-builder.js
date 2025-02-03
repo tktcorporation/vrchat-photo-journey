@@ -6,14 +6,9 @@ const config = {
   asar: true,
   files: ['main', 'src/out'],
   directories: {
-    buildResources: 'resources',
+    buildResources: 'assets',
   },
-  extraResources: [
-    {
-      from: './assets/',
-      to: 'assets',
-    },
-  ],
+  extraResources: ['./src/assets/**'],
   publish: [
     {
       provider: 'github',
@@ -25,13 +20,16 @@ const config = {
   ],
   win: {
     target: 'nsis',
+    icon: 'build/icons/icon.ico',
   },
   linux: {
     target: 'AppImage',
+    icon: 'build/icons',
   },
   mac: {
     target: 'dmg',
     identity: null,
+    icon: 'build/icons/icon.icns',
   },
 };
 

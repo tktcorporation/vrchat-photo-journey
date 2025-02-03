@@ -1,5 +1,6 @@
 // Native
 import EventEmitter from 'node:events';
+import { promises as fs } from 'node:fs';
 import { join } from 'node:path';
 
 // Packages
@@ -201,13 +202,32 @@ const createOrGetWindow = (): BrowserWindow => {
 const setTray = () => {
   let tray: Tray | null = null;
 
-  const createTray = () => {
+  const createTray = async () => {
     if (tray !== null) return;
 
-    const appPath = app.isPackaged ? process.resourcesPath : app.getAppPath();
-    const iconPath = join(appPath, 'assets', 'icons', 'ms-icon-144x144.png');
+    const appPath = app.isPackaged
+      ? process.resourcesPath
+      : `${app.getAppPath()}/src/assets`;
+    const iconPath = join(appPath, 'icons', '256x256.png');
 
-    tray = new Tray(iconPath);
+    // アイコンパスの存在確認とログ出力
+    try {
+      await fs.access(iconPath);
+      log.info({ message: `トレイアイコンが見つかりました: ${iconPath}` });
+    } catch {
+      log.error({ message: `トレイアイコンが見つかりません: ${iconPath}` });
+      return;
+    }
+
+    try {
+      tray = new Tray(iconPath);
+      log.info({ message: 'トレイの作成に成功しました' });
+    } catch (error) {
+      log.error({
+        message: `トレイの作成に失敗しました: ${JSON.stringify(error)}`,
+      });
+      return;
+    }
 
     const contextMenu = Menu.buildFromTemplate([
       {
@@ -243,8 +263,10 @@ const setTray = () => {
       },
     ]);
 
-    tray.setToolTip(app.name);
-    tray.setContextMenu(contextMenu);
+    if (tray) {
+      tray.setToolTip(app.name);
+      tray.setContextMenu(contextMenu);
+    }
   };
 
   // アプリ終了時にトレイも破棄
