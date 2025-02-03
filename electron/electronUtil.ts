@@ -207,8 +207,8 @@ const setTray = () => {
 
     const appPath = app.isPackaged
       ? process.resourcesPath
-      : `${app.getAppPath()}/src/assets`;
-    const iconPath = join(appPath, 'icons', '256x256.png');
+      : `${app.getAppPath()}/src`;
+    const iconPath = join(appPath, 'assets', 'icons', '256x256.png');
 
     // アイコンパスの存在確認とログ出力
     try {
