@@ -205,7 +205,7 @@ const setTray = () => {
     if (tray !== null) return;
 
     const appPath = app.isPackaged ? process.resourcesPath : app.getAppPath();
-    const iconPath = join(appPath, 'assets', 'icons', 'Icon-Electron.png');
+    const iconPath = join(appPath, 'assets', 'icons', 'ms-icon-144x144.png');
 
     tray = new Tray(iconPath);
 
