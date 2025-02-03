@@ -8,6 +8,12 @@ const config = {
   directories: {
     buildResources: 'assets',
   },
+  extraResources: [
+    {
+      from: './assets/',
+      to: 'assets',
+    },
+  ],
   publish: [
     {
       provider: 'github',
