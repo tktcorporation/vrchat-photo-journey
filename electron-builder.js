@@ -8,7 +8,6 @@ const config = {
   directories: {
     buildResources: 'assets',
   },
-  extraResources: ['./src/assets/**'],
   publish: [
     {
       provider: 'github',
@@ -20,16 +19,16 @@ const config = {
   ],
   win: {
     target: 'nsis',
-    icon: 'build/icons/icon.ico',
+    icon: 'assets/icon.ico',
   },
   linux: {
     target: 'AppImage',
-    icon: 'build/icons',
+    icon: 'assets/icons',
   },
   mac: {
     target: 'dmg',
     identity: null,
-    icon: 'build/icons/icon.icns',
+    icon: 'assets/icon.icns',
   },
 };
 
