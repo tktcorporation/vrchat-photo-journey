@@ -14,7 +14,7 @@ interface GalleryContentProps {
   isLoadingStartupSync: boolean;
 }
 
-const GROUP_SPACING = 76;
+const GROUP_SPACING = 52;
 const CONTAINER_PADDING = 16;
 
 const GalleryContent = memo(
@@ -51,7 +51,7 @@ const GalleryContent = memo(
         },
         [filteredGroups],
       ),
-      overscan: 5,
+      overscan: 1,
       measureElement: useCallback((element: HTMLElement) => {
         const height = element.getBoundingClientRect().height;
         const key = element.getAttribute('data-key');
