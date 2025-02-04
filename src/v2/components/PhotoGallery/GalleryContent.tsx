@@ -76,7 +76,7 @@ const GalleryContent = memo(
       }, []),
     });
 
-    if (isLoading) {
+    if (isLoadingGrouping) {
       return (
         <div className="flex-1 overflow-y-auto p-4 space-y-8">
           {Array.from({ length: 3 }).map((_, _i) => (
