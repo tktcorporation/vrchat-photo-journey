@@ -2,7 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
-## [unreleased]
+## [0.10.0] - 2025-02-04
+
+### 🚀 Features
+
+- 新しいロゴを追加 (#263)
+
+### 🚜 Refactor
+
+- テキストサイズ、余白調整、スケルトン表示 (#270)
+
+## [0.9.0] - 2025-02-02
 
 ### 🚀 Features
 
