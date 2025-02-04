@@ -14,8 +14,22 @@ interface GalleryContentProps {
   isLoadingStartupSync: boolean;
 }
 
-const GROUP_SPACING = 76;
+const GROUP_SPACING = 52;
 const CONTAINER_PADDING = 16;
+
+const SkeletonGroup = () => (
+  <div className="space-y-2 animate-pulse">
+    <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded-lg w-2/3" />
+    <div className="grid grid-cols-4 gap-4">
+      {Array.from({ length: 8 }).map((_, _i) => (
+        <div
+          key={`skeleton-photo-${crypto.randomUUID()}`}
+          className="aspect-square bg-gray-200 dark:bg-gray-700 rounded-lg"
+        />
+      ))}
+    </div>
+  </div>
+);
 
 const GalleryContent = memo(
   ({
@@ -51,7 +65,7 @@ const GalleryContent = memo(
         },
         [filteredGroups],
       ),
-      overscan: 5,
+      overscan: 1,
       measureElement: useCallback((element: HTMLElement) => {
         const height = element.getBoundingClientRect().height;
         const key = element.getAttribute('data-key');
@@ -61,6 +75,16 @@ const GalleryContent = memo(
         return height + GROUP_SPACING;
       }, []),
     });
+
+    if (isLoading) {
+      return (
+        <div className="flex-1 overflow-y-auto p-4 space-y-8">
+          {Array.from({ length: 3 }).map((_, _i) => (
+            <SkeletonGroup key={`skeleton-group-${crypto.randomUUID()}`} />
+          ))}
+        </div>
+      );
+    }
 
     return (
       <GalleryErrorBoundary>

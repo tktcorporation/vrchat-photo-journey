@@ -9,7 +9,6 @@ import {
   ImageIcon,
   Laptop,
   LoaderCircle,
-  MapPin,
   Share2,
   Users,
   X,
@@ -71,7 +70,7 @@ const PlatformBadge = memo(({ platform }: { platform: string }) => {
         ? 'Quest'
         : platform;
   return (
-    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
+    <span className="inline-flex items-center px-2 py-0.5 rounded text-sm font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
       <Laptop className="h-3 w-3 mr-1" />
       {platformName}
     </span>
@@ -199,9 +198,9 @@ const ShareModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="h-[90vh] flex flex-col p-0 bg-white dark:bg-gray-800 border-none">
-        <DialogHeader className="px-6 pt-4 pb-2 border-gray-200 dark:border-gray-700 flex flex-row items-center justify-between">
-          <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-white">
+      <DialogContent className="h-[70vh] flex flex-col p-0 backdrop-blur-xl bg-white/80 dark:bg-gray-900/80 border border-white/20 dark:border-gray-700/30 shadow-2xl">
+        <DialogHeader className="px-6 pt-4 pb-2 border-b border-white/10 dark:border-gray-700/20 flex flex-row items-center justify-between">
+          <DialogTitle className="text-lg font-semibold text-gray-800 dark:text-white">
             {t('locationHeader.share')}
           </DialogTitle>
           <div className="flex items-center gap-2">
@@ -209,7 +208,7 @@ const ShareModal = ({
               type="button"
               onClick={handleCopyShareImageToClipboard}
               disabled={isLoading}
-              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700"
+              className="p-2 rounded-lg bg-white/20 dark:bg-gray-800/50 hover:bg-white/30 dark:hover:bg-gray-800/60 border border-white/10 dark:border-gray-700/30 text-gray-700 dark:text-gray-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               title={t('locationHeader.copyToClipboard')}
             >
               <Copy className="h-5 w-5" />
@@ -218,7 +217,7 @@ const ShareModal = ({
               type="button"
               onClick={handleDownloadShareImagePng}
               disabled={isLoading}
-              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700"
+              className="p-2 rounded-lg bg-white/20 dark:bg-gray-800/50 hover:bg-white/30 dark:hover:bg-gray-800/60 border border-white/10 dark:border-gray-700/30 text-gray-700 dark:text-gray-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               title={t('locationHeader.downloadImage')}
             >
               <Download className="h-5 w-5" />
@@ -226,7 +225,7 @@ const ShareModal = ({
           </div>
         </DialogHeader>
         <div className="flex flex-col pb-6 px-6 h-[calc(100vh-130px)] items-center justify-center">
-          <div className="h-full aspect-[4/3] overflow-y-auto">
+          <div className="h-full aspect-[4/3] overflow-y-auto border border-white/10 dark:border-gray-700/20 rounded-lg">
             <ContextMenu>
               <ContextMenuTrigger className="w-full">
                 <div className="h-full rounded-lg overflow-y-auto">
@@ -241,7 +240,7 @@ const ShareModal = ({
                           <img
                             src={`data:image/png;base64,${previewBase64}`}
                             alt={worldName || 'Preview'}
-                            className="max-w-full h-auto"
+                            className="h-96	 max-h-full w-auto"
                           />
                         )}
                       </div>
@@ -249,19 +248,19 @@ const ShareModal = ({
                   </div>
                 </div>
               </ContextMenuTrigger>
-              <ContextMenuContent>
+              <ContextMenuContent className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border border-white/20 dark:border-gray-700/30 shadow-lg">
                 <ContextMenuItem
+                  className="hover:bg-white/50 dark:hover:bg-gray-800/50 focus:bg-white/60 dark:focus:bg-gray-800/60 flex items-center gap-2"
                   onClick={handleCopyShareImageToClipboard}
                   disabled={isLoading}
-                  className="flex items-center gap-2"
                 >
                   <Copy className="h-4 w-4" />
                   <span>{t('locationHeader.copyToClipboard')}</span>
                 </ContextMenuItem>
                 <ContextMenuItem
+                  className="hover:bg-white/50 dark:hover:bg-gray-800/50 focus:bg-white/60 dark:focus:bg-gray-800/60 flex items-center gap-2"
                   onClick={handleDownloadShareImagePng}
                   disabled={isLoading}
-                  className="flex items-center gap-2"
                 >
                   <Download className="h-4 w-4" />
                   <span>{t('locationHeader.downloadImage')}</span>
@@ -270,16 +269,17 @@ const ShareModal = ({
             </ContextMenu>
           </div>
         </div>
-        <DialogFooter className="px-6 py-4">
+        <DialogFooter className="px-6 py-4 border-t border-white/10 dark:border-gray-700/20">
           <div className="flex items-center space-x-2">
             <Switch
               id="show-all-players"
+              className="data-[state=checked]:bg-primary-500/90 data-[state=unchecked]:bg-white/20 dark:data-[state=unchecked]:bg-gray-800/50"
               checked={showAllPlayers}
               onCheckedChange={setShowAllPlayers}
             />
             <Label
               htmlFor="show-all-players"
-              className="text-sm text-gray-600 dark:text-gray-400 cursor-pointer"
+              className="text-sm text-gray-800 dark:text-gray-200 cursor-pointer"
             >
               {t('locationHeader.showAllPlayers')}
             </Label>
@@ -483,9 +483,9 @@ export const LocationGroupHeader = ({
           <h2 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-gray-100 dark:to-gray-300 bg-clip-text text-transparent">
             {t('locationHeader.ungrouped')}
           </h2>
-          <span className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 rounded-full">
+          <span className="flex items-center gap-2 px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full">
             <ImageIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
               {photoCount}
             </span>
           </span>
@@ -501,9 +501,9 @@ export const LocationGroupHeader = ({
   return (
     <div
       ref={containerRef}
-      className="bg-white dark:bg-gray-800 rounded-t-xl shadow-lg overflow-hidden transition-all duration-500 group/card"
+      className="bg-white dark:bg-gray-800 rounded-t-lg shadow-lg overflow-hidden transition-all duration-500 group/card"
     >
-      <div className="relative h-28 overflow-hidden">
+      <div className="relative h-24 overflow-hidden">
         <div
           className={`absolute inset-0 ${
             !isImageLoaded || !details?.thumbnailImageUrl
@@ -532,10 +532,10 @@ export const LocationGroupHeader = ({
           )}
         </div>
 
-        <div className="absolute inset-x-0 bottom-0 p-4 space-y-3">
+        <div className="absolute inset-x-0 bottom-0 p-3 space-y-3">
           {/* 1行目: ワールド名とアクション */}
           <div className="flex items-center justify-between">
-            <h3 className="text-xl font-bold flex items-center group/title text-white">
+            <h3 className="text-lg font-bold flex items-center group/title text-white">
               <button
                 type="button"
                 className="hover:underline flex items-center transition-all duration-300 hover:text-primary-300"
@@ -544,14 +544,14 @@ export const LocationGroupHeader = ({
                   openUrlMutation.mutate(worldLink);
                 }}
               >
-                <span className="line-clamp-1">
+                <span className="line-clamp-1 text-start">
                   {details?.name || worldName}
                 </span>
                 <ExternalLink className="h-4 w-4 ml-2 transition-opacity flex-shrink-0" />
               </button>
             </h3>
             <div className="flex items-center gap-2 flex-shrink-0">
-              <div className="flex items-center text-sm text-white backdrop-blur-sm bg-white/10 dark:bg-black/20 px-3 py-1.5 rounded-full border border-white/10">
+              <div className="flex items-center text-sm text-white backdrop-blur-sm bg-white/10 dark:bg-black/20 px-3 py-1 rounded-full border border-white/10">
                 <Calendar className="h-4 w-4 mr-1.5 text-primary-300" />
                 {formattedDate}
               </div>
@@ -567,7 +567,7 @@ export const LocationGroupHeader = ({
               <button
                 type="button"
                 onClick={() => setIsShareModalOpen(true)}
-                className="flex items-center text-sm font-medium text-white backdrop-blur-sm bg-primary-500/20 hover:bg-primary-500/30 dark:bg-primary-500/30 dark:hover:bg-primary-500/40 px-3 py-1.5 rounded-full transition-all duration-300 border border-white/10 hover:border-white/20"
+                className="flex items-center text-sm font-medium text-white backdrop-blur-sm bg-primary-500/20 hover:bg-primary-500/30 dark:bg-primary-500/30 dark:hover:bg-primary-500/40 px-3 py-1 rounded-full transition-all duration-300 border border-white/10 hover:border-white/20"
               >
                 <Share2 className="h-4 w-4 mr-1.5" />
               </button>
@@ -577,84 +577,100 @@ export const LocationGroupHeader = ({
           {/* 2行目: 写真枚数とプレイヤーリスト */}
           <div className="flex items-center gap-2 w-full">
             <div className="flex items-center gap-2 flex-shrink-0">
-              <div className="flex items-center text-sm text-white backdrop-blur-sm bg-white/10 dark:bg-black/20 px-3 py-1.5 rounded-full border border-white/10">
+              <div className="flex items-center text-xs text-white backdrop-blur-sm bg-white/10 dark:bg-black/20 px-3 py-1 rounded-full border border-white/10">
                 <ImageIcon className="h-4 w-4 mr-1.5 text-primary-300" />
                 {photoCount}
               </div>
               {worldError && (
-                <span className="text-yellow-400 bg-yellow-500/10 backdrop-blur-sm px-3 py-1.5 rounded-full border border-yellow-500/20 flex items-center gap-2">
+                <span className="text-yellow-400 bg-yellow-500/10 backdrop-blur-sm px-3 py-1 rounded-full border border-yellow-500/20 flex items-center gap-2">
                   <X className="h-4 w-4" />
                   {t('locationHeader.worldInfoDeleted')}
                 </span>
               )}
             </div>
 
-            {!isPlayersLoading && players && players.length > 0 && (
-              <div className="flex gap-2 items-center text-sm text-white backdrop-blur-sm bg-white/10 hover:bg-white/15 dark:bg-black/20 dark:hover:bg-black/30 px-3 py-1.5 rounded-full transition-all duration-300 border border-white/10 hover:border-white/20 group/players flex-1 min-w-0">
+            {isPlayersLoading ? (
+              <div className="flex gap-2 items-center text-xs text-white backdrop-blur-sm bg-white/10 dark:bg-black/20 px-3 py-1 rounded-full border border-white/10 flex-1 min-w-0 animate-pulse">
                 <div className="flex items-center gap-1">
-                  <Users className="h-4 w-4 text-primary-300 flex-shrink-0" />
-                  <span>{players.length}</span>
+                  <Users className="h-4 w-4 text-primary-300/50 flex-shrink-0" />
+                  <div className="h-4 w-6 bg-white/20 dark:bg-black/30 rounded" />
                 </div>
-                <div className="text-gray-400">|</div>
-                <div
-                  ref={playerListContainerRef}
-                  className="relative cursor-pointer flex-1 min-w-0"
-                  onMouseEnter={() => setIsHovered(true)}
-                  onMouseLeave={() => setIsHovered(false)}
-                  onMouseMove={handleMouseMove}
-                  onClick={handleCopyPlayers}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      handleCopyPlayers();
-                    }
-                  }}
-                  role="button"
-                  tabIndex={0}
-                  title={t('locationHeader.clickToCopy')}
-                >
-                  <div className="flex items-center gap-2 w-full">
-                    {!isCopied ? (
-                      <PlayerList
-                        players={players}
-                        maxVisiblePlayers={maxVisiblePlayers}
-                      />
-                    ) : (
-                      <span className="text-green-400 flex items-center gap-2">
-                        <CheckIcon className="h-4 w-4" />
-                        {t('locationHeader.copied')}
-                      </span>
-                    )}
-                  </div>
-                  {players &&
-                    (createPortal(
-                      <div
-                        style={{
-                          position: 'fixed',
-                          visibility: isHovered ? 'visible' : 'hidden',
-                          opacity: isHovered ? 1 : 0,
-                          transition: 'opacity 200ms',
-                          top: tooltipPosition.top,
-                          left: tooltipPosition.left,
-                        }}
-                        className="z-50 p-4 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md text-gray-900 dark:text-gray-100 text-xs rounded-lg shadow-xl border border-gray-200/20 dark:border-gray-700/30"
-                      >
-                        <div className="flex flex-wrap gap-2 max-w-[600px]">
-                          {players.map((p: Player) => (
-                            <span
-                              key={p.id}
-                              className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-full border border-gray-200/50 dark:border-gray-700/50"
-                            >
-                              {p.playerName}
-                            </span>
-                          ))}
-                        </div>
-                      </div>,
-                      document.body,
-                    ) as ReactPortal)}
+                <div className="text-gray-400/50">|</div>
+                <div className="flex-1 flex items-center gap-2">
+                  <div className="h-4 w-24 bg-white/20 dark:bg-black/30 rounded" />
+                  <div className="h-4 w-20 bg-white/20 dark:bg-black/30 rounded" />
+                  <div className="h-4 w-16 bg-white/20 dark:bg-black/30 rounded" />
                 </div>
-                <Copy className="h-4 w-4 ml-2 text-white/50 group-hover/players:text-white/80 transition-colors flex-shrink-0" />
               </div>
+            ) : (
+              players &&
+              players.length > 0 && (
+                <div className="flex gap-2 items-center text-xs text-white backdrop-blur-sm bg-white/10 hover:bg-white/15 dark:bg-black/20 dark:hover:bg-black/30 px-3 py-1 rounded-full transition-all duration-300 border border-white/10 hover:border-white/20 group/players flex-1 min-w-0">
+                  <div className="flex items-center gap-1">
+                    <Users className="h-4 w-4 text-primary-300 flex-shrink-0" />
+                    <span>{players.length}</span>
+                  </div>
+                  <div className="text-gray-400">|</div>
+                  <div
+                    ref={playerListContainerRef}
+                    className="relative cursor-pointer flex-1 min-w-0"
+                    onMouseEnter={() => setIsHovered(true)}
+                    onMouseLeave={() => setIsHovered(false)}
+                    onMouseMove={handleMouseMove}
+                    onClick={handleCopyPlayers}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleCopyPlayers();
+                      }
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    title={t('locationHeader.clickToCopy')}
+                  >
+                    <div className="flex items-center gap-2 w-full">
+                      {!isCopied ? (
+                        <PlayerList
+                          players={players}
+                          maxVisiblePlayers={maxVisiblePlayers}
+                        />
+                      ) : (
+                        <span className="text-green-400 flex items-center gap-2">
+                          <CheckIcon className="h-4 w-4" />
+                          {t('locationHeader.copied')}
+                        </span>
+                      )}
+                    </div>
+                    {players &&
+                      (createPortal(
+                        <div
+                          style={{
+                            position: 'fixed',
+                            visibility: isHovered ? 'visible' : 'hidden',
+                            opacity: isHovered ? 1 : 0,
+                            transition: 'opacity 200ms',
+                            top: tooltipPosition.top,
+                            left: tooltipPosition.left,
+                          }}
+                          className="z-50 p-4 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md text-gray-900 dark:text-gray-100 text-sm rounded-lg shadow-xl border border-gray-200/20 dark:border-gray-700/30"
+                        >
+                          <div className="flex flex-wrap gap-2 max-w-[600px]">
+                            {players.map((p: Player) => (
+                              <span
+                                key={p.id}
+                                className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-full border border-gray-200/50 dark:border-gray-700/50"
+                              >
+                                {p.playerName}
+                              </span>
+                            ))}
+                          </div>
+                        </div>,
+                        document.body,
+                      ) as ReactPortal)}
+                  </div>
+                  <Copy className="h-4 w-4 ml-2 text-white/50 group-hover/players:text-white/80 transition-colors flex-shrink-0" />
+                </div>
+              )
             )}
           </div>
         </div>
