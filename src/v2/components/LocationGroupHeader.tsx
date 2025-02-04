@@ -589,72 +589,88 @@ export const LocationGroupHeader = ({
               )}
             </div>
 
-            {!isPlayersLoading && players && players.length > 0 && (
-              <div className="flex gap-2 items-center text-xs text-white backdrop-blur-sm bg-white/10 hover:bg-white/15 dark:bg-black/20 dark:hover:bg-black/30 px-3 py-1 rounded-full transition-all duration-300 border border-white/10 hover:border-white/20 group/players flex-1 min-w-0">
+            {isPlayersLoading ? (
+              <div className="flex gap-2 items-center text-xs text-white backdrop-blur-sm bg-white/10 dark:bg-black/20 px-3 py-1 rounded-full border border-white/10 flex-1 min-w-0 animate-pulse">
                 <div className="flex items-center gap-1">
-                  <Users className="h-4 w-4 text-primary-300 flex-shrink-0" />
-                  <span>{players.length}</span>
+                  <Users className="h-4 w-4 text-primary-300/50 flex-shrink-0" />
+                  <div className="h-4 w-6 bg-white/20 dark:bg-black/30 rounded" />
                 </div>
-                <div className="text-gray-400">|</div>
-                <div
-                  ref={playerListContainerRef}
-                  className="relative cursor-pointer flex-1 min-w-0"
-                  onMouseEnter={() => setIsHovered(true)}
-                  onMouseLeave={() => setIsHovered(false)}
-                  onMouseMove={handleMouseMove}
-                  onClick={handleCopyPlayers}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      handleCopyPlayers();
-                    }
-                  }}
-                  role="button"
-                  tabIndex={0}
-                  title={t('locationHeader.clickToCopy')}
-                >
-                  <div className="flex items-center gap-2 w-full">
-                    {!isCopied ? (
-                      <PlayerList
-                        players={players}
-                        maxVisiblePlayers={maxVisiblePlayers}
-                      />
-                    ) : (
-                      <span className="text-green-400 flex items-center gap-2">
-                        <CheckIcon className="h-4 w-4" />
-                        {t('locationHeader.copied')}
-                      </span>
-                    )}
-                  </div>
-                  {players &&
-                    (createPortal(
-                      <div
-                        style={{
-                          position: 'fixed',
-                          visibility: isHovered ? 'visible' : 'hidden',
-                          opacity: isHovered ? 1 : 0,
-                          transition: 'opacity 200ms',
-                          top: tooltipPosition.top,
-                          left: tooltipPosition.left,
-                        }}
-                        className="z-50 p-4 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md text-gray-900 dark:text-gray-100 text-sm rounded-lg shadow-xl border border-gray-200/20 dark:border-gray-700/30"
-                      >
-                        <div className="flex flex-wrap gap-2 max-w-[600px]">
-                          {players.map((p: Player) => (
-                            <span
-                              key={p.id}
-                              className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-full border border-gray-200/50 dark:border-gray-700/50"
-                            >
-                              {p.playerName}
-                            </span>
-                          ))}
-                        </div>
-                      </div>,
-                      document.body,
-                    ) as ReactPortal)}
+                <div className="text-gray-400/50">|</div>
+                <div className="flex-1 flex items-center gap-2">
+                  <div className="h-4 w-24 bg-white/20 dark:bg-black/30 rounded" />
+                  <div className="h-4 w-20 bg-white/20 dark:bg-black/30 rounded" />
+                  <div className="h-4 w-16 bg-white/20 dark:bg-black/30 rounded" />
                 </div>
-                <Copy className="h-4 w-4 ml-2 text-white/50 group-hover/players:text-white/80 transition-colors flex-shrink-0" />
               </div>
+            ) : (
+              players &&
+              players.length > 0 && (
+                <div className="flex gap-2 items-center text-xs text-white backdrop-blur-sm bg-white/10 hover:bg-white/15 dark:bg-black/20 dark:hover:bg-black/30 px-3 py-1 rounded-full transition-all duration-300 border border-white/10 hover:border-white/20 group/players flex-1 min-w-0">
+                  <div className="flex items-center gap-1">
+                    <Users className="h-4 w-4 text-primary-300 flex-shrink-0" />
+                    <span>{players.length}</span>
+                  </div>
+                  <div className="text-gray-400">|</div>
+                  <div
+                    ref={playerListContainerRef}
+                    className="relative cursor-pointer flex-1 min-w-0"
+                    onMouseEnter={() => setIsHovered(true)}
+                    onMouseLeave={() => setIsHovered(false)}
+                    onMouseMove={handleMouseMove}
+                    onClick={handleCopyPlayers}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleCopyPlayers();
+                      }
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    title={t('locationHeader.clickToCopy')}
+                  >
+                    <div className="flex items-center gap-2 w-full">
+                      {!isCopied ? (
+                        <PlayerList
+                          players={players}
+                          maxVisiblePlayers={maxVisiblePlayers}
+                        />
+                      ) : (
+                        <span className="text-green-400 flex items-center gap-2">
+                          <CheckIcon className="h-4 w-4" />
+                          {t('locationHeader.copied')}
+                        </span>
+                      )}
+                    </div>
+                    {players &&
+                      (createPortal(
+                        <div
+                          style={{
+                            position: 'fixed',
+                            visibility: isHovered ? 'visible' : 'hidden',
+                            opacity: isHovered ? 1 : 0,
+                            transition: 'opacity 200ms',
+                            top: tooltipPosition.top,
+                            left: tooltipPosition.left,
+                          }}
+                          className="z-50 p-4 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md text-gray-900 dark:text-gray-100 text-sm rounded-lg shadow-xl border border-gray-200/20 dark:border-gray-700/30"
+                        >
+                          <div className="flex flex-wrap gap-2 max-w-[600px]">
+                            {players.map((p: Player) => (
+                              <span
+                                key={p.id}
+                                className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-full border border-gray-200/50 dark:border-gray-700/50"
+                              >
+                                {p.playerName}
+                              </span>
+                            ))}
+                          </div>
+                        </div>,
+                        document.body,
+                      ) as ReactPortal)}
+                  </div>
+                  <Copy className="h-4 w-4 ml-2 text-white/50 group-hover/players:text-white/80 transition-colors flex-shrink-0" />
+                </div>
+              )
             )}
           </div>
         </div>
