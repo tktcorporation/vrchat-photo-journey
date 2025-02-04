@@ -1,6 +1,6 @@
 {
   "name": "vrchat-photo-journey",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "main": "main/index.js",
   "author": {
     "name": "tktcorporation"
