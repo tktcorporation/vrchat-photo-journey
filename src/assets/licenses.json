@@ -1274,17 +1274,17 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@types/mysql",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@types/mysql/LICENSE"
   },
-  "@types/node@18.19.69": {
-    "licenses": "MIT",
-    "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/electron/node_modules/@types/node",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/electron/node_modules/@types/node/LICENSE"
-  },
   "@types/node@20.12.7": {
     "licenses": "MIT",
     "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@types/node",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@types/node/LICENSE"
+  },
+  "@types/node@20.17.22": {
+    "licenses": "MIT",
+    "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/electron/node_modules/@types/node",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/electron/node_modules/@types/node/LICENSE"
   },
   "@types/node@22.10.3": {
     "licenses": "MIT",
@@ -2074,7 +2074,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/electron-is-dev",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/electron-is-dev/license"
   },
-  "electron-log@5.1.2": {
+  "electron-log@5.3.0": {
     "licenses": "MIT",
     "repository": "https://github.com/megahertz/electron-log",
     "publisher": "Alexey Prokhorov",
@@ -2120,7 +2120,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/electron-updater",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/electron-updater/LICENSE"
   },
-  "electron@27.3.11": {
+  "electron@34.3.0": {
     "licenses": "MIT",
     "repository": "https://github.com/electron/electron",
     "publisher": "Electron Community",
@@ -4670,14 +4670,20 @@
   "undici-types@5.26.5": {
     "licenses": "MIT",
     "repository": "https://github.com/nodejs/undici",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/undici-types",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/undici-types/README.md"
+    "path": "/workspaces/vrchat-photo-journey/node_modules/@types/node/node_modules/undici-types",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@types/node/node_modules/undici-types/README.md"
+  },
+  "undici-types@6.19.8": {
+    "licenses": "MIT",
+    "repository": "https://github.com/nodejs/undici",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/electron/node_modules/undici-types",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/electron/node_modules/undici-types/LICENSE"
   },
   "undici-types@6.20.0": {
     "licenses": "MIT",
     "repository": "https://github.com/nodejs/undici",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/@types/connect/node_modules/undici-types",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@types/connect/node_modules/undici-types/LICENSE"
+    "path": "/workspaces/vrchat-photo-journey/node_modules/undici-types",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/undici-types/LICENSE"
   },
   "undici@7.3.0": {
     "licenses": "MIT",
@@ -4807,7 +4813,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/vite",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/vite/LICENSE.md"
   },
-  "vrchat-photo-journey@0.10.1": {
+  "vrchat-photo-journey@0.10.2": {
     "licenses": "UNKNOWN",
     "repository": "https://github.com/tktcorporation/add-world-name-to-vrc-photo",
     "publisher": "tktcorporation",
