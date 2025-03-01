@@ -4357,12 +4357,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^18.11.18":
-  version: 18.19.69
-  resolution: "@types/node@npm:18.19.69"
+"@types/node@npm:^20.9.0":
+  version: 20.17.22
+  resolution: "@types/node@npm:20.17.22"
   dependencies:
-    undici-types: "npm:~5.26.4"
-  checksum: 10c0/f10ae0d07bde6b80c02702ecd470c0f710cc2fde48d8cea4140cb7d7715c0b944ca5d9b730e4b56ba9d96f1eb459739da71c54e88586fc6b911600ea1e70af4e
+    undici-types: "npm:~6.19.2"
+  checksum: 10c0/5a78f60144bd69eaf1bdce39c906d988b0dc0f4c13068af9a3c44b0df737a0f363680a97d073a45d962b061cd4b3a8cfab71eec491ca6845888b68ab7855a778
   languageName: node
   linkType: hard
 
@@ -6295,10 +6295,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron-log@npm:5.1.2":
-  version: 5.1.2
-  resolution: "electron-log@npm:5.1.2"
-  checksum: 10c0/6e0f05a15f10196c6799901fe30e8c6fec9414bd025cf748ad7dfc9c88b0ad48e7295c00a41c1af0095fb584034f8d1700e7c561ff91b91abde0ea80e5b9c2cf
+"electron-log@npm:5.3.0":
+  version: 5.3.0
+  resolution: "electron-log@npm:5.3.0"
+  checksum: 10c0/a9a438b4b4f178e7eb25ca7c2fbab43c0b8264ff54e6bfbc88ae2c568f9e943b7b45d0da3d0bde31e5264f7360984a5c161173f6041653ee22a3cdd93373e54d
   languageName: node
   linkType: hard
 
@@ -6376,16 +6376,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron@npm:27.3.11":
-  version: 27.3.11
-  resolution: "electron@npm:27.3.11"
+"electron@npm:34.3.0":
+  version: 34.3.0
+  resolution: "electron@npm:34.3.0"
   dependencies:
     "@electron/get": "npm:^2.0.0"
-    "@types/node": "npm:^18.11.18"
+    "@types/node": "npm:^20.9.0"
     extract-zip: "npm:^2.0.1"
   bin:
     electron: cli.js
-  checksum: 10c0/9643a284beca7e9855da5d785426426617af05ea2d9377384b8925f757714d9d04994f9f8fd4b4702f630b7b8efe8a7ecf2a1211b5b671570d72fced965c5931
+  checksum: 10c0/b2343c28eb109bd878a61962d71105300cb3a1f8997cfb1fb81746ba213bc61b16a536eae5c0d8a654b4573f309c8157a136ade94bf6207842c022f505720fee
   languageName: node
   linkType: hard
 
@@ -11875,6 +11875,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"undici-types@npm:~6.19.2":
+  version: 6.19.8
+  resolution: "undici-types@npm:6.19.8"
+  checksum: 10c0/078afa5990fba110f6824823ace86073b4638f1d5112ee26e790155f481f2a868cc3e0615505b6f4282bdf74a3d8caad715fd809e870c2bb0704e3ea6082f344
+  languageName: node
+  linkType: hard
+
 "undici-types@npm:~6.20.0":
   version: 6.20.0
   resolution: "undici-types@npm:6.20.0"
@@ -12316,10 +12323,10 @@ __metadata:
     consola: "npm:^3.2.3"
     date-fns: "npm:2.30.0"
     date-fns-tz: "npm:2.0.1"
-    electron: "npm:27.3.11"
+    electron: "npm:34.3.0"
     electron-builder: "npm:24.13.3"
     electron-is-dev: "npm:2.0.0"
-    electron-log: "npm:5.1.2"
+    electron-log: "npm:5.3.0"
     electron-store: "npm:8.2.0"
     electron-trpc: "npm:0.5.2"
     electron-unhandled: "npm:4.0.1"

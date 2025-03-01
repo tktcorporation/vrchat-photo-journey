@@ -320,7 +320,7 @@ export const LocationGroupHeader = ({
   const visibilityTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Data fetching
-  const { data: details, error: worldError } =
+  const { data: details } =
     trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery(worldId ?? '', {
       enabled: worldId !== null && shouldLoadDetails,
       staleTime: 1000 * 60 * 5,
@@ -503,11 +503,11 @@ export const LocationGroupHeader = ({
       ref={containerRef}
       className="bg-white dark:bg-gray-800 rounded-t-lg shadow-lg overflow-hidden transition-all duration-500 group/card"
     >
-      <div className="relative h-24 overflow-hidden">
+      <div className="relative h-24 overflow-hidden flex items-center justify-center">
         <div
           className={`absolute inset-0 ${
             !isImageLoaded || !details?.thumbnailImageUrl
-              ? 'bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900'
+              ? 'bg-gradient-to-br from-gray-300 to-gray-400 dark:from-gray-800 dark:to-gray-900'
               : ''
           }`}
         >
@@ -519,159 +519,194 @@ export const LocationGroupHeader = ({
                   backgroundImage: `url(${details.thumbnailImageUrl})`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
-                  filter: 'blur(16px) saturate(120%) brightness(0.9)',
+                  filter: 'blur(26px) saturate(120%) brightness(0.9)',
                 }}
               />
-              {/* <div className="absolute inset-0 bg-gradient-to-br from-black/50 via-black/30 to-transparent backdrop-blur-[1px] group-hover/card:backdrop-blur-[2px] transition-all duration-500" /> */}
+              <div className="absolute inset-0 bg-white/40 dark:bg-gray-900/50 backdrop-blur-[1px] group-hover/card:backdrop-blur-[2px] transition-all duration-500" />
               {/* <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-90" /> */}
-              {/* <div className="absolute inset-0">
-                <div className="absolute inset-0 bg-gradient-to-r from-primary-500/30 to-transparent mix-blend-overlay" />
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.1),transparent_70%)]" />
-              </div> */}
+              <div className="absolute inset-0">
+                <div className="absolute inset-0 bg-gradient-to-r from-white/50 to-white/30 dark:from-gray-900/30 dark:to-gray-900/10 mix-blend-overlay" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.4),rgba(255,255,255,0.2)_70%)] dark:bg-[radial-gradient(circle_at_50%_120%,rgba(17,24,39,0.4),rgba(17,24,39,0.2)_70%)]" />
+              </div>
             </>
           )}
         </div>
 
-        <div className="absolute inset-x-0 bottom-0 p-3 space-y-3">
-          {/* 1行目: ワールド名とアクション */}
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold flex items-center group/title text-white">
-              <button
-                type="button"
-                className="hover:underline flex items-center transition-all duration-300 hover:text-primary-300"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  openUrlMutation.mutate(worldLink);
-                }}
-              >
-                <span className="line-clamp-1 text-start">
-                  {details?.name || worldName}
-                </span>
-                <ExternalLink className="h-4 w-4 ml-2 transition-opacity flex-shrink-0" />
-              </button>
-            </h3>
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <div className="flex items-center text-sm text-white backdrop-blur-sm bg-white/10 dark:bg-black/20 px-3 py-1 rounded-full border border-white/10">
-                <Calendar className="h-4 w-4 mr-1.5 text-primary-300" />
-                {formattedDate}
-              </div>
-              {details?.unityPackages && details.unityPackages.length > 0 && (
-                <div className="flex items-center gap-1.5">
-                  {Array.from(
-                    new Set(details.unityPackages.map((pkg) => pkg.platform)),
-                  ).map((platform) => (
-                    <PlatformBadge key={platform} platform={platform} />
-                  ))}
+        <div className="absolute inset-0 flex items-center justify-center p-2">
+          {/* 新しいレイアウト - 左側に画像、右側に情報 */}
+          <div className="flex items-center gap-4 w-full">
+            {/* 左側 - ワールド画像 */}
+            <div className="flex-shrink-0">
+              {details?.thumbnailImageUrl ? (
+                <div
+                  className="h-20 rounded-lg overflow-hidden border border-white/20 dark:border-gray-700/30 shadow-md"
+                  style={{ aspectRatio: '4/3' }}
+                >
+                  <img
+                    src={details.thumbnailImageUrl}
+                    alt={details?.name || worldName || 'World'}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
                 </div>
-              )}
-              <button
-                type="button"
-                onClick={() => setIsShareModalOpen(true)}
-                className="flex items-center text-sm font-medium text-white backdrop-blur-sm bg-primary-500/20 hover:bg-primary-500/30 dark:bg-primary-500/30 dark:hover:bg-primary-500/40 px-3 py-1 rounded-full transition-all duration-300 border border-white/10 hover:border-white/20"
-              >
-                <Share2 className="h-4 w-4 mr-1.5" />
-              </button>
-            </div>
-          </div>
-
-          {/* 2行目: 写真枚数とプレイヤーリスト */}
-          <div className="flex items-center gap-2 w-full">
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <div className="flex items-center text-xs text-white backdrop-blur-sm bg-white/10 dark:bg-black/20 px-3 py-1 rounded-full border border-white/10">
-                <ImageIcon className="h-4 w-4 mr-1.5 text-primary-300" />
-                {photoCount}
-              </div>
-              {worldError && (
-                <span className="text-yellow-400 bg-yellow-500/10 backdrop-blur-sm px-3 py-1 rounded-full border border-yellow-500/20 flex items-center gap-2">
-                  <X className="h-4 w-4" />
-                  {t('locationHeader.worldInfoDeleted')}
-                </span>
+              ) : (
+                <div
+                  className="w-[4.5rem] rounded-lg bg-gray-200 dark:bg-gray-800 flex items-center justify-center border border-white/20 dark:border-gray-700/30"
+                  style={{ aspectRatio: '4/3' }}
+                >
+                  <ImageIcon className="h-8 w-8 text-gray-400 dark:text-gray-600" />
+                </div>
               )}
             </div>
 
-            {isPlayersLoading ? (
-              <div className="flex gap-2 items-center text-xs text-white backdrop-blur-sm bg-white/10 dark:bg-black/20 px-3 py-1 rounded-full border border-white/10 flex-1 min-w-0 animate-pulse">
-                <div className="flex items-center gap-1">
-                  <Users className="h-4 w-4 text-primary-300/50 flex-shrink-0" />
-                  <div className="h-4 w-6 bg-white/20 dark:bg-black/30 rounded" />
-                </div>
-                <div className="text-gray-400/50">|</div>
-                <div className="flex-1 flex items-center gap-2">
-                  <div className="h-4 w-24 bg-white/20 dark:bg-black/30 rounded" />
-                  <div className="h-4 w-20 bg-white/20 dark:bg-black/30 rounded" />
-                  <div className="h-4 w-16 bg-white/20 dark:bg-black/30 rounded" />
-                </div>
-              </div>
-            ) : (
-              players &&
-              players.length > 0 && (
-                <div className="flex gap-2 items-center text-xs text-white backdrop-blur-sm bg-white/10 hover:bg-white/15 dark:bg-black/20 dark:hover:bg-black/30 px-3 py-1 rounded-full transition-all duration-300 border border-white/10 hover:border-white/20 group/players flex-1 min-w-0">
-                  <div className="flex items-center gap-1">
-                    <Users className="h-4 w-4 text-primary-300 flex-shrink-0" />
-                    <span>{players.length}</span>
-                  </div>
-                  <div className="text-gray-400">|</div>
-                  <div
-                    ref={playerListContainerRef}
-                    className="relative cursor-pointer flex-1 min-w-0"
-                    onMouseEnter={() => setIsHovered(true)}
-                    onMouseLeave={() => setIsHovered(false)}
-                    onMouseMove={handleMouseMove}
-                    onClick={handleCopyPlayers}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        handleCopyPlayers();
-                      }
+            {/* 右側 - 情報 */}
+            <div className="flex-1 min-w-0 flex flex-col gap-2">
+              {/* 1行目: ワールド名とアクション */}
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-bold flex items-center group/title text-gray-800 dark:text-white">
+                  <button
+                    type="button"
+                    className="hover:underline flex items-center transition-all duration-300 hover:text-primary-600 dark:hover:text-primary-300"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openUrlMutation.mutate(worldLink);
                     }}
-                    role="button"
-                    tabIndex={0}
-                    title={t('locationHeader.clickToCopy')}
                   >
-                    <div className="flex items-center gap-2 w-full">
-                      {!isCopied ? (
-                        <PlayerList
-                          players={players}
-                          maxVisiblePlayers={maxVisiblePlayers}
-                        />
-                      ) : (
-                        <span className="text-green-400 flex items-center gap-2">
-                          <CheckIcon className="h-4 w-4" />
-                          {t('locationHeader.copied')}
-                        </span>
-                      )}
-                    </div>
-                    {players &&
-                      (createPortal(
-                        <div
-                          style={{
-                            position: 'fixed',
-                            visibility: isHovered ? 'visible' : 'hidden',
-                            opacity: isHovered ? 1 : 0,
-                            transition: 'opacity 200ms',
-                            top: tooltipPosition.top,
-                            left: tooltipPosition.left,
-                          }}
-                          className="z-50 p-4 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md text-gray-900 dark:text-gray-100 text-sm rounded-lg shadow-xl border border-gray-200/20 dark:border-gray-700/30"
-                        >
-                          <div className="flex flex-wrap gap-2 max-w-[600px]">
-                            {players.map((p: Player) => (
-                              <span
-                                key={p.id}
-                                className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-full border border-gray-200/50 dark:border-gray-700/50"
-                              >
-                                {p.playerName}
-                              </span>
-                            ))}
-                          </div>
-                        </div>,
-                        document.body,
-                      ) as ReactPortal)}
+                    <span className="line-clamp-1 text-start">
+                      {details?.name || worldName}
+                    </span>
+                    <ExternalLink className="h-4 w-4 ml-2 transition-opacity flex-shrink-0" />
+                  </button>
+                </h3>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <div className="flex items-center text-sm text-gray-800 dark:text-white backdrop-blur-sm bg-white/30 dark:bg-black/30 px-3 py-1 rounded-full border border-white/20 dark:border-gray-700/30">
+                    <Calendar className="h-4 w-4 mr-1.5 text-primary-600 dark:text-primary-300" />
+                    {formattedDate}
                   </div>
-                  <Copy className="h-4 w-4 ml-2 text-white/50 group-hover/players:text-white/80 transition-colors flex-shrink-0" />
+                  {details?.unityPackages &&
+                    details.unityPackages.length > 0 && (
+                      <div className="flex items-center gap-1.5">
+                        {Array.from(
+                          new Set(
+                            details.unityPackages.map((pkg) => pkg.platform),
+                          ),
+                        ).map((platform) => (
+                          <PlatformBadge key={platform} platform={platform} />
+                        ))}
+                      </div>
+                    )}
+                  <button
+                    type="button"
+                    onClick={() => setIsShareModalOpen(true)}
+                    className="flex items-center text-sm font-medium text-gray-800 dark:text-white backdrop-blur-sm bg-primary-500/10 hover:bg-primary-500/20 dark:bg-primary-500/30 dark:hover:bg-primary-500/40 px-3 py-1 rounded-full transition-all duration-300 border border-white/20 dark:border-white/10 hover:border-white/30 dark:hover:border-white/20"
+                  >
+                    <Share2 className="h-4 w-4 mr-1.5" />
+                  </button>
                 </div>
-              )
-            )}
+              </div>
+
+              {/* 2行目: 写真枚数とプレイヤーリスト */}
+              <div className="flex items-center gap-2 w-full">
+                {/* <div className="flex items-center gap-2 flex-shrink-0">
+                  <div className="flex items-center text-xs text-gray-800 dark:text-white backdrop-blur-sm bg-white/30 dark:bg-black/30 px-3 py-1 rounded-full border border-white/20 dark:border-gray-700/30">
+                    <ImageIcon className="h-4 w-4 mr-1.5 text-primary-600 dark:text-primary-300" />
+                    {photoCount}
+                  </div>
+                  {worldError && (
+                    <span className="text-yellow-400 bg-yellow-500/10 backdrop-blur-sm px-3 py-1 rounded-full border border-yellow-500/20 flex items-center gap-2">
+                      <X className="h-4 w-4" />
+                      {t('locationHeader.worldInfoDeleted')}
+                    </span>
+                  )}
+                </div> */}
+
+                {isPlayersLoading ? (
+                  <div className="flex gap-2 items-center text-xs text-gray-800 dark:text-white backdrop-blur-sm bg-white/30 dark:bg-black/30 px-3 py-1 rounded-full border border-white/20 dark:border-gray-700/30 flex-1 min-w-0 animate-pulse">
+                    <div className="flex items-center gap-1">
+                      <Users className="h-4 w-4 text-primary-600/50 dark:text-primary-300/50 flex-shrink-0" />
+                      <div className="h-4 w-6 bg-gray-200/70 dark:bg-black/40 rounded" />
+                    </div>
+                    <div className="text-gray-500/50 dark:text-gray-400/50">
+                      |
+                    </div>
+                    <div className="flex-1 flex items-center gap-2">
+                      <div className="h-4 w-24 bg-gray-200/70 dark:bg-black/40 rounded" />
+                      <div className="h-4 w-20 bg-gray-200/70 dark:bg-black/40 rounded" />
+                      <div className="h-4 w-16 bg-gray-200/70 dark:bg-black/40 rounded" />
+                    </div>
+                  </div>
+                ) : (
+                  players &&
+                  players.length > 0 && (
+                    <div className="flex gap-2 items-center text-xs text-gray-800 dark:text-white backdrop-blur-sm bg-white/30 hover:bg-white/40 dark:bg-black/30 dark:hover:bg-black/40 px-3 py-1 rounded-full transition-all duration-300 border border-white/20 dark:border-gray-700/30 hover:border-white/30 dark:hover:border-gray-700/40 group/players flex-1 min-w-0">
+                      <div className="flex items-center gap-1">
+                        <Users className="h-4 w-4 text-primary-600 dark:text-primary-300 flex-shrink-0" />
+                        <span>{players.length}</span>
+                      </div>
+                      <div className="text-gray-500 dark:text-gray-400">|</div>
+                      <div
+                        ref={playerListContainerRef}
+                        className="relative cursor-pointer flex-1 min-w-0"
+                        onMouseEnter={() => setIsHovered(true)}
+                        onMouseLeave={() => setIsHovered(false)}
+                        onMouseMove={handleMouseMove}
+                        onClick={handleCopyPlayers}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            handleCopyPlayers();
+                          }
+                        }}
+                        role="button"
+                        tabIndex={0}
+                        title={t('locationHeader.clickToCopy')}
+                      >
+                        <div className="flex items-center gap-2 w-full">
+                          {!isCopied ? (
+                            <PlayerList
+                              players={players}
+                              maxVisiblePlayers={maxVisiblePlayers}
+                            />
+                          ) : (
+                            <span className="text-green-400 flex items-center gap-2">
+                              <CheckIcon className="h-4 w-4" />
+                              {t('locationHeader.copied')}
+                            </span>
+                          )}
+                        </div>
+                        {players &&
+                          (createPortal(
+                            <div
+                              style={{
+                                position: 'fixed',
+                                visibility: isHovered ? 'visible' : 'hidden',
+                                opacity: isHovered ? 1 : 0,
+                                transition: 'opacity 200ms',
+                                top: tooltipPosition.top,
+                                left: tooltipPosition.left,
+                              }}
+                              className="z-50 p-4 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md text-gray-900 dark:text-gray-100 text-sm rounded-lg shadow-xl border border-gray-200/20 dark:border-gray-700/30"
+                            >
+                              <div className="flex flex-wrap gap-2">
+                                {players.map((p: Player) => (
+                                  <span
+                                    key={p.id}
+                                    className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-full border border-gray-200/50 dark:border-gray-700/50"
+                                  >
+                                    {p.playerName}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>,
+                            document.body,
+                          ) as ReactPortal)}
+                      </div>
+                      <Copy className="h-4 w-4 ml-2 text-gray-800 dark:text-white group-hover/players:text-gray-200 transition-colors flex-shrink-0" />
+                    </div>
+                  )
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
