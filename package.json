@@ -56,7 +56,7 @@
   },
   "packageManager": "yarn@4.1.0",
   "engines": {
-    "node": "22",
+    "node": "20",
     "yarn": "4"
   },
   "dependencies": {
