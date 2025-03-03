@@ -28,7 +28,7 @@ export function MeasurePhotoGroup({
 
       // 写真がない場合は固定の高さを返す
       if (photos.length === 0) {
-        return totalHeight + 100; // 空のグループの高さ
+        return totalHeight; // 空のグループの高さ
       }
 
       let currentRowWidth = 0;
