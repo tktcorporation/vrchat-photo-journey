@@ -533,7 +533,7 @@ export const LocationGroupHeader = ({
         </div>
 
         <div className="absolute inset-0 flex items-center justify-center p-2">
-          {/* 新しいレイアウト - 左側に画像、右側に情報 */}
+          {/* 左側に画像、右側に情報 */}
           <div className="flex items-center gap-4 w-full">
             {/* 左側 - ワールド画像 */}
             <div className="flex-shrink-0">
@@ -551,7 +551,7 @@ export const LocationGroupHeader = ({
                 </div>
               ) : (
                 <div
-                  className="w-[4.5rem] rounded-lg bg-gray-200 dark:bg-gray-800 flex items-center justify-center border border-white/20 dark:border-gray-700/30"
+                  className="h-20 rounded-lg bg-gray-200 dark:bg-gray-800 flex items-center justify-center border border-white/20 dark:border-gray-700/30"
                   style={{ aspectRatio: '4/3' }}
                 >
                   <ImageIcon className="h-8 w-8 text-gray-400 dark:text-gray-600" />
