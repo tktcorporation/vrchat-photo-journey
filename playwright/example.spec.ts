@@ -1,10 +1,15 @@
 import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { _electron, test } from '@playwright/test';
+
+// ESモジュール環境で__dirnameの代わりに使用
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const launchElectronApp = async () => {
   // Launch Electron app.
   const electronApp = await _electron.launch({
-    args: [path.join(__dirname, '../main/index.js')],
+    args: [path.join(__dirname, '../main/index.cjs')],
   });
 
   return electronApp;
