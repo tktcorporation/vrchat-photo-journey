@@ -42,7 +42,7 @@ export const AppHeader: React.FC = () => {
 
   return (
     <div
-      className="flex h-8 items-center justify-between bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 select-none"
+      className="flex h-8 items-center justify-between border-b border-gray-200 dark:border-gray-700 px-4 select-none bg-[hsl(var(--gradient-start))] dark:bg-[hsl(var(--gradient-start))]"
       style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
     >
       <div className="flex items-center gap-2" />

@@ -92,7 +92,7 @@ function AppContent() {
 
   if (!hasAcceptedTerms) {
     return (
-      <div className="h-screen flex flex-col overflow-hidden bg-white dark:bg-gray-900">
+      <div className="h-screen flex flex-col overflow-hidden">
         <TermsModal
           open={showTerms}
           onAccept={handleTermsAccept}
@@ -104,7 +104,7 @@ function AppContent() {
   }
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-white dark:bg-gray-900">
+    <div className="h-screen flex flex-col overflow-hidden">
       <AppHeader />
       <ToasterWrapper />
       <Contents />

@@ -15,7 +15,6 @@ interface GalleryContentProps {
 }
 
 const GROUP_SPACING = 52;
-const CONTAINER_PADDING = 16;
 
 const SkeletonGroup = () => (
   <div className="space-y-2 animate-pulse">
@@ -61,7 +60,7 @@ const GalleryContent = memo(
       estimateSize: useCallback(
         (index) => {
           const [key] = filteredGroups[index];
-          return (groupSizesRef.current.get(key) ?? 400) + GROUP_SPACING;
+          return (groupSizesRef.current.get(key) ?? 0) + GROUP_SPACING;
         },
         [filteredGroups],
       ),
@@ -109,7 +108,6 @@ const GalleryContent = memo(
                     left: 0,
                     width: '100%',
                     transform: `translateY(${virtualRow.start}px)`,
-                    paddingBottom: `${GROUP_SPACING - CONTAINER_PADDING}px`,
                   }}
                 >
                   <div className="space-y-2">
@@ -120,7 +118,7 @@ const GalleryContent = memo(
                       photoCount={group.photos.length}
                       joinDateTime={group.joinDateTime}
                     />
-                    {group.photos.length > 0 ? (
+                    {group.photos.length > 0 && (
                       <PhotoGrid
                         worldId={group.worldInfo?.worldId ?? null}
                         photos={group.photos}
@@ -128,10 +126,6 @@ const GalleryContent = memo(
                         setLastSelectedPhoto={setLastSelectedPhoto}
                         lastSelectedPhotoId={lastSelectedPhoto?.id}
                       />
-                    ) : (
-                      <div className="text-center py-8 text-gray-500 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                        写真がありません
-                      </div>
                     )}
                   </div>
                   <MeasurePhotoGroup
