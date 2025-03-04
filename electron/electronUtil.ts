@@ -73,7 +73,7 @@ function createWindow(): BrowserWindow {
     show: true,
     fullscreenable: true,
     webPreferences: {
-      preload: join(__dirname, 'preload.js'),
+      preload: join(__dirname, 'preload.cjs'),
       nodeIntegration: false, // セキュリティのため明示的に無効化
       contextIsolation: true, // セキュリティのため明示的に有効化
     },
