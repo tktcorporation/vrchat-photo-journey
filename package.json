@@ -1,7 +1,7 @@
 {
   "name": "vrchat-photo-journey",
   "version": "0.10.2",
-  "main": "main/index.js",
+  "main": "main/index.cjs",
   "author": {
     "name": "tktcorporation"
   },
@@ -16,16 +16,19 @@
     "url": "https://github.com/tktcorporation/add-world-name-to-vrc-photo"
   },
   "productName": "vrchat-photo-journey",
+  "type": "module",
   "scripts": {
     "preinstall": "nlx only-allow yarn",
     "postinstall": "simple-git-hooks && nr license-check:generate",
     "setup:debug": "bash debug/genDevFiles.sh",
     "dev": "./scripts/dev.sh",
     "dev:vite": "vite",
-    "dev:electron": "nr build:electron && electron . --disable-gpu",
+    "dev:electron": "vite build -c electron/vite.config.ts && electron /workspaces/vrchat-photo-journey --disable-gpu",
     "build": "nr lint:type-check && nr build:vite && nr build:electron",
     "build:vite": "vite build",
-    "build:electron": "tsc -p electron",
+    "build:electron": "vite build -c electron/vite.config.ts",
+    "build:electron:tsc": "tsc -p electron",
+    "build:electron:watch": "vite build -c electron/vite.config.ts --watch",
     "dist": "nr clean:build && nr build && NODE_ENV=production electron-builder --config=electron-builder.js --publish never",
     "pack": "nr clean:build && nr build && NODE_ENV=production electron-builder --config=electron-builder.js --dir",
     "publish": "nr clean:build && nr build && NODE_ENV=production electron-builder --config=electron-builder.js --publish always",

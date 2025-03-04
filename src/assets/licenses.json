@@ -4806,7 +4806,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/vaul",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/vaul/LICENSE.md"
   },
-  "vite@5.4.13": {
+  "vite@5.4.14": {
     "licenses": "MIT",
     "repository": "https://github.com/vitejs/vite",
     "publisher": "Evan You",
