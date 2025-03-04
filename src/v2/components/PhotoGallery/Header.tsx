@@ -41,7 +41,7 @@ const Header = memo(
     };
 
     return (
-      <header className="flex-none bg-white dark:bg-gray-800 shadow-sm z-50 sticky top-0">
+      <header className="flex-none bg-[hsl(var(--gradient-start))] dark:bg-[hsl(var(--gradient-start))] shadow-sm z-50 sticky top-0">
         <div className="max-w-[2000px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-2">
             <div className="flex items-center gap-2 dark:border-gray-700">
