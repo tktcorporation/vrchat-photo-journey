@@ -90,6 +90,7 @@ class DBQueue {
    * @returns タスクの実行結果
    */
   async add<T>(task: () => Promise<T>): Promise<T> {
+    // キューが一杯かどうかをチェック
     if (this.queue.size >= this.options.maxSize) {
       if (this.options.onFull === 'throw') {
         throw new Error('DBQueue: キューが一杯です');
@@ -268,7 +269,7 @@ class DBQueue {
    * キューが空かどうかを確認する
    */
   get isEmpty(): boolean {
-    return this.queue.size === 0;
+    return this.queue.size === 0 && this.queue.pending === 0;
   }
 
   /**

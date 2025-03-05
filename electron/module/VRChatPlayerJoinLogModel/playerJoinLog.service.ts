@@ -152,5 +152,5 @@ export const findLatestPlayerJoinLog = async (): Promise<
     });
   }
 
-  return ok(result.value as model.VRChatPlayerJoinLogModel | null);
+  return ok(result.value);
 };

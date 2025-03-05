@@ -1,4 +1,5 @@
 import * as neverthrow from 'neverthrow';
+import { v4 as uuidv4 } from 'uuid';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Mock } from 'vitest';
 import * as client from '../../lib/sequelize';
@@ -13,7 +14,6 @@ import * as vrchatPhotoService from '../vrchatPhoto/vrchatPhoto.service';
 import type { VRChatWorldJoinLogModel } from '../vrchatWorldJoinLog/VRChatWorldJoinLogModel/s_model';
 import * as worldJoinLogService from '../vrchatWorldJoinLog/service';
 import { loadLogInfoIndexFromVRChatLog } from './service';
-
 vi.mock('../vrchatLog/service');
 vi.mock('../vrchatWorldJoinLog/service');
 vi.mock('../VRChatPlayerJoinLogModel/playerJoinLog.service');
@@ -29,7 +29,7 @@ describe('loadLogInfoIndexFromVRChatLog', () => {
     // importLogLinesFromLogPhotoDirPathのモックを設定
     vi.mocked(
       vrchatLogService.importLogLinesFromLogPhotoDirPath,
-    ).mockResolvedValue([]);
+    ).mockResolvedValue();
   });
   afterAll(async () => {
     await client.__cleanupTestRDBClient();
@@ -63,7 +63,7 @@ describe('loadLogInfoIndexFromVRChatLog', () => {
       mockWorldJoinLog,
     );
     vi.mocked(playerJoinLogService.findLatestPlayerJoinLog).mockResolvedValue(
-      mockPlayerJoinLog,
+      neverthrow.ok(mockPlayerJoinLog),
     );
 
     // テストデータの準備（古いログと新しいログの混在）
@@ -87,12 +87,14 @@ describe('loadLogInfoIndexFromVRChatLog', () => {
       logType: 'playerJoin',
       joinDate: new Date('2023-12-31T00:00:00Z'),
       playerName: 'Old Player',
+      playerId: null,
     };
 
     const newPlayerJoinLog: VRChatPlayerJoinLog = {
       logType: 'playerJoin',
       joinDate: new Date('2024-01-02T00:00:00Z'),
       playerName: 'New Player',
+      playerId: `usr_${uuidv4()}`,
     };
 
     const mockLogs = [
@@ -168,7 +170,7 @@ describe('loadLogInfoIndexFromVRChatLog', () => {
       null,
     );
     vi.mocked(playerJoinLogService.findLatestPlayerJoinLog).mockResolvedValue(
-      null,
+      neverthrow.ok(null),
     );
     vi.mocked(
       worldJoinLogService.createVRChatWorldJoinLogModel,
@@ -209,6 +211,7 @@ describe('loadLogInfoIndexFromVRChatLog', () => {
       logType: 'playerJoin',
       joinDate: new Date('2024-01-02T00:00:00Z'),
       playerName: 'Player 1',
+      playerId: 'usr_12345678-1234-1234-1234-123456789012',
     };
 
     const mockLogs = [worldJoinLog, playerJoinLog];
@@ -220,7 +223,7 @@ describe('loadLogInfoIndexFromVRChatLog', () => {
       null,
     );
     vi.mocked(playerJoinLogService.findLatestPlayerJoinLog).mockResolvedValue(
-      null,
+      neverthrow.ok(null),
     );
 
     const worldJoinDelay = 100;
@@ -285,7 +288,7 @@ describe('loadLogInfoIndexFromVRChatLog', () => {
       mockWorldJoinLog,
     );
     vi.mocked(playerJoinLogService.findLatestPlayerJoinLog).mockResolvedValue(
-      mockPlayerJoinLog,
+      neverthrow.ok(mockPlayerJoinLog),
     );
 
     // テストデータの準備（古いログと新しいログの混在）
@@ -309,12 +312,14 @@ describe('loadLogInfoIndexFromVRChatLog', () => {
       logType: 'playerJoin',
       joinDate: new Date('2023-12-31T00:00:00Z'),
       playerName: 'Old Player',
+      playerId: `usr_${uuidv4()}`,
     };
 
     const newPlayerJoinLog: VRChatPlayerJoinLog = {
       logType: 'playerJoin',
       joinDate: new Date('2024-01-02T00:00:00Z'),
       playerName: 'New Player',
+      playerId: `usr_${uuidv4()}`,
     };
 
     const mockLogs = [
