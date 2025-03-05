@@ -11,8 +11,10 @@ import {
   Default,
   NotNull,
   PrimaryKey,
+  Table,
 } from '@sequelize/core/decorators-legacy';
 
+@Table({ tableName: 'Migrations' })
 export class Migrations extends Model<
   InferAttributes<Migrations>,
   InferCreationAttributes<Migrations>

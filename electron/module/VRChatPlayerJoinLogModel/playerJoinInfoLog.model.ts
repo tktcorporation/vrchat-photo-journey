@@ -12,6 +12,7 @@ import {
   Default,
   NotNull,
   PrimaryKey,
+  Table,
   createIndexDecorator,
 } from '@sequelize/core/decorators-legacy';
 import * as dateFns from 'date-fns';
@@ -28,6 +29,7 @@ const PlayerNameJoinDateTimeIndex = createIndexDecorator(
   },
 );
 
+@Table({ tableName: 'VRChatPlayerJoinLogModels' })
 export class VRChatPlayerJoinLogModel extends Model<
   InferAttributes<VRChatPlayerJoinLogModel>,
   InferCreationAttributes<VRChatPlayerJoinLogModel>
