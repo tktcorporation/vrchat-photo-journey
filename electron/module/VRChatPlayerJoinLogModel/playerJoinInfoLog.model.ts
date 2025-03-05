@@ -23,7 +23,6 @@ const PlayerNameJoinDateTimeIndex = createIndexDecorator(
   'PlayerNameJoinDateTimeIndex',
   {
     name: 'playerName-joinDateTime',
-    type: 'fulltext',
     concurrently: true,
     unique: true,
   },

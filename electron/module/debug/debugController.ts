@@ -1,13 +1,13 @@
 import { z } from 'zod';
-import { getRDBClient } from '../../lib/sequelize';
-import { procedure as publicProcedure, router } from '../../trpc';
+import { getDBQueue } from '../../lib/dbQueue';
+import { procedure, router } from '../../trpc';
 
-interface QueryInput {
+type QueryInput = {
   query: string;
-}
+};
 
 export const debugRouter = router({
-  executeSqlite: publicProcedure
+  executeSqlite: procedure
     .input(
       z.object({
         query: z.string(),
@@ -15,11 +15,8 @@ export const debugRouter = router({
     )
     .mutation(async ({ input }: { input: QueryInput }) => {
       try {
-        const client = getRDBClient().__client;
-        const result = await client.query(input.query, {
-          type: 'SELECT',
-        });
-        return result;
+        // DBQueueを使用してクエリを実行
+        return await getDBQueue().query(input.query);
       } catch (error: unknown) {
         if (error instanceof Error) {
           throw new Error(`SQLite query error: ${error.message}`);
