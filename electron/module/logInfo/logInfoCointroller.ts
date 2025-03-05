@@ -187,20 +187,16 @@ export const logInfoRouter = () =>
      * @returns プレイヤーリスト
      */
     getPlayerListInSameWorld: procedure.input(z.date()).query(async (ctx) => {
-      log.info(
-        'getPlayerListInSameWorld: 同じワールドのプレイヤーリストを取得します',
-      );
       const playerJoinLogListResult = await getPlayerJoinListInSameWorld(
         ctx.input,
       );
       if (playerJoinLogListResult.isErr()) {
-        log.error({
-          message: 'プレイヤーリスト取得エラー',
-          stack: new Error(playerJoinLogListResult.error),
-        });
-        return {
-          errorMessage: playerJoinLogListResult.error,
-        };
+        return match(playerJoinLogListResult.error)
+          .with('RECENT_JOIN_LOG_NOT_FOUND', () => {
+            log.debug('getPlayerListInSameWorld: RECENT_JOIN_LOG_NOT_FOUND');
+            return [];
+          })
+          .exhaustive();
       }
       return playerJoinLogListResult.value;
     }),

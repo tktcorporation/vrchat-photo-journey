@@ -99,12 +99,12 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
           imageBase64: cleanBase64,
           players: match(players)
             .with(P.nullish, () => [])
-            .with({ errorMessage: 'RECENT_JOIN_LOG_NOT_FOUND' }, () => [])
-            .otherwise((players) =>
+            .with(P.array(), (players) =>
               players.map((player) => ({
                 playerName: player.playerName,
               })),
-            ),
+            )
+            .exhaustive(),
           showAllPlayers: false,
         });
 
