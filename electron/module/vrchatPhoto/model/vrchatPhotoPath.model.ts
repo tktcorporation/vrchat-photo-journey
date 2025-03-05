@@ -13,9 +13,11 @@ import {
   Index,
   NotNull,
   PrimaryKey,
+  Table,
 } from '@sequelize/core/decorators-legacy';
 import { uuidv7 } from 'uuidv7';
 
+@Table({ tableName: 'VRChatPhotoPathModels' })
 export class VRChatPhotoPathModel extends Model<
   InferAttributes<VRChatPhotoPathModel>,
   InferCreationAttributes<VRChatPhotoPathModel>

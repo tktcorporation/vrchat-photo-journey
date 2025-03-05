@@ -11,9 +11,11 @@ import {
   Default,
   NotNull,
   PrimaryKey,
+  Table,
 } from '@sequelize/core/decorators-legacy';
 import { uuidv7 } from 'uuidv7';
 
+@Table({ tableName: 'VRChatPlayerLeaveLogModels' })
 export class VRChatPlayerLeaveLogModel extends Model<
   InferAttributes<VRChatPlayerLeaveLogModel>,
   InferCreationAttributes<VRChatPlayerLeaveLogModel>

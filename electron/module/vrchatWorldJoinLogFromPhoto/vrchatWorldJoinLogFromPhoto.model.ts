@@ -11,6 +11,7 @@ import {
   Default,
   NotNull,
   PrimaryKey,
+  Table,
   createIndexDecorator,
 } from '@sequelize/core/decorators-legacy';
 import { uuidv7 } from 'uuidv7';
@@ -32,6 +33,7 @@ const WorldInstanceIdJoinDateTimeFromPhotoIndex = createIndexDecorator(
   },
 );
 
+@Table({ tableName: 'VRChatWorldJoinLogFromPhotoModels' })
 export class VRChatWorldJoinLogFromPhotoModel extends Model<
   InferAttributes<VRChatWorldJoinLogFromPhotoModel>,
   InferCreationAttributes<VRChatWorldJoinLogFromPhotoModel>
