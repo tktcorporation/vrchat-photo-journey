@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
+## [unreleased]
+
+### 🚜 Refactor
+
+- ロケーショングループヘッダーのUIを変更 (#278)
+- Electron設定をViteベースに移行し、モジュールタイプを更新 (#282)
+
+### 🎨 Styling
+
+- 背景色、スタイルの調整 (#281)
+
+## [0.10.2] - 2025-02-23
+
+### ⚙️ Miscellaneous Tasks
+
+- Bump version to 0.10.2 and update log parsing regex (#276)
+
+## [0.10.1] - 2025-02-04
+
+### 🐛 Bug Fixes
+
+- Sync処理とグルーピング処理のローディングを別々に処理 (#272)
+
 ## [0.10.0] - 2025-02-04
 
 ### 🚀 Features
