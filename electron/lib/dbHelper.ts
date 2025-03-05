@@ -1,7 +1,8 @@
 import type { Transaction } from '@sequelize/core';
-import { getDBQueue } from './dbQueue';
+import type { Result } from 'neverthrow';
+import { err } from 'neverthrow';
+import { type DBQueueError, getDBQueue } from './dbQueue';
 import * as log from './logger';
-import { getRDBClient } from './sequelize';
 
 /**
  * データベースアクセスのユーティリティ関数を提供するモジュール
@@ -10,17 +11,30 @@ import { getRDBClient } from './sequelize';
  */
 
 /**
+ * データベースヘルパーのエラー型
+ */
+export type DBHelperError =
+  | { type: 'TRANSACTION_FAILED'; message: string }
+  | { type: 'BATCH_OPERATION_FAILED'; message: string }
+  | { type: 'RETRY_FAILED'; message: string }
+  | DBQueueError;
+
+/**
  * トランザクションを使用してデータベース操作を実行する
  * @param callback トランザクションを使用するコールバック関数
  * @returns コールバック関数の実行結果
  */
 export async function withTransaction<T>(
   callback: (transaction: Transaction) => Promise<T>,
-): Promise<T> {
-  return getDBQueue().add(async () => {
-    const sequelize = getRDBClient().__client;
-    return sequelize.transaction(callback);
-  });
+): Promise<Result<T, DBHelperError>> {
+  const result = await getDBQueue().transaction(callback);
+
+  if (result.isErr()) {
+    // DBQueueErrorをそのまま返す
+    return result as Result<T, DBHelperError>;
+  }
+
+  return result as Result<T, DBHelperError>;
 }
 
 /**
@@ -28,8 +42,12 @@ export async function withTransaction<T>(
  * @param query 実行するSQLクエリ
  * @returns クエリの実行結果
  */
-export async function executeQuery(query: string): Promise<unknown[]> {
-  return getDBQueue().query(query);
+export async function executeQuery(
+  query: string,
+): Promise<Result<unknown[], DBHelperError>> {
+  return getDBQueue().queryWithResult(query) as Promise<
+    Result<unknown[], DBHelperError>
+  >;
 }
 
 /**
@@ -40,20 +58,32 @@ export async function executeQuery(query: string): Promise<unknown[]> {
  */
 export async function executeBatch<T>(
   operations: ((transaction: Transaction) => Promise<T>)[],
-): Promise<T[]> {
-  return withTransaction(async (transaction) => {
+): Promise<Result<T[], DBHelperError>> {
+  const transactionResult = await withTransaction(async (transaction) => {
     const results: T[] = [];
     for (const operation of operations) {
       try {
         const result = await operation(transaction);
         results.push(result);
       } catch (error) {
-        log.error({ message: 'バッチ処理中にエラーが発生しました' });
+        log.error({
+          message: 'バッチ処理中にエラーが発生しました',
+          stack: error instanceof Error ? error : new Error(String(error)),
+        });
         throw error; // トランザクション全体がロールバックされる
       }
     }
     return results;
   });
+
+  if (transactionResult.isErr()) {
+    return err({
+      type: 'BATCH_OPERATION_FAILED',
+      message: `バッチ処理に失敗しました: ${transactionResult.error.message}`,
+    });
+  }
+
+  return transactionResult;
 }
 
 /**
@@ -63,42 +93,49 @@ export async function executeBatch<T>(
  * @returns 操作の実行結果
  */
 export async function withRetry<T>(
-  operation: () => Promise<T>,
+  operation: () => Promise<Result<T, DBHelperError>>,
   options: {
     maxRetries?: number;
     retryDelay?: number;
-    shouldRetry?: (error: unknown) => boolean;
+    shouldRetry?: (error: DBHelperError) => boolean;
   } = {},
-): Promise<T> {
+): Promise<Result<T, DBHelperError>> {
   const maxRetries = options.maxRetries ?? 3;
   const retryDelay = options.retryDelay ?? 1000;
   const shouldRetry = options.shouldRetry ?? ((_error) => true);
 
-  let lastError: unknown;
+  let lastError: DBHelperError = {
+    type: 'RETRY_FAILED',
+    message: '不明なエラーが発生しました',
+  };
+
   for (let attempt = 0; attempt < maxRetries; attempt++) {
-    try {
-      return await operation();
-    } catch (error) {
-      lastError = error;
+    const result = await operation();
 
-      // 最後の試行でエラーが発生した場合はエラーをスロー
-      if (attempt === maxRetries - 1) {
-        break;
-      }
-
-      // リトライ条件を満たさない場合はエラーをスロー
-      if (!shouldRetry(error)) {
-        break;
-      }
-
-      log.debug(
-        `データベース操作を再試行します (${attempt + 1}/${maxRetries})`,
-      );
-      await new Promise((resolve) => setTimeout(resolve, retryDelay));
+    if (result.isOk()) {
+      return result;
     }
+
+    lastError = result.error;
+
+    // 最後の試行でエラーが発生した場合はエラーを返す
+    if (attempt === maxRetries - 1) {
+      break;
+    }
+
+    // リトライ条件を満たさない場合はエラーを返す
+    if (!shouldRetry(lastError)) {
+      break;
+    }
+
+    log.debug(`データベース操作を再試行します (${attempt + 1}/${maxRetries})`);
+    await new Promise((resolve) => setTimeout(resolve, retryDelay));
   }
 
-  throw lastError;
+  return err({
+    type: 'RETRY_FAILED',
+    message: `リトライ後も操作に失敗しました: ${lastError.message}`,
+  });
 }
 
 /**

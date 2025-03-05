@@ -19,8 +19,13 @@ export async function executeSimpleQuery(): Promise<unknown[]> {
     const result = await dbHelper.executeQuery(
       "SELECT name FROM sqlite_master WHERE type='table'",
     );
-    log.info({ message: `テーブル数: ${result.length}` });
-    return result;
+
+    if (result.isErr()) {
+      throw new Error(`クエリ実行エラー: ${result.error.message}`);
+    }
+
+    log.info({ message: `テーブル数: ${result.value.length}` });
+    return result.value;
   } catch (error) {
     log.error({
       message: 'クエリ実行中にエラーが発生しました',
@@ -76,7 +81,12 @@ export async function executeBatchExample(): Promise<void> {
   try {
     // バッチ処理を実行
     const results = await dbHelper.executeBatch(operations);
-    log.info(`バッチ処理が完了しました: ${results.length}件の操作が成功`);
+
+    if (results.isErr()) {
+      throw new Error(`バッチ処理エラー: ${results.error.message}`);
+    }
+
+    log.info(`バッチ処理が完了しました: ${results.value.length}件の操作が成功`);
   } catch (error) {
     log.error({
       message: 'バッチ処理中にエラーが発生しました',

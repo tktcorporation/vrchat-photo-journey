@@ -43,6 +43,29 @@ describe('DBQueue', () => {
     expect(result).toBe('result');
   });
 
+  it('addWithResultでタスクを実行してResult型で結果を返すこと', async () => {
+    const queue = getDBQueue();
+    const task = vi.fn().mockResolvedValue('result');
+
+    const result = await queue.addWithResult(task);
+
+    expect(task).toHaveBeenCalledTimes(1);
+    expect(result.isOk()).toBe(true);
+    expect(result._unsafeUnwrap()).toBe('result');
+  });
+
+  it('addWithResultでエラーが発生した場合にエラーをResult型で返すこと', async () => {
+    const queue = getDBQueue();
+    const error = new Error('Task error');
+    const task = vi.fn().mockRejectedValue(error);
+
+    const result = await queue.addWithResult(task);
+
+    expect(task).toHaveBeenCalledTimes(1);
+    expect(result.isErr()).toBe(true);
+    expect(result._unsafeUnwrapErr()).toBe(error);
+  });
+
   it('キューが一杯の場合にエラーをスローすること', async () => {
     const queue = new DBQueue({ maxSize: 1, onFull: 'throw' });
 
@@ -63,6 +86,27 @@ describe('DBQueue', () => {
     await promise1;
   });
 
+  it('キューが一杯の場合にaddWithResultでエラーをResult型で返すこと', async () => {
+    const queue = new DBQueue({ maxSize: 1, onFull: 'throw' });
+
+    // キューを一杯にする
+    const longTask = vi.fn().mockImplementation(() => {
+      return new Promise((resolve) => setTimeout(() => resolve('done'), 100));
+    });
+
+    // 最初のタスクを追加（これはキューに入る）
+    const promise1 = queue.add(longTask);
+
+    // 2つ目のタスクを追加（これはエラーになるはず）
+    const result = await queue.addWithResult(() => Promise.resolve('task2'));
+
+    expect(result.isErr()).toBe(true);
+    expect(result._unsafeUnwrapErr().message).toContain('キューが一杯です');
+
+    // 最初のタスクが完了するのを待つ
+    await promise1;
+  });
+
   it('トランザクションを使用してタスクを実行できること', async () => {
     const queue = getDBQueue();
     const transactionTask = vi.fn().mockResolvedValue('transaction result');
@@ -70,18 +114,20 @@ describe('DBQueue', () => {
     const result = await queue.transaction(transactionTask);
 
     expect(transactionTask).toHaveBeenCalledTimes(1);
-    expect(result).toBe('transaction result');
+    expect(result.isOk()).toBe(true);
+    expect(result._unsafeUnwrap()).toBe('transaction result');
   });
 
-  it('トランザクションでエラーが発生した場合にロールバックすること', async () => {
+  it('トランザクションでエラーが発生した場合にエラーをResult型で返すこと', async () => {
     const queue = getDBQueue();
     const error = new Error('Transaction error');
     const transactionTask = vi.fn().mockRejectedValue(error);
 
-    await expect(queue.transaction(transactionTask)).rejects.toThrow(
-      'Transaction error',
-    );
+    const result = await queue.transaction(transactionTask);
+
     expect(transactionTask).toHaveBeenCalledTimes(1);
+    expect(result.isErr()).toBe(true);
+    expect(result._unsafeUnwrapErr()).toBe(error);
   });
 
   it('クエリを実行できること', async () => {
@@ -99,6 +145,48 @@ describe('DBQueue', () => {
       type: 'SELECT',
     });
     expect(result).toEqual(mockResult);
+
+    // モックをリストア
+    getRDBClient().__client = originalClient;
+  });
+
+  it('queryWithResultでクエリを実行してResult型で結果を返すこと', async () => {
+    const queue = getDBQueue();
+    const mockResult = [{ name: 'test_table' }];
+
+    // Sequelizeのqueryメソッドをモック化
+    const originalClient = getRDBClient().__client;
+    const mockQuery = vi.fn().mockResolvedValue(mockResult);
+    getRDBClient().__client.query = mockQuery;
+
+    const result = await queue.queryWithResult('SELECT * FROM test_table');
+
+    expect(mockQuery).toHaveBeenCalledWith('SELECT * FROM test_table', {
+      type: 'SELECT',
+    });
+    expect(result.isOk()).toBe(true);
+    expect(result._unsafeUnwrap()).toEqual(mockResult);
+
+    // モックをリストア
+    getRDBClient().__client = originalClient;
+  });
+
+  it('queryWithResultでエラーが発生した場合にエラーをResult型で返すこと', async () => {
+    const queue = getDBQueue();
+    const error = new Error('Query error');
+
+    // Sequelizeのqueryメソッドをモック化
+    const originalClient = getRDBClient().__client;
+    const mockQuery = vi.fn().mockRejectedValue(error);
+    getRDBClient().__client.query = mockQuery;
+
+    const result = await queue.queryWithResult('SELECT * FROM test_table');
+
+    expect(mockQuery).toHaveBeenCalledWith('SELECT * FROM test_table', {
+      type: 'SELECT',
+    });
+    expect(result.isErr()).toBe(true);
+    expect(result._unsafeUnwrapErr().message).toContain('Query error');
 
     // モックをリストア
     getRDBClient().__client = originalClient;

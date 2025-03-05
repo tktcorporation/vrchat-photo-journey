@@ -51,12 +51,21 @@ export const loadLogInfoIndexFromVRChatLog = async ({
     // DBの最新日時以降のログのみをフィルタリング
     .with(true, async () => {
       // ログの最新日時を取得
-      const [latestWorldJoinDate, latestPlayerJoinDate, latestPlayerLeaveDate] =
-        await Promise.all([
-          worldJoinLogService.findLatestWorldJoinLog(),
-          playerJoinLogService.findLatestPlayerJoinLog(),
-          playerLeaveLogService.findLatestPlayerLeaveLog(),
-        ]);
+      const [
+        latestWorldJoinDate,
+        latestPlayerJoinDateResult,
+        latestPlayerLeaveDate,
+      ] = await Promise.all([
+        worldJoinLogService.findLatestWorldJoinLog(),
+        playerJoinLogService.findLatestPlayerJoinLog(),
+        playerLeaveLogService.findLatestPlayerLeaveLog(),
+      ]);
+
+      // playerJoinDateResultからvalueを取得
+      const latestPlayerJoinDate = latestPlayerJoinDateResult.isErr()
+        ? null
+        : latestPlayerJoinDateResult.value;
+
       return logInfoList.filter((log) => {
         if (log.logType === 'worldJoin') {
           return (

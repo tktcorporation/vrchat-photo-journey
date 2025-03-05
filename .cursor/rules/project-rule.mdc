@@ -1,0 +1,13 @@
+---
+description: General Project Rules
+globs: 
+alwaysApply: true
+---
+
+# プロジェクトルール
+
+## エラーハンドリング
+
+基本的にneverthrowを使用してください。
+neverthrow で error を返すときは Error 型を返してもどうハンドリングしていいかわからないので、何のエラーか呼び出し元が判断できる形で返してください。原因不明のエラーの場合はむしろその場でthrowしてしまう方が望ましいです
+

@@ -1,7 +1,7 @@
+import * as datefns from 'date-fns';
 import * as neverthrow from 'neverthrow';
 import { P, match } from 'ts-pattern';
 import z from 'zod';
-import { getDBQueue } from '../../lib/dbQueue';
 import * as playerJoinLogService from '../VRChatPlayerJoinLogModel/playerJoinLog.service';
 import * as worldJoinLogService from '../vrchatWorldJoinLog/service';
 import * as log from './../../lib/logger';
@@ -88,6 +88,11 @@ export const getRecentVRChatWorldJoinLogByVRChatPhotoName = async (
   });
 };
 
+/**
+ * 同じワールドにいたプレイヤーのリストを取得
+ * @param datetime 参加日時
+ * @returns プレイヤーリスト
+ */
 const getPlayerJoinListInSameWorld = async (
   datetime: Date,
 ): Promise<
@@ -103,47 +108,41 @@ const getPlayerJoinListInSameWorld = async (
     'RECENT_JOIN_LOG_NOT_FOUND'
   >
 > => {
-  const dbQueue = getDBQueue();
+  // 指定された日時の前後30分のログを取得
+  const startDateTime = datefns.subMinutes(datetime, 30);
+  const endDateTime = datefns.addMinutes(datetime, 30);
 
-  try {
-    const recentWorldJoin = await dbQueue.add(() =>
-      worldJoinLogService.findRecentVRChatWorldJoinLog(datetime),
-    );
-
-    if (recentWorldJoin === null) {
-      return neverthrow.err('RECENT_JOIN_LOG_NOT_FOUND' as const);
-    }
-
-    const nextWorldJoin = await dbQueue.add(() =>
-      worldJoinLogService.findNextVRChatWorldJoinLog(datetime),
-    );
-
-    const playerJoinLogList = await dbQueue.add(() =>
-      playerJoinLogService.getVRChatPlayerJoinLogListByJoinDateTime({
-        startJoinDateTime: recentWorldJoin.joinDateTime,
-        endJoinDateTime: nextWorldJoin?.joinDateTime ?? null,
-      }),
-    );
-
-    return neverthrow.ok(
-      playerJoinLogList.map((playerJoinLog) => {
-        return {
-          id: playerJoinLog.id as string,
-          playerId: playerJoinLog.playerId,
-          playerName: playerJoinLog.playerName,
-          joinDateTime: playerJoinLog.joinDateTime,
-          createdAt: playerJoinLog.createdAt as Date,
-          updatedAt: playerJoinLog.updatedAt as Date,
-        };
-      }),
-    );
-  } catch (error) {
-    log.error({
-      message: 'プレイヤーリスト取得中にエラーが発生しました',
-      stack: error instanceof Error ? error : new Error(String(error)),
+  const playerJoinLogResult =
+    await playerJoinLogService.getVRChatPlayerJoinLogListByJoinDateTime({
+      startJoinDateTime: startDateTime,
+      endJoinDateTime: endDateTime,
     });
-    return neverthrow.err('RECENT_JOIN_LOG_NOT_FOUND' as const);
+
+  if (playerJoinLogResult.isErr()) {
+    // エラータイプに基づいて適切な処理を行う
+    const error = playerJoinLogResult.error;
+    log.error({
+      message: `プレイヤー参加ログの取得に失敗しました: ${error.message}`,
+      stack: new Error(`プレイヤー参加ログエラー: ${error.type}`),
+    });
+
+    switch (error.type) {
+      case 'DATABASE_ERROR':
+      case 'INVALID_DATE_RANGE':
+      case 'NOT_FOUND':
+        return neverthrow.err('RECENT_JOIN_LOG_NOT_FOUND');
+      default:
+        // 型安全のためのケース（実際には到達しない）
+        throw new Error(`未知のエラータイプ: ${JSON.stringify(error)}`);
+    }
   }
+
+  const playerJoinLogList = playerJoinLogResult.value;
+  if (playerJoinLogList.length === 0) {
+    return neverthrow.err('RECENT_JOIN_LOG_NOT_FOUND');
+  }
+
+  return neverthrow.ok(playerJoinLogList);
 };
 
 export const logInfoRouter = () =>
@@ -184,7 +183,7 @@ export const logInfoRouter = () =>
       }),
     /**
      * 同じワールドにいたプレイヤーのリストを取得
-     * @param joinDateTime - 参加日時
+     * @param datetime - 参加日時
      * @returns プレイヤーリスト
      */
     getPlayerListInSameWorld: procedure.input(z.date()).query(async (ctx) => {
