@@ -1,4 +1,3 @@
-import * as datefns from 'date-fns';
 import * as neverthrow from 'neverthrow';
 import { P, match } from 'ts-pattern';
 import z from 'zod';
@@ -93,7 +92,7 @@ export const getRecentVRChatWorldJoinLogByVRChatPhotoName = async (
  * @param datetime 参加日時
  * @returns プレイヤーリスト
  */
-const getPlayerJoinListInSameWorld = async (
+export const getPlayerJoinListInSameWorld = async (
   datetime: Date,
 ): Promise<
   neverthrow.Result<
@@ -108,14 +107,20 @@ const getPlayerJoinListInSameWorld = async (
     'RECENT_JOIN_LOG_NOT_FOUND'
   >
 > => {
-  // 指定された日時の前後30分のログを取得
-  const startDateTime = datefns.subMinutes(datetime, 30);
-  const endDateTime = datefns.addMinutes(datetime, 30);
+  const recentWorldJoin =
+    await worldJoinLogService.findRecentVRChatWorldJoinLog(datetime);
+  if (recentWorldJoin === null) {
+    return neverthrow.err('RECENT_JOIN_LOG_NOT_FOUND' as const);
+  }
+
+  const nextWorldJoin = await worldJoinLogService.findNextVRChatWorldJoinLog(
+    recentWorldJoin.joinDateTime,
+  );
 
   const playerJoinLogResult =
     await playerJoinLogService.getVRChatPlayerJoinLogListByJoinDateTime({
-      startJoinDateTime: startDateTime,
-      endJoinDateTime: endDateTime,
+      startJoinDateTime: recentWorldJoin.joinDateTime,
+      endJoinDateTime: nextWorldJoin?.joinDateTime ?? null,
     });
 
   if (playerJoinLogResult.isErr()) {
