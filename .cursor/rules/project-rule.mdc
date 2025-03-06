@@ -1,10 +1,14 @@
 ---
 description: General Project Rules
-globs: 
+globs: *.tsx, *.ts
 alwaysApply: true
 ---
 
 # プロジェクトルール
+
+## lint
+- `nr lint:fix` が正常終了する状態まで修正を続けてください。
+- `nr dev` が正常起動しない場合、正常起動するところまで修正してください。
 
 ## エラーハンドリング
 
