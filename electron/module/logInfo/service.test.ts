@@ -49,6 +49,20 @@ vi.mock('../vrchatPhoto/vrchatPhoto.service', () => ({
 }));
 
 describe('loadLogInfoIndexFromVRChatLog', () => {
+  beforeEach(() => {
+    // 各テストの前に getLogStoreFilePath のモックをリセットして設定
+    vi.mocked(vrchatLogService.getLogStoreFilePath).mockReturnValue(
+      VRChatLogStoreFilePathSchema.parse(
+        '/mock/path/logStore/current/logStore-current.txt',
+      ),
+    );
+
+    // getVRChaLogInfoByLogFilePathList のモックも設定
+    vi.mocked(
+      vrchatLogService.getVRChaLogInfoByLogFilePathList,
+    ).mockResolvedValue(neverthrow.ok([]));
+  });
+
   beforeAll(async () => {
     client.__initTestRDBClient();
   }, 10000);
@@ -538,16 +552,33 @@ describe('loadLogInfoIndexFromVRChatLog', () => {
     }
   });
 
-  it('excludeOldLogLoadがfalseの場合は2023年1月1日からすべてのログを取得する', async () => {
+  it('excludeOldLogLoadがfalseの場合は2000年1月1日からすべてのログを取得し、現在の日付のログファイルも含める', async () => {
     // getLogStoreFilePathsInRangeのモックを設定
     const mockLogFilePaths = [
       VRChatLogStoreFilePathSchema.parse(
-        '/mock/path/logStore/2023-01/logStore-2023-01.txt',
+        '/mock/path/logStore/2000-01/logStore-2000-01.txt',
+      ),
+      VRChatLogStoreFilePathSchema.parse(
+        '/mock/path/logStore/2000-02/logStore-2000-02.txt',
       ),
     ];
     vi.mocked(vrchatLogService.getLogStoreFilePathsInRange).mockReturnValue(
       mockLogFilePaths,
     );
+
+    // getLogStoreFilePathのモックを設定
+    const currentLogFilePath = VRChatLogStoreFilePathSchema.parse(
+      '/mock/path/logStore/current/logStore-current.txt',
+    );
+    vi.mocked(vrchatLogService.getLogStoreFilePath).mockReturnValue(
+      currentLogFilePath,
+    );
+
+    // getVRChaLogInfoByLogFilePathListのモックを設定
+    const expectedLogFilePaths = [...mockLogFilePaths, currentLogFilePath];
+    vi.mocked(
+      vrchatLogService.getVRChaLogInfoByLogFilePathList,
+    ).mockResolvedValue(neverthrow.ok([]));
 
     // テスト実行
     await loadLogInfoIndexFromVRChatLog({
@@ -555,7 +586,7 @@ describe('loadLogInfoIndexFromVRChatLog', () => {
     });
 
     // 検証
-    // 2023年1月1日からログを取得することを確認
+    // 2000年1月1日からログを取得することを確認
     expect(vrchatLogService.getLogStoreFilePathsInRange).toHaveBeenCalledWith(
       expect.any(Date),
     );
@@ -564,9 +595,73 @@ describe('loadLogInfoIndexFromVRChatLog', () => {
     const callArg = vi.mocked(vrchatLogService.getLogStoreFilePathsInRange).mock
       .calls[0][0];
 
-    // 2023年1月1日であることを確認
-    expect(datefns.getYear(callArg)).toBe(2023);
+    // 2000年1月1日であることを確認
+    expect(datefns.getYear(callArg)).toBe(2000);
     expect(datefns.getMonth(callArg)).toBe(0); // 0-indexed: 1月は0
     expect(datefns.getDate(callArg)).toBe(1);
+
+    // getLogStoreFilePathが呼ばれたことを確認
+    expect(vrchatLogService.getLogStoreFilePath).toHaveBeenCalled();
+
+    // getVRChaLogInfoByLogFilePathListに正しいパラメータが渡されたことを確認
+    expect(
+      vrchatLogService.getVRChaLogInfoByLogFilePathList,
+    ).toHaveBeenCalledWith(expectedLogFilePaths);
+  });
+
+  it('excludeOldLogLoadがfalseの場合、getLogStoreFilePathで取得したパスが既に含まれている場合は重複して追加しない', async () => {
+    // getLogStoreFilePathsInRangeのモックを設定
+    const duplicateLogFilePath = VRChatLogStoreFilePathSchema.parse(
+      '/mock/path/logStore/current/logStore-current.txt',
+    );
+    const mockLogFilePaths = [
+      VRChatLogStoreFilePathSchema.parse(
+        '/mock/path/logStore/2000-01/logStore-2000-01.txt',
+      ),
+      duplicateLogFilePath, // 重複するパス
+    ];
+    vi.mocked(vrchatLogService.getLogStoreFilePathsInRange).mockReturnValue(
+      mockLogFilePaths,
+    );
+
+    // getLogStoreFilePathのモックを設定 - 既に含まれているパスと同じものを返す
+    vi.mocked(vrchatLogService.getLogStoreFilePath).mockReturnValue(
+      duplicateLogFilePath,
+    );
+
+    // getVRChaLogInfoByLogFilePathListのモックを設定
+    vi.mocked(
+      vrchatLogService.getVRChaLogInfoByLogFilePathList,
+    ).mockResolvedValue(neverthrow.ok([]));
+
+    // テスト実行
+    await loadLogInfoIndexFromVRChatLog({
+      excludeOldLogLoad: false,
+    });
+
+    // 検証
+    // getLogStoreFilePathが呼ばれたことを確認
+    expect(vrchatLogService.getLogStoreFilePath).toHaveBeenCalled();
+
+    // getVRChaLogInfoByLogFilePathListに渡されたパスリストに重複がないことを確認
+    expect(
+      vrchatLogService.getVRChaLogInfoByLogFilePathList,
+    ).toHaveBeenCalledWith(
+      mockLogFilePaths, // 重複が排除されているので、元のmockLogFilePathsと同じになるはず
+    );
+
+    // 呼び出し引数を取得して重複がないことを確認
+    const callArgs = vi.mocked(
+      vrchatLogService.getVRChaLogInfoByLogFilePathList,
+    ).mock.calls[0][0];
+
+    // パスの数が元のmockLogFilePathsと同じであることを確認（重複が追加されていない）
+    expect(callArgs.length).toBe(mockLogFilePaths.length);
+
+    // 重複するパスが1回だけ含まれていることを確認
+    const duplicatePaths = callArgs.filter(
+      (path) => path === duplicateLogFilePath,
+    );
+    expect(duplicatePaths.length).toBe(1);
   });
 });

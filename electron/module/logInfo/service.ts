@@ -71,12 +71,21 @@ export const loadLogInfoIndexFromVRChatLog = async ({
       startDate = datefns.subYears(new Date(), 1);
     }
   } else {
-    // すべてのログを読み込む場合は、アプリケーションの初期リリース日から
-    startDate = datefns.parseISO('2023-01-01'); // 2023年1月1日
+    // すべてのログを読み込む場合は、非常に古い日付から（実質的にすべてのログを対象とする）
+    startDate = datefns.parseISO('2000-01-01'); // 2000年1月1日（十分に古い日付）
   }
 
   // 日付範囲内のすべてのログファイルパスを取得
   const logStoreFilePaths = getLogStoreFilePathsInRange(startDate);
+
+  // 現在の日付のログファイルも追加（これまでの形式との互換性のため）
+  const currentLogStoreFilePath = getLogStoreFilePath();
+  if (
+    Array.isArray(logStoreFilePaths) &&
+    !logStoreFilePaths.some((path) => path === currentLogStoreFilePath)
+  ) {
+    logStoreFilePaths.push(currentLogStoreFilePath);
+  }
 
   // ログファイルからログ情報を取得
   const logInfoListFromLogFile =
