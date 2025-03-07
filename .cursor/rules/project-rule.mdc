@@ -1,10 +1,13 @@
 ---
 description: General Project Rules
-globs: *.tsx, *.ts
+globs: *
 alwaysApply: true
 ---
 
-# プロジェクトルール
+# General Rules
+
+## tools
+- プロジェクト標準は `yarn` です
 
 ## lint
 - `nr lint:fix` が正常終了する状態まで修正を続けてください。
@@ -15,3 +18,10 @@ alwaysApply: true
 基本的にneverthrowを使用してください。
 neverthrow で error を返すときは Error 型を返してもどうハンドリングしていいかわからないので、何のエラーか呼び出し元が判断できる形で返してください。原因不明のエラーの場合はむしろその場でthrowしてしまう方が望ましいです
 
+## 日付処理
+
+日付の加工や操作には必ず date-fns ライブラリを使用してください。JavaScriptの標準Date APIの直接使用は避けてください。
+
+## テスト
+テストを記述する際はなるべく mock を使わずに書いてください。
+mock を使用せずに記述することが難しい場合は、確認をとってからmock を使用するようにしてください。
