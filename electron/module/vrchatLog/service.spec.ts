@@ -55,6 +55,7 @@ vi.mock('node:readline', () => ({
   createInterface: vi.fn().mockReturnValue({
     [Symbol.asyncIterator]: async function* () {
       // 空のイテレータを返す
+      yield null;
       return;
     },
     close: vi.fn(),
@@ -111,7 +112,13 @@ describe('getVRChaLogInfoFromLogPath', () => {
 
     // getVRChaLogInfoByLogFilePathListのモックを設定
     vi.spyOn(service, 'getVRChaLogInfoByLogFilePathList').mockResolvedValue(
-      neverthrow.ok(mockLogs as any),
+      neverthrow.ok(
+        mockLogs as unknown as (
+          | service.VRChatWorldJoinLog
+          | service.VRChatPlayerJoinLog
+          | service.VRChatPlayerLeaveLog
+        )[],
+      ),
     );
 
     const getVRChaLogInfoFromLogPath: GetVRChaLogInfoFromLogPath =

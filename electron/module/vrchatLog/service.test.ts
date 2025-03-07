@@ -43,6 +43,7 @@ vi.mock('node:readline', () => ({
   createInterface: vi.fn().mockReturnValue({
     [Symbol.asyncIterator]: async function* () {
       // 空のイテレータを返す
+      yield null;
       return;
     },
     close: vi.fn(),
@@ -167,11 +168,12 @@ describe('getLogStoreFilePathForDate', () => {
     const mockDate = new RealDate('2024-06-20');
 
     // Dateコンストラクタをモック
-    const mockDateConstructor = function (this: Date, ...args: any[]) {
+    const mockDateConstructor = function (this: Date, ...args: unknown[]) {
       if (args.length === 0) {
         return new RealDate(mockDate);
       }
-      return new (RealDate as any)(...args);
+      // 型アサーションを使用して引数を渡す
+      return new RealDate(...(args as [string | number | Date]));
     } as unknown as DateConstructor;
 
     // 元のDate.UTCとDate.parseを保持
@@ -229,11 +231,12 @@ describe('getLogStoreFilePathsInRange', () => {
     const mockDate = new RealDate('2024-04-10');
 
     // Dateコンストラクタをモック
-    const mockDateConstructor = function (this: Date, ...args: any[]) {
+    const mockDateConstructor = function (this: Date, ...args: unknown[]) {
       if (args.length === 0) {
         return new RealDate(mockDate);
       }
-      return new (RealDate as any)(...args);
+      // 型アサーションを使用して引数を渡す
+      return new RealDate(...(args as [string | number | Date]));
     } as unknown as DateConstructor;
 
     // 元のDate.UTCとDate.parseを保持
@@ -337,18 +340,19 @@ describe('appendLoglinesToFile', () => {
     // ファイルサイズが上限を超えていると仮定 (10MB以上)
     vi.mocked(nodeFs.statSync).mockReturnValue({
       size: 11 * 1024 * 1024, // 11MB
-    } as any);
+    } as ReturnType<typeof nodeFs.statSync>);
 
     // 現在の日時をモック
     const RealDate = global.Date;
     const mockDate = new RealDate('2024-03-15T14:30:45');
 
     // Dateコンストラクタをモック
-    const mockDateConstructor = function (this: Date, ...args: any[]) {
+    const mockDateConstructor = function (this: Date, ...args: unknown[]) {
       if (args.length === 0) {
         return new RealDate(mockDate);
       }
-      return new (RealDate as any)(...args);
+      // 型アサーションを使用して引数を渡す
+      return new RealDate(...(args as [string | number | Date]));
     } as unknown as DateConstructor;
 
     // 元のDate.UTCとDate.parseを保持

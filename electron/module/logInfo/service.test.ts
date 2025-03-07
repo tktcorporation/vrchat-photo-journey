@@ -498,11 +498,12 @@ describe('loadLogInfoIndexFromVRChatLog', () => {
 
     // Dateコンストラクタをモック
     const RealDate = global.Date;
-    const mockDateConstructor = function (this: Date, ...args: any[]) {
+    const mockDateConstructor = function (this: Date, ...args: unknown[]) {
       if (args.length === 0) {
         return new RealDate(fixedDate);
       }
-      return new (RealDate as any)(...args);
+      // 型アサーションを使用して引数を渡す
+      return new RealDate(...(args as [string | number | Date]));
     } as unknown as DateConstructor;
 
     // 元のDate.UTCとDate.parseを保持

@@ -46,6 +46,7 @@ vi.mock('node:readline', () => ({
   createInterface: vi.fn().mockReturnValue({
     [Symbol.asyncIterator]: async function* () {
       // 空のイテレータを返す
+      yield null;
       return;
     },
     close: vi.fn(),
