@@ -134,6 +134,12 @@ const getLogLinesFromLogFileName = async (props: {
   logFilePath: VRChatLogFilePath | VRChatLogStoreFilePath;
   includesList: string[];
 }): Promise<neverthrow.Result<string[], VRChatLogFileError>> => {
+  // ファイルが存在するか確認
+  if (!nodeFs.existsSync(props.logFilePath.value)) {
+    // ファイルが存在しない場合は空の配列を返す
+    return neverthrow.ok([]);
+  }
+
   const stream = fs.createReadStream(props.logFilePath.value);
   const reader = readline.createInterface({
     input: stream,
@@ -344,11 +350,25 @@ export const getLogStoreFilePathsInRange = (
   const result: VRChatLogStoreFilePath[] = [];
   // 月の初日に設定
   let currentDate = datefns.startOfMonth(new Date(startDate));
-  const endOfRangeDate = datefns.addDays(datefns.endOfMonth(endDate), 1);
+
+  // 現在の日付を取得
+  const now = new Date();
+  // 現在の月の末日を取得
+  const endOfCurrentMonth = datefns.endOfMonth(now);
+
+  // endDateが現在の月より未来の場合は、現在の月の末日に制限
+  const limitedEndDate = datefns.isAfter(endDate, endOfCurrentMonth)
+    ? endOfCurrentMonth
+    : endDate;
+
+  const endOfRangeDate = datefns.addDays(datefns.endOfMonth(limitedEndDate), 1);
 
   // endDateの月まで繰り返す
   while (datefns.isBefore(currentDate, endOfRangeDate)) {
-    result.push(getLogStoreFilePathForDate(new Date(currentDate)));
+    // 現在の日付より未来の日付は含めない
+    if (!datefns.isAfter(currentDate, now)) {
+      result.push(getLogStoreFilePathForDate(new Date(currentDate)));
+    }
 
     // 次の月に進める
     currentDate = datefns.addMonths(currentDate, 1);
