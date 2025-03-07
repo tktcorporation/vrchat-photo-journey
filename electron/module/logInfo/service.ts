@@ -1,3 +1,4 @@
+import * as datefns from 'date-fns';
 import * as neverthrow from 'neverthrow';
 import { match } from 'ts-pattern';
 import type { VRChatPlayerJoinLogModel } from '../VRChatPlayerJoinLogModel/playerJoinInfoLog.model';
@@ -9,6 +10,7 @@ import {
   type VRChatPlayerLeaveLog,
   type VRChatWorldJoinLog,
   getLogStoreFilePath,
+  getLogStoreFilePathsInRange,
   getVRChaLogInfoByLogFilePathList,
   importLogLinesFromLogPhotoDirPath,
 } from '../vrchatLog/service';
@@ -29,18 +31,56 @@ interface LogProcessingResults {
 export const loadLogInfoIndexFromVRChatLog = async ({
   excludeOldLogLoad,
 }: { excludeOldLogLoad: boolean }) => {
-  const logStoreFilePath = getLogStoreFilePath();
-
   // 旧Appの形式のログファイル(写真)からログ情報を保存
   const vrChatPhotoDirPath = await getVRChatPhotoDirPath();
   await importLogLinesFromLogPhotoDirPath({
     vrChatPhotoDirPath,
   });
 
+  // 最新のログを取得するための日付範囲を決定
+  let startDate: Date;
+  if (excludeOldLogLoad) {
+    // DBの最新日時を取得
+    const [
+      latestWorldJoinDate,
+      latestPlayerJoinDateResult,
+      latestPlayerLeaveDate,
+    ] = await Promise.all([
+      worldJoinLogService.findLatestWorldJoinLog(),
+      playerJoinLogService.findLatestPlayerJoinLog(),
+      playerLeaveLogService.findLatestPlayerLeaveLog(),
+    ]);
+
+    // 最新の日時を取得（存在しない場合は1年前から）
+    const dates = [
+      latestWorldJoinDate?.joinDateTime,
+      latestPlayerJoinDateResult.isOk() && latestPlayerJoinDateResult.value
+        ? latestPlayerJoinDateResult.value.joinDateTime
+        : null,
+      latestPlayerLeaveDate?.leaveDateTime,
+    ].filter(Boolean) as Date[];
+
+    if (dates.length > 0) {
+      // 最も古い日付の月の初日を開始日とする
+      const timestamps = dates.map((d) => d.getTime());
+      const oldestTimestamp = Math.min(...timestamps);
+      const oldestDate = datefns.fromUnixTime(oldestTimestamp / 1000);
+      startDate = datefns.startOfMonth(oldestDate);
+    } else {
+      // 最新のログがない場合は1年前から
+      startDate = datefns.subYears(new Date(), 1);
+    }
+  } else {
+    // すべてのログを読み込む場合は、アプリケーションの初期リリース日から
+    startDate = datefns.parseISO('2023-01-01'); // 2023年1月1日
+  }
+
+  // 日付範囲内のすべてのログファイルパスを取得
+  const logStoreFilePaths = getLogStoreFilePathsInRange(startDate);
+
   // ログファイルからログ情報を取得
-  const logInfoListFromLogFile = await getVRChaLogInfoByLogFilePathList([
-    logStoreFilePath,
-  ]);
+  const logInfoListFromLogFile =
+    await getVRChaLogInfoByLogFilePathList(logStoreFilePaths);
   if (logInfoListFromLogFile.isErr()) {
     return neverthrow.err(logInfoListFromLogFile.error);
   }
@@ -88,7 +128,8 @@ export const loadLogInfoIndexFromVRChatLog = async ({
         return false;
       });
     })
-    .with(false, () => logInfoList)
+    // すべてのログを読み込む
+    .with(false, async () => logInfoList)
     .exhaustive();
 
   const results: LogProcessingResults = {

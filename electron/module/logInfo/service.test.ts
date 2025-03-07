@@ -1,3 +1,4 @@
+import * as datefns from 'date-fns';
 import * as neverthrow from 'neverthrow';
 import { v4 as uuidv4 } from 'uuid';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -5,6 +6,9 @@ import type { Mock } from 'vitest';
 import * as client from '../../lib/sequelize';
 import type { VRChatPlayerJoinLogModel } from '../VRChatPlayerJoinLogModel/playerJoinInfoLog.model';
 import * as playerJoinLogService from '../VRChatPlayerJoinLogModel/playerJoinLog.service';
+import type { VRChatPlayerLeaveLogModel } from '../VRChatPlayerLeaveLogModel/playerLeaveLog.model';
+import * as playerLeaveLogService from '../VRChatPlayerLeaveLogModel/playerLeaveLog.service';
+import { VRChatLogStoreFilePathSchema } from '../vrchatLog/model';
 import type {
   VRChatPlayerJoinLog,
   VRChatWorldJoinLog,
@@ -14,23 +18,56 @@ import * as vrchatPhotoService from '../vrchatPhoto/vrchatPhoto.service';
 import type { VRChatWorldJoinLogModel } from '../vrchatWorldJoinLog/VRChatWorldJoinLogModel/s_model';
 import * as worldJoinLogService from '../vrchatWorldJoinLog/service';
 import { loadLogInfoIndexFromVRChatLog } from './service';
-vi.mock('../vrchatLog/service');
-vi.mock('../vrchatWorldJoinLog/service');
-vi.mock('../VRChatPlayerJoinLogModel/playerJoinLog.service');
-vi.mock('../vrchatPhoto/vrchatPhoto.service');
+
+// 必要最小限のモックを設定
+vi.mock('../vrchatLog/service', () => ({
+  importLogLinesFromLogPhotoDirPath: vi.fn().mockResolvedValue(undefined),
+  getLogStoreFilePathsInRange: vi.fn().mockReturnValue([]),
+  getVRChaLogInfoByLogFilePathList: vi.fn(),
+  getLogStoreFilePath: vi.fn(),
+}));
+
+vi.mock('../vrchatWorldJoinLog/service', () => ({
+  findLatestWorldJoinLog: vi.fn().mockResolvedValue(null),
+  createVRChatWorldJoinLogModel: vi.fn().mockResolvedValue([]),
+}));
+
+vi.mock('../VRChatPlayerJoinLogModel/playerJoinLog.service', () => ({
+  findLatestPlayerJoinLog: vi.fn().mockResolvedValue(neverthrow.ok(null)),
+  createVRChatPlayerJoinLogModel: vi.fn().mockResolvedValue([]),
+}));
+
+vi.mock('../VRChatPlayerLeaveLogModel/playerLeaveLog.service', () => ({
+  findLatestPlayerLeaveLog: vi.fn().mockResolvedValue(null),
+  createVRChatPlayerLeaveLogModel: vi.fn().mockResolvedValue([]),
+}));
+
+vi.mock('../vrchatPhoto/vrchatPhoto.service', () => ({
+  getVRChatPhotoDirPath: vi.fn().mockResolvedValue({ value: '/mock/photos' }),
+  getLatestPhotoDate: vi.fn().mockResolvedValue(null),
+  createVRChatPhotoPathIndex: vi.fn().mockResolvedValue([]),
+}));
 
 describe('loadLogInfoIndexFromVRChatLog', () => {
   beforeAll(async () => {
     client.__initTestRDBClient();
   }, 10000);
+
   beforeEach(async () => {
     await client.__forceSyncRDBClient();
     vi.resetAllMocks();
+
     // importLogLinesFromLogPhotoDirPathのモックを設定
     vi.mocked(
       vrchatLogService.importLogLinesFromLogPhotoDirPath,
     ).mockResolvedValue();
+
+    // デフォルトのgetVRChaLogInfoByLogFilePathListのモックを設定
+    vi.mocked(
+      vrchatLogService.getVRChaLogInfoByLogFilePathList,
+    ).mockResolvedValue(neverthrow.ok([]));
   });
+
   afterAll(async () => {
     await client.__cleanupTestRDBClient();
   });
@@ -107,16 +144,6 @@ describe('loadLogInfoIndexFromVRChatLog', () => {
     vi.mocked(
       vrchatLogService.getVRChaLogInfoByLogFilePathList,
     ).mockResolvedValue(neverthrow.ok(mockLogs));
-    vi.mocked(
-      worldJoinLogService.createVRChatWorldJoinLogModel,
-    ).mockResolvedValue([]);
-    vi.mocked(
-      playerJoinLogService.createVRChatPlayerJoinLogModel,
-    ).mockResolvedValue([]);
-    vi.mocked(vrchatPhotoService.getLatestPhotoDate).mockResolvedValue(null);
-    vi.mocked(vrchatPhotoService.createVRChatPhotoPathIndex).mockResolvedValue(
-      [],
-    );
 
     // テスト実行
     await loadLogInfoIndexFromVRChatLog({
@@ -171,13 +198,6 @@ describe('loadLogInfoIndexFromVRChatLog', () => {
     );
     vi.mocked(playerJoinLogService.findLatestPlayerJoinLog).mockResolvedValue(
       neverthrow.ok(null),
-    );
-    vi.mocked(
-      worldJoinLogService.createVRChatWorldJoinLogModel,
-    ).mockResolvedValue([]);
-    vi.mocked(vrchatPhotoService.getLatestPhotoDate).mockResolvedValue(null);
-    vi.mocked(vrchatPhotoService.createVRChatPhotoPathIndex).mockResolvedValue(
-      [],
     );
 
     // テスト実行
@@ -242,11 +262,6 @@ describe('loadLogInfoIndexFromVRChatLog', () => {
       await new Promise((resolve) => setTimeout(resolve, playerJoinDelay));
       return [];
     });
-
-    vi.mocked(vrchatPhotoService.getLatestPhotoDate).mockResolvedValue(null);
-    vi.mocked(vrchatPhotoService.createVRChatPhotoPathIndex).mockResolvedValue(
-      [],
-    );
 
     // テスト実行開始時刻を記録
     const startTime = Date.now();
@@ -332,16 +347,6 @@ describe('loadLogInfoIndexFromVRChatLog', () => {
     vi.mocked(
       vrchatLogService.getVRChaLogInfoByLogFilePathList,
     ).mockResolvedValue(neverthrow.ok(mockLogs));
-    vi.mocked(
-      worldJoinLogService.createVRChatWorldJoinLogModel,
-    ).mockResolvedValue([]);
-    vi.mocked(
-      playerJoinLogService.createVRChatPlayerJoinLogModel,
-    ).mockResolvedValue([]);
-    vi.mocked(vrchatPhotoService.getLatestPhotoDate).mockResolvedValue(null);
-    vi.mocked(vrchatPhotoService.createVRChatPhotoPathIndex).mockResolvedValue(
-      [],
-    );
 
     // テスト実行
     await loadLogInfoIndexFromVRChatLog({
@@ -380,5 +385,187 @@ describe('loadLogInfoIndexFromVRChatLog', () => {
         }),
       ]),
     );
+  });
+
+  it('日付範囲に基づいて適切なログファイルパスを取得する', async () => {
+    // モックの準備
+    const latestWorldJoinDate = new Date('2024-03-15T00:00:00Z');
+    const latestPlayerJoinDate = new Date('2024-03-10T00:00:00Z');
+    const latestPlayerLeaveDate = new Date('2024-03-20T00:00:00Z');
+
+    const mockWorldJoinLog = {
+      id: '1',
+      worldId: 'wrld_12345678-1234-1234-1234-123456789012',
+      worldName: 'World 1',
+      worldInstanceId: 'instance1',
+      joinDateTime: latestWorldJoinDate,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as VRChatWorldJoinLogModel;
+
+    const mockPlayerJoinLog = {
+      id: '1',
+      playerId: 'player1',
+      playerName: 'Player 1',
+      joinDateTime: latestPlayerJoinDate,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as VRChatPlayerJoinLogModel;
+
+    vi.mocked(worldJoinLogService.findLatestWorldJoinLog).mockResolvedValue(
+      mockWorldJoinLog,
+    );
+    vi.mocked(playerJoinLogService.findLatestPlayerJoinLog).mockResolvedValue(
+      neverthrow.ok(mockPlayerJoinLog),
+    );
+    vi.mocked(playerLeaveLogService.findLatestPlayerLeaveLog).mockResolvedValue(
+      {
+        id: '1',
+        playerId: 'player1',
+        playerName: 'Player 1',
+        leaveDateTime: latestPlayerLeaveDate,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as VRChatPlayerLeaveLogModel,
+    );
+
+    // getLogStoreFilePathsInRangeのモックを設定
+    const mockLogFilePaths = [
+      VRChatLogStoreFilePathSchema.parse(
+        '/mock/path/logStore/2024-03/logStore-2024-03.txt',
+      ),
+      VRChatLogStoreFilePathSchema.parse(
+        '/mock/path/logStore/2024-04/logStore-2024-04.txt',
+      ),
+    ];
+    vi.mocked(vrchatLogService.getLogStoreFilePathsInRange).mockReturnValue(
+      mockLogFilePaths,
+    );
+
+    // テスト実行
+    await loadLogInfoIndexFromVRChatLog({
+      excludeOldLogLoad: true,
+    });
+
+    // 検証
+    // 最も古い日付（3月10日）の月の初日（3月1日）から取得されることを確認
+    expect(vrchatLogService.getLogStoreFilePathsInRange).toHaveBeenCalledWith(
+      expect.any(Date),
+    );
+
+    // 呼び出し引数を取得
+    const callArg = vi.mocked(vrchatLogService.getLogStoreFilePathsInRange).mock
+      .calls[0][0];
+
+    // 3月1日であることを確認（月の初日）
+    expect(datefns.getMonth(callArg)).toBe(2); // 0-indexed: 3月は2
+    expect(datefns.getDate(callArg)).toBe(1);
+
+    // 正しいログファイルパスリストが使用されたことを確認
+    expect(
+      vrchatLogService.getVRChaLogInfoByLogFilePathList,
+    ).toHaveBeenCalledWith(mockLogFilePaths);
+  });
+
+  it('DBに記録がない場合は1年前からログを取得する', async () => {
+    // DBに記録がないケース
+    vi.mocked(worldJoinLogService.findLatestWorldJoinLog).mockResolvedValue(
+      null,
+    );
+    vi.mocked(playerJoinLogService.findLatestPlayerJoinLog).mockResolvedValue(
+      neverthrow.ok(null),
+    );
+    vi.mocked(playerLeaveLogService.findLatestPlayerLeaveLog).mockResolvedValue(
+      null,
+    );
+
+    // getLogStoreFilePathsInRangeのモックを設定
+    const mockLogFilePaths = [
+      VRChatLogStoreFilePathSchema.parse(
+        '/mock/path/logStore/2023-05/logStore-2023-05.txt',
+      ),
+    ];
+    vi.mocked(vrchatLogService.getLogStoreFilePathsInRange).mockReturnValue(
+      mockLogFilePaths,
+    );
+
+    // 現在の日付を固定
+    const fixedDate = new Date('2024-05-15T00:00:00Z');
+    const originalNow = Date.now;
+
+    // Date.nowをモック
+    global.Date.now = vi.fn(() => fixedDate.getTime());
+
+    // Dateコンストラクタをモック
+    const RealDate = global.Date;
+    const mockDateConstructor = function (this: Date, ...args: any[]) {
+      if (args.length === 0) {
+        return new RealDate(fixedDate);
+      }
+      return new (RealDate as any)(...args);
+    } as unknown as DateConstructor;
+
+    // 元のDate.UTCとDate.parseを保持
+    mockDateConstructor.UTC = RealDate.UTC;
+    mockDateConstructor.parse = RealDate.parse;
+
+    // Dateをモック
+    global.Date = mockDateConstructor;
+
+    try {
+      // テスト実行
+      await loadLogInfoIndexFromVRChatLog({
+        excludeOldLogLoad: true,
+      });
+
+      // 検証
+      // 1年前からログを取得することを確認
+      expect(vrchatLogService.getLogStoreFilePathsInRange).toHaveBeenCalled();
+
+      // 呼び出し引数を取得
+      const callArg = vi.mocked(vrchatLogService.getLogStoreFilePathsInRange)
+        .mock.calls[0][0];
+
+      // 1年前の日付であることを確認
+      const oneYearAgo = datefns.subYears(fixedDate, 1);
+      expect(datefns.getYear(callArg)).toBe(datefns.getYear(oneYearAgo));
+      expect(datefns.getMonth(callArg)).toBe(datefns.getMonth(oneYearAgo));
+    } finally {
+      // モックをリセット
+      global.Date = RealDate;
+      global.Date.now = originalNow;
+    }
+  });
+
+  it('excludeOldLogLoadがfalseの場合は2023年1月1日からすべてのログを取得する', async () => {
+    // getLogStoreFilePathsInRangeのモックを設定
+    const mockLogFilePaths = [
+      VRChatLogStoreFilePathSchema.parse(
+        '/mock/path/logStore/2023-01/logStore-2023-01.txt',
+      ),
+    ];
+    vi.mocked(vrchatLogService.getLogStoreFilePathsInRange).mockReturnValue(
+      mockLogFilePaths,
+    );
+
+    // テスト実行
+    await loadLogInfoIndexFromVRChatLog({
+      excludeOldLogLoad: false,
+    });
+
+    // 検証
+    // 2023年1月1日からログを取得することを確認
+    expect(vrchatLogService.getLogStoreFilePathsInRange).toHaveBeenCalledWith(
+      expect.any(Date),
+    );
+
+    // 呼び出し引数を取得
+    const callArg = vi.mocked(vrchatLogService.getLogStoreFilePathsInRange).mock
+      .calls[0][0];
+
+    // 2023年1月1日であることを確認
+    expect(datefns.getYear(callArg)).toBe(2023);
+    expect(datefns.getMonth(callArg)).toBe(0); // 0-indexed: 1月は0
+    expect(datefns.getDate(callArg)).toBe(1);
   });
 });
