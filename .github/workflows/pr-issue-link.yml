@@ -9,6 +9,7 @@ jobs:
     # https://docs.github.com/en/actions/security-guides/automatic-token-authentication#permissions-for-the-github_token
     permissions:
       pull-requests: write
+      issues: write
     steps:
       - uses: tkt-actions/add-issue-links@v1.9.0
         with:
