@@ -99,8 +99,8 @@ export async function loadLogInfoIndexFromVRChatLog({
     // 最新の日時を取得（存在しない場合は1年前から）
     const dates = [
       latestWorldJoinDate?.joinDateTime,
-      latestPlayerJoinDateResult.isOk() && latestPlayerJoinDateResult.value
-        ? latestPlayerJoinDateResult.value.joinDateTime
+      latestPlayerJoinDateResult.isOk()
+        ? latestPlayerJoinDateResult.value?.joinDateTime || null
         : null,
       latestPlayerLeaveDate?.leaveDateTime,
     ].filter(Boolean) as Date[];
@@ -158,9 +158,10 @@ export async function loadLogInfoIndexFromVRChatLog({
       ]);
 
       // playerJoinDateResultからvalueを取得
-      const latestPlayerJoinDate = latestPlayerJoinDateResult.isErr()
-        ? null
-        : latestPlayerJoinDateResult.value;
+      let latestPlayerJoinDate = null;
+      if (latestPlayerJoinDateResult.isOk()) {
+        latestPlayerJoinDate = latestPlayerJoinDateResult.value;
+      }
 
       return logInfoList.filter((log) => {
         if (log.logType === 'worldJoin') {
