@@ -21,6 +21,7 @@ vi.mock('../../lib/wrappedApp', () => ({
 // node:fsのモック
 vi.mock('node:fs', () => ({
   existsSync: vi.fn().mockReturnValue(false),
+  mkdirSync: vi.fn().mockReturnValue(undefined),
   promises: {
     mkdir: vi.fn().mockResolvedValue(undefined),
     writeFile: vi.fn().mockResolvedValue(undefined),
@@ -174,12 +175,14 @@ describe('appendLoglinesToFile', () => {
     expect(result.isOk()).toBe(true);
 
     // 2つの異なるディレクトリが作成されたことを確認
-    expect(fs.mkdirSyncSafe).toHaveBeenCalledTimes(2);
-    expect(fs.mkdirSyncSafe).toHaveBeenCalledWith(
+    expect(nodeFs.mkdirSync).toHaveBeenCalledTimes(4); // ルートディレクトリと月別ディレクトリの2つずつ
+    expect(nodeFs.mkdirSync).toHaveBeenCalledWith(
       path.join('/mock/user/data/logStore', '2024-01'),
+      { recursive: true },
     );
-    expect(fs.mkdirSyncSafe).toHaveBeenCalledWith(
+    expect(nodeFs.mkdirSync).toHaveBeenCalledWith(
       path.join('/mock/user/data/logStore', '2024-02'),
+      { recursive: true },
     );
 
     // 2つの異なるファイルに書き込まれたことを確認
@@ -217,6 +220,9 @@ describe('appendLoglinesToFile', () => {
       });
 
       expect(result.isOk()).toBe(true);
+
+      // ディレクトリが作成されることを確認
+      expect(nodeFs.mkdirSync).toHaveBeenCalledTimes(2); // ルートディレクトリと月別ディレクトリ
 
       // 新しいファイルに書き込まれたことを確認
       expect(fs.writeFileSyncSafe).toHaveBeenCalledTimes(1);
