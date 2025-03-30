@@ -22,6 +22,7 @@ vi.mock('../../lib/wrappedApp', () => ({
 vi.mock('node:fs', () => ({
   existsSync: vi.fn().mockReturnValue(false),
   mkdirSync: vi.fn().mockReturnValue(undefined),
+  readdirSync: vi.fn().mockReturnValue([]),
   promises: {
     mkdir: vi.fn().mockResolvedValue(undefined),
     writeFile: vi.fn().mockResolvedValue(undefined),
@@ -214,6 +215,20 @@ describe('appendLoglinesToFile', () => {
     const mockDate = new Date('2024-03-15T14:30:45');
     vi.setSystemTime(mockDate);
 
+    // createTimestampedLogFilePathをモック
+    const expectedFilePath = path.join(
+      '/mock/user/data/logStore',
+      '2024-03',
+      'logStore-2024-03-20240315143045.txt',
+    );
+    vi.mock('./model', async (importOriginal) => {
+      const originalModule = await importOriginal<typeof import('./model')>();
+      return {
+        ...originalModule,
+        createTimestampedLogFilePath: vi.fn().mockReturnValue(expectedFilePath),
+      };
+    });
+
     try {
       const result = await appendLoglinesToFile({
         logLines,
@@ -227,15 +242,12 @@ describe('appendLoglinesToFile', () => {
       // 新しいファイルに書き込まれたことを確認
       expect(fs.writeFileSyncSafe).toHaveBeenCalledTimes(1);
       expect(fs.writeFileSyncSafe).toHaveBeenCalledWith(
-        path.join(
-          '/mock/user/data/logStore',
-          '2024-03',
-          'logStore-2024-03-20240315143045.txt',
-        ),
+        expectedFilePath,
         '2024.03.15 12:00:00 Log entry 1\n',
       );
     } finally {
       vi.useRealTimers();
+      vi.unmock('./model');
     }
   });
 });
@@ -300,3 +312,8 @@ describe('vrchatLog service', () => {
     });
   });
 });
+
+/**
+ * 実際のファイルシステムを使用した統合テストは別ファイル（service.integration.test.ts）に
+ * 実装しています。これにより、モックの設定がテスト間で干渉することを防ぎます。
+ */

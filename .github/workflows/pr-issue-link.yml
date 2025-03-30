@@ -10,8 +10,10 @@ jobs:
     permissions:
       pull-requests: write
     steps:
-      - uses: tkt-actions/add-issue-links@v1.8.2
+      - uses: tkt-actions/add-issue-links@v1.9.0
         with:
           repo-token: '${{ secrets.GITHUB_TOKEN }}' # required
           branch-prefix: '' # required
           link-style: comment
+          # Automatically assign the pull request creator to the related issue
+          assign-pr-creator-to-issue: 'true'

@@ -19,7 +19,9 @@ import {
   type VRChatLogLine,
   VRChatLogLineSchema,
   type VRChatLogStoreFilePath,
+  VRChatLogStoreFilePathRegex,
   VRChatLogStoreFilePathSchema,
+  createTimestampedLogFilePath,
 } from './model';
 
 type WorldId = `wrld_${string}`;
@@ -363,6 +365,7 @@ export const getLegacyLogStoreFilePath =
 /**
  * 指定された日付範囲のログストアファイルのパスを取得する
  * 新形式のログファイルと、存在する場合は旧形式のログファイルも含める
+ * タイムスタンプ付きの追加ファイル（logStore-YYYY-MM-YYYYMMDDHHMMSS.txt）も含める
  */
 export const getLogStoreFilePathsInRange = async (
   startDate: Date,
@@ -376,8 +379,32 @@ export const getLogStoreFilePathsInRange = async (
     datefns.isBefore(targetDate, endDate) ||
     datefns.isSameDay(targetDate, endDate)
   ) {
-    const logFilePath = getLogStoreFilePathForDate(targetDate);
-    logFilePaths.push(logFilePath);
+    // 標準のログファイル（月毎）を取得
+    const yearMonth = datefns.format(targetDate, 'yyyy-MM');
+    const monthDir = path.join(getLogStoreDir(), yearMonth);
+    const standardLogFilePath = getLogStoreFilePathForDate(targetDate);
+
+    // まず標準のログファイルを追加
+    logFilePaths.push(standardLogFilePath);
+
+    // 同じ月のタイムスタンプ付きのログファイルを検索
+    if (nodeFs.existsSync(monthDir)) {
+      try {
+        const files = nodeFs.readdirSync(monthDir);
+        const timestampedLogFiles = files.filter((file) =>
+          file.match(VRChatLogStoreFilePathRegex),
+        );
+
+        // タイムスタンプ付きのファイルをパスに追加
+        for (const file of timestampedLogFiles) {
+          const fullPath = path.join(monthDir, file);
+          logFilePaths.push(VRChatLogStoreFilePathSchema.parse(fullPath));
+        }
+      } catch (err) {
+        console.error(`Error reading directory ${monthDir}:`, err);
+      }
+    }
+
     targetDate = datefns.addMonths(targetDate, 1);
   }
 
@@ -456,10 +483,11 @@ export const appendLoglinesToFile = async (props: {
       if (stats.size >= 10 * 1024 * 1024) {
         // 10MB
         // ファイルサイズが上限を超えている場合は、新しいファイルを作成
-        const timestamp = datefns.format(new Date(), 'yyyyMMddHHmmss');
-        const newFilePath = path.join(
+        const timestamp = new Date();
+        const newFilePath = createTimestampedLogFilePath(
           monthDir,
-          `logStore-${yearMonth}-${timestamp}.txt`,
+          yearMonth,
+          timestamp,
         );
 
         // 新しいファイルに直接書き込み
