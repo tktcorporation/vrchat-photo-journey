@@ -53,9 +53,9 @@ const appendLoglinesToFileFromLogFilePathList = async (): Promise<
     return neverthrow.err(logLineList.error);
   }
 
+  // 日付ごとに適切なファイルに保存するため、logStoreFilePathは指定しない
   const result = await vrchatLogService.appendLoglinesToFile({
     logLines: logLineList.value,
-    logStoreFilePath: vrchatLogService.getLogStoreFilePath(),
   });
   if (result.isErr()) {
     return neverthrow.err(result.error);
