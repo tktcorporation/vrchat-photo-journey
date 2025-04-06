@@ -1,5 +1,6 @@
 const opaqueSymbol: unique symbol = Symbol('opaqueSymbol');
 
+import * as path from 'node:path';
 import * as datefns from 'date-fns';
 import { z } from 'zod';
 
@@ -77,7 +78,7 @@ export const createTimestampedLogFilePath = (
   timestamp: Date = new Date(),
 ): string => {
   const timestampStr = datefns.format(timestamp, 'yyyyMMddHHmmss');
-  return `${basePath}/logStore-${yearMonth}-${timestampStr}.txt`;
+  return path.join(basePath, `logStore-${yearMonth}-${timestampStr}.txt`);
 };
 
 export type { VRChatLogLine, VRChatLogStoreFilePath };
