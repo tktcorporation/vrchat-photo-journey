@@ -1,3 +1,4 @@
+import * as nodeFs from 'node:fs';
 import readline from 'node:readline';
 import * as datefns from 'date-fns';
 import * as neverthrow from 'neverthrow';
@@ -18,7 +19,9 @@ import {
   type VRChatLogLine,
   VRChatLogLineSchema,
   type VRChatLogStoreFilePath,
+  VRChatLogStoreFilePathRegex,
   VRChatLogStoreFilePathSchema,
+  createTimestampedLogFilePath,
 } from './model';
 
 type WorldId = `wrld_${string}`;
@@ -133,6 +136,12 @@ const getLogLinesFromLogFileName = async (props: {
   logFilePath: VRChatLogFilePath | VRChatLogStoreFilePath;
   includesList: string[];
 }): Promise<neverthrow.Result<string[], VRChatLogFileError>> => {
+  // ファイルが存在するか確認
+  if (!nodeFs.existsSync(props.logFilePath.value)) {
+    // ファイルが存在しない場合は空の配列を返す
+    return neverthrow.ok([]);
+  }
+
   const stream = fs.createReadStream(props.logFilePath.value);
   const reader = readline.createInterface({
     input: stream,
@@ -306,10 +315,109 @@ const extractPlayerLeaveInfoFromLog = (
   };
 };
 
-export const getLogStoreFilePath = (): VRChatLogStoreFilePath => {
-  const userDataPath = getAppUserDataPath();
-  return VRChatLogStoreFilePathSchema.parse(
-    path.join(userDataPath, 'logStore', 'logStore.txt'),
+/**
+ * logStoreディレクトリのパスを取得する
+ */
+export const getLogStoreDir = (): string => {
+  return path.join(getAppUserDataPath(), 'logStore');
+};
+
+/**
+ * logStoreディレクトリを初期化する
+ * ディレクトリが存在しない場合は作成する
+ */
+export const initLogStoreDir = (): void => {
+  const logStoreDir = getLogStoreDir();
+  if (!nodeFs.existsSync(logStoreDir)) {
+    nodeFs.mkdirSync(logStoreDir, { recursive: true });
+  }
+};
+
+/**
+ * 指定された日付に基づいてログストアファイルのパスを生成する
+ * 日付が指定されない場合は現在の日付を使用する
+ */
+export const getLogStoreFilePathForDate = (
+  date: Date = new Date(),
+): VRChatLogStoreFilePath => {
+  const yearMonth = datefns.format(date, 'yyyy-MM');
+  const logStoreFilePath = path.join(
+    getLogStoreDir(),
+    yearMonth,
+    `logStore-${yearMonth}.txt`,
+  );
+  return VRChatLogStoreFilePathSchema.parse(logStoreFilePath);
+};
+
+/**
+ * 旧形式のログファイルパスを取得する
+ * ファイルが存在しない場合はnullを返す
+ */
+export const getLegacyLogStoreFilePath =
+  async (): Promise<VRChatLogStoreFilePath | null> => {
+    const legacyPath = path.join(getLogStoreDir(), 'logStore.txt');
+    if (!nodeFs.existsSync(legacyPath)) {
+      return null;
+    }
+    return VRChatLogStoreFilePathSchema.parse(legacyPath);
+  };
+
+/**
+ * 指定された日付範囲のログストアファイルのパスを取得する
+ * 新形式のログファイルと、存在する場合は旧形式のログファイルも含める
+ * タイムスタンプ付きの追加ファイル（logStore-YYYY-MM-YYYYMMDDHHMMSS.txt）も含める
+ */
+export const getLogStoreFilePathsInRange = async (
+  startDate: Date,
+  currentDate: Date,
+): Promise<VRChatLogStoreFilePath[]> => {
+  // 重複を避けるためにSetを使用
+  const logFilePathSet = new Set<string>();
+  let targetDate = datefns.startOfMonth(startDate);
+  const endDate = datefns.endOfMonth(currentDate);
+
+  while (
+    datefns.isBefore(targetDate, endDate) ||
+    datefns.isSameDay(targetDate, endDate)
+  ) {
+    // 標準のログファイル（月毎）を取得
+    const yearMonth = datefns.format(targetDate, 'yyyy-MM');
+    const monthDir = path.join(getLogStoreDir(), yearMonth);
+    const standardLogFilePath = getLogStoreFilePathForDate(targetDate);
+
+    // 標準のログファイルを追加（重複を避けるためにSetを使用）
+    logFilePathSet.add(standardLogFilePath.value);
+
+    // 同じ月のタイムスタンプ付きのログファイルを検索
+    if (nodeFs.existsSync(monthDir)) {
+      try {
+        const files = nodeFs.readdirSync(monthDir);
+        const timestampedLogFiles = files.filter((file) =>
+          file.match(VRChatLogStoreFilePathRegex),
+        );
+
+        // タイムスタンプ付きのファイルをパスに追加
+        for (const file of timestampedLogFiles) {
+          const fullPath = path.join(monthDir, file);
+          logFilePathSet.add(fullPath);
+        }
+      } catch (err) {
+        console.error(`Error reading directory ${monthDir}:`, err);
+      }
+    }
+
+    targetDate = datefns.addMonths(targetDate, 1);
+  }
+
+  // 旧形式のログファイルがあれば追加
+  const legacyPath = await getLegacyLogStoreFilePath();
+  if (legacyPath !== null) {
+    logFilePathSet.add(legacyPath.value);
+  }
+
+  // SetからVRChatLogStoreFilePathの配列に変換して返す
+  return Array.from(logFilePathSet).map((p) =>
+    VRChatLogStoreFilePathSchema.parse(p),
   );
 };
 
@@ -317,94 +425,117 @@ export const getLogStoreFilePath = (): VRChatLogStoreFilePath => {
  * 必要になるlog行を app 内のファイルに保存しておく
  * 最後に保存した日時以降のログ行のみを日付順に保存する
  * 最初は全部保存しようとして被ってたら辞めるでもいいかな
+ * ログの日付に基づいて適切な月のファイルに書き込む
  */
 export const appendLoglinesToFile = async (props: {
   logLines: VRChatLogLine[];
-  logStoreFilePath: VRChatLogStoreFilePath;
-}): Promise<neverthrow.Result<void, Error>> => {
-  const isExists = await fs.existsSyncSafe(props.logStoreFilePath.value);
+  logStoreFilePath?: VRChatLogStoreFilePath; // オプショナルに変更
+}): Promise<neverthrow.Result<void, never>> => {
+  // ログが空の場合は何もしない
+  if (props.logLines.length === 0) {
+    return neverthrow.ok(undefined);
+  }
+  // ログを日付ごとにグループ化
+  const logsByMonth = new Map<string, VRChatLogLine[]>();
 
-  // ファイルが存在しない場合は新規作成
-  if (!isExists) {
-    const mkdirResult = await fs.mkdirSyncSafe(
-      path.dirname(props.logStoreFilePath.value),
-    );
-    if (mkdirResult.isErr()) {
-      const error = match(mkdirResult.error)
-        .with({ code: 'EEXIST' }, () => null)
-        .otherwise(() => mkdirResult.error);
-      if (error) {
-        return neverthrow.err(error.error);
+  for (const logLine of props.logLines) {
+    // ログから日付を抽出
+    const dateMatch = logLine.value.match(/^(\d{4})\.(\d{2})\.(\d{2})/);
+    if (!dateMatch) {
+      // 日付が抽出できない場合は現在の月に追加
+      const key = datefns.format(new Date(), 'yyyy-MM');
+      const monthLogs = logsByMonth.get(key) || [];
+      monthLogs.push(logLine);
+      logsByMonth.set(key, monthLogs);
+      continue;
+    }
+
+    const year = dateMatch[1];
+    const month = dateMatch[2];
+    const key = `${year}-${month}`;
+
+    const monthLogs = logsByMonth.get(key) || [];
+    monthLogs.push(logLine);
+    logsByMonth.set(key, monthLogs);
+  }
+
+  // 各月のログを対応するファイルに書き込む
+  for (const [yearMonth, logs] of logsByMonth.entries()) {
+    const [year, month] = yearMonth.split('-');
+    const date = datefns.parse(`${year}-${month}-01`, 'yyyy-MM-dd', new Date());
+
+    // 月別のディレクトリを作成
+    const monthDir = path.join(getLogStoreDir(), yearMonth);
+
+    // ログストアのルートディレクトリを先に確認・作成
+    const logStoreDir = getLogStoreDir();
+    if (!nodeFs.existsSync(logStoreDir)) {
+      nodeFs.mkdirSync(logStoreDir, { recursive: true });
+    }
+
+    // 月別ディレクトリを作成
+    if (!nodeFs.existsSync(monthDir)) {
+      nodeFs.mkdirSync(monthDir, { recursive: true });
+    }
+
+    const logStoreFilePath = getLogStoreFilePathForDate(date);
+    const isExists = await fs.existsSyncSafe(logStoreFilePath.value);
+
+    // ファイルサイズをチェック
+    if (isExists) {
+      const stats = nodeFs.statSync(logStoreFilePath.value);
+      if (stats.size >= 10 * 1024 * 1024) {
+        // 10MB
+        // ファイルサイズが上限を超えている場合は、新しいファイルを作成
+        const timestamp = new Date();
+        const newFilePath = createTimestampedLogFilePath(
+          monthDir,
+          yearMonth,
+          timestamp,
+        );
+
+        // 新しいファイルに直接書き込み
+        const newLog = `${logs.map((l) => l.value).join('\n')}\n`;
+        const writeResult = await fs.writeFileSyncSafe(newFilePath, newLog);
+        if (writeResult.isErr()) {
+          throw writeResult.error;
+        }
+        continue;
       }
     }
-    // 新規ファイルの場合は直接書き込み
-    const newLog = `${props.logLines.map((l) => l.value).join('\n')}\n`;
+
+    // 既存のログ行をSetとして保持
+    const existingLines = new Set<string>();
+
+    if (isExists) {
+      const readResult = await fs.readFileSyncSafe(logStoreFilePath.value);
+      if (readResult.isOk()) {
+        const content = readResult.value.toString();
+        for (const line of content.split('\n')) {
+          if (line) {
+            existingLines.add(line);
+          }
+        }
+      }
+    }
+
+    // 重複を除外して新しいログ行を追加
+    const newLines = logs.filter((log) => !existingLines.has(log.value));
+    if (newLines.length === 0) {
+      continue;
+    }
+
+    const newLog = `${newLines.map((l) => l.value).join('\n')}\n`;
     const writeResult = await fs.writeFileSyncSafe(
-      props.logStoreFilePath.value,
+      logStoreFilePath.value,
       newLog,
     );
     if (writeResult.isErr()) {
-      return neverthrow.err(new Error('ログファイルの作成に失敗しました'));
+      throw writeResult.error;
     }
-    return neverthrow.ok(undefined);
   }
 
-  // 既存のログ行をSetとして保持
-  const existingLines = new Set<string>();
-
-  try {
-    const stream = fs.createReadStream(props.logStoreFilePath.value);
-    const rl = readline.createInterface({
-      input: stream,
-      crlfDelay: Number.POSITIVE_INFINITY,
-    });
-
-    // ストリームでログを読み込み
-    for await (const line of rl) {
-      if (line.trim()) {
-        // 空行をスキップ
-        existingLines.add(line);
-      }
-    }
-
-    // 重複していない新しいログ行のみをフィルタリング
-    const newLines = props.logLines.filter(
-      (line) => !existingLines.has(line.value),
-    );
-
-    if (newLines.length === 0) {
-      return neverthrow.ok(undefined);
-    }
-
-    // 新しいログ行を追加
-    const newLog = `${newLines.map((l) => l.value).join('\n')}\n`;
-    const appendResult = await fs.appendFileAsync(
-      props.logStoreFilePath.value,
-      newLog,
-    );
-
-    if (appendResult.isErr()) {
-      const error = match(appendResult.error)
-        .with(
-          { code: 'ENOENT' },
-          () => new Error('ログファイルが見つかりません'),
-        )
-        .otherwise(
-          (e: { message?: string }) =>
-            new Error(
-              `ログの追記に失敗しました: ${e.message || '不明なエラー'}`,
-            ),
-        );
-      return neverthrow.err(error);
-    }
-
-    return neverthrow.ok(undefined);
-  } catch (err) {
-    const error = err as Error;
-    return neverthrow.err(
-      new Error(`ログファイルの処理中にエラーが発生しました: ${error.message}`),
-    );
-  }
+  return neverthrow.ok(undefined);
 };
 
 import { glob } from 'glob';

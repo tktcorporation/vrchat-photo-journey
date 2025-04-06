@@ -372,9 +372,9 @@ describe('getPlayerJoinListInSameWorld 統合テスト', () => {
   beforeAll(async () => {
     console.log('テスト用DBパス:', tempDbPath);
 
-    // テスト用のデータベースを初期化（sqlite:プレフィックスを付ける）
+    // テスト用のデータベースを初期化（sqlite:プレフィックスなしでパスを渡す）
     client = await initRDBClient({
-      db_url: `sqlite:${tempDbPath}`,
+      db_url: tempDbPath,
     });
 
     // モデルを同期
