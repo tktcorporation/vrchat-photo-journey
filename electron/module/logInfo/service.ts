@@ -1,6 +1,7 @@
 import * as datefns from 'date-fns';
 import * as neverthrow from 'neverthrow';
 import { match } from 'ts-pattern';
+import { logger } from '../../lib/logger';
 import type { VRChatPlayerJoinLogModel } from '../VRChatPlayerJoinLogModel/playerJoinInfoLog.model';
 import * as playerJoinLogService from '../VRChatPlayerJoinLogModel/playerJoinLog.service';
 import type { VRChatPlayerLeaveLogModel } from '../VRChatPlayerLeaveLogModel/playerLeaveLog.model';
@@ -26,6 +27,65 @@ interface LogProcessingResults {
 }
 
 /**
+ * 処理対象となるVRChatのログファイルパスを取得する
+ * @param excludeOldLogLoad trueの場合、DBに保存されている最新のログ日時以降のログのみを処理します。
+ *                           falseの場合、2000年1月1日からすべてのログを処理します。
+ */
+async function _getLogStoreFilePaths(
+  excludeOldLogLoad: boolean,
+): Promise<VRChatLogStoreFilePath[]> {
+  let startDate: Date;
+  const logStoreFilePaths: VRChatLogStoreFilePath[] = [];
+
+  if (excludeOldLogLoad) {
+    // DBに保存されている最新のログ日時を取得
+    const [
+      latestWorldJoinDate,
+      latestPlayerJoinDateResult,
+      latestPlayerLeaveDate,
+    ] = await Promise.all([
+      worldJoinLogService.findLatestWorldJoinLog(),
+      playerJoinLogService.findLatestPlayerJoinLog(),
+      playerLeaveLogService.findLatestPlayerLeaveLog(),
+    ]);
+
+    const latestPlayerJoinDate = latestPlayerJoinDateResult.isOk()
+      ? latestPlayerJoinDateResult.value?.joinDateTime
+      : null;
+
+    // 最新の日時をフィルタリングしてソート
+    const dates = [
+      latestWorldJoinDate?.joinDateTime,
+      latestPlayerJoinDate,
+      latestPlayerLeaveDate?.leaveDateTime,
+    ]
+      .filter((d): d is Date => d instanceof Date) // Date型のみをフィルタリング
+      .sort(datefns.compareAsc);
+
+    // 最新の日付を取得、なければ1年前
+    startDate = dates.at(-1) ?? datefns.subYears(new Date(), 1);
+  } else {
+    // すべてのログを読み込む場合は、非常に古い日付から
+    startDate = datefns.parseISO('2000-01-01');
+    // 旧形式のログファイルも追加
+    const legacyLogStoreFilePath =
+      await vrchatLogService.getLegacyLogStoreFilePath();
+    if (legacyLogStoreFilePath) {
+      logStoreFilePaths.push(legacyLogStoreFilePath);
+    }
+  }
+
+  // 日付範囲内のすべてのログファイルパスを取得して追加
+  const pathsInRange = await vrchatLogService.getLogStoreFilePathsInRange(
+    startDate,
+    new Date(),
+  );
+  logStoreFilePaths.push(...pathsInRange);
+
+  return logStoreFilePaths;
+}
+
+/**
  * VRChatのログファイルからログ情報をロードしてデータベースに保存する
  *
  * @param options.excludeOldLogLoad - trueの場合、DBに保存されている最新のログ日時以降のログのみを処理します。
@@ -37,14 +97,7 @@ interface LogProcessingResults {
  *    - 写真フォルダが存在しない場合はスキップします（正常系）
  *    - 写真フォルダが存在する場合のみ、ログ情報を保存します
  *
- * 2. ログファイルの日付範囲を決定:
- *    - excludeOldLogLoad = true の場合:
- *      - DBから最新のログ日時（World/Player/Leave）を取得
- *      - 最も古い日時の月初めを開始日とする
- *      - DBにログがない場合は1年前から
- *    - excludeOldLogLoad = false の場合:
- *      - 2000年1月1日を開始日とする
- *      - 旧形式のログファイル（'logStore/logStore.txt'）も対象に含める
+ * 2. ログファイルの日付範囲を決定: ( _getLogStoreFilePaths に移動 )
  *
  * 3. ログのフィルタリング:
  *    - excludeOldLogLoad = true の場合:
@@ -80,58 +133,12 @@ export async function loadLogInfoIndexFromVRChatLog({
     });
   }
 
-  const logStoreFilePaths: VRChatLogStoreFilePath[] = [];
-
-  // 最新のログを取得するための日付範囲を決定
-  let startDate: Date;
-  if (excludeOldLogLoad) {
-    // DBの最新日時を取得
-    const [
-      latestWorldJoinDate,
-      latestPlayerJoinDateResult,
-      latestPlayerLeaveDate,
-    ] = await Promise.all([
-      worldJoinLogService.findLatestWorldJoinLog(),
-      playerJoinLogService.findLatestPlayerJoinLog(),
-      playerLeaveLogService.findLatestPlayerLeaveLog(),
-    ]);
-
-    // 最新の日時を取得（存在しない場合は1年前から）
-    const dates = [
-      latestWorldJoinDate?.joinDateTime,
-      latestPlayerJoinDateResult.isOk()
-        ? latestPlayerJoinDateResult.value?.joinDateTime || null
-        : null,
-      latestPlayerLeaveDate?.leaveDateTime,
-    ].filter(Boolean) as Date[];
-
-    if (dates.length > 0) {
-      // 最も古い日付の月の初日を開始日とする
-      const timestamps = dates.map((d) => d.getTime());
-      const oldestTimestamp = Math.min(...timestamps);
-      const oldestDate = datefns.fromUnixTime(oldestTimestamp / 1000);
-      startDate = datefns.startOfMonth(oldestDate);
-    } else {
-      // 最新のログがない場合は1年前から
-      startDate = datefns.subYears(new Date(), 1);
-    }
-  } else {
-    // すべてのログを読み込む場合は、非常に古い日付から（実質的にすべてのログを対象とする）
-    startDate = datefns.parseISO('2000-01-01'); // 2000年1月1日（十分に古い日付）
-    // 旧形式のログファイルも追加（これまでの形式との互換性のため）
-    const legacyLogStoreFilePath =
-      await vrchatLogService.getLegacyLogStoreFilePath();
-    if (legacyLogStoreFilePath) {
-      logStoreFilePaths.push(legacyLogStoreFilePath);
-    }
-  }
-
-  // 日付範囲内のすべてのログファイルパスを取得
-  logStoreFilePaths.push(
-    ...(await vrchatLogService.getLogStoreFilePathsInRange(
-      startDate,
-      new Date(),
-    )),
+  // 処理対象となるログファイルパスを取得
+  const logStoreFilePaths = await _getLogStoreFilePaths(excludeOldLogLoad);
+  logger.info(
+    `loadLogInfoIndexFromVRChatLog target: ${logStoreFilePaths.map(
+      (path) => path.value,
+    )}`,
   );
 
   // ログファイルからログ情報を取得
