@@ -1,6 +1,8 @@
+import { performance } from 'node:perf_hooks';
 import * as datefns from 'date-fns';
 import * as neverthrow from 'neverthrow';
 import { match } from 'ts-pattern';
+import { logger } from '../../lib/logger';
 import type { VRChatPlayerJoinLogModel } from '../VRChatPlayerJoinLogModel/playerJoinInfoLog.model';
 import * as playerJoinLogService from '../VRChatPlayerJoinLogModel/playerJoinLog.service';
 import type { VRChatPlayerLeaveLogModel } from '../VRChatPlayerLeaveLogModel/playerLeaveLog.model';
@@ -26,6 +28,91 @@ interface LogProcessingResults {
 }
 
 /**
+ * 処理対象となるVRChatのログファイルパスを取得する
+ * @param excludeOldLogLoad trueの場合、DBに保存されている最新のログ日時以降のログのみを処理します。
+ *                           falseの場合、2000年1月1日からすべてのログを処理します。
+ */
+async function _getLogStoreFilePaths(
+  excludeOldLogLoad: boolean,
+): Promise<VRChatLogStoreFilePath[]> {
+  const startTime = performance.now();
+  let startDate: Date;
+  const logStoreFilePaths: VRChatLogStoreFilePath[] = [];
+
+  if (excludeOldLogLoad) {
+    const findLatestStartTime = performance.now();
+    // DBに保存されている最新のログ日時を取得
+    const [
+      latestWorldJoinDate,
+      latestPlayerJoinDateResult,
+      latestPlayerLeaveDate,
+    ] = await Promise.all([
+      worldJoinLogService.findLatestWorldJoinLog(),
+      playerJoinLogService.findLatestPlayerJoinLog(),
+      playerLeaveLogService.findLatestPlayerLeaveLog(),
+    ]);
+    const findLatestEndTime = performance.now();
+    logger.debug(
+      `_getLogStoreFilePaths: Find latest logs took ${
+        findLatestEndTime - findLatestStartTime
+      } ms`,
+    );
+
+    const latestPlayerJoinDate = latestPlayerJoinDateResult.isOk()
+      ? latestPlayerJoinDateResult.value?.joinDateTime
+      : null;
+
+    // 最新の日時をフィルタリングしてソート
+    const dates = [
+      latestWorldJoinDate?.joinDateTime,
+      latestPlayerJoinDate,
+      latestPlayerLeaveDate?.leaveDateTime,
+    ]
+      .filter((d): d is Date => d instanceof Date) // Date型のみをフィルタリング
+      .sort(datefns.compareAsc);
+    logger.debug(`_getLogStoreFilePaths: latest dates: ${dates}`);
+
+    // 最新の日付を取得、なければ1年前
+    startDate = dates.at(-1) ?? datefns.subYears(new Date(), 1);
+  } else {
+    // すべてのログを読み込む場合は、非常に古い日付から
+    startDate = datefns.parseISO('2000-01-01');
+    const getLegacyPathStartTime = performance.now();
+    // 旧形式のログファイルも追加
+    const legacyLogStoreFilePath =
+      await vrchatLogService.getLegacyLogStoreFilePath();
+    const getLegacyPathEndTime = performance.now();
+    logger.debug(
+      `_getLogStoreFilePaths: Get legacy log path took ${
+        getLegacyPathEndTime - getLegacyPathStartTime
+      } ms`,
+    );
+    if (legacyLogStoreFilePath) {
+      logStoreFilePaths.push(legacyLogStoreFilePath);
+    }
+  }
+
+  const getPathsInRangeStartTime = performance.now();
+  // 日付範囲内のすべてのログファイルパスを取得して追加
+  const pathsInRange = await vrchatLogService.getLogStoreFilePathsInRange(
+    startDate,
+    new Date(),
+  );
+  const getPathsInRangeEndTime = performance.now();
+  logger.debug(
+    `_getLogStoreFilePaths: Get paths in range took ${
+      getPathsInRangeEndTime - getPathsInRangeStartTime
+    } ms`,
+  );
+  logStoreFilePaths.push(...pathsInRange);
+
+  const endTime = performance.now();
+  logger.debug(`_getLogStoreFilePaths took ${endTime - startTime} ms`);
+
+  return logStoreFilePaths;
+}
+
+/**
  * VRChatのログファイルからログ情報をロードしてデータベースに保存する
  *
  * @param options.excludeOldLogLoad - trueの場合、DBに保存されている最新のログ日時以降のログのみを処理します。
@@ -37,14 +124,7 @@ interface LogProcessingResults {
  *    - 写真フォルダが存在しない場合はスキップします（正常系）
  *    - 写真フォルダが存在する場合のみ、ログ情報を保存します
  *
- * 2. ログファイルの日付範囲を決定:
- *    - excludeOldLogLoad = true の場合:
- *      - DBから最新のログ日時（World/Player/Leave）を取得
- *      - 最も古い日時の月初めを開始日とする
- *      - DBにログがない場合は1年前から
- *    - excludeOldLogLoad = false の場合:
- *      - 2000年1月1日を開始日とする
- *      - 旧形式のログファイル（'logStore/logStore.txt'）も対象に含める
+ * 2. ログファイルの日付範囲を決定: ( _getLogStoreFilePaths に移動 )
  *
  * 3. ログのフィルタリング:
  *    - excludeOldLogLoad = true の場合:
@@ -71,81 +151,60 @@ export async function loadLogInfoIndexFromVRChatLog({
 }: {
   excludeOldLogLoad?: boolean;
 } = {}): Promise<neverthrow.Result<LogProcessingResults, VRChatLogFileError>> {
-  // 旧Appの形式のログファイル(写真)からログ情報を保存
-  // 写真フォルダが存在しない場合はスキップ（正常系）
+  const totalStartTime = performance.now();
+  logger.info('loadLogInfoIndexFromVRChatLog start');
+
+  // 1. 写真フォルダからのログインポート
+  const importLogPhotoStartTime = performance.now();
   const vrChatPhotoDirPath = await vrchatPhotoService.getVRChatPhotoDirPath();
   if (vrChatPhotoDirPath) {
     await vrchatLogService.importLogLinesFromLogPhotoDirPath({
       vrChatPhotoDirPath,
     });
   }
-
-  const logStoreFilePaths: VRChatLogStoreFilePath[] = [];
-
-  // 最新のログを取得するための日付範囲を決定
-  let startDate: Date;
-  if (excludeOldLogLoad) {
-    // DBの最新日時を取得
-    const [
-      latestWorldJoinDate,
-      latestPlayerJoinDateResult,
-      latestPlayerLeaveDate,
-    ] = await Promise.all([
-      worldJoinLogService.findLatestWorldJoinLog(),
-      playerJoinLogService.findLatestPlayerJoinLog(),
-      playerLeaveLogService.findLatestPlayerLeaveLog(),
-    ]);
-
-    // 最新の日時を取得（存在しない場合は1年前から）
-    const dates = [
-      latestWorldJoinDate?.joinDateTime,
-      latestPlayerJoinDateResult.isOk()
-        ? latestPlayerJoinDateResult.value?.joinDateTime || null
-        : null,
-      latestPlayerLeaveDate?.leaveDateTime,
-    ].filter(Boolean) as Date[];
-
-    if (dates.length > 0) {
-      // 最も古い日付の月の初日を開始日とする
-      const timestamps = dates.map((d) => d.getTime());
-      const oldestTimestamp = Math.min(...timestamps);
-      const oldestDate = datefns.fromUnixTime(oldestTimestamp / 1000);
-      startDate = datefns.startOfMonth(oldestDate);
-    } else {
-      // 最新のログがない場合は1年前から
-      startDate = datefns.subYears(new Date(), 1);
-    }
-  } else {
-    // すべてのログを読み込む場合は、非常に古い日付から（実質的にすべてのログを対象とする）
-    startDate = datefns.parseISO('2000-01-01'); // 2000年1月1日（十分に古い日付）
-    // 旧形式のログファイルも追加（これまでの形式との互換性のため）
-    const legacyLogStoreFilePath =
-      await vrchatLogService.getLegacyLogStoreFilePath();
-    if (legacyLogStoreFilePath) {
-      logStoreFilePaths.push(legacyLogStoreFilePath);
-    }
-  }
-
-  // 日付範囲内のすべてのログファイルパスを取得
-  logStoreFilePaths.push(
-    ...(await vrchatLogService.getLogStoreFilePathsInRange(
-      startDate,
-      new Date(),
-    )),
+  const importLogPhotoEndTime = performance.now();
+  logger.debug(
+    `Import log lines from photo dir took ${
+      importLogPhotoEndTime - importLogPhotoStartTime
+    } ms`,
   );
 
-  // ログファイルからログ情報を取得
+  // 2. 処理対象となるログファイルパスを取得
+  const getLogPathsStartTime = performance.now();
+  const logStoreFilePaths = await _getLogStoreFilePaths(excludeOldLogLoad);
+  const getLogPathsEndTime = performance.now();
+  logger.debug(
+    `Get log store file paths took ${
+      getLogPathsEndTime - getLogPathsStartTime
+    } ms`,
+  );
+  logger.info(
+    `loadLogInfoIndexFromVRChatLog target: ${logStoreFilePaths.map(
+      (path) => path.value,
+    )}`,
+  );
+
+  // 3. ログファイルからログ情報を取得
+  const getLogInfoStartTime = performance.now();
   const logInfoListFromLogFile =
     await vrchatLogService.getVRChaLogInfoByLogFilePathList(logStoreFilePaths);
+  const getLogInfoEndTime = performance.now();
+  logger.debug(
+    `Get VRChat log info from log files took ${
+      getLogInfoEndTime - getLogInfoStartTime
+    } ms`,
+  );
   if (logInfoListFromLogFile.isErr()) {
     return neverthrow.err(logInfoListFromLogFile.error);
   }
 
   const logInfoList = logInfoListFromLogFile.value;
 
+  const filterLogsStartTime = performance.now();
   const newLogs = await match(excludeOldLogLoad)
     // DBの最新日時以降のログのみをフィルタリング
     .with(true, async () => {
+      const findLatestStartTime = performance.now();
       // ログの最新日時を取得
       const [
         latestWorldJoinDate,
@@ -156,6 +215,12 @@ export async function loadLogInfoIndexFromVRChatLog({
         playerJoinLogService.findLatestPlayerJoinLog(),
         playerLeaveLogService.findLatestPlayerLeaveLog(),
       ]);
+      const findLatestEndTime = performance.now();
+      logger.debug(
+        `Filtering: Find latest logs took ${
+          findLatestEndTime - findLatestStartTime
+        } ms`,
+      );
 
       // playerJoinDateResultからvalueを取得
       let latestPlayerJoinDate = null;
@@ -163,7 +228,8 @@ export async function loadLogInfoIndexFromVRChatLog({
         latestPlayerJoinDate = latestPlayerJoinDateResult.value;
       }
 
-      return logInfoList.filter((log) => {
+      const filterStartTime = performance.now();
+      const filtered = logInfoList.filter((log) => {
         if (log.logType === 'worldJoin') {
           return (
             !latestWorldJoinDate ||
@@ -184,10 +250,21 @@ export async function loadLogInfoIndexFromVRChatLog({
         }
         return false;
       });
+      const filterEndTime = performance.now();
+      logger.debug(
+        `Filtering: Actual filtering took ${
+          filterEndTime - filterStartTime
+        } ms`,
+      );
+      return filtered;
     })
     // すべてのログを読み込む
     .with(false, async () => logInfoList)
     .exhaustive();
+  const filterLogsEndTime = performance.now();
+  logger.debug(
+    `Filtering logs took ${filterLogsEndTime - filterLogsStartTime} ms`,
+  );
 
   const results: LogProcessingResults = {
     createdVRChatPhotoPathModelList: [],
@@ -196,9 +273,11 @@ export async function loadLogInfoIndexFromVRChatLog({
     createdPlayerLeaveLogModelList: [],
   };
 
-  // バッチ処理の実装
+  // 5. ログのバッチ処理
+  const batchProcessStartTime = performance.now();
   const BATCH_SIZE = 1000;
   for (let i = 0; i < newLogs.length; i += BATCH_SIZE) {
+    const batchStartTime = performance.now();
     const batch = newLogs.slice(i, i + BATCH_SIZE);
 
     const worldJoinLogBatch = batch.filter(
@@ -211,6 +290,7 @@ export async function loadLogInfoIndexFromVRChatLog({
       (log): log is VRChatPlayerLeaveLog => log.logType === 'playerLeave',
     );
 
+    const dbInsertStartTime = performance.now();
     const [worldJoinResults, playerJoinResults, playerLeaveResults] =
       await Promise.all([
         worldJoinLogService.createVRChatWorldJoinLogModel(worldJoinLogBatch),
@@ -219,6 +299,12 @@ export async function loadLogInfoIndexFromVRChatLog({
           playerLeaveLogBatch,
         ),
       ]);
+    const dbInsertEndTime = performance.now();
+    logger.debug(
+      `Batch ${i / BATCH_SIZE + 1}: DB insert took ${
+        dbInsertEndTime - dbInsertStartTime
+      } ms`,
+    );
 
     results.createdWorldJoinLogModelList =
       results.createdWorldJoinLogModelList.concat(worldJoinResults);
@@ -226,9 +312,23 @@ export async function loadLogInfoIndexFromVRChatLog({
       results.createdPlayerJoinLogModelList.concat(playerJoinResults);
     results.createdPlayerLeaveLogModelList =
       results.createdPlayerLeaveLogModelList.concat(playerLeaveResults);
-  }
 
-  // 写真のインデックスも同様にexcludeOldLogLoadに応じて最新日時以降のみを処理
+    const batchEndTime = performance.now();
+    logger.debug(
+      `Batch ${i / BATCH_SIZE + 1} processing took ${
+        batchEndTime - batchStartTime
+      } ms`,
+    );
+  }
+  const batchProcessEndTime = performance.now();
+  logger.debug(
+    `Total batch processing took ${
+      batchProcessEndTime - batchProcessStartTime
+    } ms`,
+  );
+
+  // 6. 写真のインデックス処理
+  const photoIndexStartTime = performance.now();
   const latestPhotoDate = await match(excludeOldLogLoad)
     .with(true, async () => await vrchatPhotoService.getLatestPhotoDate())
     .with(false, () => null)
@@ -236,6 +336,19 @@ export async function loadLogInfoIndexFromVRChatLog({
   const photoResults =
     await vrchatPhotoService.createVRChatPhotoPathIndex(latestPhotoDate);
   results.createdVRChatPhotoPathModelList = photoResults;
+  const photoIndexEndTime = performance.now();
+  logger.debug(
+    `Create photo path index took ${
+      photoIndexEndTime - photoIndexStartTime
+    } ms`,
+  );
+
+  const totalEndTime = performance.now();
+  logger.info(
+    `loadLogInfoIndexFromVRChatLog finished. Total time: ${
+      totalEndTime - totalStartTime
+    } ms`,
+  );
 
   return neverthrow.ok(results);
 }
