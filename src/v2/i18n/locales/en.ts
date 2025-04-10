@@ -35,6 +35,7 @@ const en: Translations = {
       execute: 'Execute',
       resultLabel: 'Result',
       noResult: 'Results will appear here...',
+      enableDebugLog: 'Enable Debug Log',
     },
   },
   locationHeader: {

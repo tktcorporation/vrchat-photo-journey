@@ -48,6 +48,7 @@ export interface Translations {
       execute: string;
       resultLabel: string;
       noResult: string;
+      enableDebugLog: string;
     };
   };
   locationHeader: {

@@ -73,4 +73,4 @@ const logger = {
   electronLogFilePath,
 };
 
-export { info, debug, error, electronLogFilePath, logger };
+export { info, debug, error, electronLogFilePath, logger, log };

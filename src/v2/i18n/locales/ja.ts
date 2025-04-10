@@ -128,6 +128,7 @@ const ja: Translations = {
       execute: '実行',
       resultLabel: '実行結果',
       noResult: '結果がここに表示されます...',
+      enableDebugLog: 'デバッグログを有効にする',
     },
   },
 };

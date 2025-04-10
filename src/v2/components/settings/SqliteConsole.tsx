@@ -1,14 +1,16 @@
 import { trpcReact } from '@/trpc';
 import { Database, Play } from 'lucide-react';
 import type React from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '../../../components/ui/button';
+import { Checkbox } from '../../../components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '../../../components/ui/dialog';
+import { Label } from '../../../components/ui/label';
 import { Textarea } from '../../../components/ui/textarea';
 import { useI18n } from '../../i18n/store';
 
@@ -21,8 +23,19 @@ const SqliteConsole: React.FC<SqliteConsoleProps> = ({ isOpen, onClose }) => {
   const { t } = useI18n();
   const [query, setQuery] = useState('');
   const [result, setResult] = useState('');
-  const { mutateAsync: executeQuery, isLoading } =
+  const [isDebugLogEnabled, setIsDebugLogEnabled] = useState(false);
+  const { mutateAsync: executeQuery, isLoading: isExecutingQuery } =
     trpcReact.debug.executeSqlite.useMutation();
+  const { data: currentLogLevel, isLoading: isLoadingLogLevel } =
+    trpcReact.debug.getLogLevel.useQuery(undefined, { enabled: isOpen });
+  const { mutate: setLogLevel, isLoading: isSettingLogLevel } =
+    trpcReact.debug.setLogLevel.useMutation();
+
+  useEffect(() => {
+    if (currentLogLevel) {
+      setIsDebugLogEnabled(currentLogLevel === 'debug');
+    }
+  }, [currentLogLevel]);
 
   const sampleQueries = [
     {
@@ -64,6 +77,12 @@ const SqliteConsole: React.FC<SqliteConsoleProps> = ({ isOpen, onClose }) => {
     }
   };
 
+  const handleDebugLogChange = (checked: boolean | 'indeterminate') => {
+    const newLevel = checked ? 'debug' : 'info';
+    setIsDebugLogEnabled(Boolean(checked));
+    setLogLevel({ level: newLevel });
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-[800px] h-[80vh] flex flex-col gap-0 p-0 bg-white dark:bg-gray-800">
@@ -73,6 +92,22 @@ const SqliteConsole: React.FC<SqliteConsoleProps> = ({ isOpen, onClose }) => {
             {t('debug.sqliteConsole.title') || 'SQLite Console'}
           </DialogTitle>
         </DialogHeader>
+
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center space-x-2">
+          <Checkbox
+            id="debug-log-enable"
+            checked={isDebugLogEnabled}
+            onCheckedChange={handleDebugLogChange}
+            disabled={isLoadingLogLevel || isSettingLogLevel}
+          />
+          <Label
+            htmlFor="debug-log-enable"
+            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          >
+            {t('debug.sqliteConsole.enableDebugLog' as const) ||
+              'Enable Debug Log'}
+          </Label>
+        </div>
 
         <div className="flex-1 flex flex-col gap-4 p-6 overflow-hidden">
           <div className="flex flex-col gap-2">
@@ -115,7 +150,7 @@ const SqliteConsole: React.FC<SqliteConsoleProps> = ({ isOpen, onClose }) => {
               <Button
                 size="sm"
                 onClick={handleExecute}
-                disabled={isLoading || !query.trim()}
+                disabled={isExecutingQuery || !query.trim()}
                 className="absolute bottom-2 right-2"
               >
                 <Play className="h-4 w-4 mr-1" />
