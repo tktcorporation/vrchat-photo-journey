@@ -78,7 +78,7 @@ async function _getLogStoreFilePaths(
     // すべてのログを読み込む場合は、非常に古い日付から
     startDate = datefns.parseISO('2000-01-01');
     const getLegacyPathStartTime = performance.now();
-    // 旧形式のログファイルも追加
+    // 旧形式のログファイルも追加 (excludeOldLogLoadがfalseの場合のみ)
     const legacyLogStoreFilePath =
       await vrchatLogService.getLegacyLogStoreFilePath();
     const getLegacyPathEndTime = performance.now();
@@ -179,7 +179,7 @@ export async function loadLogInfoIndexFromVRChatLog({
     } ms`,
   );
   logger.info(
-    `loadLogInfoIndexFromVRChatLog target: ${logStoreFilePaths.map(
+    `loadLogInfoIndexFromVRChatLog excludeOldLogLoad: ${excludeOldLogLoad} target: ${logStoreFilePaths.map(
       (path) => path.value,
     )}`,
   );

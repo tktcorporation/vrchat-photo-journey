@@ -409,12 +409,6 @@ export const getLogStoreFilePathsInRange = async (
     targetDate = datefns.addMonths(targetDate, 1);
   }
 
-  // 旧形式のログファイルがあれば追加
-  const legacyPath = await getLegacyLogStoreFilePath();
-  if (legacyPath !== null) {
-    logFilePathSet.add(legacyPath.value);
-  }
-
   // SetからVRChatLogStoreFilePathの配列に変換して返す
   return Array.from(logFilePathSet).map((p) =>
     VRChatLogStoreFilePathSchema.parse(p),

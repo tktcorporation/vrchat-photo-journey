@@ -16,11 +16,11 @@ import type {
   VRChatWorldJoinLog,
 } from '../vrchatLog/service';
 import * as vrchatLogService from '../vrchatLog/service';
+import { VRChatPhotoDirPathSchema } from '../vrchatPhoto/valueObjects';
 import * as vrchatPhotoService from '../vrchatPhoto/vrchatPhoto.service';
 import type { VRChatWorldJoinLogModel } from '../vrchatWorldJoinLog/VRChatWorldJoinLogModel/s_model';
 import * as worldJoinLogService from '../vrchatWorldJoinLog/service';
 import { loadLogInfoIndexFromVRChatLog } from './service';
-
 // 必要最小限のモックを設定
 vi.mock('../vrchatLog/service', () => ({
   importLogLinesFromLogPhotoDirPath: vi.fn().mockResolvedValue(undefined),
@@ -361,6 +361,201 @@ describe('loadLogInfoIndexFromVRChatLog', () => {
         }),
         expect.any(Date),
       );
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
+// 新しい describe ブロックを追加
+describe('_getLogStoreFilePaths behavior within loadLogInfoIndexFromVRChatLog', () => {
+  const legacyLogPath = VRChatLogStoreFilePathSchema.parse(
+    '/mock/user/data/logStore/logStore.txt',
+  );
+  const rangeLogPath1 = VRChatLogStoreFilePathSchema.parse(
+    '/mock/user/data/logStore/2024-01/logStore-2024-01.txt',
+  );
+  const rangeLogPath2 = VRChatLogStoreFilePathSchema.parse(
+    '/mock/user/data/logStore/2024-02/logStore-2024-02.txt',
+  );
+
+  beforeEach(() => {
+    // 各テストの前にモックの状態をリセット
+    vi.clearAllMocks(); // 既存のモックもクリア
+    vi.mocked(getAppUserDataPath).mockReturnValue('/mock/user/data');
+
+    // _getLogStoreFilePaths の依存関係のモックを再設定
+    vi.mocked(worldJoinLogService.findLatestWorldJoinLog).mockResolvedValue(
+      null,
+    );
+    vi.mocked(playerJoinLogService.findLatestPlayerJoinLog).mockResolvedValue(
+      neverthrow.ok(null),
+    );
+    vi.mocked(playerLeaveLogService.findLatestPlayerLeaveLog).mockResolvedValue(
+      null,
+    );
+    vi.mocked(vrchatLogService.getLegacyLogStoreFilePath).mockResolvedValue(
+      legacyLogPath,
+    );
+    vi.mocked(vrchatLogService.getLogStoreFilePathsInRange).mockResolvedValue([
+      rangeLogPath1,
+      rangeLogPath2,
+    ]);
+    // getVRChaLogInfoByLogFilePathList は空の成功結果を返すように設定
+    vi.mocked(
+      vrchatLogService.getVRChaLogInfoByLogFilePathList,
+    ).mockResolvedValue(neverthrow.ok([]));
+    // 写真関連のモックも設定（必要に応じて）
+    vi.mocked(vrchatPhotoService.getVRChatPhotoDirPath).mockResolvedValue(
+      VRChatPhotoDirPathSchema.parse('/mock/photos'),
+    );
+    vi.mocked(
+      vrchatLogService.importLogLinesFromLogPhotoDirPath,
+    ).mockResolvedValue(undefined);
+    vi.mocked(vrchatPhotoService.getLatestPhotoDate).mockResolvedValue(null);
+    vi.mocked(vrchatPhotoService.createVRChatPhotoPathIndex).mockResolvedValue(
+      [],
+    );
+    // node:fs の existsSync をデフォルトで false に
+    vi.mocked(nodeFs.existsSync).mockReturnValue(false);
+  });
+
+  it('excludeOldLogLoad が true の場合、legacyLogStoreFilePath を取得せず、range のみ取得する', async () => {
+    const mockDate = new Date('2024-02-15');
+    vi.setSystemTime(mockDate);
+    const oneYearAgo = datefns.subYears(mockDate, 1);
+
+    try {
+      await loadLogInfoIndexFromVRChatLog({ excludeOldLogLoad: true });
+
+      expect(vrchatLogService.getLegacyLogStoreFilePath).not.toHaveBeenCalled();
+      expect(vrchatLogService.getLogStoreFilePathsInRange).toHaveBeenCalledWith(
+        expect.any(Date),
+        expect.any(Date),
+      );
+      // DBにログがない場合、開始日は1年前になるはず
+      const startDateArg = vi.mocked(
+        vrchatLogService.getLogStoreFilePathsInRange,
+      ).mock.calls[0][0];
+      expect(datefns.isEqual(startDateArg, oneYearAgo)).toBe(true);
+
+      // getVRChaLogInfoByLogFilePathList に渡されるパスを確認
+      expect(
+        vrchatLogService.getVRChaLogInfoByLogFilePathList,
+      ).toHaveBeenCalledWith([rangeLogPath1, rangeLogPath2]);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('excludeOldLogLoad が false で legacy が存在する場合、legacy と range の両方を取得する', async () => {
+    const mockDate = new Date('2024-02-15');
+    vi.setSystemTime(mockDate);
+    const expectedStartDate = datefns.parseISO('2000-01-01');
+    // レガシーファイルが存在すると仮定
+    vi.mocked(nodeFs.existsSync).mockReturnValue(true); // このテストケースでは true にする
+    vi.mocked(vrchatLogService.getLegacyLogStoreFilePath).mockResolvedValue(
+      legacyLogPath,
+    );
+
+    try {
+      await loadLogInfoIndexFromVRChatLog({ excludeOldLogLoad: false });
+
+      expect(vrchatLogService.getLegacyLogStoreFilePath).toHaveBeenCalled();
+      expect(vrchatLogService.getLogStoreFilePathsInRange).toHaveBeenCalledWith(
+        expect.any(Date),
+        expect.any(Date),
+      );
+      // 開始日が2000-01-01であることを確認
+      const startDateArg = vi.mocked(
+        vrchatLogService.getLogStoreFilePathsInRange,
+      ).mock.calls[0][0];
+      expect(datefns.isEqual(startDateArg, expectedStartDate)).toBe(true);
+
+      // getVRChaLogInfoByLogFilePathList に渡されるパスを確認 (legacy + range)
+      expect(
+        vrchatLogService.getVRChaLogInfoByLogFilePathList,
+      ).toHaveBeenCalledWith([legacyLogPath, rangeLogPath1, rangeLogPath2]);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('excludeOldLogLoad が false で legacy が存在しない場合、range のみ取得する', async () => {
+    const mockDate = new Date('2024-02-15');
+    vi.setSystemTime(mockDate);
+    const expectedStartDate = datefns.parseISO('2000-01-01');
+    // レガシーファイルが存在しないと仮定
+    vi.mocked(nodeFs.existsSync).mockReturnValue(false); // false (デフォルトのまま)
+    vi.mocked(vrchatLogService.getLegacyLogStoreFilePath).mockResolvedValue(
+      null,
+    ); // null を返すように設定
+
+    try {
+      await loadLogInfoIndexFromVRChatLog({ excludeOldLogLoad: false });
+
+      expect(vrchatLogService.getLegacyLogStoreFilePath).toHaveBeenCalled(); // 呼ばれるが null が返る
+      expect(vrchatLogService.getLogStoreFilePathsInRange).toHaveBeenCalledWith(
+        expect.any(Date),
+        expect.any(Date),
+      );
+      // 開始日が2000-01-01であることを確認
+      const startDateArg = vi.mocked(
+        vrchatLogService.getLogStoreFilePathsInRange,
+      ).mock.calls[0][0];
+      expect(datefns.isEqual(startDateArg, expectedStartDate)).toBe(true);
+
+      // getVRChaLogInfoByLogFilePathList に渡されるパスを確認 (range のみ)
+      expect(
+        vrchatLogService.getVRChaLogInfoByLogFilePathList,
+      ).toHaveBeenCalledWith([rangeLogPath1, rangeLogPath2]);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('excludeOldLogLoad が true で DB に最新ログがある場合、その日付以降の range のみ取得する', async () => {
+    const mockDate = new Date('2024-02-15');
+    vi.setSystemTime(mockDate);
+
+    const latestWorldJoinDate = datefns.subDays(mockDate, 5); // 2024-02-10
+    const latestPlayerJoinDate = datefns.subDays(mockDate, 3); // 2024-02-12 (最新)
+    const latestPlayerLeaveDate = datefns.subDays(mockDate, 7); // 2024-02-08
+
+    // このテストケース用にモックを上書き
+    vi.mocked(worldJoinLogService.findLatestWorldJoinLog).mockResolvedValue({
+      joinDateTime: latestWorldJoinDate,
+    } as VRChatWorldJoinLogModel); // as any で型チェックを回避
+    vi.mocked(playerJoinLogService.findLatestPlayerJoinLog).mockResolvedValue(
+      neverthrow.ok({
+        joinDateTime: latestPlayerJoinDate,
+      } as VRChatPlayerJoinLogModel), // as any で型チェックを回避
+    );
+    vi.mocked(playerLeaveLogService.findLatestPlayerLeaveLog).mockResolvedValue(
+      {
+        leaveDateTime: latestPlayerLeaveDate,
+      } as VRChatPlayerLeaveLogModel,
+    ); // as any で型チェックを回避
+
+    try {
+      await loadLogInfoIndexFromVRChatLog({ excludeOldLogLoad: true });
+
+      expect(vrchatLogService.getLegacyLogStoreFilePath).not.toHaveBeenCalled();
+      expect(vrchatLogService.getLogStoreFilePathsInRange).toHaveBeenCalledWith(
+        expect.any(Date), // latestPlayerJoinDate が渡されるはず
+        expect.any(Date),
+      );
+
+      // 開始日が latestPlayerJoinDate であることを確認
+      const startDateArg = vi.mocked(
+        vrchatLogService.getLogStoreFilePathsInRange,
+      ).mock.calls[0][0];
+      expect(datefns.isEqual(startDateArg, latestPlayerJoinDate)).toBe(true);
+
+      // getVRChaLogInfoByLogFilePathList に渡されるパスを確認 (range のみ)
+      expect(
+        vrchatLogService.getVRChaLogInfoByLogFilePathList,
+      ).toHaveBeenCalledWith([rangeLogPath1, rangeLogPath2]); // モックの rangeLogPath が渡される
     } finally {
       vi.useRealTimers();
     }
