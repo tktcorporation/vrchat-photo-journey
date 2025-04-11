@@ -1,3 +1,4 @@
+import * as fsPromises from 'node:fs/promises';
 import * as dateFns from 'date-fns';
 import { app } from 'electron';
 import { glob } from 'glob';
@@ -5,9 +6,9 @@ import * as neverthrow from 'neverthrow';
 import * as path from 'pathe';
 import sharp from 'sharp';
 import { P, match } from 'ts-pattern';
-import * as fs from '../../lib/wrappedFs';
 import { getSettingStore } from '../settingStore';
-import { logger } from './../../lib/logger';
+import * as logger from './../../lib/logger';
+import * as fs from './../../lib/wrappedFs';
 import * as model from './model/vrchatPhotoPath.model';
 import {
   type VRChatPhotoDirPath,
@@ -76,61 +77,85 @@ interface VRChatPhotoInfo {
 
 export const getVRChatPhotoList = async (
   dirPath: VRChatPhotoDirPath,
+  lastProcessedDate?: Date | null,
 ): Promise<VRChatPhotoInfo[]> => {
   const targetDir = dirPath.value;
   if (!targetDir) {
     return [];
   }
-
-  // Windows環境でもパスの区切り文字を/に統一
   const normalizedTargetDir = path
     .normalize(targetDir)
     .split(path.sep)
     .join('/');
-  // {photoDir}/**/VRChat_2023-11-08_15-11-42.163_2560x1440.png のようなファイル名のリストを取得
-  const photoPathList = await glob(`${normalizedTargetDir}/**/VRChat_*.png`);
+  const allPhotoPathList = await glob(`${normalizedTargetDir}/**/VRChat_*.png`);
 
-  // ファイル名から日時を取得
-  const photoList: VRChatPhotoInfo[] = [];
-  for (const photoPath of photoPathList) {
+  let targetPhotoPathList: string[];
+  if (lastProcessedDate) {
+    // Promise.all で並列処理
+    const statsPromises = allPhotoPathList.map(async (photoPath) => {
+      try {
+        const stats = await fsPromises.stat(photoPath);
+        return { photoPath, stats };
+      } catch (error) {
+        logger.error({
+          message: `Failed to get stats for ${photoPath}`,
+          stack: error instanceof Error ? error : new Error(String(error)),
+        });
+        return null;
+      }
+    });
+
+    // 並列処理の結果を待機
+    const statsResults = (await Promise.all(statsPromises)).filter(
+      (result): result is NonNullable<typeof result> => result !== null,
+    );
+
+    targetPhotoPathList = statsResults
+      .filter((r) => r.stats.mtime > lastProcessedDate)
+      .map((r) => r.photoPath);
+  } else {
+    targetPhotoPathList = allPhotoPathList;
+  }
+
+  // 差分ファイルリストからメタデータを並列取得
+  const photoInfoPromises = targetPhotoPathList.map(async (photoPath) => {
     const matchResult = photoPath.match(
       /VRChat_(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.\d{3})/,
     );
     if (!matchResult) {
-      continue;
+      return null;
     }
-
-    const takenAt =
-      // ファイル名の日時はlocal time なので、そのままparseする
-      dateFns.parse(matchResult[1], 'yyyy-MM-dd_HH-mm-ss.SSS', new Date());
-
+    const takenAt = dateFns.parse(
+      matchResult[1],
+      'yyyy-MM-dd_HH-mm-ss.SSS',
+      new Date(),
+    );
     try {
-      // 画像のメタデータを取得
       const metadata = await sharp(photoPath).metadata();
       const height = metadata.height ?? 720;
       const width = metadata.width ?? 1280;
-
-      photoList.push({
+      return {
         photoPath,
         takenAt,
         width,
         height,
-      });
+      };
     } catch (error) {
       logger.error({
         message: `Failed to get photo metadata for ${photoPath}`,
-        stack: error instanceof Error ? error : new Error('Unknown error'),
+        stack: error instanceof Error ? error : new Error(String(error)),
       });
-      // メタデータの取得に失敗しても、デフォルト値で続行
-      photoList.push({
+      return {
         photoPath,
         takenAt,
         width: 1280,
         height: 720,
-      });
+      };
     }
-  }
-
+  });
+  const photoList = (await Promise.all(photoInfoPromises)).filter(
+    (info): info is VRChatPhotoInfo => info !== null,
+  );
   return photoList;
 };
 
@@ -138,27 +163,29 @@ export const createVRChatPhotoPathIndex = async (
   lastProcessedDate?: Date | null,
 ) => {
   const targetDir = getVRChatPhotoDirPath();
-  const mainPhotoList = await getVRChatPhotoList(targetDir);
+  // lastProcessedDate を getVRChatPhotoList に渡す
+  const mainPhotoList = await getVRChatPhotoList(targetDir, lastProcessedDate);
   const settingStore = getSettingStore();
   const extraDirs = settingStore.getVRChatPhotoExtraDirList();
 
-  // 追加ディレクトリからの写真リストを取得
+  // 追加ディレクトリからの写真リストを取得 (同様に lastProcessedDate を渡す)
   const extraPhotoLists = await Promise.all(
-    extraDirs.map(async (dir) => {
-      return getVRChatPhotoList(dir);
+    extraDirs.map(async (dir: VRChatPhotoDirPath) => {
+      return getVRChatPhotoList(dir, lastProcessedDate);
     }),
   );
 
   // メインディレクトリと追加ディレクトリの写真リストを結合
   const allPhotoList = [...mainPhotoList, ...extraPhotoLists.flat()];
 
-  const filteredPhotoList = lastProcessedDate
-    ? allPhotoList.filter((photo) => photo.takenAt > lastProcessedDate)
-    : allPhotoList;
+  if (allPhotoList.length === 0) {
+    logger.debug('No new photos found to index.');
+    return; // 更新する写真がない場合はここで終了
+  }
 
   // DBに保存
   return model.createOrUpdateListVRChatPhotoPath(
-    filteredPhotoList.map((photo) => ({
+    allPhotoList.map((photo) => ({
       photoPath: photo.photoPath,
       photoTakenAt: photo.takenAt,
       width: photo.width,
