@@ -287,10 +287,7 @@ describe('vrchatLog service', () => {
       const paths = await getLogStoreFilePathsInRange(startDate, currentDate);
 
       // 新形式のログファイル（4つの月：3ヶ月前、2ヶ月前、1ヶ月前、現在の月）
-      expect(paths.length).toBe(4 + 1); // +1 はレガシーファイル
-
-      // レガシーファイルが含まれていることを確認
-      expect(paths.some((p) => p.value === legacyLogPath)).toBe(true);
+      expect(paths.length).toBe(4); // レガシーファイルは含まれていない
     });
 
     it('should only include new format files when legacy file does not exist', async () => {

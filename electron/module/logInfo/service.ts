@@ -335,7 +335,7 @@ export async function loadLogInfoIndexFromVRChatLog({
     .exhaustive();
   const photoResults =
     await vrchatPhotoService.createVRChatPhotoPathIndex(latestPhotoDate);
-  results.createdVRChatPhotoPathModelList = photoResults;
+  results.createdVRChatPhotoPathModelList = photoResults ?? [];
   const photoIndexEndTime = performance.now();
   logger.debug(
     `Create photo path index took ${

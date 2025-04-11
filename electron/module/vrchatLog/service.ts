@@ -364,7 +364,7 @@ export const getLegacyLogStoreFilePath =
 
 /**
  * 指定された日付範囲のログストアファイルのパスを取得する
- * 新形式のログファイルと、存在する場合は旧形式のログファイルも含める
+ * 新形式のログファイルのみ含める
  * タイムスタンプ付きの追加ファイル（logStore-YYYY-MM-YYYYMMDDHHMMSS.txt）も含める
  */
 export const getLogStoreFilePathsInRange = async (
