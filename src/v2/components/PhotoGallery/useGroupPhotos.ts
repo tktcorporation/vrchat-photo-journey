@@ -28,12 +28,86 @@ export interface DebugInfo {
   totalGroups: number;
 }
 
+// 二分探索ヘルパー関数: targetTime 以下の最も近い時間を持つログのインデックスを返す
+function findClosestLogIndexBefore(
+  sortedLogs: WorldJoinLog[],
+  targetTime: number,
+): number {
+  let low = 0;
+  let high = sortedLogs.length - 1;
+  let bestIndex = -1;
+
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2);
+    const midTime = sortedLogs[mid].joinDateTime.getTime();
+
+    if (midTime <= targetTime) {
+      // targetTime 以下の時間なので、候補として保持し、さらに新しいログを探す (low側)
+      bestIndex = mid;
+      high = mid - 1; // 新しい順なので high を更新して前半を探索
+    } else {
+      // targetTime より新しい時間なので、もっと古いログを探す (high側)
+      low = mid + 1; // 新しい順なので low を更新して後半を探索
+    }
+  }
+  return bestIndex;
+}
+
+// 二分探索ヘルパー関数: targetTime に時間的に最も近いログのインデックスを返す
+function findClosestLogIndexAbsolute(
+  sortedLogs: WorldJoinLog[],
+  targetTime: number,
+): number {
+  if (sortedLogs.length === 0) return -1;
+
+  let low = 0;
+  let high = sortedLogs.length - 1;
+  let closestIndex = 0;
+  let minDiff = Number.POSITIVE_INFINITY;
+
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2);
+    const midTime = sortedLogs[mid].joinDateTime.getTime();
+    const diff = Math.abs(midTime - targetTime);
+
+    if (diff < minDiff) {
+      minDiff = diff;
+      closestIndex = mid;
+    } else if (diff === minDiff) {
+      // 同じ差の場合、元のロジックではどちらでもよかったが、
+      // 安定性のためにインデックスが小さい方（= 新しい方）を優先する
+      closestIndex = Math.min(closestIndex, mid);
+    }
+
+    if (midTime < targetTime) {
+      // mid のログは写真より古い -> もっと新しいログを試す
+      high = mid - 1; // 新しい順なので high を更新
+    } else if (midTime > targetTime) {
+      // mid のログは写真より新しい -> もっと古いログを試す
+      low = mid + 1; // 新しい順なので low を更新
+    } else {
+      // 完全に一致
+      return mid;
+    }
+  }
+  return closestIndex;
+}
+
 // 写真をワールドセッションごとにグループ化する純粋な関数
 export function groupPhotosBySession(
   photos: Photo[],
   joinLogs: WorldJoinLog[],
 ): GroupedPhoto[] {
-  if (photos.length === 0 || joinLogs.length === 0) {
+  if (photos.length === 0) {
+    return [];
+  }
+  if (joinLogs.length === 0) {
+    // ログがない場合は、すべての写真を日時がダミーの単一グループに入れるか、
+    // あるいは空を返すなど、仕様を決める必要がある。
+    // 元のテストケース `セッションログがない場合、最も近いセッションに割り当てられる`
+    // はログがある前提だった可能性があるため、要確認。
+    // 一旦、ログがない場合はグループ化できないとして空配列を返すことにする。
+    console.warn('No join logs found, unable to group photos by session.');
     return [];
   }
 
@@ -42,67 +116,62 @@ export function groupPhotosBySession(
     (a, b) => b.takenAt.getTime() - a.takenAt.getTime(),
   );
 
-  // joinLogsを新しい順にソート
+  // joinLogsを新しい順にソート (二分探索のためにもソートは必要)
   const sortedLogs = [...joinLogs].sort(
     (a, b) => b.joinDateTime.getTime() - a.joinDateTime.getTime(),
   );
 
-  // 各セッションに対してグループを作成
-  const groups: GroupedPhoto[] = sortedLogs.map((session) => ({
-    photos: [],
-    worldInfo: {
-      worldId: session.worldId,
-      worldName: session.worldName,
-      worldInstanceId: session.worldInstanceId,
-    },
-    joinDateTime: session.joinDateTime,
-  }));
+  // 各セッションに対応するグループをMapで作成 (インデックス -> グループ)
+  const groupMap = new Map<number, GroupedPhoto>();
+  sortedLogs.forEach((session, index) => {
+    groupMap.set(index, {
+      photos: [],
+      worldInfo: {
+        worldId: session.worldId,
+        worldName: session.worldName,
+        worldInstanceId: session.worldInstanceId,
+      },
+      joinDateTime: session.joinDateTime,
+    });
+  });
 
-  // 各写真を適切なグループに割り当て
   for (const photo of sortedPhotos) {
     const photoTime = photo.takenAt.getTime();
 
-    // 写真の時間以前の最も近いセッションを探す
-    let bestGroupIndex = -1;
-    let minTimeDiff = Number.POSITIVE_INFINITY;
+    // 1. 写真の時間以前で最も近いセッションログを探す
+    let bestGroupIndex = findClosestLogIndexBefore(sortedLogs, photoTime);
 
-    for (let i = 0; i < sortedLogs.length; i++) {
-      const sessionTime = sortedLogs[i].joinDateTime.getTime();
-      const timeDiff = photoTime - sessionTime;
-
-      // 写真の時間以前で最も近いセッションを選択
-      if (timeDiff >= 0 && timeDiff < minTimeDiff) {
-        minTimeDiff = timeDiff;
-        bestGroupIndex = i;
-      }
-    }
-
-    // 適切なセッションが見つからない場合は、時間的に最も近いセッションを探す
+    // 2. 見つからない場合（全てのログが写真より新しい場合）は、時間的に最も近いログを探す
     if (bestGroupIndex === -1) {
-      minTimeDiff = Number.POSITIVE_INFINITY;
-      for (let i = 0; i < sortedLogs.length; i++) {
-        const sessionTime = sortedLogs[i].joinDateTime.getTime();
-        const timeDiff = Math.abs(sessionTime - photoTime);
-
-        if (timeDiff < minTimeDiff) {
-          minTimeDiff = timeDiff;
-          bestGroupIndex = i;
-        }
-      }
+      // このケースは、写真が最も新しいログよりもさらに新しい場合に発生する
+      // 元のロジックのフォールバックを再現
+      bestGroupIndex = findClosestLogIndexAbsolute(sortedLogs, photoTime);
     }
 
     // 写真をグループに追加
-    if (bestGroupIndex !== -1) {
-      groups[bestGroupIndex].photos.push(photo);
+    if (bestGroupIndex !== -1 && groupMap.has(bestGroupIndex)) {
+      groupMap.get(bestGroupIndex)?.photos.push(photo);
+    } else {
+      // このケースは理論上起こらないはずだが、念のためログ出力
+      console.warn(
+        `Could not find appropriate group for photo: ${photo.id} taken at ${photo.takenAt}`,
+      );
+      // フォールバックとして最も新しいログ(index 0)に入れることもできるが、一旦入れないでおく
+      // if (groupMap.size > 0) {
+      //    groupMap.get(0)?.photos.push(photo);
+      // }
     }
   }
 
-  // 各グループの写真を時間順にソート
-  for (const group of groups) {
+  // Mapからグループの配列を取得
+  const finalGroups = Array.from(groupMap.values());
+
+  // 各グループの写真を時間順（降順）にソート
+  for (const group of finalGroups) {
     group.photos.sort((a, b) => b.takenAt.getTime() - a.takenAt.getTime());
   }
 
-  return groups;
+  return finalGroups;
 }
 
 // グループ化された写真をRecordに変換する
@@ -133,7 +202,9 @@ export function useGroupPhotos(photos: Photo[]): {
     );
 
   const groupedPhotos = useMemo(() => {
-    if (!joinLogs || isLoadingLogs) return {};
+    if (isLoadingLogs || !joinLogs) return {};
+    if (joinLogs.length === 0) return {};
+
     const groups = groupPhotosBySession(photos, joinLogs);
     return convertGroupsToRecord(groups);
   }, [photos, joinLogs, isLoadingLogs]);
