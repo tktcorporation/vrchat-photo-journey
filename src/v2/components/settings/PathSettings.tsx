@@ -36,6 +36,31 @@ const PathSettingsComponent = memo(({ showRefreshAll }: PathSettingsProps) => {
   const setLogPathMutation =
     trpcReact.setVRChatLogFilesDirByDialog.useMutation();
 
+  /**
+   * VRChatログファイルから新しいログ行を読み込むミューテーション
+   *
+   * このステップは非常に重要です：
+   * - VRChatのログファイル（output_log.txt）から関連するログ行を抽出します
+   * - 抽出したログ行はアプリ内のログストアファイル（logStore-YYYY-MM.txt）に保存されます
+   * - このプロセスがなければ、新しいワールド参加ログが検出されません
+   */
+  const { mutate: appendLoglines } =
+    trpcReact.vrchatLog.appendLoglinesToFileFromLogFilePathList.useMutation({
+      onSuccess: () => {
+        // ログ行の抽出・保存に成功したら、ログ情報をロード
+        loadLogInfo({ excludeOldLogLoad: true });
+      },
+      onError: (error) => {
+        console.error('Failed to append log lines:', error);
+        setIsRefreshing(false);
+      },
+    });
+
+  /**
+   * 保存されたログからデータベースにログ情報をロードするミューテーション
+   *
+   * このステップは appendLoglines の後に実行する必要があります
+   */
   const { mutate: loadLogInfo } =
     trpcReact.logInfo.loadLogInfoIndex.useMutation({
       onSuccess: () => {
@@ -133,10 +158,23 @@ const PathSettingsComponent = memo(({ showRefreshAll }: PathSettingsProps) => {
     }
   };
 
+  /**
+   * 全データの再読み込みを行う関数
+   *
+   * 重要な処理順序：
+   * 1. appendLoglines: VRChatログファイルから新しいログ行を読み込む
+   * 2. その成功後に loadLogInfo: ログ情報をDBに保存
+   * 3. その成功後に invalidatePhotoGalleryQueries: UIを更新
+   *
+   * この順序が重要な理由：
+   * - この順序で処理しないと、新しいワールド参加ログがDBに保存されず、
+   *   新しい写真が古いワールドグループに誤って割り当てられます
+   */
   const handleRefreshAll = async () => {
     if (!isRefreshing) {
       setIsRefreshing(true);
-      loadLogInfo({ excludeOldLogLoad: false });
+      // 先に VRChat ログファイルを処理
+      appendLoglines();
     }
   };
 

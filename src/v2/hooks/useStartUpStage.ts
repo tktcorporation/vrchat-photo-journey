@@ -64,6 +64,18 @@ interface ProcessStageCallbacks {
   onComplete?: () => void;
 }
 
+/**
+ * アプリケーション起動時の各種処理ステージを管理するフック
+ *
+ * 重要な処理フロー:
+ * 1. データベース同期（startingSync → syncDone）
+ * 2. VRChatログファイルの処理（logsStored）
+ * 3. ログ情報のインデックス化（indexLoaded）
+ *
+ * この順序は厳守する必要があります:
+ * - ログファイル処理→インデックス化の順序が入れ替わると、新しいログが正しく処理されません
+ * - リフレッシュ処理（Header.tsx の handleRefresh）と同じ順序で処理する必要があります
+ */
 export const useStartupStage = (callbacks?: ProcessStageCallbacks) => {
   const [stages, setStages] = useState<ProcessStages>(initialStages);
   const [error, setError] = useState<ProcessError | null>(null);
@@ -128,6 +140,16 @@ export const useStartupStage = (callbacks?: ProcessStageCallbacks) => {
   const { data: logFilesDirData } = trpcReact.getVRChatLogFilesDir.useQuery();
   const utils = trpcReact.useUtils();
 
+  /**
+   * VRChatのログ情報をデータベースにロードするミューテーション
+   *
+   * 重要: このミューテーションは storeLogsMutation の後に実行する必要があります
+   * - storeLogsMutation により、VRChatのログファイルから抽出されたログ行がアプリ内に保存されます
+   * - excludeOldLogLoad: true を指定すると、最新のログのみが処理されます
+   * - 最新のログのみを処理することで、パフォーマンスが向上します
+   *
+   * 成功するとPhotogalleryのクエリキャッシュが無効化され、UIが更新されます
+   */
   const loadLogInfoIndexMutation =
     trpcReact.logInfo.loadLogInfoIndex.useMutation({
       onMutate: (input) => {
@@ -152,6 +174,17 @@ export const useStartupStage = (callbacks?: ProcessStageCallbacks) => {
       },
     });
 
+  /**
+   * VRChatログファイルから新しいログ行を読み込むミューテーション
+   *
+   * 重要な機能:
+   * - VRChatのログファイル（output_log.txt）から関連するログ行を抽出します
+   * - 抽出したログ行はアプリ内のログストアファイル（logStore-YYYY-MM.txt）に保存されます
+   * - このプロセスがなければ、新しいワールド参加ログが検出されません
+   *
+   * 成功した場合のみ次のステップ（loadLogInfoIndexMutation）が実行されます
+   * リフレッシュ処理（Header.tsx の handleRefresh）でも同様のプロセスが実行されます
+   */
   const storeLogsMutation =
     trpcReact.vrchatLog.appendLoglinesToFileFromLogFilePathList.useMutation({
       onMutate: () => {
@@ -174,6 +207,18 @@ export const useStartupStage = (callbacks?: ProcessStageCallbacks) => {
       },
     });
 
+  /**
+   * ログ処理オペレーションを実行する関数
+   *
+   * 処理フロー:
+   * 1. storeLogsMutation: VRChatログファイルからログ行を抽出してアプリ内に保存
+   * 2. loadLogInfoIndexMutation: 保存されたログからログ情報をロードしてDBに保存
+   * 3. invalidatePhotoGalleryQueries: UIを更新
+   *
+   * この順序が重要な理由:
+   * - 1→2→3の順で処理しないと、新しいワールド参加ログがDBに保存されず、
+   *   新しい写真が古いワールドグループに誤って割り当てられます
+   */
   const executeLogOperations = useCallback(() => {
     console.log('executeLogOperations called', { logFilesDirData, stages });
 
