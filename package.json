@@ -21,6 +21,7 @@
     "preinstall": "nlx only-allow yarn",
     "postinstall": "simple-git-hooks && nr license-check:generate",
     "setup:debug": "bash debug/genDevFiles.sh",
+    "generate:debug-data": "nlx tsx scripts/generate-debug-data.mts",
     "dev": "./scripts/dev.sh",
     "dev:vite": "vite",
     "dev:electron": "vite build -c electron/vite.config.ts && electron /workspaces/vrchat-photo-journey --disable-gpu",
