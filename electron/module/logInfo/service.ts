@@ -125,6 +125,8 @@ async function _getLogStoreFilePaths(
  *    - 写真フォルダが存在する場合のみ、ログ情報を保存します
  *
  * 2. ログファイルの日付範囲を決定: ( _getLogStoreFilePaths に移動 )
+ *    - excludeOldLogLoad = true: DBに保存されている最新のログ日時以降のログファイルのみ
+ *    - excludeOldLogLoad = false: すべてのログファイル（2000年1月1日以降）
  *
  * 3. ログのフィルタリング:
  *    - excludeOldLogLoad = true の場合:
@@ -139,6 +141,19 @@ async function _getLogStoreFilePaths(
  *      - 最新の写真日時以降のみを処理
  *    - excludeOldLogLoad = false の場合:
  *      - すべての写真を処理
+ *
+ * 5. ログデータベースへの保存:
+ *    - フィルタリングされたログをバッチに分けてDBに保存
+ *    - 写真パスインデックスもDBに保存
+ *
+ * ※重要な注意点:
+ * - 通常の更新（Header.tsxのhandleRefresh など）では excludeOldLogLoad = true が推奨されます
+ *   これにより、最新のログのみが処理され、パフォーマンスが向上します
+ * - 初回読み込みやデータ修復などでは excludeOldLogLoad = false を使用して
+ *   すべてのログを処理する必要があります
+ * - Header.tsx で refreshボタンが押されたときは、先に appendLoglinesToFileFromLogFilePathList
+ *   で新しいログを抽出・保存してから、この関数を呼び出す必要があります
+ *   それにより、新しいログ分もデータベースに保存されます
  *
  * @returns 作成されたログモデルのリストを含むResultオブジェクト
  *          - createdWorldJoinLogModelList: 作成されたワールド参加ログ
@@ -289,6 +304,10 @@ export async function loadLogInfoIndexFromVRChatLog({
     const playerLeaveLogBatch = batch.filter(
       (log): log is VRChatPlayerLeaveLog => log.logType === 'playerLeave',
     );
+
+    logger.debug(`worldJoinLogBatch: ${worldJoinLogBatch.length}`);
+    logger.debug(`playerJoinLogBatch: ${playerJoinLogBatch.length}`);
+    logger.debug(`playerLeaveLogBatch: ${playerLeaveLogBatch.length}`);
 
     const dbInsertStartTime = performance.now();
     const [worldJoinResults, playerJoinResults, playerLeaveResults] =
