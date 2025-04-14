@@ -2,12 +2,13 @@ import * as nodeFs from 'node:fs';
 import * as path from 'node:path';
 import * as datefns from 'date-fns';
 import neverthrow from 'neverthrow';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, test, vi } from 'vitest';
 import { getAppUserDataPath } from '../../lib/wrappedApp';
 import * as fs from '../../lib/wrappedFs';
 import { VRChatLogLineSchema } from './model';
 import {
   appendLoglinesToFile,
+  filterLogLinesByDate,
   getLegacyLogStoreFilePath,
   getLogStoreFilePathForDate,
   getLogStoreFilePathsInRange,
@@ -307,6 +308,82 @@ describe('vrchatLog service', () => {
         expect(p.value).toMatch(/logStore-\d{4}-\d{2}\.txt$/);
       }
     });
+  });
+});
+
+describe('filterLogLinesByDate', () => {
+  test('正しくログを日付でフィルタリングする', () => {
+    // テスト用のログライン
+    const logLines = [
+      '2025.02.22 21:13:56 Debug      -  [Behaviour] Joining wrld6fecf18a-ab96-43f2-82dc-ccf79f17c34f:04307~region(jp)',
+      '2025.02.22 21:13:56 Debug      -  [Behaviour] Joining or Creating Room: はじまりタウン ⁄ Dawnville',
+      '2025.02.22 21:14:07 Debug      -  [Behaviour] OnPlayerJoined tkt (usr_3ba2a992-724c-4463-bc75-7e9f6674e8e0)',
+      '2025.02.22 21:14:48 Debug      -  [Behaviour] OnPlayerLeft tkt (usr_3ba2a992-724c-4463-bc75-7e9f6674e8e0)',
+      '2025.02.23 22:15:30 Debug      -  [Behaviour] Joining wrld_abcdef12-3456-7890-abcd-ef1234567890:12345',
+      '2025.02.23 22:15:31 Debug      -  [Behaviour] Joining or Creating Room: テストワールド',
+    ].map((line) => VRChatLogLineSchema.parse(line));
+
+    // ケース1: すべてのログを含む日付（古い日付）
+    const oldDate = datefns.parseISO('2025-02-21T00:00:00Z');
+    const allLogs = filterLogLinesByDate(logLines, oldDate);
+    expect(allLogs.length).toBe(6);
+
+    // ケース2: 2日目のログのみを含む日付
+    const midDate = datefns.parse(
+      '2025-02-23 00:00:00',
+      'yyyy-MM-dd HH:mm:ss',
+      new Date(),
+    );
+    const day2Logs = filterLogLinesByDate(logLines, midDate);
+    expect(day2Logs.length).toBe(2);
+    expect(day2Logs[0].value).toContain('2025.02.23');
+
+    // ケース3: すべてのログを除外する日付（新しい日付）
+    const futureDate = datefns.parseISO('2025-02-24T00:00:00Z');
+    const noLogs = filterLogLinesByDate(logLines, futureDate);
+    expect(noLogs.length).toBe(0);
+
+    // ケース4: 特定の時刻以降のログのみを含む
+    const specificTime = datefns.parse(
+      '2025-02-22 21:14:00',
+      'yyyy-MM-dd HH:mm:ss',
+      new Date(),
+    );
+    const timeFilteredLogs = filterLogLinesByDate(logLines, specificTime);
+    expect(timeFilteredLogs.length).toBe(4);
+    expect(timeFilteredLogs[0].value).toContain('21:14:07');
+  });
+
+  test('無効な日付形式のログ行を正しく処理する', () => {
+    const logLines = [
+      '2025.02.22 21:13:56 Debug      -  [Behaviour] Joining wrld_example:12345',
+      'Invalid log format without date',
+      '2025.13.32 25:61:99 Invalid date format',
+    ].map((line) => VRChatLogLineSchema.parse(line));
+
+    const startDate = datefns.parseISO('2025-01-01T00:00:00Z');
+    const filteredLogs = filterLogLinesByDate(logLines, startDate);
+
+    // 有効な日付形式のログだけがフィルタリングされる
+    expect(filteredLogs.length).toBe(1);
+    expect(filteredLogs[0].value).toContain('2025.02.22');
+  });
+
+  test('同じ日付のログを含める', () => {
+    const logDate = '2025.02.22 12:00:00';
+    const logLines = [
+      `${logDate} Debug      -  [Behaviour] Joining wrld_example:12345`,
+    ].map((line) => VRChatLogLineSchema.parse(line));
+
+    // ログと同じ日時
+    const exactSameDate = datefns.parse(
+      '2025-02-22 12:00:00',
+      'yyyy-MM-dd HH:mm:ss',
+      new Date(),
+    );
+
+    const filteredLogs = filterLogLinesByDate(logLines, exactSameDate);
+    expect(filteredLogs.length).toBe(1);
   });
 });
 
