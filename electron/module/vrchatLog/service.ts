@@ -317,6 +317,10 @@ const extractPlayerLeaveInfoFromLog = (
 
 /**
  * logStoreディレクトリのパスを取得する
+ *
+ * logStoreディレクトリは、VRChatログから抽出した必要な情報のみを保存するディレクトリです。
+ * これは月ごとに整理され、`logStore/YYYY-MM/logStore-YYYY-MM.txt`という形式で保存されます。
+ * 月ごとのログファイルがサイズ制限（10MB）を超えると、タイムスタンプ付きの新しいファイルが作成されます。
  */
 export const getLogStoreDir = (): string => {
   return path.join(getAppUserDataPath(), 'logStore');
@@ -596,4 +600,43 @@ export const importLogLinesFromLogPhotoDirPath = async ({
   }));
 
   await createVRChatWorldJoinLogFromPhoto(worldJoinLogs);
+};
+
+/**
+ * ログ行を日付でフィルタリングする
+ * 指定された日付以降のログ行のみを返す
+ *
+ * @param logLines フィルタリング対象のログ行の配列
+ * @param startDate フィルタリングの基準となる日付（この日付以降のログを含む）
+ * @returns フィルタリングされたログ行の配列
+ */
+export const filterLogLinesByDate = (
+  logLines: VRChatLogLine[],
+  startDate: Date,
+): VRChatLogLine[] => {
+  return logLines.filter((logLine) => {
+    // ログから日付と時刻を抽出
+    const dateTimeMatch = logLine.value.match(
+      /^(\d{4})\.(\d{2})\.(\d{2}) (\d{2}):(\d{2}):(\d{2})/,
+    );
+    if (!dateTimeMatch) return false;
+
+    const [, year, month, day, hour, minute, second] = dateTimeMatch;
+    // datefnsを使用して日付をパース - フォーマットを明示的に指定
+    const logDate = datefns.parse(
+      `${year}-${month}-${day} ${hour}:${minute}:${second}`,
+      'yyyy-MM-dd HH:mm:ss',
+      new Date(),
+    );
+
+    // 日付パースの失敗をチェック
+    if (!datefns.isValid(logDate)) {
+      return false;
+    }
+
+    // 指定された日付以降のみを含める
+    return (
+      datefns.isAfter(logDate, startDate) || datefns.isEqual(logDate, startDate)
+    );
+  });
 };
