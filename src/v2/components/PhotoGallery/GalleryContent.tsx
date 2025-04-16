@@ -1,5 +1,6 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { LoaderCircle } from 'lucide-react';
+import type React from 'react';
 import { memo, useCallback, useMemo, useRef } from 'react';
 import LocationGroupHeader from '../LocationGroupHeader';
 import PhotoGrid from '../PhotoGrid';
@@ -8,9 +9,15 @@ import { GalleryErrorBoundary } from './GalleryErrorBoundary';
 import { MeasurePhotoGroup } from './MeasurePhotoGroup';
 import { usePhotoGallery } from './usePhotoGallery';
 
+/**
+ * ギャラリーコンテンツコンポーネントのプロパティ定義
+ */
 interface GalleryContentProps {
+  /** ヘッダーから渡される検索クエリ */
   searchQuery: string;
+  /** 写真がないグループを表示するかどうか */
   showEmptyGroups: boolean;
+  /** アプリ起動時の同期処理（ログ読み込み、インデックス構築）が進行中かどうか */
   isLoadingStartupSync: boolean;
 }
 
@@ -30,6 +37,10 @@ const SkeletonGroup = () => (
   </div>
 );
 
+/**
+ * 写真グリッドを表示するメインコンテンツエリア
+ * 仮想スクロールを使用して大量の写真を効率的にレンダリングします。
+ */
 const GalleryContent = memo(
   ({
     searchQuery,
@@ -41,11 +52,15 @@ const GalleryContent = memo(
       isLoading: isLoadingGrouping,
       selectedPhoto,
       setSelectedPhoto,
-      lastSelectedPhoto,
-      setLastSelectedPhoto,
+      selectedPhotos,
+      setSelectedPhotos,
+      isMultiSelectMode,
+      setIsMultiSelectMode,
     } = usePhotoGallery(searchQuery);
     const containerRef = useRef<HTMLDivElement>(null);
     const groupSizesRef = useRef<Map<string, number>>(new Map());
+
+    // showEmptyGroups に基づいて表示するグループをフィルタリング
     const filteredGroups = useMemo(() => {
       return Object.entries(groupedPhotos).filter(
         ([_, group]) => showEmptyGroups || group.photos.length > 0,
@@ -54,6 +69,7 @@ const GalleryContent = memo(
 
     const isLoading = isLoadingGrouping || isLoadingStartupSync;
 
+    // 仮想スクローラーの設定
     const virtualizer = useVirtualizer({
       count: filteredGroups.length,
       getScrollElement: () => containerRef.current,
@@ -75,6 +91,23 @@ const GalleryContent = memo(
       }, []),
     });
 
+    /**
+     * 背景（コンテナ自身）がクリックされた場合に写真の選択を解除するハンドラ
+     */
+    const handleBackgroundClick = useCallback(
+      (
+        event:
+          | React.MouseEvent<HTMLDivElement>
+          | React.KeyboardEvent<HTMLDivElement>,
+      ) => {
+        if (event.target === containerRef.current && isMultiSelectMode) {
+          setSelectedPhotos(new Set());
+          setIsMultiSelectMode(false);
+        }
+      },
+      [isMultiSelectMode, setSelectedPhotos, setIsMultiSelectMode],
+    );
+
     if (isLoadingGrouping) {
       return (
         <div className="flex-1 overflow-y-auto p-4 space-y-8">
@@ -87,7 +120,19 @@ const GalleryContent = memo(
 
     return (
       <GalleryErrorBoundary>
-        <div ref={containerRef} className="flex-1 overflow-y-auto p-4">
+        <div
+          ref={containerRef}
+          className="flex-1 overflow-y-auto p-4"
+          onClick={handleBackgroundClick}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              handleBackgroundClick(e);
+            }
+          }}
+          role="button"
+          tabIndex={-1}
+          aria-label="ギャラリー背景"
+        >
           <div
             style={{
               height: `${virtualizer.getTotalSize()}px`,
@@ -123,8 +168,10 @@ const GalleryContent = memo(
                         worldId={group.worldInfo?.worldId ?? null}
                         photos={group.photos}
                         onPhotoSelect={setSelectedPhoto}
-                        setLastSelectedPhoto={setLastSelectedPhoto}
-                        lastSelectedPhotoId={lastSelectedPhoto?.id}
+                        selectedPhotos={selectedPhotos}
+                        setSelectedPhotos={setSelectedPhotos}
+                        isMultiSelectMode={isMultiSelectMode}
+                        setIsMultiSelectMode={setIsMultiSelectMode}
                       />
                     )}
                   </div>

@@ -49,3 +49,11 @@ export const VRChatPhotoFileNameWithExtSchema = z
   .transform((value) => {
     return new VRChatPhotoFileNameWithExt(value);
   });
+
+/**
+ * ディレクトリパスを表す Zod スキーマ
+ * 単純に空でない文字列であることを検証します
+ */
+export const DirectoryPathSchema = z
+  .string()
+  .min(1, 'Directory path cannot be empty');
