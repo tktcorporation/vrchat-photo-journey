@@ -183,7 +183,12 @@ const ShareModal = ({
     await downloadOrCopyImageAsPng({
       pngBase64: previewBase64,
       filenameWithoutExt: worldName || 'image',
-      downloadOrCopyMutation: copyImageMutation,
+      downloadOrCopyMutation: {
+        mutateAsync: async (params) => {
+          await copyImageMutation.mutateAsync(params);
+          return undefined;
+        },
+      },
     });
   };
 

@@ -38,6 +38,9 @@ export interface Translations {
       shareImage: string;
       downloadImage: string;
     };
+    share: string;
+    copy: string;
+    delete: string;
   };
   debug: {
     sqliteConsole: {

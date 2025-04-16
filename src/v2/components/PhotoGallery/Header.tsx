@@ -1,9 +1,30 @@
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import { invalidatePhotoGalleryQueries } from '@/queryClient';
 import { trpcReact } from '@/trpc';
-import { Eye, EyeOff, RefreshCw, Settings } from 'lucide-react';
+import {
+  Copy,
+  Eye,
+  EyeOff,
+  ListFilter,
+  RefreshCw,
+  Search,
+  Settings,
+  X,
+} from 'lucide-react';
+import type React from 'react';
 import { memo, useState } from 'react';
 import { useI18n } from '../../i18n/store';
 import SearchBar from '../SearchBar';
+// import DarkModeToggle from '../settings/DarkModeToggle'; // ★ コメントアウト
 
 interface HeaderProps {
   searchQuery: string;
@@ -11,6 +32,10 @@ interface HeaderProps {
   onOpenSettings: () => void;
   showEmptyGroups: boolean;
   onToggleEmptyGroups: () => void;
+  selectedPhotoCount: number;
+  onClearSelection: () => void;
+  isMultiSelectMode: boolean;
+  onCopySelected?: () => void;
 }
 
 /**
@@ -22,10 +47,15 @@ interface HeaderProps {
  */
 const Header = memo(
   ({
+    searchQuery,
     setSearchQuery,
     onOpenSettings,
     showEmptyGroups,
     onToggleEmptyGroups,
+    selectedPhotoCount,
+    onClearSelection,
+    isMultiSelectMode,
+    onCopySelected,
   }: HeaderProps) => {
     const { t } = useI18n();
     const [isRefreshing, setIsRefreshing] = useState(false);
@@ -88,7 +118,7 @@ const Header = memo(
      * - アプリ再起動時は全プロセスが順番に実行されますが、リフレッシュ時には
      *   明示的にこの順序で処理を行う必要があります
      */
-    const handleRefresh = async () => {
+    const _handleRefresh = async () => {
       if (!isRefreshing) {
         setIsRefreshing(true);
         // 先に VRChat ログファイルを処理
@@ -97,53 +127,95 @@ const Header = memo(
     };
 
     return (
-      <header className="flex-none bg-[hsl(var(--gradient-start))] dark:bg-[hsl(var(--gradient-start))] shadow-sm z-50 sticky top-0">
-        <div className="max-w-[2000px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-2">
-            <div className="flex items-center gap-2 dark:border-gray-700">
-              <button
-                type="button"
-                onClick={onToggleEmptyGroups}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+      <header className="flex items-center justify-between p-2 border-b dark:border-gray-700 space-x-2 sticky top-0 bg-background z-10">
+        {/* 複数選択モードの表示 */}
+        {isMultiSelectMode ? (
+          <div className="flex items-center space-x-2 flex-shrink-0">
+            <Button variant="ghost" size="icon" onClick={onClearSelection}>
+              <X className="w-5 h-5" />
+            </Button>
+            <span className="text-sm font-medium">
+              {`${selectedPhotoCount} 件選択中`}
+            </span>
+            <div className="flex items-center space-x-1 ml-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onCopySelected}
+                title={
+                  selectedPhotoCount > 1
+                    ? `${selectedPhotoCount}枚の写真をコピー`
+                    : t('common.contextMenu.copyPhotoData')
+                }
+                disabled={!onCopySelected}
               >
-                {!showEmptyGroups ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
-                <span>
-                  {!showEmptyGroups
-                    ? t('common.hidingEmptyGroups')
-                    : t('common.showingEmptyGroups')}
-                </span>
-              </button>
-            </div>
-            <div className="flex items-center gap-2">
-              <SearchBar onSearch={setSearchQuery} />
-              <button
-                type="button"
-                onClick={handleRefresh}
-                disabled={isRefreshing}
-                className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
-                aria-label={t('common.refresh')}
-                title={t('common.refresh')}
-              >
-                <RefreshCw
-                  className={`h-4 w-4 text-gray-500 dark:text-gray-400 ${
-                    isRefreshing ? 'animate-spin' : ''
-                  }`}
-                />
-              </button>
-              <button
-                type="button"
-                onClick={onOpenSettings}
-                className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                aria-label={t('common.settings')}
-              >
-                <Settings className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-              </button>
+                <Copy className="w-5 h-5" />
+              </Button>
             </div>
           </div>
+        ) : (
+          // 通常モードの表示 (左側)
+          <div className="flex items-center space-x-2 flex-shrink-0">
+            <Button variant="ghost" size="icon" onClick={onOpenSettings}>
+              <Settings className="w-5 h-5" />
+            </Button>
+            {/* 必要であれば他の要素 */}
+          </div>
+        )}
+
+        {/* 中央: 検索バー (常に表示) */}
+        <div className="relative flex-1 min-w-0">
+          <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="search"
+            placeholder={t('common.search.placeholder')}
+            className="pl-8 w-full"
+            value={searchQuery}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setSearchQuery(e.target.value)
+            }
+          />
+          {searchQuery && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6"
+              onClick={() => setSearchQuery('')}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+
+        {/* 右側: フィルターとダークモードトグル (常に表示) */}
+        <div className="flex items-center space-x-2 flex-shrink-0">
+          <Select
+            value={showEmptyGroups ? 'show' : 'hide'}
+            onValueChange={(value: string) => {
+              if (
+                (value === 'show' && !showEmptyGroups) ||
+                (value === 'hide' && showEmptyGroups)
+              ) {
+                onToggleEmptyGroups();
+              }
+            }}
+          >
+            <SelectTrigger className="w-[180px]">
+              <ListFilter className="w-4 h-4 mr-2" />
+              <SelectValue placeholder={t('common.settings')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="show">
+                {t('common.showingEmptyGroups')}
+              </SelectItem>
+              <SelectItem value="hide">
+                {t('common.hidingEmptyGroups')}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+          <Separator orientation="vertical" className="h-6" />
+          {/* <DarkModeToggle /> */}
+          {/* ★ コメントアウト */}
         </div>
       </header>
     );
