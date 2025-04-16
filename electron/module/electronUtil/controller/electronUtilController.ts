@@ -1,11 +1,12 @@
 import * as datefns from 'date-fns';
-import { clipboard, nativeImage } from 'electron';
+import { clipboard } from 'electron';
 import * as path from 'pathe';
 import sharp from 'sharp';
 import z from 'zod';
 import { getWindow } from '../../../electronUtil';
 import * as exiftool from '../../../lib/wrappedExifTool';
 import { eventEmitter, procedure, router as trpcRouter } from './../../../trpc';
+import { DirectoryPathSchema } from './../../../valueObjects/index';
 import * as utilsService from './../service';
 
 const reloadWindow = () => {
@@ -22,6 +23,7 @@ export const electronUtilRouter = () =>
       .mutation(async (ctx) => {
         console.log('openUrlInDefaultBrowser', ctx.input);
         await utilsService.openUrlInDefaultBrowser(ctx.input);
+        return true;
       }),
     reloadWindow: procedure.mutation(async () => {
       console.log('reloadWindow');
@@ -38,10 +40,11 @@ export const electronUtilRouter = () =>
       eventEmitter.emit('toast', 'copied');
     }),
     copyImageDataByPath: procedure.input(z.string()).mutation(async (ctx) => {
-      const photoBuf = await sharp(ctx.input).toBuffer();
-      const image = nativeImage.createFromBuffer(photoBuf);
-      clipboard.writeImage(image);
-      eventEmitter.emit('toast', 'copied');
+      const result = await utilsService.copyImageDataByPath(ctx.input);
+      if (result.isErr()) {
+        throw result.error;
+      }
+      return true;
     }),
     downloadImageAsPng: procedure
       .input(
@@ -51,27 +54,15 @@ export const electronUtilRouter = () =>
         }),
       )
       .mutation(async (ctx) => {
-        await utilsService.handlePngBase64WithCallback(
-          {
-            filenameWithoutExt: ctx.input.filenameWithoutExt,
-            pngBase64: ctx.input.pngBase64,
-          },
-          async (tempPngPath) => {
-            const dialogResult = await utilsService.showSavePngDialog(
-              ctx.input.filenameWithoutExt,
-            );
-
-            if (dialogResult.canceled || !dialogResult.filePath) {
-              return;
-            }
-
-            await utilsService.saveFileToPath(
-              tempPngPath,
-              dialogResult.filePath,
-            );
-            eventEmitter.emit('toast', 'downloaded');
-          },
-        );
+        const result = await utilsService.downloadImageAsPng(ctx.input);
+        if (result.isErr()) {
+          if (result.error === 'canceled') {
+            console.log('Download canceled by user.');
+            return true;
+          }
+          throw result.error;
+        }
+        return true;
       }),
     downloadImageAsPhotoLogPng: procedure
       .input(
@@ -128,21 +119,50 @@ export const electronUtilRouter = () =>
         }),
       )
       .mutation(async (ctx) => {
-        await utilsService.handlePngBase64WithCallback(
-          {
-            filenameWithoutExt: ctx.input.filenameWithoutExt,
-            pngBase64: ctx.input.pngBase64,
-          },
-          async (tempPngPath) => {
-            const image = nativeImage.createFromPath(tempPngPath);
-            clipboard.writeImage(image);
-            eventEmitter.emit('toast', 'copied');
-          },
-        );
+        const result = await utilsService.copyImageByBase64(ctx.input);
+        if (result.isErr()) {
+          throw result.error;
+        }
+        return true;
       }),
     openPhotoPathWithPhotoApp: procedure
       .input(z.string())
       .mutation(async (ctx) => {
-        await utilsService.openPhotoPathWithPhotoApp(ctx.input);
+        const result = await utilsService.openPhotoPathWithPhotoApp(ctx.input);
+        if (result.isErr()) {
+          throw result.error;
+        }
+        return true;
+      }),
+    openGetDirDialog: procedure.query(async () => {
+      const result = await utilsService.openGetDirDialog();
+      return result.match(
+        (dirPath) => DirectoryPathSchema.parse(dirPath),
+        () => null,
+      );
+    }),
+    openPathWithAssociatedApp: procedure
+      .input(z.string())
+      .mutation(async (ctx) => {
+        const result = await utilsService.openPathWithAssociatedApp(ctx.input);
+        if (result.isErr()) {
+          throw result.error;
+        }
+        return true;
+      }),
+    copyMultipleImageDataByPath: procedure
+      .input(z.array(z.string()))
+      .mutation(async (ctx) => {
+        const paths = ctx.input;
+        console.log(
+          'copyMultipleImageDataByPath called with paths:',
+          paths.length,
+        );
+
+        const result = await utilsService.copyMultipleFilesToClipboard(paths);
+        if (result.isErr()) {
+          throw result.error;
+        }
+        return true;
       }),
   });

@@ -25,6 +25,9 @@ const ja: Translations = {
       shareImage: '写真をシェア',
       downloadImage: 'シェア画像をダウンロード',
     },
+    share: '共有',
+    copy: 'コピー',
+    delete: '削除',
   },
   locationHeader: {
     ungrouped: '未グループの写真',

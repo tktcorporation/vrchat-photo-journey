@@ -8,7 +8,13 @@ interface VirtualGridRowProps {
   start: number;
   height: number;
   onPhotoSelect: (photo: Photo) => void;
-  setLastSelectedPhoto: (photo: Photo | null) => void;
+  lastSelectedPhotoId?: string | number;
+  selectedPhotos: Set<string>;
+  setSelectedPhotos: (
+    update: Set<string> | ((prev: Set<string>) => Set<string>),
+  ) => void;
+  isMultiSelectMode: boolean;
+  setIsMultiSelectMode: (value: boolean) => void;
 }
 
 const VirtualGridRow: React.FC<VirtualGridRowProps> = React.memo(
@@ -18,7 +24,10 @@ const VirtualGridRow: React.FC<VirtualGridRowProps> = React.memo(
     start,
     height,
     onPhotoSelect,
-    setLastSelectedPhoto,
+    selectedPhotos,
+    setSelectedPhotos,
+    isMultiSelectMode,
+    setIsMultiSelectMode,
   }) => {
     if (!photos || photos.length === 0) return null;
 
@@ -66,7 +75,12 @@ const VirtualGridRow: React.FC<VirtualGridRowProps> = React.memo(
               photo={photo}
               worldId={worldId}
               onSelect={onPhotoSelect}
-              setLastSelectedPhoto={setLastSelectedPhoto}
+              priority={index === 0}
+              selectedPhotos={selectedPhotos}
+              setSelectedPhotos={setSelectedPhotos}
+              photos={photos}
+              isMultiSelectMode={isMultiSelectMode}
+              setIsMultiSelectMode={setIsMultiSelectMode}
             />
           </div>
         ))}

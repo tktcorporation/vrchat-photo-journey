@@ -19,12 +19,15 @@ const en: Translations = {
       logFilePathSet: 'VRChat log file path set',
     },
     contextMenu: {
-      copyPhotoData: 'Copy Photo Data',
-      openInPhotoApp: 'Open in Photo App',
-      showInExplorer: 'Show in Explorer',
-      shareImage: 'Share Image',
-      downloadImage: 'Download Image',
+      copyPhotoData: 'Copy photo data',
+      openInPhotoApp: 'Open in photo app',
+      showInExplorer: 'Show in folder',
+      shareImage: 'Share image',
+      downloadImage: 'Download shared image',
     },
+    share: 'Share',
+    copy: 'Copy',
+    delete: 'Delete',
   },
   debug: {
     sqliteConsole: {
