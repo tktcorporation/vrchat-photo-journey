@@ -2,6 +2,7 @@ import * as fs from 'node:fs/promises';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { app, clipboard, dialog, nativeImage, shell } from 'electron';
+import { copyFiles } from 'electron-pan-clip';
 import * as neverthrow from 'neverthrow';
 import sharp from 'sharp';
 
@@ -231,37 +232,15 @@ export const saveFileToPath = async (
   await fs.copyFile(sourcePath, destinationPath);
 };
 
-// 複数ファイルをクリップボードにコピーする (Windows環境用)
+// 複数ファイルをクリップボードにコピーする (クロスプラットフォーム対応)
 const copyMultipleFilesToClipboard = async (
   filePaths: string[],
 ): Promise<neverthrow.Result<void, Error>> => {
   try {
-    if (os.platform() !== 'win32') {
-      // Windowsでない場合は最初の1枚だけをコピー
-      if (filePaths.length > 0) {
-        return await copyImageDataByPath(filePaths[0]);
-      }
+    if (filePaths.length === 0) {
       return neverthrow.ok(undefined);
     }
-
-    // Windowsの場合はファイルリストをクリップボードに格納
-    // Electronの標準機能ではサポートされていないため、エスケープしたファイルパスリストをテキストとしてコピー
-    const filePathsText = filePaths
-      .map((filePath) => `file:///${filePath.replace(/\\/g, '/')}`)
-      .join('\n');
-
-    clipboard.write({
-      text: filePathsText,
-      html: filePaths
-        .map(
-          (filePath) =>
-            `<img src="file:///${filePath.replace(
-              /\\/g,
-              '/',
-            )}" alt="${path.basename(filePath)}">`,
-        )
-        .join('\n'),
-    });
+    copyFiles(filePaths);
 
     return neverthrow.ok(undefined);
   } catch (error) {

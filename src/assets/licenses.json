@@ -24,7 +24,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@babel/code-frame",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@babel/code-frame/LICENSE"
   },
-  "@babel/compat-data@7.26.3": {
+  "@babel/compat-data@7.26.8": {
     "licenses": "MIT",
     "repository": "https://github.com/babel/babel",
     "publisher": "The Babel Team",
@@ -32,7 +32,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@babel/compat-data",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@babel/compat-data/LICENSE"
   },
-  "@babel/core@7.26.0": {
+  "@babel/core@7.26.10": {
     "licenses": "MIT",
     "repository": "https://github.com/babel/babel",
     "publisher": "The Babel Team",
@@ -40,7 +40,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@babel/core",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@babel/core/LICENSE"
   },
-  "@babel/generator@7.26.3": {
+  "@babel/generator@7.27.0": {
     "licenses": "MIT",
     "repository": "https://github.com/babel/babel",
     "publisher": "The Babel Team",
@@ -48,7 +48,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@babel/generator",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@babel/generator/LICENSE"
   },
-  "@babel/helper-compilation-targets@7.25.9": {
+  "@babel/helper-compilation-targets@7.27.0": {
     "licenses": "MIT",
     "repository": "https://github.com/babel/babel",
     "publisher": "The Babel Team",
@@ -72,7 +72,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@babel/helper-module-transforms",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@babel/helper-module-transforms/LICENSE"
   },
-  "@babel/helper-plugin-utils@7.25.9": {
+  "@babel/helper-plugin-utils@7.26.5": {
     "licenses": "MIT",
     "repository": "https://github.com/babel/babel",
     "publisher": "The Babel Team",
@@ -104,7 +104,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@babel/helper-validator-option",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@babel/helper-validator-option/LICENSE"
   },
-  "@babel/helpers@7.26.0": {
+  "@babel/helpers@7.27.0": {
     "licenses": "MIT",
     "repository": "https://github.com/babel/babel",
     "publisher": "The Babel Team",
@@ -112,7 +112,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@babel/helpers",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@babel/helpers/LICENSE"
   },
-  "@babel/parser@7.26.3": {
+  "@babel/parser@7.27.0": {
     "licenses": "MIT",
     "repository": "https://github.com/babel/babel",
     "publisher": "The Babel Team",
@@ -136,7 +136,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@babel/plugin-transform-react-jsx-source",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@babel/plugin-transform-react-jsx-source/LICENSE"
   },
-  "@babel/runtime@7.26.0": {
+  "@babel/runtime@7.27.0": {
     "licenses": "MIT",
     "repository": "https://github.com/babel/babel",
     "publisher": "The Babel Team",
@@ -144,7 +144,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@babel/runtime",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@babel/runtime/LICENSE"
   },
-  "@babel/template@7.25.9": {
+  "@babel/template@7.27.0": {
     "licenses": "MIT",
     "repository": "https://github.com/babel/babel",
     "publisher": "The Babel Team",
@@ -152,7 +152,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@babel/template",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@babel/template/LICENSE"
   },
-  "@babel/traverse@7.26.4": {
+  "@babel/traverse@7.27.0": {
     "licenses": "MIT",
     "repository": "https://github.com/babel/babel",
     "publisher": "The Babel Team",
@@ -160,7 +160,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@babel/traverse",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@babel/traverse/LICENSE"
   },
-  "@babel/types@7.26.3": {
+  "@babel/types@7.27.0": {
     "licenses": "MIT",
     "repository": "https://github.com/babel/babel",
     "publisher": "The Babel Team",
@@ -181,14 +181,14 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@esbuild/linux-arm64",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@esbuild/linux-arm64/README.md"
   },
-  "@floating-ui/core@1.6.8": {
+  "@floating-ui/core@1.6.9": {
     "licenses": "MIT",
     "repository": "https://github.com/floating-ui/floating-ui",
     "publisher": "atomiks",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@floating-ui/core",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@floating-ui/core/LICENSE"
   },
-  "@floating-ui/dom@1.6.12": {
+  "@floating-ui/dom@1.6.13": {
     "licenses": "MIT",
     "repository": "https://github.com/floating-ui/floating-ui",
     "publisher": "atomiks",
@@ -202,7 +202,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@floating-ui/react-dom",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@floating-ui/react-dom/LICENSE"
   },
-  "@floating-ui/utils@0.2.8": {
+  "@floating-ui/utils@0.2.9": {
     "licenses": "MIT",
     "repository": "https://github.com/floating-ui/floating-ui",
     "publisher": "atomiks",
@@ -323,7 +323,14 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/api-logs",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/api-logs/LICENSE"
   },
-  "@opentelemetry/api-logs@0.56.0": {
+  "@opentelemetry/api-logs@0.57.1": {
+    "licenses": "Apache-2.0",
+    "repository": "https://github.com/open-telemetry/opentelemetry-js",
+    "publisher": "OpenTelemetry Authors",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-http/node_modules/@opentelemetry/api-logs",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-http/node_modules/@opentelemetry/api-logs/LICENSE"
+  },
+  "@opentelemetry/api-logs@0.57.2": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/open-telemetry/opentelemetry-js",
     "publisher": "OpenTelemetry Authors",
@@ -337,189 +344,182 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/api",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/api/LICENSE"
   },
-  "@opentelemetry/context-async-hooks@1.30.0": {
+  "@opentelemetry/context-async-hooks@1.30.1": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/open-telemetry/opentelemetry-js",
     "publisher": "OpenTelemetry Authors",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/context-async-hooks",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/context-async-hooks/LICENSE"
   },
-  "@opentelemetry/core@1.29.0": {
-    "licenses": "Apache-2.0",
-    "repository": "https://github.com/open-telemetry/opentelemetry-js",
-    "publisher": "OpenTelemetry Authors",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-http/node_modules/@opentelemetry/core",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-http/node_modules/@opentelemetry/core/LICENSE"
-  },
-  "@opentelemetry/core@1.30.0": {
+  "@opentelemetry/core@1.30.1": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/open-telemetry/opentelemetry-js",
     "publisher": "OpenTelemetry Authors",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/core",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/core/LICENSE"
   },
-  "@opentelemetry/instrumentation-amqplib@0.45.0": {
+  "@opentelemetry/instrumentation-amqplib@0.46.1": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/open-telemetry/opentelemetry-js-contrib",
     "publisher": "OpenTelemetry Authors",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-amqplib",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-amqplib/LICENSE"
   },
-  "@opentelemetry/instrumentation-connect@0.42.0": {
+  "@opentelemetry/instrumentation-connect@0.43.0": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/open-telemetry/opentelemetry-js-contrib",
     "publisher": "OpenTelemetry Authors",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-connect",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-connect/LICENSE"
   },
-  "@opentelemetry/instrumentation-dataloader@0.15.0": {
+  "@opentelemetry/instrumentation-dataloader@0.16.0": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/open-telemetry/opentelemetry-js-contrib",
     "publisher": "OpenTelemetry Authors",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-dataloader",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-dataloader/LICENSE"
   },
-  "@opentelemetry/instrumentation-express@0.46.0": {
+  "@opentelemetry/instrumentation-express@0.47.0": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/open-telemetry/opentelemetry-js-contrib",
     "publisher": "OpenTelemetry Authors",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-express",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-express/LICENSE"
   },
-  "@opentelemetry/instrumentation-fastify@0.43.0": {
+  "@opentelemetry/instrumentation-fastify@0.44.1": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/open-telemetry/opentelemetry-js-contrib",
     "publisher": "OpenTelemetry Authors",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-fastify",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-fastify/LICENSE"
   },
-  "@opentelemetry/instrumentation-fs@0.18.0": {
+  "@opentelemetry/instrumentation-fs@0.19.0": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/open-telemetry/opentelemetry-js-contrib",
     "publisher": "OpenTelemetry Authors",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-fs",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-fs/LICENSE"
   },
-  "@opentelemetry/instrumentation-generic-pool@0.42.0": {
+  "@opentelemetry/instrumentation-generic-pool@0.43.0": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/open-telemetry/opentelemetry-js-contrib",
     "publisher": "OpenTelemetry Authors",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-generic-pool",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-generic-pool/LICENSE"
   },
-  "@opentelemetry/instrumentation-graphql@0.46.0": {
+  "@opentelemetry/instrumentation-graphql@0.47.0": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/open-telemetry/opentelemetry-js-contrib",
     "publisher": "OpenTelemetry Authors",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-graphql",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-graphql/LICENSE"
   },
-  "@opentelemetry/instrumentation-hapi@0.44.0": {
+  "@opentelemetry/instrumentation-hapi@0.45.1": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/open-telemetry/opentelemetry-js-contrib",
     "publisher": "OpenTelemetry Authors",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-hapi",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-hapi/LICENSE"
   },
-  "@opentelemetry/instrumentation-http@0.56.0": {
+  "@opentelemetry/instrumentation-http@0.57.1": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/open-telemetry/opentelemetry-js",
     "publisher": "OpenTelemetry Authors",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-http",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-http/LICENSE"
   },
-  "@opentelemetry/instrumentation-ioredis@0.46.0": {
+  "@opentelemetry/instrumentation-ioredis@0.47.0": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/open-telemetry/opentelemetry-js-contrib",
     "publisher": "OpenTelemetry Authors",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-ioredis",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-ioredis/LICENSE"
   },
-  "@opentelemetry/instrumentation-kafkajs@0.6.0": {
+  "@opentelemetry/instrumentation-kafkajs@0.7.0": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/open-telemetry/opentelemetry-js-contrib",
     "publisher": "OpenTelemetry Authors",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-kafkajs",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-kafkajs/LICENSE"
   },
-  "@opentelemetry/instrumentation-knex@0.43.0": {
+  "@opentelemetry/instrumentation-knex@0.44.0": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/open-telemetry/opentelemetry-js-contrib",
     "publisher": "OpenTelemetry Authors",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-knex",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-knex/LICENSE"
   },
-  "@opentelemetry/instrumentation-koa@0.46.0": {
+  "@opentelemetry/instrumentation-koa@0.47.0": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/open-telemetry/opentelemetry-js-contrib",
     "publisher": "OpenTelemetry Authors",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-koa",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-koa/LICENSE"
   },
-  "@opentelemetry/instrumentation-lru-memoizer@0.43.0": {
+  "@opentelemetry/instrumentation-lru-memoizer@0.44.0": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/open-telemetry/opentelemetry-js-contrib",
     "publisher": "OpenTelemetry Authors",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-lru-memoizer",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-lru-memoizer/LICENSE"
   },
-  "@opentelemetry/instrumentation-mongodb@0.50.0": {
+  "@opentelemetry/instrumentation-mongodb@0.51.0": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/open-telemetry/opentelemetry-js-contrib",
     "publisher": "OpenTelemetry Authors",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-mongodb",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-mongodb/LICENSE"
   },
-  "@opentelemetry/instrumentation-mongoose@0.45.0": {
+  "@opentelemetry/instrumentation-mongoose@0.46.0": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/open-telemetry/opentelemetry-js-contrib",
     "publisher": "OpenTelemetry Authors",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-mongoose",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-mongoose/LICENSE"
   },
-  "@opentelemetry/instrumentation-mysql2@0.44.0": {
+  "@opentelemetry/instrumentation-mysql2@0.45.0": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/open-telemetry/opentelemetry-js-contrib",
     "publisher": "OpenTelemetry Authors",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-mysql2",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-mysql2/LICENSE"
   },
-  "@opentelemetry/instrumentation-mysql@0.44.0": {
+  "@opentelemetry/instrumentation-mysql@0.45.0": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/open-telemetry/opentelemetry-js-contrib",
     "publisher": "OpenTelemetry Authors",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-mysql",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-mysql/LICENSE"
   },
-  "@opentelemetry/instrumentation-nestjs-core@0.43.0": {
+  "@opentelemetry/instrumentation-nestjs-core@0.44.0": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/open-telemetry/opentelemetry-js-contrib",
     "publisher": "OpenTelemetry Authors",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-nestjs-core",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-nestjs-core/LICENSE"
   },
-  "@opentelemetry/instrumentation-pg@0.49.0": {
+  "@opentelemetry/instrumentation-pg@0.50.0": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/open-telemetry/opentelemetry-js-contrib",
     "publisher": "OpenTelemetry Authors",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-pg",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-pg/LICENSE"
   },
-  "@opentelemetry/instrumentation-redis-4@0.45.0": {
+  "@opentelemetry/instrumentation-redis-4@0.46.0": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/open-telemetry/opentelemetry-js-contrib",
     "publisher": "OpenTelemetry Authors",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-redis-4",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-redis-4/LICENSE"
   },
-  "@opentelemetry/instrumentation-tedious@0.17.0": {
+  "@opentelemetry/instrumentation-tedious@0.18.0": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/open-telemetry/opentelemetry-js-contrib",
     "publisher": "OpenTelemetry Authors",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-tedious",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-tedious/LICENSE"
   },
-  "@opentelemetry/instrumentation-undici@0.9.0": {
+  "@opentelemetry/instrumentation-undici@0.10.0": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/open-telemetry/opentelemetry-js-contrib",
     "publisher": "OpenTelemetry Authors",
@@ -533,7 +533,14 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@prisma/instrumentation/node_modules/@opentelemetry/instrumentation",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@prisma/instrumentation/node_modules/@opentelemetry/instrumentation/LICENSE"
   },
-  "@opentelemetry/instrumentation@0.56.0": {
+  "@opentelemetry/instrumentation@0.57.1": {
+    "licenses": "Apache-2.0",
+    "repository": "https://github.com/open-telemetry/opentelemetry-js",
+    "publisher": "OpenTelemetry Authors",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-http/node_modules/@opentelemetry/instrumentation",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-http/node_modules/@opentelemetry/instrumentation/LICENSE"
+  },
+  "@opentelemetry/instrumentation@0.57.2": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/open-telemetry/opentelemetry-js",
     "publisher": "OpenTelemetry Authors",
@@ -547,14 +554,14 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/redis-common",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/redis-common/LICENSE"
   },
-  "@opentelemetry/resources@1.30.0": {
+  "@opentelemetry/resources@1.30.1": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/open-telemetry/opentelemetry-js",
     "publisher": "OpenTelemetry Authors",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/resources",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/resources/LICENSE"
   },
-  "@opentelemetry/sdk-trace-base@1.30.0": {
+  "@opentelemetry/sdk-trace-base@1.30.1": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/open-telemetry/opentelemetry-js",
     "publisher": "OpenTelemetry Authors",
@@ -569,6 +576,13 @@
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/instrumentation-pg/node_modules/@opentelemetry/semantic-conventions/LICENSE"
   },
   "@opentelemetry/semantic-conventions@1.28.0": {
+    "licenses": "Apache-2.0",
+    "repository": "https://github.com/open-telemetry/opentelemetry-js",
+    "publisher": "OpenTelemetry Authors",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/core/node_modules/@opentelemetry/semantic-conventions",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@opentelemetry/core/node_modules/@opentelemetry/semantic-conventions/LICENSE"
+  },
+  "@opentelemetry/semantic-conventions@1.32.0": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/open-telemetry/opentelemetry-js",
     "publisher": "OpenTelemetry Authors",
@@ -602,17 +616,11 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@prisma/instrumentation",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@prisma/instrumentation/LICENSE"
   },
-  "@radix-ui/number@1.1.0": {
+  "@radix-ui/number@1.1.1": {
     "licenses": "MIT",
     "repository": "https://github.com/radix-ui/primitives",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/number",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/number/README.md"
-  },
-  "@radix-ui/number@1.1.1": {
-    "licenses": "MIT",
-    "repository": "https://github.com/radix-ui/primitives",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-select/node_modules/@radix-ui/number",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-select/node_modules/@radix-ui/number/README.md"
   },
   "@radix-ui/primitive@1.0.1": {
     "licenses": "MIT",
@@ -620,17 +628,11 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-alert-dialog/node_modules/@radix-ui/primitive",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-alert-dialog/node_modules/@radix-ui/primitive/README.md"
   },
-  "@radix-ui/primitive@1.1.1": {
+  "@radix-ui/primitive@1.1.2": {
     "licenses": "MIT",
     "repository": "https://github.com/radix-ui/primitives",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/primitive",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/primitive/README.md"
-  },
-  "@radix-ui/primitive@1.1.2": {
-    "licenses": "MIT",
-    "repository": "https://github.com/radix-ui/primitives",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-checkbox/node_modules/@radix-ui/primitive",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-checkbox/node_modules/@radix-ui/primitive/README.md"
   },
   "@radix-ui/react-alert-dialog@1.0.5": {
     "licenses": "MIT",
@@ -644,17 +646,11 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-tooltip/node_modules/@radix-ui/react-arrow",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-tooltip/node_modules/@radix-ui/react-arrow/README.md"
   },
-  "@radix-ui/react-arrow@1.1.1": {
+  "@radix-ui/react-arrow@1.1.4": {
     "licenses": "MIT",
     "repository": "https://github.com/radix-ui/primitives",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-arrow",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-arrow/README.md"
-  },
-  "@radix-ui/react-arrow@1.1.3": {
-    "licenses": "MIT",
-    "repository": "https://github.com/radix-ui/primitives",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-select/node_modules/@radix-ui/react-arrow",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-select/node_modules/@radix-ui/react-arrow/README.md"
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-arrow/LICENSE"
   },
   "@radix-ui/react-checkbox@1.1.5": {
     "licenses": "MIT",
@@ -668,17 +664,11 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-tabs/node_modules/@radix-ui/react-collection",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-tabs/node_modules/@radix-ui/react-collection/README.md"
   },
-  "@radix-ui/react-collection@1.1.1": {
+  "@radix-ui/react-collection@1.1.4": {
     "licenses": "MIT",
     "repository": "https://github.com/radix-ui/primitives",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-collection",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-collection/README.md"
-  },
-  "@radix-ui/react-collection@1.1.3": {
-    "licenses": "MIT",
-    "repository": "https://github.com/radix-ui/primitives",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-select/node_modules/@radix-ui/react-collection",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-select/node_modules/@radix-ui/react-collection/README.md"
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-collection/LICENSE"
   },
   "@radix-ui/react-compose-refs@1.0.1": {
     "licenses": "MIT",
@@ -686,23 +676,17 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-alert-dialog/node_modules/@radix-ui/react-compose-refs",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-alert-dialog/node_modules/@radix-ui/react-compose-refs/README.md"
   },
-  "@radix-ui/react-compose-refs@1.1.1": {
+  "@radix-ui/react-compose-refs@1.1.2": {
     "licenses": "MIT",
     "repository": "https://github.com/radix-ui/primitives",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-compose-refs",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-compose-refs/README.md"
   },
-  "@radix-ui/react-compose-refs@1.1.2": {
-    "licenses": "MIT",
-    "repository": "https://github.com/radix-ui/primitives",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-checkbox/node_modules/@radix-ui/react-compose-refs",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-checkbox/node_modules/@radix-ui/react-compose-refs/README.md"
-  },
-  "@radix-ui/react-context-menu@2.2.4": {
+  "@radix-ui/react-context-menu@2.2.12": {
     "licenses": "MIT",
     "repository": "https://github.com/radix-ui/primitives",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-context-menu",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-context-menu/README.md"
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-context-menu/LICENSE"
   },
   "@radix-ui/react-context@1.0.1": {
     "licenses": "MIT",
@@ -710,17 +694,11 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-alert-dialog/node_modules/@radix-ui/react-context",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-alert-dialog/node_modules/@radix-ui/react-context/README.md"
   },
-  "@radix-ui/react-context@1.1.1": {
+  "@radix-ui/react-context@1.1.2": {
     "licenses": "MIT",
     "repository": "https://github.com/radix-ui/primitives",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-context",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-context/README.md"
-  },
-  "@radix-ui/react-context@1.1.2": {
-    "licenses": "MIT",
-    "repository": "https://github.com/radix-ui/primitives",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-checkbox/node_modules/@radix-ui/react-context",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-checkbox/node_modules/@radix-ui/react-context/README.md"
   },
   "@radix-ui/react-dialog@1.0.5": {
     "licenses": "MIT",
@@ -728,11 +706,11 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-alert-dialog/node_modules/@radix-ui/react-dialog",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-alert-dialog/node_modules/@radix-ui/react-dialog/README.md"
   },
-  "@radix-ui/react-dialog@1.1.4": {
+  "@radix-ui/react-dialog@1.1.11": {
     "licenses": "MIT",
     "repository": "https://github.com/radix-ui/primitives",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-dialog",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-dialog/README.md"
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-dialog/LICENSE"
   },
   "@radix-ui/react-direction@1.0.1": {
     "licenses": "MIT",
@@ -740,17 +718,11 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-tabs/node_modules/@radix-ui/react-direction",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-tabs/node_modules/@radix-ui/react-direction/README.md"
   },
-  "@radix-ui/react-direction@1.1.0": {
+  "@radix-ui/react-direction@1.1.1": {
     "licenses": "MIT",
     "repository": "https://github.com/radix-ui/primitives",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-direction",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-direction/README.md"
-  },
-  "@radix-ui/react-direction@1.1.1": {
-    "licenses": "MIT",
-    "repository": "https://github.com/radix-ui/primitives",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-select/node_modules/@radix-ui/react-direction",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-select/node_modules/@radix-ui/react-direction/README.md"
   },
   "@radix-ui/react-dismissable-layer@1.0.5": {
     "licenses": "MIT",
@@ -758,17 +730,11 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-alert-dialog/node_modules/@radix-ui/react-dismissable-layer",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-alert-dialog/node_modules/@radix-ui/react-dismissable-layer/README.md"
   },
-  "@radix-ui/react-dismissable-layer@1.1.3": {
+  "@radix-ui/react-dismissable-layer@1.1.7": {
     "licenses": "MIT",
     "repository": "https://github.com/radix-ui/primitives",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-dismissable-layer",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-dismissable-layer/README.md"
-  },
-  "@radix-ui/react-dismissable-layer@1.1.6": {
-    "licenses": "MIT",
-    "repository": "https://github.com/radix-ui/primitives",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-select/node_modules/@radix-ui/react-dismissable-layer",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-select/node_modules/@radix-ui/react-dismissable-layer/README.md"
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-dismissable-layer/LICENSE"
   },
   "@radix-ui/react-focus-guards@1.0.1": {
     "licenses": "MIT",
@@ -776,17 +742,11 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-alert-dialog/node_modules/@radix-ui/react-focus-guards",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-alert-dialog/node_modules/@radix-ui/react-focus-guards/README.md"
   },
-  "@radix-ui/react-focus-guards@1.1.1": {
+  "@radix-ui/react-focus-guards@1.1.2": {
     "licenses": "MIT",
     "repository": "https://github.com/radix-ui/primitives",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-focus-guards",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-focus-guards/README.md"
-  },
-  "@radix-ui/react-focus-guards@1.1.2": {
-    "licenses": "MIT",
-    "repository": "https://github.com/radix-ui/primitives",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-select/node_modules/@radix-ui/react-focus-guards",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-select/node_modules/@radix-ui/react-focus-guards/README.md"
   },
   "@radix-ui/react-focus-scope@1.0.4": {
     "licenses": "MIT",
@@ -794,17 +754,11 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-alert-dialog/node_modules/@radix-ui/react-focus-scope",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-alert-dialog/node_modules/@radix-ui/react-focus-scope/README.md"
   },
-  "@radix-ui/react-focus-scope@1.1.1": {
+  "@radix-ui/react-focus-scope@1.1.4": {
     "licenses": "MIT",
     "repository": "https://github.com/radix-ui/primitives",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-focus-scope",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-focus-scope/README.md"
-  },
-  "@radix-ui/react-focus-scope@1.1.3": {
-    "licenses": "MIT",
-    "repository": "https://github.com/radix-ui/primitives",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-select/node_modules/@radix-ui/react-focus-scope",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-select/node_modules/@radix-ui/react-focus-scope/README.md"
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-focus-scope/LICENSE"
   },
   "@radix-ui/react-id@1.0.1": {
     "licenses": "MIT",
@@ -812,29 +766,23 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-id",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-id/README.md"
   },
-  "@radix-ui/react-id@1.1.0": {
+  "@radix-ui/react-id@1.1.1": {
     "licenses": "MIT",
     "repository": "https://github.com/radix-ui/primitives",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-menu/node_modules/@radix-ui/react-id",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-menu/node_modules/@radix-ui/react-id/README.md"
   },
-  "@radix-ui/react-id@1.1.1": {
-    "licenses": "MIT",
-    "repository": "https://github.com/radix-ui/primitives",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-select/node_modules/@radix-ui/react-id",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-select/node_modules/@radix-ui/react-id/README.md"
-  },
-  "@radix-ui/react-label@2.1.1": {
+  "@radix-ui/react-label@2.1.4": {
     "licenses": "MIT",
     "repository": "https://github.com/radix-ui/primitives",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-label",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-label/README.md"
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-label/LICENSE"
   },
-  "@radix-ui/react-menu@2.1.4": {
+  "@radix-ui/react-menu@2.1.12": {
     "licenses": "MIT",
     "repository": "https://github.com/radix-ui/primitives",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-menu",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-menu/README.md"
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-menu/LICENSE"
   },
   "@radix-ui/react-popper@1.1.3": {
     "licenses": "MIT",
@@ -842,17 +790,11 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-tooltip/node_modules/@radix-ui/react-popper",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-tooltip/node_modules/@radix-ui/react-popper/README.md"
   },
-  "@radix-ui/react-popper@1.2.1": {
+  "@radix-ui/react-popper@1.2.4": {
     "licenses": "MIT",
     "repository": "https://github.com/radix-ui/primitives",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-popper",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-popper/README.md"
-  },
-  "@radix-ui/react-popper@1.2.3": {
-    "licenses": "MIT",
-    "repository": "https://github.com/radix-ui/primitives",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-select/node_modules/@radix-ui/react-popper",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-select/node_modules/@radix-ui/react-popper/README.md"
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-popper/LICENSE"
   },
   "@radix-ui/react-portal@1.0.4": {
     "licenses": "MIT",
@@ -860,17 +802,11 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-alert-dialog/node_modules/@radix-ui/react-portal",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-alert-dialog/node_modules/@radix-ui/react-portal/README.md"
   },
-  "@radix-ui/react-portal@1.1.3": {
+  "@radix-ui/react-portal@1.1.6": {
     "licenses": "MIT",
     "repository": "https://github.com/radix-ui/primitives",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-portal",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-portal/README.md"
-  },
-  "@radix-ui/react-portal@1.1.5": {
-    "licenses": "MIT",
-    "repository": "https://github.com/radix-ui/primitives",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-select/node_modules/@radix-ui/react-portal",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-select/node_modules/@radix-ui/react-portal/README.md"
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-portal/LICENSE"
   },
   "@radix-ui/react-presence@1.0.1": {
     "licenses": "MIT",
@@ -878,17 +814,17 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-alert-dialog/node_modules/@radix-ui/react-presence",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-alert-dialog/node_modules/@radix-ui/react-presence/README.md"
   },
-  "@radix-ui/react-presence@1.1.2": {
-    "licenses": "MIT",
-    "repository": "https://github.com/radix-ui/primitives",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-presence",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-presence/README.md"
-  },
   "@radix-ui/react-presence@1.1.3": {
     "licenses": "MIT",
     "repository": "https://github.com/radix-ui/primitives",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-checkbox/node_modules/@radix-ui/react-presence",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-checkbox/node_modules/@radix-ui/react-presence/README.md"
+  },
+  "@radix-ui/react-presence@1.1.4": {
+    "licenses": "MIT",
+    "repository": "https://github.com/radix-ui/primitives",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-presence",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-presence/LICENSE"
   },
   "@radix-ui/react-primitive@1.0.3": {
     "licenses": "MIT",
@@ -896,17 +832,17 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-alert-dialog/node_modules/@radix-ui/react-primitive",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-alert-dialog/node_modules/@radix-ui/react-primitive/README.md"
   },
-  "@radix-ui/react-primitive@2.0.1": {
-    "licenses": "MIT",
-    "repository": "https://github.com/radix-ui/primitives",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-primitive",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-primitive/README.md"
-  },
   "@radix-ui/react-primitive@2.0.3": {
     "licenses": "MIT",
     "repository": "https://github.com/radix-ui/primitives",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-checkbox/node_modules/@radix-ui/react-primitive",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-checkbox/node_modules/@radix-ui/react-primitive/README.md"
+  },
+  "@radix-ui/react-primitive@2.1.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/radix-ui/primitives",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-primitive",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-primitive/LICENSE"
   },
   "@radix-ui/react-progress@1.0.3": {
     "licenses": "MIT",
@@ -920,29 +856,29 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-tabs/node_modules/@radix-ui/react-roving-focus",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-tabs/node_modules/@radix-ui/react-roving-focus/README.md"
   },
-  "@radix-ui/react-roving-focus@1.1.1": {
+  "@radix-ui/react-roving-focus@1.1.7": {
     "licenses": "MIT",
     "repository": "https://github.com/radix-ui/primitives",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-roving-focus",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-roving-focus/README.md"
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-roving-focus/LICENSE"
   },
-  "@radix-ui/react-scroll-area@1.2.2": {
+  "@radix-ui/react-scroll-area@1.2.6": {
     "licenses": "MIT",
     "repository": "https://github.com/radix-ui/primitives",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-scroll-area",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-scroll-area/README.md"
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-scroll-area/LICENSE"
   },
-  "@radix-ui/react-select@2.1.7": {
+  "@radix-ui/react-select@2.2.2": {
     "licenses": "MIT",
     "repository": "https://github.com/radix-ui/primitives",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-select",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-select/README.md"
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-select/LICENSE"
   },
-  "@radix-ui/react-separator@1.1.3": {
+  "@radix-ui/react-separator@1.1.4": {
     "licenses": "MIT",
     "repository": "https://github.com/radix-ui/primitives",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-separator",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-separator/README.md"
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-separator/LICENSE"
   },
   "@radix-ui/react-slot@1.0.2": {
     "licenses": "MIT",
@@ -950,23 +886,17 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-alert-dialog/node_modules/@radix-ui/react-slot",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-alert-dialog/node_modules/@radix-ui/react-slot/README.md"
   },
-  "@radix-ui/react-slot@1.1.1": {
-    "licenses": "MIT",
-    "repository": "https://github.com/radix-ui/primitives",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-primitive/node_modules/@radix-ui/react-slot",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-primitive/node_modules/@radix-ui/react-slot/README.md"
-  },
   "@radix-ui/react-slot@1.2.0": {
     "licenses": "MIT",
     "repository": "https://github.com/radix-ui/primitives",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-slot",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-slot/README.md"
   },
-  "@radix-ui/react-switch@1.1.2": {
+  "@radix-ui/react-switch@1.2.2": {
     "licenses": "MIT",
     "repository": "https://github.com/radix-ui/primitives",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-switch",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-switch/README.md"
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-switch/LICENSE"
   },
   "@radix-ui/react-tabs@1.0.4": {
     "licenses": "MIT",
@@ -974,11 +904,11 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-tabs",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-tabs/README.md"
   },
-  "@radix-ui/react-toast@1.2.4": {
+  "@radix-ui/react-toast@1.2.11": {
     "licenses": "MIT",
     "repository": "https://github.com/radix-ui/primitives",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-toast",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-toast/README.md"
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-toast/LICENSE"
   },
   "@radix-ui/react-tooltip@1.0.7": {
     "licenses": "MIT",
@@ -992,17 +922,11 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-alert-dialog/node_modules/@radix-ui/react-use-callback-ref",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-alert-dialog/node_modules/@radix-ui/react-use-callback-ref/README.md"
   },
-  "@radix-ui/react-use-callback-ref@1.1.0": {
+  "@radix-ui/react-use-callback-ref@1.1.1": {
     "licenses": "MIT",
     "repository": "https://github.com/radix-ui/primitives",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-use-callback-ref",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-use-callback-ref/README.md"
-  },
-  "@radix-ui/react-use-callback-ref@1.1.1": {
-    "licenses": "MIT",
-    "repository": "https://github.com/radix-ui/primitives",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-checkbox/node_modules/@radix-ui/react-use-callback-ref",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-checkbox/node_modules/@radix-ui/react-use-callback-ref/README.md"
   },
   "@radix-ui/react-use-controllable-state@1.0.1": {
     "licenses": "MIT",
@@ -1010,17 +934,23 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-alert-dialog/node_modules/@radix-ui/react-use-controllable-state",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-alert-dialog/node_modules/@radix-ui/react-use-controllable-state/README.md"
   },
-  "@radix-ui/react-use-controllable-state@1.1.0": {
-    "licenses": "MIT",
-    "repository": "https://github.com/radix-ui/primitives",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-use-controllable-state",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-use-controllable-state/README.md"
-  },
   "@radix-ui/react-use-controllable-state@1.1.1": {
     "licenses": "MIT",
     "repository": "https://github.com/radix-ui/primitives",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-checkbox/node_modules/@radix-ui/react-use-controllable-state",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-checkbox/node_modules/@radix-ui/react-use-controllable-state/README.md"
+  },
+  "@radix-ui/react-use-controllable-state@1.2.2": {
+    "licenses": "MIT",
+    "repository": "https://github.com/radix-ui/primitives",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-use-controllable-state",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-use-controllable-state/LICENSE"
+  },
+  "@radix-ui/react-use-effect-event@0.0.2": {
+    "licenses": "MIT",
+    "repository": "https://github.com/radix-ui/primitives",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-use-effect-event",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-use-effect-event/LICENSE"
   },
   "@radix-ui/react-use-escape-keydown@1.0.3": {
     "licenses": "MIT",
@@ -1028,17 +958,11 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-use-escape-keydown",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-use-escape-keydown/README.md"
   },
-  "@radix-ui/react-use-escape-keydown@1.1.0": {
+  "@radix-ui/react-use-escape-keydown@1.1.1": {
     "licenses": "MIT",
     "repository": "https://github.com/radix-ui/primitives",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-dismissable-layer/node_modules/@radix-ui/react-use-escape-keydown",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-dismissable-layer/node_modules/@radix-ui/react-use-escape-keydown/README.md"
-  },
-  "@radix-ui/react-use-escape-keydown@1.1.1": {
-    "licenses": "MIT",
-    "repository": "https://github.com/radix-ui/primitives",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-select/node_modules/@radix-ui/react-use-escape-keydown",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-select/node_modules/@radix-ui/react-use-escape-keydown/README.md"
   },
   "@radix-ui/react-use-layout-effect@1.0.1": {
     "licenses": "MIT",
@@ -1046,23 +970,11 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-id/node_modules/@radix-ui/react-use-layout-effect",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-id/node_modules/@radix-ui/react-use-layout-effect/README.md"
   },
-  "@radix-ui/react-use-layout-effect@1.1.0": {
+  "@radix-ui/react-use-layout-effect@1.1.1": {
     "licenses": "MIT",
     "repository": "https://github.com/radix-ui/primitives",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-use-layout-effect",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-use-layout-effect/README.md"
-  },
-  "@radix-ui/react-use-layout-effect@1.1.1": {
-    "licenses": "MIT",
-    "repository": "https://github.com/radix-ui/primitives",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-checkbox/node_modules/@radix-ui/react-use-layout-effect",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-checkbox/node_modules/@radix-ui/react-use-layout-effect/README.md"
-  },
-  "@radix-ui/react-use-previous@1.1.0": {
-    "licenses": "MIT",
-    "repository": "https://github.com/radix-ui/primitives",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-switch/node_modules/@radix-ui/react-use-previous",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-switch/node_modules/@radix-ui/react-use-previous/README.md"
   },
   "@radix-ui/react-use-previous@1.1.1": {
     "licenses": "MIT",
@@ -1076,29 +988,17 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-tooltip/node_modules/@radix-ui/react-use-rect",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-tooltip/node_modules/@radix-ui/react-use-rect/README.md"
   },
-  "@radix-ui/react-use-rect@1.1.0": {
+  "@radix-ui/react-use-rect@1.1.1": {
     "licenses": "MIT",
     "repository": "https://github.com/radix-ui/primitives",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-use-rect",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-use-rect/README.md"
-  },
-  "@radix-ui/react-use-rect@1.1.1": {
-    "licenses": "MIT",
-    "repository": "https://github.com/radix-ui/primitives",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-select/node_modules/@radix-ui/react-use-rect",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-select/node_modules/@radix-ui/react-use-rect/README.md"
   },
   "@radix-ui/react-use-size@1.0.1": {
     "licenses": "MIT",
     "repository": "https://github.com/radix-ui/primitives",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-tooltip/node_modules/@radix-ui/react-use-size",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-tooltip/node_modules/@radix-ui/react-use-size/README.md"
-  },
-  "@radix-ui/react-use-size@1.1.0": {
-    "licenses": "MIT",
-    "repository": "https://github.com/radix-ui/primitives",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-popper/node_modules/@radix-ui/react-use-size",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-popper/node_modules/@radix-ui/react-use-size/README.md"
   },
   "@radix-ui/react-use-size@1.1.1": {
     "licenses": "MIT",
@@ -1112,17 +1012,11 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-tooltip/node_modules/@radix-ui/react-visually-hidden",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-tooltip/node_modules/@radix-ui/react-visually-hidden/README.md"
   },
-  "@radix-ui/react-visually-hidden@1.1.1": {
-    "licenses": "MIT",
-    "repository": "https://github.com/radix-ui/primitives",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-toast/node_modules/@radix-ui/react-visually-hidden",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-toast/node_modules/@radix-ui/react-visually-hidden/README.md"
-  },
-  "@radix-ui/react-visually-hidden@1.1.3": {
+  "@radix-ui/react-visually-hidden@1.2.0": {
     "licenses": "MIT",
     "repository": "https://github.com/radix-ui/primitives",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-visually-hidden",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-visually-hidden/README.md"
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-visually-hidden/LICENSE"
   },
   "@radix-ui/rect@1.0.1": {
     "licenses": "MIT",
@@ -1130,17 +1024,11 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-tooltip/node_modules/@radix-ui/rect",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-tooltip/node_modules/@radix-ui/rect/README.md"
   },
-  "@radix-ui/rect@1.1.0": {
+  "@radix-ui/rect@1.1.1": {
     "licenses": "MIT",
     "repository": "https://github.com/radix-ui/primitives",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/rect",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/rect/README.md"
-  },
-  "@radix-ui/rect@1.1.1": {
-    "licenses": "MIT",
-    "repository": "https://github.com/radix-ui/primitives",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-select/node_modules/@radix-ui/rect",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-select/node_modules/@radix-ui/rect/README.md"
   },
   "@remix-run/router@1.16.0": {
     "licenses": "MIT",
@@ -1150,56 +1038,56 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@remix-run/router",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@remix-run/router/LICENSE.md"
   },
-  "@rollup/rollup-linux-arm64-gnu@4.29.1": {
+  "@rollup/rollup-linux-arm64-gnu@4.40.0": {
     "licenses": "MIT",
     "repository": "https://github.com/rollup/rollup",
     "publisher": "Lukas Taegert-Atkinson",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@rollup/rollup-linux-arm64-gnu",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@rollup/rollup-linux-arm64-gnu/README.md"
   },
-  "@sentry-internal/browser-utils@8.47.0": {
+  "@sentry-internal/browser-utils@8.55.0": {
     "licenses": "MIT",
     "repository": "https://github.com/getsentry/sentry-javascript",
     "publisher": "Sentry",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@sentry-internal/browser-utils",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@sentry-internal/browser-utils/LICENSE"
   },
-  "@sentry-internal/feedback@8.47.0": {
+  "@sentry-internal/feedback@8.55.0": {
     "licenses": "MIT",
     "repository": "https://github.com/getsentry/sentry-javascript",
     "publisher": "Sentry",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@sentry-internal/feedback",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@sentry-internal/feedback/LICENSE"
   },
-  "@sentry-internal/replay-canvas@8.47.0": {
+  "@sentry-internal/replay-canvas@8.55.0": {
     "licenses": "MIT",
     "repository": "https://github.com/getsentry/sentry-javascript",
     "publisher": "Sentry",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@sentry-internal/replay-canvas",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@sentry-internal/replay-canvas/LICENSE"
   },
-  "@sentry-internal/replay@8.47.0": {
+  "@sentry-internal/replay@8.55.0": {
     "licenses": "MIT",
     "repository": "https://github.com/getsentry/sentry-javascript",
     "publisher": "Sentry",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@sentry-internal/replay",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@sentry-internal/replay/LICENSE"
   },
-  "@sentry/babel-plugin-component-annotate@2.22.7": {
+  "@sentry/babel-plugin-component-annotate@2.23.0": {
     "licenses": "MIT",
     "repository": "https://github.com/getsentry/sentry-javascript-bundler-plugins",
     "publisher": "Sentry",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@sentry/babel-plugin-component-annotate",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@sentry/babel-plugin-component-annotate/LICENSE"
   },
-  "@sentry/browser@8.47.0": {
+  "@sentry/browser@8.55.0": {
     "licenses": "MIT",
     "repository": "https://github.com/getsentry/sentry-javascript",
     "publisher": "Sentry",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@sentry/browser",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@sentry/browser/LICENSE"
   },
-  "@sentry/bundler-plugin-core@2.22.7": {
+  "@sentry/bundler-plugin-core@2.23.0": {
     "licenses": "MIT",
     "repository": "https://github.com/getsentry/sentry-javascript-bundler-plugins",
     "publisher": "Sentry",
@@ -1212,7 +1100,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@sentry/bundler-plugin-core/node_modules/@sentry/cli-linux-arm64",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@sentry/bundler-plugin-core/node_modules/@sentry/cli-linux-arm64/README.md"
   },
-  "@sentry/cli-linux-arm64@2.40.0": {
+  "@sentry/cli-linux-arm64@2.43.0": {
     "licenses": "BSD-3-Clause",
     "repository": "https://github.com/getsentry/sentry-cli",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@sentry/cli-linux-arm64",
@@ -1225,42 +1113,42 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@sentry/bundler-plugin-core/node_modules/@sentry/cli",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@sentry/bundler-plugin-core/node_modules/@sentry/cli/LICENSE"
   },
-  "@sentry/cli@2.40.0": {
+  "@sentry/cli@2.43.0": {
     "licenses": "BSD-3-Clause",
     "repository": "https://github.com/getsentry/sentry-cli",
     "publisher": "Sentry",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@sentry/cli",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@sentry/cli/LICENSE"
   },
-  "@sentry/core@8.47.0": {
+  "@sentry/core@8.55.0": {
     "licenses": "MIT",
     "repository": "https://github.com/getsentry/sentry-javascript",
     "publisher": "Sentry",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@sentry/core",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@sentry/core/LICENSE"
   },
-  "@sentry/electron@5.9.0": {
+  "@sentry/electron@5.12.0": {
     "licenses": "MIT",
     "repository": "https://github.com/getsentry/sentry-electron",
     "publisher": "Sentry",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@sentry/electron",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@sentry/electron/LICENSE"
   },
-  "@sentry/node@8.47.0": {
+  "@sentry/node@8.55.0": {
     "licenses": "MIT",
     "repository": "https://github.com/getsentry/sentry-javascript",
     "publisher": "Sentry",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@sentry/node",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@sentry/node/LICENSE"
   },
-  "@sentry/opentelemetry@8.47.0": {
+  "@sentry/opentelemetry@8.55.0": {
     "licenses": "MIT",
     "repository": "https://github.com/getsentry/sentry-javascript",
     "publisher": "Sentry",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@sentry/opentelemetry",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@sentry/opentelemetry/LICENSE"
   },
-  "@sentry/vite-plugin@2.22.7": {
+  "@sentry/vite-plugin@2.23.0": {
     "licenses": "MIT",
     "repository": "https://github.com/getsentry/sentry-javascript-bundler-plugins",
     "publisher": "Sentry",
@@ -1315,19 +1203,31 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@tanstack/react-query",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@tanstack/react-query/LICENSE"
   },
-  "@tanstack/react-virtual@3.11.2": {
+  "@tanstack/react-virtual@3.13.6": {
     "licenses": "MIT",
     "repository": "https://github.com/TanStack/virtual",
     "publisher": "Tanner Linsley",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@tanstack/react-virtual",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@tanstack/react-virtual/LICENSE"
   },
-  "@tanstack/virtual-core@3.11.2": {
+  "@tanstack/virtual-core@3.13.6": {
     "licenses": "MIT",
     "repository": "https://github.com/TanStack/virtual",
     "publisher": "Tanner Linsley",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@tanstack/virtual-core",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@tanstack/virtual-core/LICENSE"
+  },
+  "@tktcorporation/hello-napi-linux-arm64-gnu@1.0.4": {
+    "licenses": "MIT",
+    "repository": "https://github.com/tktcorporation/hello-napi-rs",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/@tktcorporation/hello-napi-linux-arm64-gnu",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@tktcorporation/hello-napi-linux-arm64-gnu/README.md"
+  },
+  "@tktcorporation/hello-napi@1.0.4": {
+    "licenses": "MIT",
+    "repository": "https://github.com/tktcorporation/hello-napi-rs",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/@tktcorporation/hello-napi",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@tktcorporation/hello-napi/LICENSE"
   },
   "@tootallnate/once@1.1.2": {
     "licenses": "MIT",
@@ -1364,7 +1264,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@types/babel__core",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@types/babel__core/LICENSE"
   },
-  "@types/babel__generator@7.6.8": {
+  "@types/babel__generator@7.27.0": {
     "licenses": "MIT",
     "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@types/babel__generator",
@@ -1376,7 +1276,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@types/babel__template",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@types/babel__template/LICENSE"
   },
-  "@types/babel__traverse@7.20.6": {
+  "@types/babel__traverse@7.20.7": {
     "licenses": "MIT",
     "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@types/babel__traverse",
@@ -1400,7 +1300,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@types/debug",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@types/debug/LICENSE"
   },
-  "@types/estree@1.0.6": {
+  "@types/estree@1.0.7": {
     "licenses": "MIT",
     "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@types/estree",
@@ -1418,19 +1318,19 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@types/keyv",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@types/keyv/LICENSE"
   },
-  "@types/lodash@4.17.13": {
+  "@types/lodash@4.17.16": {
     "licenses": "MIT",
     "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@types/lodash",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@types/lodash/LICENSE"
   },
-  "@types/luxon@3.4.2": {
+  "@types/luxon@3.6.2": {
     "licenses": "MIT",
     "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@types/luxon",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@types/luxon/LICENSE"
   },
-  "@types/ms@0.7.34": {
+  "@types/ms@2.1.0": {
     "licenses": "MIT",
     "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@types/ms",
@@ -1448,13 +1348,13 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@types/node",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@types/node/LICENSE"
   },
-  "@types/node@20.17.22": {
+  "@types/node@20.17.31": {
     "licenses": "MIT",
     "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
     "path": "/workspaces/vrchat-photo-journey/node_modules/electron/node_modules/@types/node",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/electron/node_modules/@types/node/LICENSE"
   },
-  "@types/node@22.10.3": {
+  "@types/node@22.15.2": {
     "licenses": "MIT",
     "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@types/connect/node_modules/@types/node",
@@ -1466,7 +1366,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@types/pg-pool",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@types/pg-pool/LICENSE"
   },
-  "@types/pg@8.11.10": {
+  "@types/pg@8.11.14": {
     "licenses": "MIT",
     "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@types/pg-pool/node_modules/@types/pg",
@@ -1496,7 +1396,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@types/react",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@types/react/LICENSE"
   },
-  "@types/react@19.0.2": {
+  "@types/react@19.1.2": {
     "licenses": "MIT",
     "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@types/react-dom/node_modules/@types/react",
@@ -1508,7 +1408,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@types/responselike",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@types/responselike/LICENSE"
   },
-  "@types/scheduler@0.23.0": {
+  "@types/scheduler@0.26.0": {
     "licenses": "MIT",
     "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@types/scheduler",
@@ -1526,7 +1426,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@types/tedious",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@types/tedious/LICENSE"
   },
-  "@types/validator@13.12.2": {
+  "@types/validator@13.15.0": {
     "licenses": "MIT",
     "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
     "path": "/workspaces/vrchat-photo-journey/node_modules/@types/validator",
@@ -1561,7 +1461,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/acorn-import-attributes",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/acorn-import-attributes/LICENSE"
   },
-  "acorn@8.14.0": {
+  "acorn@8.14.1": {
     "licenses": "MIT",
     "repository": "https://github.com/acornjs/acorn",
     "path": "/workspaces/vrchat-photo-journey/node_modules/acorn",
@@ -1792,7 +1692,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/braces",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/braces/LICENSE"
   },
-  "browserslist@4.24.3": {
+  "browserslist@4.24.4": {
     "licenses": "MIT",
     "repository": "https://github.com/browserslist/browserslist",
     "publisher": "Andrey Sitnik",
@@ -1855,7 +1755,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/camelcase-css",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/camelcase-css/license"
   },
-  "caniuse-lite@1.0.30001690": {
+  "caniuse-lite@1.0.30001715": {
     "licenses": "CC-BY-4.0",
     "repository": "https://github.com/browserslist/caniuse-lite",
     "publisher": "Ben Briggs",
@@ -1896,7 +1796,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/chownr",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/chownr/LICENSE"
   },
-  "cjs-module-lexer@1.4.1": {
+  "cjs-module-lexer@1.4.3": {
     "licenses": "MIT",
     "repository": "https://github.com/nodejs/cjs-module-lexer",
     "publisher": "Guy Bedford",
@@ -2012,7 +1912,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/conf",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/conf/license"
   },
-  "consola@3.3.3": {
+  "consola@3.4.2": {
     "licenses": "MIT",
     "repository": "https://github.com/unjs/consola",
     "path": "/workspaces/vrchat-photo-journey/node_modules/consola",
@@ -2157,13 +2057,13 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/delegates",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/delegates/License"
   },
-  "destr@2.0.3": {
+  "destr@2.0.5": {
     "licenses": "MIT",
     "repository": "https://github.com/unjs/destr",
     "path": "/workspaces/vrchat-photo-journey/node_modules/destr",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/destr/LICENSE"
   },
-  "detect-libc@2.0.3": {
+  "detect-libc@2.0.4": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/lovell/detect-libc",
     "publisher": "Lovell Fuller",
@@ -2212,7 +2112,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/dot-prop",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/dot-prop/license"
   },
-  "dotenv@16.4.7": {
+  "dotenv@16.5.0": {
     "licenses": "BSD-2-Clause",
     "repository": "https://github.com/motdotla/dotenv",
     "path": "/workspaces/vrchat-photo-journey/node_modules/dotenv",
@@ -2249,6 +2149,18 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/electron-log",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/electron-log/LICENSE"
   },
+  "electron-pan-clip-linux-arm64-gnu@0.0.32": {
+    "licenses": "MIT",
+    "repository": "https://github.com/tktcorporation/electron-pan-clip",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/electron-pan-clip-linux-arm64-gnu",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/electron-pan-clip-linux-arm64-gnu/README.md"
+  },
+  "electron-pan-clip@0.0.32": {
+    "licenses": "MIT",
+    "repository": "https://github.com/tktcorporation/electron-pan-clip",
+    "path": "/workspaces/vrchat-photo-journey/node_modules/electron-pan-clip",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/electron-pan-clip/LICENSE"
+  },
   "electron-store@8.2.0": {
     "licenses": "MIT",
     "repository": "https://github.com/sindresorhus/electron-store",
@@ -2258,7 +2170,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/electron-store",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/electron-store/license"
   },
-  "electron-to-chromium@1.5.76": {
+  "electron-to-chromium@1.5.142": {
     "licenses": "ISC",
     "repository": "https://github.com/kilian/electron-to-chromium",
     "publisher": "Kilian Valkhof",
@@ -2445,7 +2357,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/fast-deep-equal",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/fast-deep-equal/LICENSE"
   },
-  "fast-glob@3.3.2": {
+  "fast-glob@3.3.3": {
     "licenses": "MIT",
     "repository": "https://github.com/mrmlnc/fast-glob",
     "publisher": "Denis Malinochkin",
@@ -2453,7 +2365,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/fast-glob",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/fast-glob/LICENSE"
   },
-  "fast-uri@3.0.3": {
+  "fast-uri@3.0.6": {
     "licenses": "BSD-3-Clause",
     "repository": "https://github.com/fastify/fast-uri",
     "publisher": "Vincent Le Goff",
@@ -2462,7 +2374,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/fast-uri",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/fast-uri/LICENSE"
   },
-  "fastq@1.18.0": {
+  "fastq@1.19.1": {
     "licenses": "ISC",
     "repository": "https://github.com/mcollina/fastq",
     "publisher": "Matteo Collina",
@@ -2513,7 +2425,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@sentry/bundler-plugin-core/node_modules/find-up",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@sentry/bundler-plugin-core/node_modules/find-up/license"
   },
-  "foreground-child@3.3.0": {
+  "foreground-child@3.3.1": {
     "licenses": "ISC",
     "repository": "https://github.com/tapjs/foreground-child",
     "publisher": "Isaac Z. Schlueter",
@@ -2845,7 +2757,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/ieee754",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/ieee754/LICENSE"
   },
-  "import-in-the-middle@1.12.0": {
+  "import-in-the-middle@1.13.1": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/nodejs/import-in-the-middle",
     "publisher": "Bryan English",
@@ -2881,7 +2793,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/infer-owner",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/infer-owner/LICENSE"
   },
-  "inflection@3.0.0": {
+  "inflection@3.0.2": {
     "licenses": "MIT",
     "repository": "https://github.com/dreamerslab/node.inflection",
     "publisher": "dreamerslab",
@@ -3266,7 +3178,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/lucide-react",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/lucide-react/LICENSE"
   },
-  "luxon@3.5.0": {
+  "luxon@3.6.1": {
     "licenses": "MIT",
     "repository": "https://github.com/moment/luxon",
     "publisher": "Isaac Cambron",
@@ -3317,8 +3229,8 @@
     "publisher": "Sindre Sorhus",
     "email": "sindresorhus@gmail.com",
     "url": "sindresorhus.com",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/onetime/node_modules/mimic-fn",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/onetime/node_modules/mimic-fn/license"
+    "path": "/workspaces/vrchat-photo-journey/node_modules/mimic-fn",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/mimic-fn/license"
   },
   "mimic-fn@3.1.0": {
     "licenses": "MIT",
@@ -3326,8 +3238,8 @@
     "publisher": "Sindre Sorhus",
     "email": "sindresorhus@gmail.com",
     "url": "sindresorhus.com",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/mimic-fn",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/mimic-fn/license"
+    "path": "/workspaces/vrchat-photo-journey/node_modules/debounce-fn/node_modules/mimic-fn",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/debounce-fn/node_modules/mimic-fn/license"
   },
   "mimic-response@1.0.1": {
     "licenses": "MIT",
@@ -3429,8 +3341,8 @@
     "publisher": "Isaac Z. Schlueter",
     "email": "i@izs.me",
     "url": "http://blog.izs.me/",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/fs-minipass/node_modules/minipass",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/fs-minipass/node_modules/minipass/LICENSE"
+    "path": "/workspaces/vrchat-photo-journey/node_modules/minipass",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/minipass/LICENSE"
   },
   "minipass@4.2.8": {
     "licenses": "ISC",
@@ -3456,8 +3368,8 @@
     "publisher": "Isaac Z. Schlueter",
     "email": "i@izs.me",
     "url": "http://blog.izs.me/",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/minipass",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/minipass/LICENSE"
+    "path": "/workspaces/vrchat-photo-journey/node_modules/path-scurry/node_modules/minipass",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/path-scurry/node_modules/minipass/LICENSE"
   },
   "minizlib@2.1.2": {
     "licenses": "MIT",
@@ -3465,8 +3377,8 @@
     "publisher": "Isaac Z. Schlueter",
     "email": "i@izs.me",
     "url": "http://blog.izs.me/",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/tar/node_modules/minizlib",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/tar/node_modules/minizlib/LICENSE"
+    "path": "/workspaces/vrchat-photo-journey/node_modules/minizlib",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/minizlib/LICENSE"
   },
   "mkdirp-classic@0.5.3": {
     "licenses": "MIT",
@@ -3506,7 +3418,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/mz",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/mz/LICENSE"
   },
-  "nanoid@3.3.8": {
+  "nanoid@3.3.11": {
     "licenses": "MIT",
     "repository": "https://github.com/ai/nanoid",
     "publisher": "Andrey Sitnik",
@@ -3514,7 +3426,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/nanoid",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/nanoid/LICENSE"
   },
-  "napi-build-utils@1.0.2": {
+  "napi-build-utils@2.0.0": {
     "licenses": "MIT",
     "repository": "https://github.com/inspiredware/napi-build-utils",
     "publisher": "Jim Schlight",
@@ -3524,8 +3436,8 @@
   "negotiator@0.6.4": {
     "licenses": "MIT",
     "repository": "https://github.com/jshttp/negotiator",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/sqlite3/node_modules/negotiator",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/sqlite3/node_modules/negotiator/LICENSE"
+    "path": "/workspaces/vrchat-photo-journey/node_modules/negotiator",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/negotiator/LICENSE"
   },
   "neverthrow@6.2.1": {
     "licenses": "MIT",
@@ -3534,7 +3446,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/neverthrow",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/neverthrow/LICENSE"
   },
-  "node-abi@3.71.0": {
+  "node-abi@3.74.0": {
     "licenses": "MIT",
     "repository": "https://github.com/electron/node-abi",
     "publisher": "Lukas Geiger",
@@ -3547,7 +3459,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/node-addon-api",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/node-addon-api/LICENSE.md"
   },
-  "node-fetch-native@1.6.4": {
+  "node-fetch-native@1.6.6": {
     "licenses": "MIT",
     "repository": "https://github.com/unjs/node-fetch-native",
     "path": "/workspaces/vrchat-photo-journey/node_modules/node-fetch-native",
@@ -3727,8 +3639,8 @@
     "publisher": "Sindre Sorhus",
     "email": "sindresorhus@gmail.com",
     "url": "https://sindresorhus.com",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/sqlite3/node_modules/p-map",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/sqlite3/node_modules/p-map/license"
+    "path": "/workspaces/vrchat-photo-journey/node_modules/p-map",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/p-map/license"
   },
   "p-queue@8.1.0": {
     "licenses": "MIT",
@@ -3842,7 +3754,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/pg-numeric",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/pg-numeric/LICENSE"
   },
-  "pg-protocol@1.7.0": {
+  "pg-protocol@1.9.5": {
     "licenses": "MIT",
     "repository": "https://github.com/brianc/node-postgres",
     "path": "/workspaces/vrchat-photo-journey/node_modules/pg-protocol",
@@ -3874,8 +3786,8 @@
     "repository": "https://github.com/micromatch/picomatch",
     "publisher": "Jon Schlinkert",
     "url": "https://github.com/jonschlinkert",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/picomatch",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/picomatch/LICENSE"
+    "path": "/workspaces/vrchat-photo-journey/node_modules/anymatch/node_modules/picomatch",
+    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/anymatch/node_modules/picomatch/LICENSE"
   },
   "pify@2.3.0": {
     "licenses": "MIT",
@@ -3886,7 +3798,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/pify",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/pify/license"
   },
-  "pirates@4.0.6": {
+  "pirates@4.0.7": {
     "licenses": "MIT",
     "repository": "https://github.com/danez/pirates",
     "publisher": "Ari Porad",
@@ -3958,7 +3870,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/postcss-value-parser",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/postcss-value-parser/LICENSE"
   },
-  "postcss@8.4.49": {
+  "postcss@8.5.3": {
     "licenses": "MIT",
     "repository": "https://github.com/postcss/postcss",
     "publisher": "Andrey Sitnik",
@@ -3975,7 +3887,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/postgres-array",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/postgres-array/license"
   },
-  "postgres-array@3.0.2": {
+  "postgres-array@3.0.4": {
     "licenses": "MIT",
     "repository": "https://github.com/bendrucker/postgres-array",
     "publisher": "Ben Drucker",
@@ -4046,7 +3958,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/postgres-range",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/postgres-range/LICENSE"
   },
-  "prebuild-install@7.1.2": {
+  "prebuild-install@7.1.3": {
     "licenses": "MIT",
     "repository": "https://github.com/prebuild/prebuild-install",
     "publisher": "Mathias Buus",
@@ -4174,21 +4086,13 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-alert-dialog/node_modules/react-remove-scroll",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-alert-dialog/node_modules/react-remove-scroll/LICENSE"
   },
-  "react-remove-scroll@2.6.2": {
+  "react-remove-scroll@2.6.3": {
     "licenses": "MIT",
     "repository": "https://github.com/theKashey/react-remove-scroll",
     "publisher": "Anton Korzunov",
     "email": "thekashey@gmail.com",
     "path": "/workspaces/vrchat-photo-journey/node_modules/react-remove-scroll",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/react-remove-scroll/LICENSE"
-  },
-  "react-remove-scroll@2.6.3": {
-    "licenses": "MIT",
-    "repository": "https://github.com/theKashey/react-remove-scroll",
-    "publisher": "Anton Korzunov",
-    "email": "thekashey@gmail.com",
-    "path": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-select/node_modules/react-remove-scroll",
-    "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@radix-ui/react-select/node_modules/react-remove-scroll/LICENSE"
   },
   "react-router-dom@6.23.0": {
     "licenses": "MIT",
@@ -4267,9 +4171,9 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/require-from-string",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/require-from-string/license"
   },
-  "require-in-the-middle@7.4.0": {
+  "require-in-the-middle@7.5.2": {
     "licenses": "MIT",
-    "repository": "https://github.com/elastic/require-in-the-middle",
+    "repository": "https://github.com/nodejs/require-in-the-middle",
     "publisher": "Thomas Watson Steen",
     "email": "w@tson.dk",
     "url": "https://twitter.com/wa7son",
@@ -4299,7 +4203,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/responselike",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/responselike/LICENSE"
   },
-  "retry-as-promised@7.0.4": {
+  "retry-as-promised@7.1.1": {
     "licenses": "MIT",
     "repository": "https://github.com/mickhansen/retry-as-promised",
     "publisher": "Mick Hansen",
@@ -4316,7 +4220,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/retry",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/retry/License"
   },
-  "reusify@1.0.4": {
+  "reusify@1.1.0": {
     "licenses": "MIT",
     "repository": "https://github.com/mcollina/reusify",
     "publisher": "Matteo Collina",
@@ -4342,7 +4246,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/roarr",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/roarr/LICENSE"
   },
-  "rollup@4.29.1": {
+  "rollup@4.40.0": {
     "licenses": "MIT",
     "repository": "https://github.com/rollup/rollup",
     "publisher": "Rich Harris",
@@ -4358,7 +4262,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/run-parallel",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/run-parallel/LICENSE"
   },
-  "rxjs@7.8.1": {
+  "rxjs@7.8.2": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/reactivex/rxjs",
     "publisher": "Ben Lesh",
@@ -4415,14 +4319,14 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/@babel/helper-compilation-targets/node_modules/semver",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/@babel/helper-compilation-targets/node_modules/semver/LICENSE"
   },
-  "semver@7.6.3": {
+  "semver@7.7.1": {
     "licenses": "ISC",
     "repository": "https://github.com/npm/node-semver",
     "publisher": "GitHub Inc.",
     "path": "/workspaces/vrchat-photo-journey/node_modules/semver",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/semver/LICENSE"
   },
-  "sequelize-pool@8.0.0": {
+  "sequelize-pool@8.0.1": {
     "licenses": "MIT",
     "repository": "https://github.com/sushantdhiman/sequelize-pool",
     "publisher": "Sushant",
@@ -4548,7 +4452,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/sqlite3/node_modules/socks-proxy-agent",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/sqlite3/node_modules/socks-proxy-agent/README.md"
   },
-  "socks@2.8.3": {
+  "socks@2.8.4": {
     "licenses": "MIT",
     "repository": "https://github.com/JoshGlazebrook/socks",
     "publisher": "Josh Glazebrook",
@@ -4707,7 +4611,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/tailwindcss",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/tailwindcss/LICENSE"
   },
-  "tar-fs@2.1.1": {
+  "tar-fs@2.1.2": {
     "licenses": "MIT",
     "repository": "https://github.com/mafintosh/tar-fs",
     "publisher": "Mathias Buus",
@@ -4857,7 +4761,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/electron-store/node_modules/type-fest",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/electron-store/node_modules/type-fest/readme.md"
   },
-  "type-fest@4.31.0": {
+  "type-fest@4.40.0": {
     "licenses": "(MIT OR CC0-1.0)",
     "repository": "https://github.com/sindresorhus/type-fest",
     "publisher": "Sindre Sorhus",
@@ -4866,7 +4770,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/type-fest",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/type-fest/license-cc0"
   },
-  "ufo@1.5.4": {
+  "ufo@1.6.1": {
     "licenses": "MIT",
     "repository": "https://github.com/unjs/ufo",
     "path": "/workspaces/vrchat-photo-journey/node_modules/ufo",
@@ -4884,13 +4788,13 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/electron/node_modules/undici-types",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/electron/node_modules/undici-types/LICENSE"
   },
-  "undici-types@6.20.0": {
+  "undici-types@6.21.0": {
     "licenses": "MIT",
     "repository": "https://github.com/nodejs/undici",
     "path": "/workspaces/vrchat-photo-journey/node_modules/undici-types",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/undici-types/LICENSE"
   },
-  "undici@7.3.0": {
+  "undici@7.8.0": {
     "licenses": "MIT",
     "repository": "https://github.com/nodejs/undici",
     "path": "/workspaces/vrchat-photo-journey/node_modules/undici",
@@ -4936,7 +4840,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/unplugin",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/unplugin/LICENSE"
   },
-  "update-browserslist-db@1.1.1": {
+  "update-browserslist-db@1.1.3": {
     "licenses": "MIT",
     "repository": "https://github.com/browserslist/update-db",
     "publisher": "Andrey Sitnik",
@@ -4966,7 +4870,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/zustand/node_modules/use-sync-external-store",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/zustand/node_modules/use-sync-external-store/LICENSE"
   },
-  "use-sync-external-store@1.4.0": {
+  "use-sync-external-store@1.5.0": {
     "licenses": "MIT",
     "repository": "https://github.com/facebook/react",
     "path": "/workspaces/vrchat-photo-journey/node_modules/use-sync-external-store",
@@ -4995,7 +4899,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/uuidv7",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/uuidv7/LICENSE"
   },
-  "validator@13.12.0": {
+  "validator@13.15.0": {
     "licenses": "MIT",
     "repository": "https://github.com/validatorjs/validator.js",
     "publisher": "Chris O'Hara",
@@ -5127,7 +5031,7 @@
     "path": "/workspaces/vrchat-photo-journey/node_modules/yallist",
     "licenseFile": "/workspaces/vrchat-photo-journey/node_modules/yallist/LICENSE"
   },
-  "yaml@2.7.0": {
+  "yaml@2.7.1": {
     "licenses": "ISC",
     "repository": "https://github.com/eemeli/yaml",
     "publisher": "Eemeli Aro",

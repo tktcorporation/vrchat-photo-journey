@@ -39,13 +39,11 @@ const PhotoGallery = memo((props: { startUpStages: ProcessStages }) => {
     trpcReact.electronUtil.copyMultipleImageDataByPath.useMutation({
       onSuccess: (_, variables) => {
         const count = variables.length;
-        const isWindows = navigator.platform.includes('Win');
+        const _isWindows = navigator.platform.includes('Win');
 
         if (count > 1) {
           toast({
-            title: isWindows
-              ? `${count}枚の写真をコピーしました`
-              : `1枚の写真をコピーしました (${count}枚中、非Windows環境)`,
+            title: `${count}枚の写真をコピーしました`,
             variant: 'default',
           });
         } else {
