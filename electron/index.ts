@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { type BrowserWindow, app, ipcMain } from 'electron';
 
+import { captureException } from '@sentry/electron/main';
 // Packages
 import { createIPCHandler } from 'electron-trpc/main';
 import unhandled from 'electron-unhandled';
@@ -83,7 +84,10 @@ const initializeApp = async () => {
   electronUtil.setTray();
 
   unhandled({
-    logger: (error) => log.error({ message: error }),
+    logger: (error) => {
+      log.error({ message: error });
+      captureException(error);
+    },
   });
 };
 
@@ -92,8 +96,15 @@ app
   .then(initializeApp)
   .catch((error) => log.error({ message: error }));
 
-process.on('uncaughtException', (error) => log.error({ message: error }));
-process.on('unhandledRejection', (error) => log.error({ message: error }));
+process.on('uncaughtException', (error) => {
+  log.error({ message: error });
+  captureException(error);
+});
+process.on('unhandledRejection', (error) => {
+  log.error({ message: error });
+  const err = error instanceof Error ? error : new Error(String(error));
+  captureException(err);
+});
 
 app.on('second-instance', () => {
   const mainWindow = electronUtil.createOrGetWindow();

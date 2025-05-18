@@ -1,7 +1,24 @@
 import { Toaster } from '@/components/ui/toaster';
 import { trpcReact } from '@/trpc';
 import TrpcWrapper from '@/trpcWrapper';
-import { init as initSentry } from '@sentry/electron/renderer';
+import {
+  captureException,
+  init as initSentry,
+} from '@sentry/electron/renderer';
+
+let sentryInitialized = false;
+const registerUnhandledEvents = () => {
+  if (sentryInitialized) return;
+  window.addEventListener('error', (event) => {
+    captureException(event.error);
+  });
+  window.addEventListener('unhandledrejection', (event) => {
+    const reason = (event as PromiseRejectionEvent).reason;
+    const error = reason instanceof Error ? reason : new Error(String(reason));
+    captureException(error);
+  });
+  sentryInitialized = true;
+};
 import { useEffect, useState } from 'react';
 import { AppHeader } from './components/AppHeader';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -39,6 +56,7 @@ function AppContent() {
           dsn: 'https://0c062396cbe896482888204f42f947ec@o4504163555213312.ingest.us.sentry.io/4508574659837952',
           environment: process.env.NODE_ENV,
         });
+        registerUnhandledEvents();
       },
       onError: (error) => {
         toast({

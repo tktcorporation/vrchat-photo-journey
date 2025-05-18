@@ -1,4 +1,5 @@
 import { trpcReact } from '@/trpc';
+import { captureException } from '@sentry/electron/renderer';
 import type React from 'react';
 import { ErrorBoundary as ReactErrorBoundary } from 'react-error-boundary';
 
@@ -44,6 +45,7 @@ const ErrorFallback: React.FC<{
 export const ErrorBoundary: React.FC<Props> = ({ children }) => {
   const onError = (error: Error, info: React.ErrorInfo) => {
     console.error('エラーバウンダリーでエラーをキャッチしました:', error, info);
+    captureException(error);
   };
 
   return (
