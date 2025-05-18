@@ -159,6 +159,17 @@ const Header = memo(
             <Button variant="ghost" size="icon" onClick={onOpenSettings}>
               <Settings className="w-5 h-5" />
             </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={_handleRefresh}
+              disabled={isRefreshing}
+              title={t('common.refresh')}
+            >
+              <RefreshCw
+                className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`}
+              />
+            </Button>
             {/* 必要であれば他の要素 */}
           </div>
         )}
