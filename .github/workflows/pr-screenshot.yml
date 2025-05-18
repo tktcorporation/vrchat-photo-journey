@@ -1,0 +1,54 @@
+name: PR Screenshot
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  capture:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm ci
+      - name: Build project
+        run: npm run build
+      - name: Install screenshot tools
+        run: npm install --no-save playwright http-server
+      - name: Install browsers
+        run: npx playwright install --with-deps
+      - name: Take screenshot
+        run: npm run screenshot
+      - name: Upload screenshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-screenshot
+          path: pr-screenshot.jpg
+      - name: Publish screenshot
+        env:
+          BRANCH: pr-screenshot-${{ github.event.pull_request.number }}-${{ github.run_id }}
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir upload && cp pr-screenshot.jpg upload/
+          cd upload
+          git init
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add pr-screenshot.jpg
+          git commit -m "Add screenshot for PR #${{ github.event.pull_request.number }}"
+          git branch -M "$BRANCH"
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
+          git push origin "$BRANCH" --force
+      - name: Comment screenshot
+        env:
+          BRANCH: pr-screenshot-${{ github.event.pull_request.number }}-${{ github.run_id }}
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: |
+            ![](https://raw.githubusercontent.com/${{ github.repository }}/${{ env.BRANCH }}/pr-screenshot.jpg)
