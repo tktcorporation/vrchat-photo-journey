@@ -20,6 +20,9 @@ interface BoldPreviewProps {
   showAllPlayers?: boolean;
 }
 
+/**
+ * VRChat のワールド入室イベントを共有用に表示する SVG を描画する。
+ */
 export function BoldPreviewSvg({
   worldName,
   imageUrl,

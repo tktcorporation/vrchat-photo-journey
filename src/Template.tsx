@@ -6,6 +6,10 @@ type Props = {
   children: React.ReactNode;
 };
 
+/**
+ * v1 レンダラーのルートコンポーネント。
+ * トーストイベントを購読し、子要素をそのまま表示する。
+ */
 function Template({ children }: Props) {
   trpcReact.subscribeToast.useSubscription(undefined, {
     onData: (content: unknown) => {

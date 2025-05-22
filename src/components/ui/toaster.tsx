@@ -8,6 +8,9 @@ import {
 } from '@/components/ui/toast';
 import { useToast } from '@/v2/hooks/use-toast';
 
+/**
+ * `useToast` フックから取得した通知を表示するコンポーネント。
+ */
 export function Toaster() {
   const { toasts } = useToast();
 

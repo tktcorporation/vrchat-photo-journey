@@ -14,6 +14,10 @@ import { useToast } from './hooks/use-toast';
 import { useStartupStage } from './hooks/useStartUpStage';
 import type { ProcessError } from './hooks/useStartUpStage';
 
+/**
+ * 規約の確認や Sentry の初期化など、起動時の処理を行うコンポーネント。
+ * これらが完了した後にアプリのメイン画面を表示する。
+ */
 function AppContent() {
   const [showTerms, setShowTerms] = useState(false);
   const [isUpdate, setIsUpdate] = useState(false);
@@ -124,6 +128,9 @@ function App() {
   );
 }
 
+/**
+ * トーストイベントを購読して `Toaster` コンポーネントを表示するラッパー。
+ */
 const ToasterWrapper = () => {
   const { toast } = useToast();
   trpcReact.subscribeToast.useSubscription(undefined, {

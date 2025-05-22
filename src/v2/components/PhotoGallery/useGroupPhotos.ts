@@ -28,7 +28,13 @@ export interface DebugInfo {
   totalGroups: number;
 }
 
-// 二分探索ヘルパー関数: targetTime 以下の最も近い時間を持つログのインデックスを返す
+/**
+ * 指定時刻以前で最も新しいログのインデックスを取得する。
+ *
+ * @param sortedLogs - `joinDateTime` を降順に並べたログ配列。
+ * @param targetTime - 写真の撮影時刻（ミリ秒）。
+ * @returns 見つかったログのインデックス、存在しなければ -1。
+ */
 function findClosestLogIndexBefore(
   sortedLogs: WorldJoinLog[],
   targetTime: number,
@@ -53,7 +59,13 @@ function findClosestLogIndexBefore(
   return bestIndex;
 }
 
-// 二分探索ヘルパー関数: targetTime に時間的に最も近いログのインデックスを返す
+/**
+ * 指定時刻に最も近いログのインデックスを取得する。
+ *
+ * @param sortedLogs - `joinDateTime` を降順に並べたログ配列。
+ * @param targetTime - 写真の撮影時刻（ミリ秒）。
+ * @returns 最も近いログのインデックス。ログが空の場合は -1。
+ */
 function findClosestLogIndexAbsolute(
   sortedLogs: WorldJoinLog[],
   targetTime: number,
@@ -93,7 +105,13 @@ function findClosestLogIndexAbsolute(
   return closestIndex;
 }
 
-// 写真をワールドセッションごとにグループ化する純粋な関数
+/**
+ * 写真を VRChat のワールドセッション単位でグループ化する。
+ *
+ * @param photos - グループ化する写真配列。
+ * @param joinLogs - 降順に並べたワールド参加ログ。
+ * @returns ワールド情報を含むグループ配列。
+ */
 export function groupPhotosBySession(
   photos: Photo[],
   joinLogs: WorldJoinLog[],
@@ -174,7 +192,13 @@ export function groupPhotosBySession(
   return finalGroups;
 }
 
-// グループ化された写真をRecordに変換する
+// グループ化された写真を Record 形式に変換する
+/**
+ * グループ配列をキー付きのオブジェクトに変換する。
+ *
+ * @param groups - グループ化された写真配列。
+ * @returns `worldId/日時` をキーとしたオブジェクト。
+ */
 function convertGroupsToRecord(groups: GroupedPhoto[]): GroupedPhotos {
   return groups.reduce<GroupedPhotos>((acc, group) => {
     const key = group.worldInfo
@@ -185,6 +209,12 @@ function convertGroupsToRecord(groups: GroupedPhoto[]): GroupedPhotos {
   }, {});
 }
 
+/**
+ * 写真一覧をセッションごとにまとめた結果を返すフック。
+ *
+ * @param photos - グループ化対象の写真配列。
+ * @returns グループ化結果と読み込み状態を含むオブジェクト。
+ */
 export function useGroupPhotos(photos: Photo[]): {
   groupedPhotos: GroupedPhotos;
   isLoading: boolean;
