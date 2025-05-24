@@ -3,6 +3,7 @@ import { app } from 'electron';
 import * as log from 'electron-log';
 import path from 'pathe';
 import { stackWithCauses } from 'pony-cause';
+import { getSettingStore } from '../module/settingStore';
 
 // appが未定義の場合はテスト環境や非Electron環境として判定
 const logFilePath = app
@@ -56,38 +57,32 @@ const error = ({ message, stack }: ErrorLogParams): void => {
     ...(stack ? [stackWithCauses(stack)] : []),
   );
 
-  // Sentryテスト用エラーの判別
-  const isSentryTestError =
-    (message instanceof Error &&
-      (message.message.includes('test error for Sentry') ||
-        message.name === 'SentryTestError')) ||
-    (typeof message === 'string' && message.includes('test error for Sentry'));
+  // 規約同意済みかどうかを確認
+  const settingStore = getSettingStore();
+  const termsAccepted = settingStore.getTermsAccepted();
 
-  // デバッグ: Sentry送信条件の確認
-  log.debug(
-    `Sentry error conditions: isProduction=${isProduction}, isSentryTestError=${isSentryTestError}`,
-  );
-
-  // 本番環境、またはSentryテスト用エラーの場合はSentryへ送信
-  if (isProduction || isSentryTestError) {
+  // 規約同意済みの場合のみSentryへ送信
+  if (termsAccepted === true) {
     log.debug('Attempting to send error to Sentry...');
     try {
       captureException(errorInfo, {
         extra: {
           ...(stack ? { stack: stackWithCauses(stack) } : {}),
-          isSentryTestError,
         },
         tags: {
           source: 'electron-main',
-          isSentryTestError: isSentryTestError ? 'true' : 'false',
         },
       });
       log.debug('Error sent to Sentry successfully');
     } catch (sentryError) {
       log.debug('Failed to send error to Sentry:', sentryError);
     }
+  } else {
+    log.debug('Terms not accepted, skipping Sentry error');
   }
 };
+
+const warn = log.warn;
 
 const electronLogFilePath = log.transports.file.getFile().path;
 
@@ -95,7 +90,8 @@ const logger = {
   info,
   debug,
   error,
+  warn,
   electronLogFilePath,
 };
 
-export { info, debug, error, electronLogFilePath, logger, log };
+export { info, debug, error, warn, electronLogFilePath, logger, log };

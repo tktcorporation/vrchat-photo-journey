@@ -1,4 +1,3 @@
-import * as Sentry from '@sentry/electron/renderer';
 import { contextBridge, ipcRenderer } from 'electron';
 
 import type { Operation } from '@trpc/client';
@@ -14,24 +13,6 @@ interface RendererGlobalElectronTRPC {
 }
 
 const ELECTRON_TRPC_CHANNEL = 'electron-trpc';
-
-// Sentryの初期化 (preload.ts)
-// NODE_ENV はビルド時に解決される想定
-// DSNはメインプロセスと同じものを設定
-// release や environment もメインプロセスから渡すか、ビルド時に設定することを検討
-// Sentry.init({
-//   dsn: 'https://0c062396cbe896482888204f42f947ec@o4504163555213312.ingest.us.sentry.io/4508574659837952',
-//   debug: process.env.NODE_ENV !== 'production',
-//   integrations: (defaults) => {
-//     // console.log('Default Sentry integrations:', defaults.map(i => i.name)); // デバッグ用
-//     return defaults.filter(
-//       (integration) =>
-//         integration.name !== 'PreloadInjection' &&
-//         integration.name !== 'Console' &&
-//         integration.name !== 'ElectronBreadcrumbs'
-//     );
-//   },
-// });
 
 const exposeElectronTRPC = () => {
   const electronTRPC: RendererGlobalElectronTRPC = {

@@ -15,22 +15,41 @@ import { initSettingStore } from './module/settingStore';
 
 const settingStore = initSettingStore('v0-settings');
 
-// Sentryの初期化
-if (settingStore.getTermsAccepted()) {
+export let isSentryInitializedMain = false; // Sentry初期化フラグ exportする
+
+// Sentryの初期化関数 exportする
+export const initializeMainSentry = () => {
+  if (isSentryInitializedMain) {
+    log.info('Sentry already initialized in main process.');
+    return;
+  }
+  // SENTRY_DSN がなければ初期化しない
+  if (!process.env.SENTRY_DSN) {
+    log.info('Sentry not initialized in main process (SENTRY_DSN not set)');
+    return;
+  }
+
   log.info('Sentry initializing in main process via electron/index.ts');
   initSentry({
-    dsn: 'https://0c062396cbe896482888204f42f947ec@o4504163555213312.ingest.us.sentry.io/4508574659837952',
+    dsn: process.env.SENTRY_DSN,
     environment: process.env.NODE_ENV,
     debug: process.env.NODE_ENV !== 'production',
+    beforeSend: (event) => {
+      if (settingStore.getTermsAccepted()) {
+        return event;
+      }
+      log.info('Sentry event dropped due to terms not accepted.');
+      return null; // 規約未同意の場合はイベントを送信しない
+    },
   });
   log.info(
-    'Sentry initialized in main process via electron/index.ts (early init, filtered default integrations using integration.name)',
+    'Sentry initialized in main process via electron/index.ts. Event sending depends on terms acceptance.',
   );
-} else {
-  log.info(
-    'Sentry not initialized in main process (dev mode, terms not accepted or not production)',
-  );
-}
+  isSentryInitializedMain = true;
+};
+
+// アプリ起動時に初期化試行
+initializeMainSentry();
 
 const CHANNELS = {
   ERROR_MESSAGE: 'error-message',

@@ -41,16 +41,33 @@ function AppContent() {
         const isDevelopment = process.env.NODE_ENV !== 'production';
         const termsAccepted = termsStatus?.accepted; // termsStatusから規約同意状態を取得
         // 本番環境または規約同意済みの場合のみレンダラープロセスでも初期化
-        if (process.env.NODE_ENV === 'production' || termsAccepted) {
+        if (
+          (process.env.NODE_ENV === 'production' || termsAccepted) &&
+          process.env.SENTRY_DSN
+        ) {
           initSentry({
-            dsn: 'https://0c062396cbe896482888204f42f947ec@o4504163555213312.ingest.us.sentry.io/4508574659837952',
+            dsn: process.env.SENTRY_DSN, // 環境変数からDSNを取得
             environment: process.env.NODE_ENV,
             debug: isDevelopment,
+            beforeSend: (event) => {
+              // この時点での最新の規約同意状態を再度確認する
+              // API経由でメインプロセスから取得するのが最も確実だが、
+              // ここではレンダラープロセスが持つstateで代用する。
+              // より厳密にするなら、メインプロセスに問い合わせるか、
+              // storeのようなもので状態を同期する。
+              if (termsStatus?.accepted) {
+                return event;
+              }
+              console.log(
+                'Sentry event dropped in renderer due to terms not accepted.',
+              );
+              return null;
+            },
           });
           console.log('Sentry initialized in renderer process');
         } else {
           console.log(
-            'Sentry not initialized in renderer process (dev mode, terms not accepted)',
+            'Sentry not initialized in renderer process (dev mode, terms not accepted, or SENTRY_DSN not set)',
           );
         }
       },
@@ -64,8 +81,13 @@ function AppContent() {
     });
 
   useEffect(() => {
-    const checkTermsAcceptance = async () => {
-      if (!termsStatus) return;
+    const checkTermsAndInitializeSentry = async () => {
+      if (!termsStatus) return; // termsStatusが取得できるまで待つ
+
+      // Sentryの初期化（レンダラープロセス側）を試みる
+      // 実際の初期化やイベント送信は、DSNの有無やbeforeSendフックで制御される
+      // initializeSentryMain の onSuccess フック内でレンダラープロセスのSentryが初期化される
+      await initializeSentryMain();
 
       const { accepted, version } = termsStatus;
       const currentVersion = terms.version;
@@ -75,21 +97,18 @@ function AppContent() {
         setShowTerms(true);
         setIsUpdate(false);
         setHasAcceptedTerms(false);
-        // 規約未同意の場合、Sentry初期化は行わない (initializeSentryMain呼び出しを削除)
       } else if (version !== currentVersion) {
         setShowTerms(true);
         setIsUpdate(true);
         setHasAcceptedTerms(false);
-        // 規約更新が必要な場合も、同意後にSentry初期化されるため、ここでは呼び出さない
       } else {
         setHasAcceptedTerms(true);
-        // 規約同意済みの場合Sentryを初期化
-        await initializeSentryMain();
+        // setShowTerms(false); // 既に同意済みなのでモーダルは表示しない (この行はあってもなくても良い)
       }
     };
 
-    checkTermsAcceptance();
-  }, [termsStatus, initializeSentryMain]); // initializeSentryMainを依存配列に追加
+    checkTermsAndInitializeSentry();
+  }, [termsStatus, initializeSentryMain]); // initializeSentryMain と termsStatus を依存配列に含める
 
   const handleTermsAccept = async () => {
     await setTermsAccepted({
@@ -98,8 +117,8 @@ function AppContent() {
     });
     setShowTerms(false);
     setHasAcceptedTerms(true);
-    // 規約同意時にSentryを初期化
-    await initializeSentryMain();
+    // useEffectでtermsStatusが更新された際に initializeSentryMain が呼ばれるため、ここでの直接呼び出しは不要
+    // await initializeSentryMain();
   };
 
   if (!hasAcceptedTerms) {

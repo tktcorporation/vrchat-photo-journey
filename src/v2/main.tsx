@@ -1,4 +1,3 @@
-import { init } from '@sentry/electron/renderer';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
