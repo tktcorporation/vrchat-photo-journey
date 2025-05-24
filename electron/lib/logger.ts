@@ -56,10 +56,24 @@ const error = ({ message, stack }: ErrorLogParams): void => {
     ...(stack ? [stackWithCauses(stack)] : []),
   );
 
-  // 本番環境でのみSentryへ送信
-  if (isProduction) {
+  // Sentryテスト用エラーの判別
+  const isSentryTestError =
+    (message instanceof Error &&
+      (message.message.includes('test error for Sentry') ||
+        message.name === 'SentryTestError')) ||
+    (typeof message === 'string' && message.includes('test error for Sentry'));
+
+  // 本番環境、またはSentryテスト用エラーの場合はSentryへ送信
+  if (isProduction || isSentryTestError) {
     captureException(errorInfo, {
-      extra: stack ? { stack: stackWithCauses(stack) } : undefined,
+      extra: {
+        ...(stack ? { stack: stackWithCauses(stack) } : {}),
+        isSentryTestError,
+      },
+      tags: {
+        source: 'electron-main',
+        isSentryTestError: isSentryTestError ? 'true' : 'false',
+      },
     });
   }
 };
