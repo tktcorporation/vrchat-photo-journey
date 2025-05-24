@@ -7,6 +7,7 @@ import {
   handleResultError,
   handleResultErrorWithSilent,
 } from './lib/errorHelpers';
+import { log } from './lib/logger';
 import { backgroundSettingsRouter } from './module/backgroundSettings/controller/backgroundSettingsController';
 import { debugRouter } from './module/debug/debugController';
 import { electronUtilRouter } from './module/electronUtil/controller/electronUtilController';
@@ -139,9 +140,7 @@ export const router = trpcRouter({
     // ここでは追加の初期化処理は不要。
     // レンダラープロセスがSentryを使う準備ができたことをログで記録する程度に留める。
     const hasAcceptedTerms = settingStore.getTermsAccepted();
-    if (hasAcceptedTerms === false) {
-      throw new Error('Terms not accepted');
-    }
+    log.info('initializeSentry', hasAcceptedTerms);
   }),
   getVRChatPhotoExtraDirList: procedure.query((): string[] => {
     const extraDirs = settingStore.getVRChatPhotoExtraDirList();

@@ -40,36 +40,26 @@ function AppContent() {
       onSuccess: () => {
         const isDevelopment = process.env.NODE_ENV !== 'production';
         const termsAccepted = termsStatus?.accepted; // termsStatusから規約同意状態を取得
-        // 本番環境または規約同意済みの場合のみレンダラープロセスでも初期化
-        if (
-          (process.env.NODE_ENV === 'production' || termsAccepted) &&
-          process.env.SENTRY_DSN
-        ) {
-          initSentry({
-            dsn: process.env.SENTRY_DSN, // 環境変数からDSNを取得
-            environment: process.env.NODE_ENV,
-            debug: isDevelopment,
-            beforeSend: (event) => {
-              // この時点での最新の規約同意状態を再度確認する
-              // API経由でメインプロセスから取得するのが最も確実だが、
-              // ここではレンダラープロセスが持つstateで代用する。
-              // より厳密にするなら、メインプロセスに問い合わせるか、
-              // storeのようなもので状態を同期する。
-              if (termsStatus?.accepted) {
-                return event;
-              }
-              console.log(
-                'Sentry event dropped in renderer due to terms not accepted.',
-              );
-              return null;
-            },
-          });
-          console.log('Sentry initialized in renderer process');
-        } else {
-          console.log(
-            'Sentry not initialized in renderer process (dev mode, terms not accepted, or SENTRY_DSN not set)',
-          );
-        }
+        initSentry({
+          dsn: process.env.SENTRY_DSN, // 環境変数からDSNを取得
+          environment: process.env.NODE_ENV,
+          debug: isDevelopment,
+          beforeSend: (event) => {
+            // この時点での最新の規約同意状態を再度確認する
+            // API経由でメインプロセスから取得するのが最も確実だが、
+            // ここではレンダラープロセスが持つstateで代用する。
+            // より厳密にするなら、メインプロセスに問い合わせるか、
+            // storeのようなもので状態を同期する。
+            if (termsAccepted === true) {
+              return event;
+            }
+            console.log(
+              'Sentry event dropped in renderer due to terms not accepted.',
+            );
+            return null;
+          },
+        });
+        console.log('Sentry initialized in renderer process');
       },
       onError: (error) => {
         toast({
