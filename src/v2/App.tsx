@@ -1,5 +1,5 @@
 import { Toaster } from '@/components/ui/toaster';
-import { trpcReact } from '@/trpc';
+import { trpcClient, trpcReact } from '@/trpc';
 import TrpcWrapper from '@/trpcWrapper';
 import { init as initSentry } from '@sentry/electron/renderer';
 import { useEffect, useState } from 'react';
@@ -39,24 +39,33 @@ function AppContent() {
     trpcReact.initializeSentry.useMutation({
       onSuccess: () => {
         const isDevelopment = process.env.NODE_ENV !== 'production';
-        const termsAccepted = termsStatus?.accepted; // termsStatusから規約同意状態を取得
         initSentry({
           dsn: process.env.SENTRY_DSN, // 環境変数からDSNを取得
           environment: process.env.NODE_ENV,
           debug: isDevelopment,
-          beforeSend: (event) => {
-            // この時点での最新の規約同意状態を再度確認する
-            // API経由でメインプロセスから取得するのが最も確実だが、
-            // ここではレンダラープロセスが持つstateで代用する。
-            // より厳密にするなら、メインプロセスに問い合わせるか、
-            // storeのようなもので状態を同期する。
-            if (termsAccepted === true) {
-              return event;
+          tags: {
+            source: 'electron-renderer',
+          },
+          beforeSend: async (event) => {
+            try {
+              // メインプロセスに直接問い合わせる
+              const currentTermsStatus =
+                await trpcClient.getTermsAccepted.query();
+              if (currentTermsStatus?.accepted === true) {
+                return event;
+              }
+              console.log(
+                'Sentry event dropped in renderer due to terms not accepted (queried from main).',
+              );
+              return null;
+            } catch (error) {
+              console.error(
+                'Failed to query terms status from main process for Sentry:',
+                error,
+              );
+              // エラー時はイベントを送信しない (あるいはデフォルトの処理に任せる場合は event を返す)
+              return null;
             }
-            console.log(
-              'Sentry event dropped in renderer due to terms not accepted.',
-            );
-            return null;
           },
         });
         console.log('Sentry initialized in renderer process');
