@@ -45,6 +45,7 @@
     "test:electron": "vitest run --project electron",
     "jest": "jest --runInBand",
     "test:playwright": "playwright install --with-deps && playwright test",
+    "screenshot": "playwright test playwright/example.spec.ts",
     "check-unused": "npx tsr 'electron/index\\.ts' 'src/main\\.tsx' '\\.config\\.ts' 'spec.ts' 'test.ts'",
     "lint": "nr lint:biome && nr lint:type-check",
     "lint:biome": "biome check .",
