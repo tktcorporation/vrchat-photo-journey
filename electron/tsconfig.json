@@ -25,6 +25,6 @@
     "strict": true,
     "outDir": "../main"
   },
-  "exclude": ["node_modules", "**/*.spec.*", "**/*.test.*"],
+  "exclude": ["node_modules", "**/*.spec.*", "**/*.test.*", "vite.config.ts"],
   "include": ["./**/*.ts", "./**/*.tsx", "./**/*.js"]
 }

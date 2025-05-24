@@ -35,7 +35,9 @@
     "**/*.spec.ts",
     "**/*.spec.tsx",
     "**/*.test.ts",
-    "**/*.test.tsx"
+    "**/*.test.tsx",
+    "vite.config.ts",
+    "electron/vite.config.ts"
   ],
   "include": ["**/*.ts", "**/*.tsx", "**/*.js"]
 }
