@@ -38,11 +38,21 @@ function AppContent() {
   const { mutateAsync: initializeSentryMain } =
     trpcReact.initializeSentry.useMutation({
       onSuccess: () => {
-        // メインプロセスでの初期化が成功した場合のみ、レンダラープロセスでも初期化
-        initSentry({
-          dsn: 'https://0c062396cbe896482888204f42f947ec@o4504163555213312.ingest.us.sentry.io/4508574659837952',
-          environment: process.env.NODE_ENV,
-        });
+        const isDevelopment = process.env.NODE_ENV !== 'production';
+        const termsAccepted = termsStatus?.accepted; // termsStatusから規約同意状態を取得
+        // 本番環境または規約同意済みの場合のみレンダラープロセスでも初期化
+        if (process.env.NODE_ENV === 'production' || termsAccepted) {
+          initSentry({
+            dsn: 'https://0c062396cbe896482888204f42f947ec@o4504163555213312.ingest.us.sentry.io/4508574659837952',
+            environment: process.env.NODE_ENV,
+            debug: isDevelopment,
+          });
+          console.log('Sentry initialized in renderer process');
+        } else {
+          console.log(
+            'Sentry not initialized in renderer process (dev mode, terms not accepted)',
+          );
+        }
       },
       onError: (error) => {
         toast({
@@ -65,21 +75,21 @@ function AppContent() {
         setShowTerms(true);
         setIsUpdate(false);
         setHasAcceptedTerms(false);
+        // 規約未同意の場合、Sentry初期化は行わない (initializeSentryMain呼び出しを削除)
       } else if (version !== currentVersion) {
         setShowTerms(true);
         setIsUpdate(true);
         setHasAcceptedTerms(false);
+        // 規約更新が必要な場合も、同意後にSentry初期化されるため、ここでは呼び出さない
       } else {
         setHasAcceptedTerms(true);
-        // 規約同意済みの場合はSentryを初期化
-        if (process.env.NODE_ENV === 'production') {
-          await initializeSentryMain();
-        }
+        // 規約同意済みの場合Sentryを初期化
+        await initializeSentryMain();
       }
     };
 
     checkTermsAcceptance();
-  }, [termsStatus]);
+  }, [termsStatus, initializeSentryMain]); // initializeSentryMainを依存配列に追加
 
   const handleTermsAccept = async () => {
     await setTermsAccepted({
@@ -89,9 +99,7 @@ function AppContent() {
     setShowTerms(false);
     setHasAcceptedTerms(true);
     // 規約同意時にSentryを初期化
-    if (process.env.NODE_ENV === 'production') {
-      await initializeSentryMain();
-    }
+    await initializeSentryMain();
   };
 
   if (!hasAcceptedTerms) {

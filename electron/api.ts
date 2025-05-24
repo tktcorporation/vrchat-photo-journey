@@ -7,6 +7,7 @@ import {
   handleResultError,
   handleResultErrorWithSilent,
 } from './lib/errorHelpers';
+import * as log from './lib/logger';
 import { backgroundSettingsRouter } from './module/backgroundSettings/controller/backgroundSettingsController';
 import { debugRouter } from './module/debug/debugController';
 import { electronUtilRouter } from './module/electronUtil/controller/electronUtilController';
@@ -133,11 +134,29 @@ export const router = trpcRouter({
     }),
   initializeSentry: procedure.mutation(() => {
     const hasAcceptedTerms = settingStore.getTermsAccepted();
-    if (hasAcceptedTerms) {
-      initSentry({
-        dsn: 'https://0c062396cbe896482888204f42f947ec@o4504163555213312.ingest.us.sentry.io/4508574659837952',
-        environment: process.env.NODE_ENV,
-      });
+    // 開発環境であっても規約同意済みの場合のみメインプロセスでSentryを初期化する
+    // electron/index.tsでの初期化に一本化するため、ここでのメインプロセス初期化はコメントアウトまたは削除検討
+    // if (process.env.NODE_ENV === 'production' || hasAcceptedTerms) {
+    //   initSentry({
+    //     dsn: 'https://0c062396cbe896482888204f42f947ec@o4504163555213312.ingest.us.sentry.io/4508574659837952',
+    //     environment: process.env.NODE_ENV,
+    //     debug: process.env.NODE_ENV !== 'production',
+    //   });
+    //   console.log('Sentry initialized in main process via initializeSentry procedure (redundant if also in electron/index.ts)');
+    // }
+    // このプロシージャは、レンダラープロセスからのSentry初期化要求の合図として機能し続けるか、
+    // またはメインプロセスのSentryに追加の設定を動的に行う場合に使用できます。
+    // 現状では、electron/index.ts での初期化を正とするため、ここでの具体的な初期化処理は不要かもしれません。
+    // ただし、クライアント(レンダラー)側がこのAPIを呼び出してSentry初期化フローを開始する想定の場合、
+    // このAPI自体は残し、成功応答を返すだけでも意味があります。
+    if (process.env.NODE_ENV === 'production' || hasAcceptedTerms) {
+      log.info(
+        'initializeSentry procedure called. Main process Sentry should be initialized by electron/index.ts if terms accepted or in production.',
+      );
+    } else {
+      log.info(
+        'initializeSentry procedure called, but Sentry will not be initialized due to terms not accepted in development.',
+      );
     }
   }),
   getVRChatPhotoExtraDirList: procedure.query((): string[] => {

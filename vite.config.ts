@@ -22,7 +22,14 @@ export default ({ command }: ConfigEnv): UserConfig => {
       build: {
         outDir: join(srcRoot, '/out'),
         emptyOutDir: true,
-        rollupOptions: {},
+        rollupOptions: {
+          external: [
+            '@sentry/electron',
+            '@sentry/electron/main',
+            '@sentry/electron/renderer',
+            '@sentry/electron/preload',
+          ],
+        },
         sourcemap: true,
       },
       server: {
@@ -58,7 +65,14 @@ export default ({ command }: ConfigEnv): UserConfig => {
     build: {
       outDir: join(srcRoot, '/out'),
       emptyOutDir: true,
-      rollupOptions: {},
+      rollupOptions: {
+        external: [
+          '@sentry/electron',
+          '@sentry/electron/main',
+          '@sentry/electron/renderer',
+          '@sentry/electron/preload',
+        ],
+      },
       sourcemap: true,
     },
     server: {

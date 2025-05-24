@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { type BrowserWindow, app, ipcMain } from 'electron';
 
+import { init as initSentry } from '@sentry/electron/main';
 // Packages
 import { createIPCHandler } from 'electron-trpc/main';
 import unhandled from 'electron-unhandled';
@@ -13,6 +14,23 @@ import { getBackgroundUsecase } from './module/backGroundUsecase';
 import { initSettingStore } from './module/settingStore';
 
 const settingStore = initSettingStore('v0-settings');
+
+// Sentryの初期化
+if (settingStore.getTermsAccepted()) {
+  log.info('Sentry initializing in main process via electron/index.ts');
+  initSentry({
+    dsn: 'https://0c062396cbe896482888204f42f947ec@o4504163555213312.ingest.us.sentry.io/4508574659837952',
+    environment: process.env.NODE_ENV,
+    debug: process.env.NODE_ENV !== 'production',
+  });
+  log.info(
+    'Sentry initialized in main process via electron/index.ts (early init, filtered default integrations using integration.name)',
+  );
+} else {
+  log.info(
+    'Sentry not initialized in main process (dev mode, terms not accepted or not production)',
+  );
+}
 
 const CHANNELS = {
   ERROR_MESSAGE: 'error-message',

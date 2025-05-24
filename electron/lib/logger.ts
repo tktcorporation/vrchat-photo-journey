@@ -63,18 +63,29 @@ const error = ({ message, stack }: ErrorLogParams): void => {
         message.name === 'SentryTestError')) ||
     (typeof message === 'string' && message.includes('test error for Sentry'));
 
+  // デバッグ: Sentry送信条件の確認
+  log.debug(
+    `Sentry error conditions: isProduction=${isProduction}, isSentryTestError=${isSentryTestError}`,
+  );
+
   // 本番環境、またはSentryテスト用エラーの場合はSentryへ送信
   if (isProduction || isSentryTestError) {
-    captureException(errorInfo, {
-      extra: {
-        ...(stack ? { stack: stackWithCauses(stack) } : {}),
-        isSentryTestError,
-      },
-      tags: {
-        source: 'electron-main',
-        isSentryTestError: isSentryTestError ? 'true' : 'false',
-      },
-    });
+    log.debug('Attempting to send error to Sentry...');
+    try {
+      captureException(errorInfo, {
+        extra: {
+          ...(stack ? { stack: stackWithCauses(stack) } : {}),
+          isSentryTestError,
+        },
+        tags: {
+          source: 'electron-main',
+          isSentryTestError: isSentryTestError ? 'true' : 'false',
+        },
+      });
+      log.debug('Error sent to Sentry successfully');
+    } catch (sentryError) {
+      log.debug('Failed to send error to Sentry:', sentryError);
+    }
   }
 };
 
