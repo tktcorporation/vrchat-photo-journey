@@ -158,7 +158,7 @@ export const router = trpcRouter({
     }),
   initializeSentry: procedure.mutation(() => {
     const hasAcceptedTerms = settingStore.getTermsAccepted();
-    if (hasAcceptedTerms && process.env.NODE_ENV === 'production') {
+    if (hasAcceptedTerms) {
       initSentry({
         dsn: 'https://0c062396cbe896482888204f42f947ec@o4504163555213312.ingest.us.sentry.io/4508574659837952',
         environment: process.env.NODE_ENV,

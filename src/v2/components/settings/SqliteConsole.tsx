@@ -30,6 +30,8 @@ const SqliteConsole: React.FC<SqliteConsoleProps> = ({ isOpen, onClose }) => {
     trpcReact.debug.getLogLevel.useQuery(undefined, { enabled: isOpen });
   const { mutate: setLogLevel, isLoading: isSettingLogLevel } =
     trpcReact.debug.setLogLevel.useMutation();
+  const { mutateAsync: throwErrorForSentryTest, isLoading: isThrowingError } =
+    trpcReact.settings.throwErrorForSentryTest.useMutation();
 
   useEffect(() => {
     if (currentLogLevel) {
@@ -83,6 +85,15 @@ const SqliteConsole: React.FC<SqliteConsoleProps> = ({ isOpen, onClose }) => {
     setLogLevel({ level: newLevel });
   };
 
+  const handleThrowError = async () => {
+    try {
+      await throwErrorForSentryTest();
+      setResult('Error thrown successfully. Check Sentry.');
+    } catch (error) {
+      setResult(String(error));
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-[800px] h-[80vh] flex flex-col gap-0 p-0 bg-white dark:bg-gray-800">
@@ -107,6 +118,16 @@ const SqliteConsole: React.FC<SqliteConsoleProps> = ({ isOpen, onClose }) => {
             {t('debug.sqliteConsole.enableDebugLog' as const) ||
               'Enable Debug Log'}
           </Label>
+        </div>
+
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <Button
+            onClick={handleThrowError}
+            disabled={isThrowingError}
+            variant="destructive"
+          >
+            {t('debug.sqliteConsole.throwErrorButton') || 'Throw Test Error'}
+          </Button>
         </div>
 
         <div className="flex-1 flex flex-col gap-4 p-6 overflow-hidden">
