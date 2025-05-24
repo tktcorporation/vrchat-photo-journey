@@ -24,6 +24,65 @@ We use a custom error class, `UserFacingError`, to distinguish errors that shoul
     -   When such an error occurs in a tRPC procedure, the user will see a generic toast notification: "予期しないエラーが発生しました。" (An unexpected error occurred).
     -   The original error details are still sent to Sentry.
 
+## Coexistence with neverthrow
+
+Our application uses **neverthrow's Result pattern** in service layers and **UserFacingError pattern** in tRPC procedure layers. This hybrid approach provides the best of both worlds:
+
+### Service Layer (neverthrow Result pattern)
+- **File operations**, **database operations**, **external API calls** continue to use neverthrow's `Result<T, E>` pattern
+- This allows detailed error information to flow up to the caller
+- Callers can make informed decisions about how to handle specific error types
+
+### tRPC Procedure Layer (UserFacingError pattern)  
+- **tRPC procedures** convert neverthrow Results into appropriate UserFacingErrors or let unexpected errors propagate
+- This ensures users see appropriate messages while developers get full error details in Sentry
+
+### Helper Functions for Result-to-UserFacingError Conversion
+
+We provide helper functions in `electron/lib/errorHelpers.ts` to bridge neverthrow Results and UserFacingErrors:
+
+#### `handleResultError<T, E>(result: Result<T, E>, errorMappings: {...}): T`
+Converts a Result's error to a UserFacingError based on the provided mapping:
+
+```typescript
+import { handleResultError, fileOperationErrorMappings } from '../lib/errorHelpers';
+
+// In a tRPC procedure
+openPathOnExplorer: procedure.input(z.string()).mutation(async (ctx) => {
+  const result = await service.openPathOnExplorer(ctx.input);
+  // This will throw UserFacingError('指定されたファイルまたはフォルダが見つかりません。') for ENOENT
+  handleResultError(result, fileOperationErrorMappings);
+  return true;
+}),
+```
+
+#### `handleResultErrorWithSilent<T, E>(result: Result<T, E>, silentErrors: string[], errorMappings?: {...}): T | null`
+Handles Results where some errors should be processed silently (e.g., user cancellation):
+
+```typescript
+import { handleResultErrorWithSilent, fileOperationErrorMappings } from '../lib/errorHelpers';
+
+// In a tRPC procedure  
+setVRChatLogFilesDirByDialog: procedure.mutation(async () => {
+  const result = await service.setVRChatLogFilesDirByDialog();
+  // 'canceled' errors return null silently, other errors become UserFacingErrors
+  const dialogResult = handleResultErrorWithSilent(result, ['canceled'], fileOperationErrorMappings);
+  if (dialogResult !== null) {
+    eventEmitter.emit('toast', 'VRChatのログファイルの保存先を設定しました');
+  }
+  return true;
+}),
+```
+
+### Predefined Error Mappings
+
+We provide several predefined error mappings for common scenarios:
+
+- **`fileOperationErrorMappings`**: For file system operations (ENOENT, canceled, etc.)
+- **`vrchatLogErrorMappings`**: For VRChat log file operations  
+- **`photoOperationErrorMappings`**: For photo file operations
+- **`databaseErrorMappings`**: For database operations
+
 ## tRPC Error Handling Flow (Electron Main Process)
 
 The primary error handling is managed by a tRPC middleware and an error formatter defined in `electron/trpc.ts`.
@@ -48,7 +107,6 @@ The primary error handling is managed by a tRPC middleware and an error formatte
     -   Emits a `toast` event via `eventEmitter`.
         -   If the error is a `UserFacingError` or a Sentry Test Error, its specific message is used for the toast.
         -   Otherwise, the generic "予期しないエラーが発生しました。" message is used.
-        -   *Note: While the `errorFormatter` primarily controls the message seen by the TRPC client in `App.tsx`'s `useToast` hook, this eventEmitter mechanism provides an additional way to show toasts, potentially for non-TRPC errors if needed elsewhere in the main process, though the current primary path is via `errorFormatter`.* The `ToasterWrapper` in `App.tsx` subscribes to these events.
 
 ## `logger.ts` (`electron/lib/logger.ts`)
 
@@ -60,6 +118,33 @@ The primary error handling is managed by a tRPC middleware and an error formatte
 -   Additional metadata (like `isSentryTestError` tag) is added to Sentry reports for better context.
 
 ## How to Handle Errors in Your Code (tRPC Procedures)
+
+### For neverthrow Results in tRPC procedures:
+
+-   **Use helper functions** to convert Results to appropriate UserFacingErrors:
+    ```typescript
+    import { handleResultError, fileOperationErrorMappings } from '../lib/errorHelpers';
+    
+    // Example 1: Simple error mapping
+    procedure.mutation(async (ctx) => {
+      const result = await someServiceCall(ctx.input);
+      handleResultError(result, fileOperationErrorMappings);
+      return true;
+    });
+    
+    // Example 2: Silent handling of specific errors (like user cancellation)
+    procedure.mutation(async () => {
+      const result = await dialogService.showOpenDialog();
+      const dialogResult = handleResultErrorWithSilent(result, ['canceled'], fileOperationErrorMappings);
+      if (dialogResult !== null) {
+        // Process successful result
+        eventEmitter.emit('toast', 'Operation completed successfully');
+      }
+      return true;
+    });
+    ```
+
+### For direct error throwing:
 
 -   **If you want to show a specific message to the user for a known error condition:**
     -   Throw an instance of `UserFacingError` (or its subclasses like `OperationFailedError`).
@@ -97,6 +182,29 @@ The primary error handling is managed by a tRPC middleware and an error formatte
 -   **Sentry Test Error**:
     -   To test Sentry integration, throw an error whose message includes "test error for Sentry" or whose `name` is `SentryTestError`.
     -   The `throwErrorForSentryTest` procedure in `settingsController.ts` is an example of this.
+
+### For service layer (neverthrow Results):
+
+Continue using neverthrow's Result pattern for detailed error handling:
+
+```typescript
+// In service files
+export const getFileData = async (filePath: string): Promise<Result<string, 'ENOENT' | 'PERMISSION_DENIED'>> => {
+  try {
+    const data = await fs.readFile(filePath);
+    return ok(data.toString());
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      return err('ENOENT' as const);
+    }
+    if (error.code === 'EACCES') {
+      return err('PERMISSION_DENIED' as const);
+    }
+    // For unexpected errors, throw rather than return err()
+    throw error;
+  }
+};
+```
 
 ## Frontend Error Display (`src/v2/App.tsx`)
 

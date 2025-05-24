@@ -2,6 +2,11 @@ import { observable } from '@trpc/server/observable';
 import z from 'zod';
 
 import { init as initSentry } from '@sentry/electron/main';
+import {
+  fileOperationErrorMappings,
+  handleResultError,
+  handleResultErrorWithSilent,
+} from './lib/errorHelpers';
 import { backgroundSettingsRouter } from './module/backgroundSettings/controller/backgroundSettingsController';
 import { debugRouter } from './module/debug/debugController';
 import { electronUtilRouter } from './module/electronUtil/controller/electronUtilController';
@@ -15,12 +20,7 @@ import { vrchatApiRouter } from './module/vrchatApi/vrchatApiController';
 import { vrchatLogRouter } from './module/vrchatLog/vrchatLogController';
 import { vrchatPhotoRouter } from './module/vrchatPhoto/vrchatPhoto.controller';
 import { vrchatWorldJoinLogRouter } from './module/vrchatWorldJoinLog/vrchatWorldJoinLog.controller';
-import {
-  eventEmitter as ee,
-  logError,
-  procedure,
-  router as trpcRouter,
-} from './trpc';
+import { eventEmitter as ee, procedure, router as trpcRouter } from './trpc';
 
 // type ExtractDataTypeFromResult<R> = R extends Result<infer T, unknown>
 //   ? T
@@ -79,65 +79,40 @@ export const router = trpcRouter({
     .input(z.union([z.literal('logFilesDir'), z.literal('vrchatPhotoDir')]))
     .mutation(async (ctx) => {
       const result = service.clearStoredSetting(ctx.input);
-      result.match(
-        () => {
-          ee.emit('toast', '設定を削除しました');
-          return undefined;
-        },
-        (error) => {
-          logError(error);
-          return undefined;
-        },
-      );
+      // clearStoredSettingのエラーはサイレントに処理（ログのみ出力）
+      const clearResult = handleResultErrorWithSilent(result, ['Error']);
+      if (clearResult !== null || result.isOk()) {
+        ee.emit('toast', '設定を削除しました');
+      }
+      return undefined;
     }),
   openPathOnExplorer: procedure.input(z.string()).mutation(async (ctx) => {
     const result = await service.openPathOnExplorer(ctx.input);
-    return result.match(
-      () => {
-        return true;
-      },
-      (error) => {
-        logError(error);
-        return false;
-      },
-    );
+    handleResultError(result, fileOperationErrorMappings);
+    return true;
   }),
   openElectronLogOnExplorer: procedure.mutation(async () => {
     const result = await service.openElectronLogOnExplorer();
-    return result.match(
-      () => {
-        return true;
-      },
-      (error) => {
-        logError(error);
-        return false;
-      },
-    );
+    handleResultError(result, fileOperationErrorMappings);
+    return true;
   }),
   openDirOnExplorer: procedure.input(z.string()).mutation(async (ctx) => {
     const result = await service.openDirOnExplorer(ctx.input);
-    return result.match(
-      () => {
-        return true;
-      },
-      (error) => {
-        logError(error);
-        return false;
-      },
-    );
+    handleResultError(result, fileOperationErrorMappings);
+    return true;
   }),
   setVRChatLogFilesDirByDialog: procedure.mutation(async () => {
     const result = await service.setVRChatLogFilesDirByDialog();
-    return result.match(
-      () => {
-        ee.emit('toast', 'VRChatのログファイルの保存先を設定しました');
-        return true;
-      },
-      (error) => {
-        logError(error);
-        return false;
-      },
+    // キャンセルはサイレントに処理、その他のエラーはUserFacingErrorに変換
+    const dialogResult = handleResultErrorWithSilent(
+      result,
+      ['canceled'],
+      fileOperationErrorMappings,
     );
+    if (dialogResult !== null) {
+      ee.emit('toast', 'VRChatのログファイルの保存先を設定しました');
+    }
+    return true;
   }),
   getTermsAccepted: procedure.query(() => {
     return {
@@ -192,10 +167,16 @@ export const router = trpcRouter({
           canceled: false,
           filePaths,
         }),
-        () => ({
-          canceled: true,
-          filePaths: [],
-        }),
+        (error) => {
+          if (error === 'canceled') {
+            return {
+              canceled: true,
+              filePaths: [],
+            };
+          }
+          // canceledでない場合は予期しないエラーとして扱う
+          throw new Error(`Dialog error: ${error}`);
+        },
       );
     }),
 });

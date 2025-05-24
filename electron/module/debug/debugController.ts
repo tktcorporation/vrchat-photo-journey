@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { getDBQueue } from '../../lib/dbQueue';
+import { UserFacingError } from '../../lib/errors';
 import { log, error as logError, info as logInfo } from '../../lib/logger';
 import { procedure, router } from '../../trpc';
 
@@ -20,9 +21,13 @@ export const debugRouter = router({
         return await getDBQueue().query(input.query);
       } catch (error: unknown) {
         if (error instanceof Error) {
-          throw new Error(`SQLite query error: ${error.message}`);
+          throw new UserFacingError(
+            `SQLクエリの実行に失敗しました: ${error.message}`,
+          );
         }
-        throw new Error('Unknown SQLite query error');
+        throw new UserFacingError(
+          'SQLクエリの実行中に予期しないエラーが発生しました。',
+        );
       }
     }),
   setLogLevel: procedure
@@ -39,7 +44,7 @@ export const debugRouter = router({
         return { success: true };
       } catch (error: unknown) {
         logError({ message: 'Failed to set log level', stack: error as Error });
-        throw new Error('Failed to set log level');
+        throw new UserFacingError('ログレベルの設定に失敗しました。');
       }
     }),
   getLogLevel: procedure.query(() => {
