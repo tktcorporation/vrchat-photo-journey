@@ -26,7 +26,6 @@ export default ({ command }: ConfigEnv): UserConfig => {
           external: [
             '@sentry/electron',
             '@sentry/electron/main',
-            '@sentry/electron/renderer',
             '@sentry/electron/preload',
           ],
         },
@@ -70,7 +69,6 @@ export default ({ command }: ConfigEnv): UserConfig => {
         external: [
           '@sentry/electron',
           '@sentry/electron/main',
-          '@sentry/electron/renderer',
           '@sentry/electron/preload',
         ],
       },
