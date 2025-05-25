@@ -47,6 +47,7 @@ const buildErrorInfo = ({ message, stack }: ErrorLogParams): Error => {
 
 const info = log.info;
 const debug = log.debug;
+const warn = log.warn;
 const error = ({ message, stack }: ErrorLogParams): void => {
   const normalizedError = normalizeError(message);
   const errorInfo = buildErrorInfo({ message, stack });
@@ -58,8 +59,13 @@ const error = ({ message, stack }: ErrorLogParams): void => {
   );
 
   // 規約同意済みかどうかを確認
-  const settingStore = getSettingStore();
-  const termsAccepted = settingStore.getTermsAccepted();
+  let termsAccepted = false;
+  try {
+    const settingStore = getSettingStore();
+    termsAccepted = settingStore.getTermsAccepted();
+  } catch (error) {
+    log.warn('Failed to get terms accepted:', error);
+  }
 
   // 規約同意済みの場合のみSentryへ送信
   if (termsAccepted === true) {
@@ -81,8 +87,6 @@ const error = ({ message, stack }: ErrorLogParams): void => {
     log.debug('Terms not accepted, skipping Sentry error');
   }
 };
-
-const warn = log.warn;
 
 const electronLogFilePath = log.transports.file.getFile().path;
 

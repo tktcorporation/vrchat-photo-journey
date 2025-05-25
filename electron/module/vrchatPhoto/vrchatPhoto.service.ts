@@ -130,28 +130,15 @@ export const getVRChatPhotoList = async (
       'yyyy-MM-dd_HH-mm-ss.SSS',
       new Date(),
     );
-    try {
-      const metadata = await sharp(photoPath).metadata();
-      const height = metadata.height ?? 720;
-      const width = metadata.width ?? 1280;
-      return {
-        photoPath,
-        takenAt,
-        width,
-        height,
-      };
-    } catch (error) {
-      logger.error({
-        message: `Failed to get photo metadata for ${photoPath}`,
-        stack: error instanceof Error ? error : new Error(String(error)),
-      });
-      return {
-        photoPath,
-        takenAt,
-        width: 1280,
-        height: 720,
-      };
-    }
+    const metadata = await sharp(photoPath).metadata();
+    const height = metadata.height ?? 720;
+    const width = metadata.width ?? 1280;
+    return {
+      photoPath,
+      takenAt,
+      width,
+      height,
+    };
   });
   const photoList = (await Promise.all(photoInfoPromises)).filter(
     (info): info is VRChatPhotoInfo => info !== null,
