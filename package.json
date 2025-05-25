@@ -38,7 +38,7 @@
     "update-changelog": "git-cliff -c ./cliff.toml -o CHANGELOG.md",
     "clean:debug": "bash debug/cleanDevFiles.sh",
     "find-deadcode": "ts-prune",
-    "license-check:generate": "license-checker --production --json --out src/assets/licenses.json",
+    "license-check:generate": "nlx tsx scripts/generate-licenses.mts",
     "license-check:validate": "license-checker --production --failOn 'GPL;GPL-2.0;GPL-3.0;LGPL;LGPL-3.0;AGPL;AGPL-3.0;AGPL-3.0-only;'",
     "test": "nr vitest run",
     "test:web": "vitest run --project web",
