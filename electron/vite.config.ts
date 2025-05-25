@@ -24,6 +24,13 @@ export default defineConfig({
     },
     rollupOptions: {
       external: [
+        // Sentry 関連のモジュール
+        '@sentry/electron',
+        '@sentry/electron/main',
+        '@sentry/electron/renderer',
+        '@sentry/electron/preload',
+        '@sentry/vite-plugin',
+        // Electron 関連のモジュール
         'electron',
         'electron-is-dev',
         'electron-log',

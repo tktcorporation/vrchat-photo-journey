@@ -3,6 +3,7 @@ import { app } from 'electron';
 import * as log from 'electron-log';
 import path from 'pathe';
 import { stackWithCauses } from 'pony-cause';
+import { getSettingStore } from '../module/settingStore';
 
 // appが未定義の場合はテスト環境や非Electron環境として判定
 const logFilePath = app
@@ -46,6 +47,7 @@ const buildErrorInfo = ({ message, stack }: ErrorLogParams): Error => {
 
 const info = log.info;
 const debug = log.debug;
+const warn = log.warn;
 const error = ({ message, stack }: ErrorLogParams): void => {
   const normalizedError = normalizeError(message);
   const errorInfo = buildErrorInfo({ message, stack });
@@ -56,11 +58,33 @@ const error = ({ message, stack }: ErrorLogParams): void => {
     ...(stack ? [stackWithCauses(stack)] : []),
   );
 
-  // 本番環境でのみSentryへ送信
-  if (isProduction) {
-    captureException(errorInfo, {
-      extra: stack ? { stack: stackWithCauses(stack) } : undefined,
-    });
+  // 規約同意済みかどうかを確認
+  let termsAccepted = false;
+  try {
+    const settingStore = getSettingStore();
+    termsAccepted = settingStore.getTermsAccepted();
+  } catch (error) {
+    log.warn('Failed to get terms accepted:', error);
+  }
+
+  // 規約同意済みの場合のみSentryへ送信
+  if (termsAccepted === true) {
+    log.debug('Attempting to send error to Sentry...');
+    try {
+      captureException(errorInfo, {
+        extra: {
+          ...(stack ? { stack: stackWithCauses(stack) } : {}),
+        },
+        tags: {
+          source: 'electron-main',
+        },
+      });
+      log.debug('Error sent to Sentry successfully');
+    } catch (sentryError) {
+      log.debug('Failed to send error to Sentry:', sentryError);
+    }
+  } else {
+    log.debug('Terms not accepted, skipping Sentry error');
   }
 };
 
@@ -70,7 +94,8 @@ const logger = {
   info,
   debug,
   error,
+  warn,
   electronLogFilePath,
 };
 
-export { info, debug, error, electronLogFilePath, logger, log };
+export { info, debug, error, warn, electronLogFilePath, logger, log };
