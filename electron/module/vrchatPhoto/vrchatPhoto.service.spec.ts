@@ -1,6 +1,6 @@
 import { app } from 'electron';
 import { glob } from 'glob';
-import type { Sharp } from 'sharp';
+import type { Metadata, Sharp } from 'sharp';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { type SettingStore, getSettingStore } from '../settingStore';
 import { VRChatPhotoDirPathSchema } from './valueObjects';
@@ -49,22 +49,138 @@ describe('vrchatPhoto.service', () => {
     vi.resetAllMocks();
   });
 
-  it('getVRChatPhotoItemData', async () => {
-    const input = '/path/to/hogehoge.jpg';
-    const sharp = (await import('sharp')).default;
-    vi.mocked(sharp).mockImplementationOnce(() => {
-      throw new Error('Input file is missing');
+  // getVRChatPhotoItemData のテストを describe でグループ化
+  describe('getVRChatPhotoItemData', () => {
+    const mockInputPhotoPath =
+      '/path/to/VRChat_2023-10-26_10-30-00.123_1920x1080.png';
+    const mockResizeWidth = 256;
+
+    it('should return VRChatPhotoItemData on success', async () => {
+      const sharpFactory = vi.mocked((await import('sharp')).default);
+      const mockThumbnailBuffer = Buffer.from('thumbnail_data');
+      const expectedBase64String = `data:image/png;base64,${mockThumbnailBuffer.toString(
+        'base64',
+      )}`;
+
+      // sharpファクトリが返すインスタンスのメソッドをモック
+      const mockInstance = {
+        metadata: vi.fn().mockResolvedValue({
+          width: 1920,
+          height: 1080,
+          format: 'png',
+        } as Metadata),
+        resize: vi.fn().mockReturnThis(),
+        toBuffer: vi.fn().mockResolvedValue(mockThumbnailBuffer),
+      };
+      sharpFactory.mockReturnValue(mockInstance as unknown as Sharp);
+
+      const result = await getVRChatPhotoItemData({
+        photoPath: mockInputPhotoPath,
+        width: mockResizeWidth,
+      });
+
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        // 期待値を base64 エンコードされた文字列に変更
+        expect(result.value).toBe(expectedBase64String);
+      }
+      expect(sharpFactory).toHaveBeenCalledWith(mockInputPhotoPath);
+      // metadataは呼ばれなくなったのでコメントアウト、もしくは削除
+      // expect(mockInstance.metadata).toHaveBeenCalled();
+      expect(mockInstance.resize).toHaveBeenCalledWith(mockResizeWidth);
+      expect(mockInstance.toBuffer).toHaveBeenCalled();
     });
 
-    const result = await getVRChatPhotoItemData({
-      photoPath: input,
-      width: 256,
-    });
+    describe('Error handling', () => {
+      it('should return "InputFileIsMissing" error when sharp instantiation throws "Input file is missing"', async () => {
+        const sharpFactory = vi.mocked((await import('sharp')).default);
+        sharpFactory.mockImplementationOnce(() => {
+          // ファクトリ自体のエラー
+          throw new Error('Input file is missing');
+        });
 
-    expect(result.isErr()).toBe(true);
-    if (result.isErr()) {
-      expect(result.error).toBe('InputFileIsMissing');
-    }
+        const result = await getVRChatPhotoItemData({
+          photoPath: mockInputPhotoPath,
+          width: mockResizeWidth,
+        });
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+          expect(result.error).toBe('InputFileIsMissing');
+        }
+      });
+
+      it('should throw error for other sharp instantiation errors', async () => {
+        const sharpFactory = vi.mocked((await import('sharp')).default);
+        const errorMessage = 'Some other sharp error';
+        sharpFactory.mockImplementationOnce(() => {
+          // ファクトリ自体のエラー
+          throw new Error(errorMessage);
+        });
+
+        // エラーがスローされることを期待
+        await expect(
+          getVRChatPhotoItemData({
+            photoPath: mockInputPhotoPath,
+            width: mockResizeWidth,
+          }),
+        ).rejects.toThrow(errorMessage);
+      });
+
+      // it('should throw error when sharp.metadata throws an error (if called)', async () => {
+      //   // 現在の実装ではmetadataは呼ばれないが、将来的に呼ばれる可能性を考慮して残す場合
+      //   // もし呼ばれないことが確定ならこのテストは不要
+      //   const sharpFactory = vi.mocked((await import('sharp')).default);
+      //   const errorMessage = 'Metadata error';
+      //   const mockInstance = {
+      //     metadata: vi.fn().mockRejectedValueOnce(new Error(errorMessage)),
+      //     resize: vi.fn().mockReturnThis(),
+      //     toBuffer: vi.fn(),
+      //   };
+      //   sharpFactory.mockReturnValue(mockInstance as unknown as Sharp);
+      //
+      //   // getVRChatPhotoItemData内でmetadataが呼ばれると仮定した場合、エラーがスローされる
+      //   // 現在の実装では呼ばれないため、このテストは失敗する可能性がある
+      //   // もしsharp(photoPath)の時点でエラーになるなら、そのテストケースでカバーされる
+      //   // このテストケースは、toBufferの前にmetadataが呼ばれる場合に意味がある
+      //   // 今回の実装では、sharp(photoPath)の後に 바로 .resize().toBuffer() となっているので、
+      //   // metadata() が直接呼ばれることはありません。
+      //   // 代わりに、sharp(photoPath) でエラーが発生するケースは
+      //   // "should throw error for other sharp instantiation errors" でカバーされるか、
+      //   // "InputFileIsMissing" でカバーされます。
+      //   // よってこのテストは現状では適切ではないかもしれません。
+      //   // エラーをthrowするようになったので、エラーをキャッチする形に変更
+      //   await expect(
+      //     getVRChatPhotoItemData({
+      //       photoPath: mockInputPhotoPath,
+      //       width: mockResizeWidth,
+      //     }),
+      //   ).rejects.toThrow(errorMessage);
+      // });
+
+      it('should throw error when sharp.toBuffer throws an error', async () => {
+        const sharpFactory = vi.mocked((await import('sharp')).default);
+        const errorMessage = 'ToBuffer error';
+        const mockInstance = {
+          // metadataは呼ばれないが、sharpインスタンス生成は成功すると仮定
+          metadata: vi.fn().mockResolvedValue({
+            width: 1920,
+            height: 1080,
+            format: 'png',
+          } as Metadata),
+          resize: vi.fn().mockReturnThis(),
+          toBuffer: vi.fn().mockRejectedValueOnce(new Error(errorMessage)),
+        };
+        sharpFactory.mockReturnValue(mockInstance as unknown as Sharp);
+
+        await expect(
+          getVRChatPhotoItemData({
+            photoPath: mockInputPhotoPath,
+            width: mockResizeWidth,
+          }),
+        ).rejects.toThrow(errorMessage);
+      });
+    });
   });
 
   describe('getVRChatPhotoList', () => {
