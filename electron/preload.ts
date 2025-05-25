@@ -1,3 +1,8 @@
+import '@sentry/electron/preload';
+/**
+ * Electron の preload スクリプト。
+ * Sentry の IPC 連携を有効化するため、`@sentry/electron/preload` を読み込む。
+ */
 import { contextBridge, ipcRenderer } from 'electron';
 
 import type { Operation } from '@trpc/client';
