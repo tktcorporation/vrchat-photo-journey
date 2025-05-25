@@ -7,7 +7,7 @@ jobs:
   screenshot:
     runs-on: ubuntu-22.04
     permissions:
-      contents: read
+      contents: write # Changed from read to write
       pull-requests: write
 
     steps:
@@ -39,42 +39,42 @@ jobs:
           name: screenshots
           path: playwright/previews/*.png
 
-      - name: Comment PR with screenshot
-        uses: actions/github-script@v7
+      - name: Publish screenshot to branch
         env:
-          screenshotUrl: ${{ steps.upload-screenshot.outputs.artifact-url }}
-        with:
-          script: |
-            const screenshotPath = process.env.screenshotUrl;
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: '![screenshot](' + screenshotPath + ')'
-            });
-
-      - name: debug
+          BRANCH: pr-screenshot-${{ github.event.pull_request.number }}-${{ github.run_id }}
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          pwd
-          ls
-          ls playwright
-          ls playwright/previews
+          SCREENSHOT_DIR="playwright/previews"
+          # Find the first PNG file in the directory
+          SCREENSHOT_FILE=$(find "$SCREENSHOT_DIR" -maxdepth 1 -name '*.png' -print -quit)
 
-      - name: Comment PR with screenshot 2
-        uses: actions/github-script@v7
+          if [ -z "$SCREENSHOT_FILE" ]; then
+            echo "No PNG screenshot found in $SCREENSHOT_DIR"
+            exit 1
+          fi
+
+          echo "Found screenshot: $SCREENSHOT_FILE"
+
+          mkdir upload && cp "$SCREENSHOT_FILE" upload/pr-screenshot.png
+          cd upload
+          git init
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add pr-screenshot.png
+          git commit -m "Add screenshot for PR #${{ github.event.pull_request.number }}"
+          git branch -M "$BRANCH"
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
+          git push origin "$BRANCH" --force
+
+      - name: Comment with screenshot
         env:
-          screenshotPath: './playwright/previews/'
+          BRANCH: pr-screenshot-${{ github.event.pull_request.number }}-${{ github.run_id }}
+          REPO: ${{ github.repository }}
+        uses: thollander/actions-comment-pull-request@v2
         with:
-          script: |
-            const path = require('path');
-            const screenshotPath = path.resolve(process.env.screenshotPath);
-            const fs = require('fs');
-            const screenshotList = fs.readdirSync(screenshotPath).filter(file => file.endsWith('.png'));
-            const screenshot = screenshotList[0];
-            const base64encoded = fs.readFileSync(`${screenshotPath}/${screenshot}`, 'base64');
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: '![screenshot](data:image/png;base64,' + base64encoded + ')'
-            });
+          message: |
+            Screenshot for this PR:
+            ![](https://raw.githubusercontent.com/${{ env.REPO }}/${{ env.BRANCH }}/pr-screenshot.png)
+          pr_number: ${{ github.event.pull_request.number }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
