@@ -1,3 +1,4 @@
+import { VRChatPhotoFileNameWithExtSchema } from '../../../../valueObjects';
 import type { Photo } from '../../../types/photo';
 import { groupPhotosBySession } from '../useGroupPhotos';
 import type { WorldJoinLog } from '../useGroupPhotos';
@@ -6,7 +7,7 @@ import type { WorldJoinLog } from '../useGroupPhotos';
 const createPhoto = (id: string | number, takenAt: Date): Photo => ({
   id: id.toString(),
   url: `photo-${id}`,
-  fileName: `photo${id}.png`,
+  fileNameWithExt: VRChatPhotoFileNameWithExtSchema.parse(`photo${id}.png`),
   width: 1920,
   height: 1080,
   takenAt,
