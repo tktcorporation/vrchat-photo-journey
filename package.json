@@ -180,7 +180,7 @@
     "rimraf": "5.0.5",
     "simple-git-hooks": "2.11.1",
     "ts-prune": "0.10.3",
-    "typescript": "5.7.2",
+    "typescript": "^5.8.3",
     "vitest": "^2.1.8"
   },
   "build": {
