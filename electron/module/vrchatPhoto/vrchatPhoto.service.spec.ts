@@ -1,5 +1,6 @@
 import { app } from 'electron';
 import { glob } from 'glob';
+import type { Sharp } from 'sharp';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { type SettingStore, getSettingStore } from '../settingStore';
 import { VRChatPhotoDirPathSchema } from './valueObjects';
@@ -51,7 +52,7 @@ describe('vrchatPhoto.service', () => {
   it('getVRChatPhotoItemData', async () => {
     const input = '/path/to/hogehoge.jpg';
     const sharp = (await import('sharp')).default;
-    vi.mocked(sharp).mockImplementation(() => {
+    vi.mocked(sharp).mockImplementationOnce(() => {
       throw new Error('Input file is missing');
     });
 
@@ -67,8 +68,25 @@ describe('vrchatPhoto.service', () => {
   });
 
   describe('getVRChatPhotoList', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       vi.resetAllMocks();
+
+      // sharpモックの動作を再設定
+      const sharpModule = await import('sharp');
+      const mockSharpFactory = sharpModule.default;
+
+      const mockReturnedInstance = {
+        metadata: vi.fn().mockResolvedValue({
+          width: 1920,
+          height: 1080,
+          format: 'png',
+        }),
+        resize: vi.fn().mockReturnThis(),
+        toBuffer: vi.fn().mockResolvedValue(Buffer.from('dummy')),
+      };
+      vi.mocked(mockSharpFactory).mockReturnValue(
+        mockReturnedInstance as unknown as Sharp,
+      );
     });
 
     it('Windows環境で写真が検索できる', async () => {
