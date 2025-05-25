@@ -1,5 +1,9 @@
 import * as neverthrow from 'neverthrow';
 import z from 'zod';
+import {
+  handleResultError,
+  photoOperationErrorMappings,
+} from '../../lib/errorHelpers';
 import * as log from './../../lib/logger';
 import { eventEmitter, procedure, router as trpcRouter } from './../../trpc';
 import * as utilsService from './../electronUtil/service';
@@ -119,10 +123,7 @@ export const vrchatPhotoRouter = () =>
         const result = await vrchatPhotoService.getVRChatPhotoItemData(
           ctx.input,
         );
-        if (result.isErr()) {
-          throw result.error;
-        }
-        return result.value;
+        return handleResultError(result, photoOperationErrorMappings);
       }),
     getVRChatPhotoItemData: procedure.input(z.string()).query(async (ctx) => {
       const result = await vrchatPhotoService.getVRChatPhotoItemData({
