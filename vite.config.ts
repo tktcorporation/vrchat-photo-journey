@@ -22,7 +22,14 @@ export default ({ command }: ConfigEnv): UserConfig => {
       build: {
         outDir: join(srcRoot, '/out'),
         emptyOutDir: true,
-        rollupOptions: {},
+        rollupOptions: {
+          external: [
+            '@sentry/electron',
+            '@sentry/electron/main',
+            '@sentry/electron/renderer',
+            '@sentry/electron/preload',
+          ],
+        },
         sourcemap: true,
       },
       server: {
@@ -33,6 +40,7 @@ export default ({ command }: ConfigEnv): UserConfig => {
       },
       define: {
         'process.env.NODE_ENV': JSON.stringify('development'),
+        'process.env.SENTRY_DSN': JSON.stringify(process.env.SENTRY_DSN),
       },
     };
   }
@@ -58,7 +66,14 @@ export default ({ command }: ConfigEnv): UserConfig => {
     build: {
       outDir: join(srcRoot, '/out'),
       emptyOutDir: true,
-      rollupOptions: {},
+      rollupOptions: {
+        external: [
+          '@sentry/electron',
+          '@sentry/electron/main',
+          '@sentry/electron/renderer',
+          '@sentry/electron/preload',
+        ],
+      },
       sourcemap: true,
     },
     server: {
@@ -69,6 +84,7 @@ export default ({ command }: ConfigEnv): UserConfig => {
     },
     define: {
       'process.env.NODE_ENV': JSON.stringify('production'),
+      'process.env.SENTRY_DSN': JSON.stringify(process.env.SENTRY_DSN),
     },
   };
 };

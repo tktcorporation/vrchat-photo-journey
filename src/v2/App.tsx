@@ -1,5 +1,5 @@
 import { Toaster } from '@/components/ui/toaster';
-import { trpcReact } from '@/trpc';
+import { trpcClient, trpcReact } from '@/trpc';
 import TrpcWrapper from '@/trpcWrapper';
 import { init as initSentry } from '@sentry/electron/renderer';
 import { useEffect, useState } from 'react';
@@ -38,11 +38,37 @@ function AppContent() {
   const { mutateAsync: initializeSentryMain } =
     trpcReact.initializeSentry.useMutation({
       onSuccess: () => {
-        // メインプロセスでの初期化が成功した場合のみ、レンダラープロセスでも初期化
+        const isDevelopment = process.env.NODE_ENV !== 'production';
         initSentry({
-          dsn: 'https://0c062396cbe896482888204f42f947ec@o4504163555213312.ingest.us.sentry.io/4508574659837952',
+          dsn: process.env.SENTRY_DSN, // 環境変数からDSNを取得
           environment: process.env.NODE_ENV,
+          debug: isDevelopment,
+          tags: {
+            source: 'electron-renderer',
+          },
+          beforeSend: async (event) => {
+            try {
+              // メインプロセスに直接問い合わせる
+              const currentTermsStatus =
+                await trpcClient.getTermsAccepted.query();
+              if (currentTermsStatus?.accepted === true) {
+                return event;
+              }
+              console.log(
+                'Sentry event dropped in renderer due to terms not accepted (queried from main).',
+              );
+              return null;
+            } catch (error) {
+              console.error(
+                'Failed to query terms status from main process for Sentry:',
+                error,
+              );
+              // エラー時はイベントを送信しない (あるいはデフォルトの処理に任せる場合は event を返す)
+              return null;
+            }
+          },
         });
+        console.log('Sentry initialized in renderer process');
       },
       onError: (error) => {
         toast({
@@ -54,8 +80,13 @@ function AppContent() {
     });
 
   useEffect(() => {
-    const checkTermsAcceptance = async () => {
-      if (!termsStatus) return;
+    const checkTermsAndInitializeSentry = async () => {
+      if (!termsStatus) return; // termsStatusが取得できるまで待つ
+
+      // Sentryの初期化（レンダラープロセス側）を試みる
+      // 実際の初期化やイベント送信は、DSNの有無やbeforeSendフックで制御される
+      // initializeSentryMain の onSuccess フック内でレンダラープロセスのSentryが初期化される
+      await initializeSentryMain();
 
       const { accepted, version } = termsStatus;
       const currentVersion = terms.version;
@@ -71,15 +102,12 @@ function AppContent() {
         setHasAcceptedTerms(false);
       } else {
         setHasAcceptedTerms(true);
-        // 規約同意済みの場合はSentryを初期化
-        if (process.env.NODE_ENV === 'production') {
-          await initializeSentryMain();
-        }
+        // setShowTerms(false); // 既に同意済みなのでモーダルは表示しない (この行はあってもなくても良い)
       }
     };
 
-    checkTermsAcceptance();
-  }, [termsStatus]);
+    checkTermsAndInitializeSentry();
+  }, [termsStatus, initializeSentryMain]); // initializeSentryMain と termsStatus を依存配列に含める
 
   const handleTermsAccept = async () => {
     await setTermsAccepted({
@@ -88,10 +116,8 @@ function AppContent() {
     });
     setShowTerms(false);
     setHasAcceptedTerms(true);
-    // 規約同意時にSentryを初期化
-    if (process.env.NODE_ENV === 'production') {
-      await initializeSentryMain();
-    }
+    // useEffectでtermsStatusが更新された際に initializeSentryMain が呼ばれるため、ここでの直接呼び出しは不要
+    // await initializeSentryMain();
   };
 
   if (!hasAcceptedTerms) {

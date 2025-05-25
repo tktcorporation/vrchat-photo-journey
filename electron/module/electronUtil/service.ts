@@ -236,20 +236,12 @@ export const saveFileToPath = async (
 const copyMultipleFilesToClipboard = async (
   filePaths: string[],
 ): Promise<neverthrow.Result<void, Error>> => {
-  try {
-    if (filePaths.length === 0) {
-      return neverthrow.ok(undefined);
-    }
-    copyFiles(filePaths);
-
+  if (filePaths.length === 0) {
     return neverthrow.ok(undefined);
-  } catch (error) {
-    return neverthrow.err(
-      error instanceof Error
-        ? error
-        : new Error('Failed to copy multiple files'),
-    );
   }
+  copyFiles(filePaths);
+
+  return neverthrow.ok(undefined);
 };
 
 export {

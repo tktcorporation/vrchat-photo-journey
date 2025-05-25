@@ -52,6 +52,7 @@ export interface Translations {
       resultLabel: string;
       noResult: string;
       enableDebugLog: string;
+      throwErrorButton: string;
     };
   };
   locationHeader: {

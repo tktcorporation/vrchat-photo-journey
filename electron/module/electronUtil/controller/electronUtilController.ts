@@ -4,6 +4,11 @@ import * as path from 'pathe';
 import sharp from 'sharp';
 import z from 'zod';
 import { getWindow } from '../../../electronUtil';
+import {
+  fileOperationErrorMappings,
+  handleResultError,
+  handleResultErrorWithSilent,
+} from '../../../lib/errorHelpers';
 import * as exiftool from '../../../lib/wrappedExifTool';
 import { eventEmitter, procedure, router as trpcRouter } from './../../../trpc';
 import { DirectoryPathSchema } from './../../../valueObjects/index';
@@ -41,9 +46,7 @@ export const electronUtilRouter = () =>
     }),
     copyImageDataByPath: procedure.input(z.string()).mutation(async (ctx) => {
       const result = await utilsService.copyImageDataByPath(ctx.input);
-      if (result.isErr()) {
-        throw result.error;
-      }
+      handleResultError(result, fileOperationErrorMappings);
       return true;
     }),
     downloadImageAsPng: procedure
@@ -55,14 +58,12 @@ export const electronUtilRouter = () =>
       )
       .mutation(async (ctx) => {
         const result = await utilsService.downloadImageAsPng(ctx.input);
-        if (result.isErr()) {
-          if (result.error === 'canceled') {
-            console.log('Download canceled by user.');
-            return true;
-          }
-          throw result.error;
-        }
-        return true;
+        const downloadResult = handleResultErrorWithSilent(
+          result,
+          ['canceled'],
+          fileOperationErrorMappings,
+        );
+        return downloadResult !== null;
       }),
     downloadImageAsPhotoLogPng: procedure
       .input(
@@ -120,18 +121,14 @@ export const electronUtilRouter = () =>
       )
       .mutation(async (ctx) => {
         const result = await utilsService.copyImageByBase64(ctx.input);
-        if (result.isErr()) {
-          throw result.error;
-        }
+        handleResultError(result, fileOperationErrorMappings);
         return true;
       }),
     openPhotoPathWithPhotoApp: procedure
       .input(z.string())
       .mutation(async (ctx) => {
         const result = await utilsService.openPhotoPathWithPhotoApp(ctx.input);
-        if (result.isErr()) {
-          throw result.error;
-        }
+        handleResultError(result, fileOperationErrorMappings);
         return true;
       }),
     openGetDirDialog: procedure.query(async () => {
@@ -145,9 +142,7 @@ export const electronUtilRouter = () =>
       .input(z.string())
       .mutation(async (ctx) => {
         const result = await utilsService.openPathWithAssociatedApp(ctx.input);
-        if (result.isErr()) {
-          throw result.error;
-        }
+        handleResultError(result, fileOperationErrorMappings);
         return true;
       }),
     copyMultipleImageDataByPath: procedure
@@ -160,9 +155,7 @@ export const electronUtilRouter = () =>
         );
 
         const result = await utilsService.copyMultipleFilesToClipboard(paths);
-        if (result.isErr()) {
-          throw result.error;
-        }
+        handleResultError(result, fileOperationErrorMappings);
         return true;
       }),
   });

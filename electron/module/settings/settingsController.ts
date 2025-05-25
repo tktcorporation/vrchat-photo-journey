@@ -72,4 +72,20 @@ export const settingsRouter = () =>
       log.debug('openApplicationLogInExploler', logPath);
       await electronUtilService.openPathInExplorer(logPath);
     }),
+    throwErrorForSentryTest: procedure.mutation(async () => {
+      log.debug('Throwing test error for Sentry integration');
+      const sentryTestError = new Error(
+        'This is a test error for Sentry integration.',
+      );
+      sentryTestError.name = 'SentryTestError';
+      Object.defineProperty(sentryTestError, 'additionalInfo', {
+        enumerable: true,
+        value: {
+          timestamp: new Date().toISOString(),
+          environment: process.env.NODE_ENV,
+          testProperty: 'This is a test property',
+        },
+      });
+      throw sentryTestError;
+    }),
   });

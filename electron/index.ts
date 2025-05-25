@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { type BrowserWindow, app, ipcMain } from 'electron';
 
+import { init as initSentry } from '@sentry/electron/main';
 // Packages
 import { createIPCHandler } from 'electron-trpc/main';
 import unhandled from 'electron-unhandled';
@@ -13,6 +14,42 @@ import { getBackgroundUsecase } from './module/backGroundUsecase';
 import { initSettingStore } from './module/settingStore';
 
 const settingStore = initSettingStore('v0-settings');
+
+export let isSentryInitializedMain = false; // Sentry初期化フラグ exportする
+
+// Sentryの初期化関数 exportする
+export const initializeMainSentry = () => {
+  if (isSentryInitializedMain) {
+    log.info('Sentry already initialized in main process.');
+    return;
+  }
+  // SENTRY_DSN がなければ初期化しない
+  if (!process.env.SENTRY_DSN) {
+    log.info('Sentry not initialized in main process (SENTRY_DSN not set)');
+    return;
+  }
+
+  log.info('Sentry initializing in main process via electron/index.ts');
+  initSentry({
+    dsn: process.env.SENTRY_DSN,
+    environment: process.env.NODE_ENV,
+    debug: process.env.NODE_ENV !== 'production',
+    beforeSend: (event) => {
+      if (settingStore.getTermsAccepted()) {
+        return event;
+      }
+      log.info('Sentry event dropped due to terms not accepted.');
+      return null; // 規約未同意の場合はイベントを送信しない
+    },
+  });
+  log.info(
+    'Sentry initialized in main process via electron/index.ts. Event sending depends on terms acceptance.',
+  );
+  isSentryInitializedMain = true;
+};
+
+// アプリ起動時に初期化試行
+initializeMainSentry();
 
 const CHANNELS = {
   ERROR_MESSAGE: 'error-message',
