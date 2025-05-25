@@ -138,7 +138,7 @@ describe('electronUtilController', () => {
             filenameWithoutExt: 'test',
           },
         }),
-      ).rejects.toThrow('Failed to handle png file');
+      ).rejects.toThrow('ファイル操作中にエラーが発生しました。');
 
       // エラー後も一時ディレクトリは削除される
       expect(fs.rm).toHaveBeenCalledWith(path.join(os.tmpdir(), 'test-dir'), {
