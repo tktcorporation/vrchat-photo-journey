@@ -39,9 +39,10 @@ function AppContent() {
     trpcReact.initializeSentry.useMutation({
       onSuccess: () => {
         const isDevelopment = process.env.NODE_ENV !== 'production';
+        const environment = isDevelopment ? 'development' : 'production';
         initSentry({
           dsn: process.env.SENTRY_DSN, // 環境変数からDSNを取得
-          environment: process.env.NODE_ENV,
+          environment,
           debug: isDevelopment,
           tags: {
             source: 'electron-renderer',

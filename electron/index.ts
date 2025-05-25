@@ -30,10 +30,13 @@ export const initializeMainSentry = () => {
   }
 
   log.info('Sentry initializing in main process via electron/index.ts');
+  const isDevelopment = process.env.NODE_ENV !== 'production';
+  const environment = isDevelopment ? 'development' : 'production';
+
   initSentry({
     dsn: process.env.SENTRY_DSN,
-    environment: process.env.NODE_ENV,
-    debug: process.env.NODE_ENV !== 'production',
+    environment,
+    debug: isDevelopment,
     beforeSend: (event) => {
       if (settingStore.getTermsAccepted()) {
         return event;
