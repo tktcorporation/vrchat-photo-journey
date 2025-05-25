@@ -7,7 +7,10 @@ import type { WorldJoinLog } from '../useGroupPhotos';
 const createPhoto = (id: string | number, takenAt: Date): Photo => ({
   id: id.toString(),
   url: `photo-${id}`,
-  fileNameWithExt: VRChatPhotoFileNameWithExtSchema.parse(`photo${id}.png`),
+  // /^VRChat_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.\d{3}_\d+x\d+\.[a-z]+$/
+  fileNameWithExt: VRChatPhotoFileNameWithExtSchema.parse(
+    'VRChat_2025-05-25_12-00-00.000_1920x1080.png',
+  ),
   width: 1920,
   height: 1080,
   takenAt,
