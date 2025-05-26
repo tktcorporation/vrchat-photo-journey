@@ -4,7 +4,8 @@
  */
 const config = {
   asar: true,
-  files: ['main', 'src/out'],
+  // node_modules を削除する検討
+  files: ['main', 'src/out', 'node_modules/**/*'],
   directories: {
     buildResources: 'assets',
   },

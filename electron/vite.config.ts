@@ -27,7 +27,7 @@ export default defineConfig({
         // Sentry 関連のモジュール
         '@sentry/electron',
         '@sentry/electron/main',
-        '@sentry/electron/preload',
+        // '@sentry/electron/preload' は preload バンドルに内包させるため external から除外
         '@sentry/vite-plugin',
         // Electron 関連のモジュール
         'electron',
