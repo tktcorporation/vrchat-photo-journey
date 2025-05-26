@@ -85,7 +85,18 @@ export function MeasurePhotoGroup({
       }, 100);
     };
 
-    const resizeObserver = new ResizeObserver(handleResize);
+    const resizeObserver = new ResizeObserver((entries) => {
+      try {
+        handleResize();
+      } catch (error) {
+        // Ignore ResizeObserver loop errors to prevent console spam
+        if (error instanceof Error && error.message.includes('ResizeObserver loop')) {
+          return;
+        }
+        console.error('ResizeObserver error:', error);
+      }
+    });
+    
     resizeObserver.observe(containerRef.current);
     setContainerWidth(containerRef.current.clientWidth);
 

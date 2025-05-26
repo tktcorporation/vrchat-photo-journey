@@ -83,12 +83,13 @@ const GalleryContent = memo(
       overscan: 1,
       measureElement: useCallback((element: HTMLElement) => {
         const height = element.getBoundingClientRect().height;
-        const key = element.getAttribute('data-key');
-        if (key) {
+        const index = element.getAttribute('data-index');
+        if (index) {
+          const [key] = filteredGroups[Number.parseInt(index)];
           groupSizesRef.current.set(key, height);
         }
         return height + GROUP_SPACING;
-      }, []),
+      }, [filteredGroups]),
     });
 
     /**
@@ -145,7 +146,7 @@ const GalleryContent = memo(
               return (
                 <div
                   key={key}
-                  data-key={key}
+                  data-index={virtualRow.index}
                   ref={virtualizer.measureElement}
                   style={{
                     position: 'absolute',
