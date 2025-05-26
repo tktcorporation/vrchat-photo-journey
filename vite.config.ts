@@ -26,7 +26,6 @@ export default ({ command }: ConfigEnv): UserConfig => {
           external: [
             '@sentry/electron',
             '@sentry/electron/main',
-            '@sentry/electron/preload',
           ],
         },
         sourcemap: true,
@@ -69,7 +68,6 @@ export default ({ command }: ConfigEnv): UserConfig => {
         external: [
           '@sentry/electron',
           '@sentry/electron/main',
-          '@sentry/electron/preload',
         ],
       },
       sourcemap: true,
