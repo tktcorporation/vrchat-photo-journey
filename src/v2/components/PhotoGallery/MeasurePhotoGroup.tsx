@@ -73,19 +73,40 @@ export function MeasurePhotoGroup({
   useEffect(() => {
     if (!containerRef.current) return;
 
-    const handleResize = () => {
+    const handleResize = (entries: ResizeObserverEntry[]) => {
+      // Prevent ResizeObserver loop by ensuring we only process the current element
+      if (!containerRef.current || !entries[0]) return;
+      
+      // Clear existing timeout to debounce rapid resize events
       if (resizeTimeoutRef.current) {
         window.clearTimeout(resizeTimeoutRef.current);
       }
 
       resizeTimeoutRef.current = window.setTimeout(() => {
         if (containerRef.current) {
-          setContainerWidth(containerRef.current.clientWidth);
+          const { width } = entries[0].contentRect;
+          // Only update if width actually changed to prevent unnecessary recalculations
+          setContainerWidth((prev) => {
+            if (Math.abs(prev - width) > 1) {
+              return width;
+            }
+            return prev;
+          });
         }
       }, 100);
     };
 
-    const resizeObserver = new ResizeObserver(handleResize);
+    const resizeObserver = new ResizeObserver((entries) => {
+      try {
+        handleResize(entries);
+      } catch (error) {
+        // Catch and ignore ResizeObserver loop errors silently
+        if (error instanceof Error && !error.message.includes('ResizeObserver loop')) {
+          console.warn('ResizeObserver error:', error);
+        }
+      }
+    });
+    
     resizeObserver.observe(containerRef.current);
     setContainerWidth(containerRef.current.clientWidth);
 

@@ -19,10 +19,23 @@ export function useResizeObserver<T extends HTMLElement>(): [
 
     const element = ref.current;
     observerRef.current = new ResizeObserver((entries) => {
-      if (!entries[0]) return;
+      try {
+        if (!entries[0]) return;
 
-      const { width, height } = entries[0].contentRect;
-      setSize({ width, height });
+        const { width, height } = entries[0].contentRect;
+        // Only update if size actually changed to prevent unnecessary re-renders
+        setSize((prev) => {
+          if (Math.abs(prev.width - width) > 1 || Math.abs(prev.height - height) > 1) {
+            return { width, height };
+          }
+          return prev;
+        });
+      } catch (error) {
+        // Catch and ignore ResizeObserver loop errors silently
+        if (error instanceof Error && !error.message.includes('ResizeObserver loop')) {
+          console.warn('ResizeObserver error:', error);
+        }
+      }
     });
 
     observerRef.current.observe(element);
