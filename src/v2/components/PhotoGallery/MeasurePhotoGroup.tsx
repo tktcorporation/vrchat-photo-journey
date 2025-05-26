@@ -118,5 +118,5 @@ export function MeasurePhotoGroup({
     }
   }, [containerWidth, calculateGridHeight, onMeasure]);
 
-  return <div ref={containerRef} className="w-full" />;
+  return <div ref={containerRef} className='w-full' />;
 }

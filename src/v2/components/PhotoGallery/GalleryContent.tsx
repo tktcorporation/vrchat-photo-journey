@@ -24,13 +24,13 @@ interface GalleryContentProps {
 const GROUP_SPACING = 52;
 
 const SkeletonGroup = () => (
-  <div className="space-y-2 animate-pulse">
-    <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded-lg w-2/3" />
-    <div className="grid grid-cols-4 gap-4">
+  <div className='space-y-2 animate-pulse'>
+    <div className='h-8 bg-gray-200 dark:bg-gray-700 rounded-lg w-2/3' />
+    <div className='grid grid-cols-4 gap-4'>
       {Array.from({ length: 8 }).map((_, _i) => (
         <div
           key={`skeleton-photo-${crypto.randomUUID()}`}
-          className="aspect-square bg-gray-200 dark:bg-gray-700 rounded-lg"
+          className='aspect-square bg-gray-200 dark:bg-gray-700 rounded-lg'
         />
       ))}
     </div>
@@ -111,7 +111,7 @@ const GalleryContent = memo(
 
     if (isLoadingGrouping) {
       return (
-        <div className="flex-1 overflow-y-auto p-4 space-y-8">
+        <div className='flex-1 overflow-y-auto p-4 space-y-8'>
           {Array.from({ length: 3 }).map((_, _i) => (
             <SkeletonGroup key={`skeleton-group-${crypto.randomUUID()}`} />
           ))}
@@ -123,16 +123,16 @@ const GalleryContent = memo(
       <GalleryErrorBoundary>
         <div
           ref={containerRef}
-          className="flex-1 overflow-y-auto p-4"
+          className='flex-1 overflow-y-auto p-4'
           onClick={handleBackgroundClick}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
               handleBackgroundClick(e);
             }
           }}
-          role="button"
+          role='button'
           tabIndex={-1}
-          aria-label="ギャラリー背景"
+          aria-label='ギャラリー背景'
         >
           <div
             style={{
@@ -156,7 +156,7 @@ const GalleryContent = memo(
                     transform: `translateY(${virtualRow.start}px)`,
                   }}
                 >
-                  <div className="space-y-2">
+                  <div className='space-y-2'>
                     <LocationGroupHeader
                       worldId={group.worldInfo?.worldId ?? null}
                       worldName={group.worldInfo?.worldName ?? null}
@@ -188,9 +188,9 @@ const GalleryContent = memo(
             })}
           </div>
           {isLoading && (
-            <div className="fixed bottom-4 right-4 flex items-center space-x-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg">
-              <LoaderCircle className="w-4 h-4 animate-spin text-gray-500" />
-              <div className="text-sm text-gray-500">読み込み中...</div>
+            <div className='fixed bottom-4 right-4 flex items-center space-x-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg'>
+              <LoaderCircle className='w-4 h-4 animate-spin text-gray-500' />
+              <div className='text-sm text-gray-500'>読み込み中...</div>
             </div>
           )}
         </div>
