@@ -19,6 +19,16 @@ npm i -g @antfu/ni
 ni
 ```
 
+### 環境変数の設定
+1. `.env.example` を `.env` にコピーし、必要な環境変数を設定:
+```bash
+cp .env.example .env
+```
+
+2. `.env` ファイルでSentryの設定を有効化（オプション）:
+   - エラー報告を有効にするには、`SENTRY_DSN` などのコメントアウトを外して適切な値を設定
+   - Sentryの設定は開発時は必須ではありませんが、本番環境では推奨
+
 ## Dev サーバーの起動
 ```bash
 nr dev

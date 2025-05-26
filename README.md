@@ -23,3 +23,19 @@ VRChatで撮影した写真を整理・管理するためのデスクトップ�
 2. VRChatの写真フォルダとログフォルダのパスを設定します
 3. 設定が完了すると、自動的に写真とログが読み込まれ、ギャラリーに表示されます
 4. 写真をクリックすると詳細情報（撮影日時、ワールド名など）が表示されます
+
+## 開発者向け設定
+
+### エラー報告（Sentry）
+アプリケーションのエラー報告を有効にするには：
+
+1. [Sentry](https://sentry.io/)でプロジェクトを作成
+2. `.env` ファイルで以下の設定のコメントアウトを外して適切な値を設定：
+   ```
+   SENTRY_DSN=your_sentry_dsn_here
+   SENTRY_ORG=your_sentry_org
+   SENTRY_PROJECT=your_sentry_project
+   SENTRY_AUTH_TOKEN=your_sentry_auth_token
+   ```
+
+開発環境ではSentryの設定は必須ではありませんが、本番環境では問題の早期発見のため推奨されます。

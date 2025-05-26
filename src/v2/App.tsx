@@ -38,6 +38,12 @@ function AppContent() {
   const { mutateAsync: initializeSentryMain } =
     trpcReact.initializeSentry.useMutation({
       onSuccess: () => {
+        // SENTRY_DSN がなければ初期化しない
+        if (!process.env.SENTRY_DSN) {
+          console.log('Sentry not initialized in renderer process: SENTRY_DSN environment variable is not set. To enable error reporting, set SENTRY_DSN in your .env file.');
+          return;
+        }
+
         const isDevelopment = process.env.NODE_ENV !== 'production';
         initSentry({
           dsn: process.env.SENTRY_DSN, // 環境変数からDSNを取得

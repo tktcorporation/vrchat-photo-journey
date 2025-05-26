@@ -25,7 +25,7 @@ export const initializeMainSentry = () => {
   }
   // SENTRY_DSN がなければ初期化しない
   if (!process.env.SENTRY_DSN) {
-    log.info('Sentry not initialized in main process (SENTRY_DSN not set)');
+    log.info('Sentry not initialized in main process: SENTRY_DSN environment variable is not set. To enable error reporting, set SENTRY_DSN in your .env file.');
     return;
   }
 
