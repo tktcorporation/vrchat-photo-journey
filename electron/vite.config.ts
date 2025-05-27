@@ -11,6 +11,10 @@ const nodeBuiltins = [
 export default defineConfig({
   mode: process.env.NODE_ENV || 'development',
   root: __dirname,
+  define: {
+    'process.env.SENTRY_DSN': JSON.stringify(process.env.SENTRY_DSN),
+    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+  },
   build: {
     outDir: join(__dirname, '../main'),
     emptyOutDir: true,
