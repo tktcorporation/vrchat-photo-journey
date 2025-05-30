@@ -46,22 +46,27 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           SCREENSHOT_DIR="playwright/previews"
-          # Find the first PNG file in the directory
-          SCREENSHOT_FILE=$(find "$SCREENSHOT_DIR" -maxdepth 1 -name '*.png' -print -quit)
+          # Find all PNG files in the directory
+          SCREENSHOT_FILES=$(find "$SCREENSHOT_DIR" -maxdepth 1 -name '*.png')
 
-          if [ -z "$SCREENSHOT_FILE" ]; then
-            echo "No PNG screenshot found in $SCREENSHOT_DIR"
+          if [ -z "$SCREENSHOT_FILES" ]; then
+            echo "No PNG screenshots found in $SCREENSHOT_DIR"
             exit 1
           fi
 
-          echo "Found screenshot: $SCREENSHOT_FILE"
+          echo "Found screenshots:"
+          echo "$SCREENSHOT_FILES"
 
-          mkdir upload && cp "$SCREENSHOT_FILE" upload/pr-screenshot.png
+          mkdir upload
+          for file in $SCREENSHOT_FILES; do
+            cp "$file" upload/
+          done
+
           cd upload
           git init
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add pr-screenshot.png
+          git add .
           git commit -m "Add screenshot for PR #${{ github.event.pull_request.number }}"
           git branch -M "$BRANCH"
           git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
@@ -74,7 +79,25 @@ jobs:
         uses: thollander/actions-comment-pull-request@v2
         with:
           message: |
-            Screenshot for this PR:
-            ![](https://raw.githubusercontent.com/${{ env.REPO }}/${{ env.BRANCH }}/pr-screenshot.png)
+            Screenshots for this PR:
+            <details>
+            <summary>Click to expand</summary>
+
+            ${{ steps.generate_comment.outputs.body }}
+            </details>
           pr_number: ${{ github.event.pull_request.number }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Generate comment body
+        id: generate_comment
+        env:
+          BRANCH: pr-screenshot-${{ github.event.pull_request.number }}-${{ github.run_id }}
+          REPO: ${{ github.repository }}
+        run: |
+          cd upload
+          comment_body=""
+          for file in $(git ls-tree --name-only HEAD); do
+            comment_body="${comment_body}![](https://raw.githubusercontent.com/${REPO}/${BRANCH}/${file})\n"
+          done
+          echo "body<<EOF" >> $GITHUB_OUTPUT
+          echo "$comment_body" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
