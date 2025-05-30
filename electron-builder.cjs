@@ -32,7 +32,12 @@ const config = {
     icon: 'assets/icons',
   },
   mac: {
-    target: 'dmg',
+    target: [
+      {
+        target: 'dmg',
+        arch: ['x64', 'arm64'],
+      },
+    ],
     identity: null,
     icon: 'assets/icon.icns',
   },
