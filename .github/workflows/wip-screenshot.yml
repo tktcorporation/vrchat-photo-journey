@@ -51,22 +51,42 @@ jobs:
 
           if [ -z "$SCREENSHOT_FILES" ]; then
             echo "No PNG screenshots found in $SCREENSHOT_DIR"
-            exit 1
+            exit 0 # Exit gracefully if no screenshots initially found
           fi
 
-          echo "Found screenshots:"
+          echo "Initial list of found files:"
           echo "$SCREENSHOT_FILES"
 
-          mkdir upload
-          for file in $SCREENSHOT_FILES; do
-            cp "$file" upload/
+          mkdir -p upload # Ensure upload directory exists
+
+          copied_files=0
+          echo "$SCREENSHOT_FILES" | while IFS= read -r file; do
+            # Trim whitespace from filename (though find -print0 or careful find -print is better)
+            trimmed_file=$(echo "$file" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+
+            # Check if the file is a valid .png file and not '[object Promise].png'
+            # Using basename to check the actual filename part
+            filename_only=$(basename "$trimmed_file")
+            if [[ "$filename_only" == *.png ]] && [[ "$filename_only" != "[object Promise].png" ]]; then
+              echo "Copying valid screenshot: $trimmed_file to upload/$filename_only"
+              cp "$trimmed_file" "upload/$filename_only"
+              copied_files=$((copied_files + 1))
+            else
+              echo "Skipping invalid or unwanted file: $trimmed_file"
+            fi
           done
 
+          if [ "$copied_files" -eq 0 ]; then
+            echo "No valid screenshots were copied. Nothing to commit."
+            exit 0 # Exit gracefully if no valid files were copied
+          fi
+
           cd upload
+          ls -la # List files for debugging
           git init
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add .
+          git add . # Add all copied files
           git commit -m "Add screenshot for PR #${{ github.event.pull_request.number }}"
           git branch -M "$BRANCH"
           git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
