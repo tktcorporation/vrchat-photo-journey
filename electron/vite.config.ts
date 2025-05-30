@@ -41,7 +41,7 @@ export default defineConfig({
         'electron-updater',
         'exiftool-vendored',
         'sharp',
-        'electron-pan-clip',
+        'clip-filepaths',
         // Sequelize 関連のモジュール
         '@sequelize/core',
         '@sequelize/core/decorators-legacy',

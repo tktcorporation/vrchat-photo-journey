@@ -23,7 +23,11 @@ export default ({ command }: ConfigEnv): UserConfig => {
         outDir: join(srcRoot, '/out'),
         emptyOutDir: true,
         rollupOptions: {
-          external: ['@sentry/electron', '@sentry/electron/main'],
+          external: [
+            '@sentry/electron',
+            '@sentry/electron/main',
+            'clip-filepaths',
+          ],
         },
         sourcemap: true,
       },
@@ -31,7 +35,7 @@ export default ({ command }: ConfigEnv): UserConfig => {
         port: process.env.PORT === undefined ? 3000 : +process.env.PORT,
       },
       optimizeDeps: {
-        exclude: ['path'],
+        exclude: ['path', 'clip-filepaths'],
       },
       define: {
         'process.env.NODE_ENV': JSON.stringify('development'),
@@ -62,7 +66,11 @@ export default ({ command }: ConfigEnv): UserConfig => {
       outDir: join(srcRoot, '/out'),
       emptyOutDir: true,
       rollupOptions: {
-        external: ['@sentry/electron', '@sentry/electron/main'],
+        external: [
+          '@sentry/electron',
+          '@sentry/electron/main',
+          'clip-filepaths',
+        ],
       },
       sourcemap: true,
     },
@@ -70,7 +78,7 @@ export default ({ command }: ConfigEnv): UserConfig => {
       port: process.env.PORT === undefined ? 3000 : +process.env.PORT,
     },
     optimizeDeps: {
-      exclude: ['path'],
+      exclude: ['path', 'clip-filepaths'],
     },
     define: {
       'process.env.NODE_ENV': JSON.stringify('production'),

@@ -6078,6 +6078,95 @@ __metadata:
   languageName: node
   linkType: hard
 
+"clip-filepaths-darwin-arm64@npm:0.2.0":
+  version: 0.2.0
+  resolution: "clip-filepaths-darwin-arm64@npm:0.2.0"
+  conditions: os=darwin & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"clip-filepaths-darwin-x64@npm:0.2.0":
+  version: 0.2.0
+  resolution: "clip-filepaths-darwin-x64@npm:0.2.0"
+  conditions: os=darwin & cpu=x64
+  languageName: node
+  linkType: hard
+
+"clip-filepaths-linux-arm64-gnu@npm:0.2.0":
+  version: 0.2.0
+  resolution: "clip-filepaths-linux-arm64-gnu@npm:0.2.0"
+  conditions: os=linux & cpu=arm64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"clip-filepaths-linux-arm64-musl@npm:0.2.0":
+  version: 0.2.0
+  resolution: "clip-filepaths-linux-arm64-musl@npm:0.2.0"
+  conditions: os=linux & cpu=arm64 & libc=musl
+  languageName: node
+  linkType: hard
+
+"clip-filepaths-linux-x64-gnu@npm:0.2.0":
+  version: 0.2.0
+  resolution: "clip-filepaths-linux-x64-gnu@npm:0.2.0"
+  conditions: os=linux & cpu=x64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"clip-filepaths-linux-x64-musl@npm:0.2.0":
+  version: 0.2.0
+  resolution: "clip-filepaths-linux-x64-musl@npm:0.2.0"
+  conditions: os=linux & cpu=x64 & libc=musl
+  languageName: node
+  linkType: hard
+
+"clip-filepaths-win32-arm64-msvc@npm:0.2.0":
+  version: 0.2.0
+  resolution: "clip-filepaths-win32-arm64-msvc@npm:0.2.0"
+  conditions: os=win32 & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"clip-filepaths-win32-x64-msvc@npm:0.2.0":
+  version: 0.2.0
+  resolution: "clip-filepaths-win32-x64-msvc@npm:0.2.0"
+  conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
+"clip-filepaths@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "clip-filepaths@npm:0.2.0"
+  dependencies:
+    clip-filepaths-darwin-arm64: "npm:0.2.0"
+    clip-filepaths-darwin-x64: "npm:0.2.0"
+    clip-filepaths-linux-arm64-gnu: "npm:0.2.0"
+    clip-filepaths-linux-arm64-musl: "npm:0.2.0"
+    clip-filepaths-linux-x64-gnu: "npm:0.2.0"
+    clip-filepaths-linux-x64-musl: "npm:0.2.0"
+    clip-filepaths-win32-arm64-msvc: "npm:0.2.0"
+    clip-filepaths-win32-x64-msvc: "npm:0.2.0"
+  dependenciesMeta:
+    clip-filepaths-darwin-arm64:
+      optional: true
+    clip-filepaths-darwin-x64:
+      optional: true
+    clip-filepaths-linux-arm64-gnu:
+      optional: true
+    clip-filepaths-linux-arm64-musl:
+      optional: true
+    clip-filepaths-linux-x64-gnu:
+      optional: true
+    clip-filepaths-linux-x64-musl:
+      optional: true
+    clip-filepaths-win32-arm64-msvc:
+      optional: true
+    clip-filepaths-win32-x64-msvc:
+      optional: true
+  checksum: 10c0/f9d35ad7ca357e049fc6fa5cb9e85b61b7dfdf92ca7755124b1252e4ccc1cddddbe6d94ebd08905f2424f56a8146dc407612366683b4409f95880c82592fa76b
+  languageName: node
+  linkType: hard
+
 "cliui@npm:^8.0.1":
   version: 8.0.1
   resolution: "cliui@npm:8.0.1"
@@ -6825,95 +6914,6 @@ __metadata:
   version: 5.3.0
   resolution: "electron-log@npm:5.3.0"
   checksum: 10c0/a9a438b4b4f178e7eb25ca7c2fbab43c0b8264ff54e6bfbc88ae2c568f9e943b7b45d0da3d0bde31e5264f7360984a5c161173f6041653ee22a3cdd93373e54d
-  languageName: node
-  linkType: hard
-
-"electron-pan-clip-darwin-arm64@npm:0.0.32":
-  version: 0.0.32
-  resolution: "electron-pan-clip-darwin-arm64@npm:0.0.32"
-  conditions: os=darwin & cpu=arm64
-  languageName: node
-  linkType: hard
-
-"electron-pan-clip-darwin-x64@npm:0.0.32":
-  version: 0.0.32
-  resolution: "electron-pan-clip-darwin-x64@npm:0.0.32"
-  conditions: os=darwin & cpu=x64
-  languageName: node
-  linkType: hard
-
-"electron-pan-clip-linux-arm64-gnu@npm:0.0.32":
-  version: 0.0.32
-  resolution: "electron-pan-clip-linux-arm64-gnu@npm:0.0.32"
-  conditions: os=linux & cpu=arm64 & libc=glibc
-  languageName: node
-  linkType: hard
-
-"electron-pan-clip-linux-arm64-musl@npm:0.0.32":
-  version: 0.0.32
-  resolution: "electron-pan-clip-linux-arm64-musl@npm:0.0.32"
-  conditions: os=linux & cpu=arm64 & libc=musl
-  languageName: node
-  linkType: hard
-
-"electron-pan-clip-linux-x64-gnu@npm:0.0.32":
-  version: 0.0.32
-  resolution: "electron-pan-clip-linux-x64-gnu@npm:0.0.32"
-  conditions: os=linux & cpu=x64 & libc=glibc
-  languageName: node
-  linkType: hard
-
-"electron-pan-clip-linux-x64-musl@npm:0.0.32":
-  version: 0.0.32
-  resolution: "electron-pan-clip-linux-x64-musl@npm:0.0.32"
-  conditions: os=linux & cpu=x64 & libc=musl
-  languageName: node
-  linkType: hard
-
-"electron-pan-clip-win32-arm64-msvc@npm:0.0.32":
-  version: 0.0.32
-  resolution: "electron-pan-clip-win32-arm64-msvc@npm:0.0.32"
-  conditions: os=win32 & cpu=arm64
-  languageName: node
-  linkType: hard
-
-"electron-pan-clip-win32-x64-msvc@npm:0.0.32":
-  version: 0.0.32
-  resolution: "electron-pan-clip-win32-x64-msvc@npm:0.0.32"
-  conditions: os=win32 & cpu=x64
-  languageName: node
-  linkType: hard
-
-"electron-pan-clip@npm:^0.0.32":
-  version: 0.0.32
-  resolution: "electron-pan-clip@npm:0.0.32"
-  dependencies:
-    electron-pan-clip-darwin-arm64: "npm:0.0.32"
-    electron-pan-clip-darwin-x64: "npm:0.0.32"
-    electron-pan-clip-linux-arm64-gnu: "npm:0.0.32"
-    electron-pan-clip-linux-arm64-musl: "npm:0.0.32"
-    electron-pan-clip-linux-x64-gnu: "npm:0.0.32"
-    electron-pan-clip-linux-x64-musl: "npm:0.0.32"
-    electron-pan-clip-win32-arm64-msvc: "npm:0.0.32"
-    electron-pan-clip-win32-x64-msvc: "npm:0.0.32"
-  dependenciesMeta:
-    electron-pan-clip-darwin-arm64:
-      optional: true
-    electron-pan-clip-darwin-x64:
-      optional: true
-    electron-pan-clip-linux-arm64-gnu:
-      optional: true
-    electron-pan-clip-linux-arm64-musl:
-      optional: true
-    electron-pan-clip-linux-x64-gnu:
-      optional: true
-    electron-pan-clip-linux-x64-musl:
-      optional: true
-    electron-pan-clip-win32-arm64-msvc:
-      optional: true
-    electron-pan-clip-win32-x64-msvc:
-      optional: true
-  checksum: 10c0/e162c5f9deec4ed0abcd52c3f9b877536b47db6aea0ea90343c6381fac97ac57a85685a7aa0c72f89993238d6ef08e6299eafee5a762a3f79d2a7bde268f3182
   languageName: node
   linkType: hard
 
@@ -13339,6 +13339,7 @@ __metadata:
     "@welldone-software/why-did-you-render": "npm:^8.0.3"
     autoprefixer: "npm:10.4.19"
     class-variance-authority: "npm:0.7.0"
+    clip-filepaths: "npm:^0.2.0"
     clsx: "npm:2.1.1"
     concurrently: "npm:8.2.2"
     consola: "npm:^3.2.3"
@@ -13348,7 +13349,6 @@ __metadata:
     electron-builder: "npm:24.13.3"
     electron-is-dev: "npm:2.0.0"
     electron-log: "npm:5.3.0"
-    electron-pan-clip: "npm:^0.0.32"
     electron-rebuild: "npm:^3.2.9"
     electron-store: "npm:8.2.0"
     electron-trpc: "npm:0.5.2"
