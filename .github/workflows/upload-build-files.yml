@@ -127,8 +127,8 @@ jobs:
             nlx electron-builder --config=electron-builder.cjs --${{ matrix.os == 'windows-latest' && 'win' || matrix.os == 'ubuntu-22.04' && 'linux' || 'mac' }} --publish never
             tag_string=$(echo "${GITHUB_REF##*/}" | sed 's/v//')
             echo "tag_string: $tag_string"
-            for file in ./dist/*; do
-              result=$(gh release upload "$tag_string" "$file" || echo "failed")
+            find ./dist -maxdepth 1 -type f -print0 | while IFS= read -r -d '' file; do
+              result=$(gh release upload "$tag_string" "$file" --clobber || echo "failed")
               echo "result: $file $result"
             done
           fi
