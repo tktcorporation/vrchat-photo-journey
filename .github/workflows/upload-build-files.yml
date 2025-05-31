@@ -74,7 +74,7 @@ jobs:
 
       - name: Create Release Draft
         id: create-release-draft
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           draft: true
           # v0.0.0 or ref
