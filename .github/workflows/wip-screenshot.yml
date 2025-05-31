@@ -156,7 +156,11 @@ jobs:
           fi
 
       - name: Comment with screenshot
-        if: steps.publish_screenshots.outputs.screenshots_committed == 'true' && steps.generate_comment.outputs.body != '' && steps.generate_comment.outputs.body != 'No screenshots were published or filename list was empty.' && steps.generate_comment.outputs.body != 'No screenshots found to display.'
+        if: >
+          steps.publish_screenshots.outputs.screenshots_committed == 'true' &&
+          steps.generate_comment.outputs.body != '' &&
+          steps.generate_comment.outputs.body != 'No screenshots were published or filename list was empty.' &&
+          steps.generate_comment.outputs.body != 'No screenshots found to display.'
         uses: thollander/actions-comment-pull-request@v2
         with:
           message: |
