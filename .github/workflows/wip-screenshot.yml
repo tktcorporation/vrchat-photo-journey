@@ -7,7 +7,7 @@ jobs:
   screenshot:
     runs-on: ubuntu-22.04
     permissions:
-      contents: write # Changed from read to write
+      contents: write
       pull-requests: write
 
     steps:
@@ -19,62 +19,156 @@ jobs:
         with:
           node-version-file: 'package.json'
 
-      - run: npm i -g @antfu/ni
+      - name: Install pnpm
+        run: npm i -g pnpm
 
       - name: Install dependencies
-        run: nci
+        run: pnpm i # Assuming this project uses pnpm based on user's other repos/typical setup
 
-      - name: build app
-        run: nr build
+      - name: Build app
+        run: pnpm build # Assuming this project uses pnpm
 
       - name: Install Playwright Browsers
-        run: nr playwright install --with-deps
-      - name: Run Playwright tests
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" -- nr playwright test
+        run: pnpm exec playwright install --with-deps # Assuming pnpm
 
-      - name: upload screenshot
-        id: upload-screenshot
+      - name: Run Playwright tests
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" -- pnpm exec playwright test # Assuming pnpm
+
+      - name: Upload screenshot artifact
+        id: upload_artifact
         uses: actions/upload-artifact@v4
         with:
           name: screenshots
           path: playwright/previews/*.png
 
-      - name: Publish screenshot to branch
+      - name: Publish screenshots to branch
+        id: publish_screenshots
         env:
-          BRANCH: pr-screenshot-${{ github.event.pull_request.number }}-${{ github.run_id }}
+          BRANCH_BASENAME: pr-screenshot-${{ github.event.pull_request.number }}
+          RUN_ID: ${{ github.run_id }}
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          SCREENSHOT_DIR="playwright/previews"
-          # Find the first PNG file in the directory
-          SCREENSHOT_FILE=$(find "$SCREENSHOT_DIR" -maxdepth 1 -name '*.png' -print -quit)
+          set -e
 
-          if [ -z "$SCREENSHOT_FILE" ]; then
-            echo "No PNG screenshot found in $SCREENSHOT_DIR"
-            exit 1
+          ACTUAL_BRANCH_NAME="${BRANCH_BASENAME}-${RUN_ID}"
+          SCREENSHOT_DIR="playwright/previews"
+          UPLOAD_DIR="upload"
+
+          mkdir -p "$UPLOAD_DIR"
+
+          echo "Searching for screenshots in $SCREENSHOT_DIR..."
+
+          cd "$UPLOAD_DIR" # Change to upload dir first
+
+          # Temp file to store names of files to be committed
+          FILENAMES_TO_COMMIT=$(mktemp)
+
+          # Use find -print0 and while read -d to handle filenames with spaces/special chars
+          # Find relative to ../SCREENSHOT_DIR
+          find "../$SCREENSHOT_DIR" -maxdepth 1 -type f -name '*.png' -print0 | while IFS= read -r -d $'\0' file; do
+            file_basename=$(basename "$file")
+
+            if [[ "$file_basename" == *.png ]] && [[ "$file_basename" != "[object Promise].png" ]]; then
+              echo "Copying valid screenshot: $file to $file_basename"
+              cp "$file" "./$file_basename" # Copy to current dir (UPLOAD_DIR)
+              echo "$file_basename" >> "$FILENAMES_TO_COMMIT"
+            else
+              echo "Skipping invalid or unwanted file: $file (basename: $file_basename)"
+            fi
+          done
+
+          if ! ls -A *.png >/dev/null 2>&1; then
+            echo "No valid PNG screenshots found in $UPLOAD_DIR after copy attempt. Nothing to commit."
+            echo "screenshots_committed=false" >> $GITHUB_OUTPUT
+            rm "$FILENAMES_TO_COMMIT"
+            exit 0
           fi
 
-          echo "Found screenshot: $SCREENSHOT_FILE"
+          echo "Valid screenshots found in $UPLOAD_DIR. Proceeding with git operations..."
+          ls -la
 
-          mkdir upload && cp "$SCREENSHOT_FILE" upload/pr-screenshot.png
-          cd upload
           git init
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git add pr-screenshot.png
-          git commit -m "Add screenshot for PR #${{ github.event.pull_request.number }}"
-          git branch -M "$BRANCH"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Add screenshots for PR #${{ github.event.pull_request.number }}"
+          git branch -M "$ACTUAL_BRANCH_NAME"
           git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
-          git push origin "$BRANCH" --force
+          git push origin "$ACTUAL_BRANCH_NAME" --force
+
+          echo "screenshots_committed=true" >> $GITHUB_OUTPUT
+          echo "branch_name=$ACTUAL_BRANCH_NAME" >> $GITHUB_OUTPUT
+
+          # Create JSON array of filenames
+          if [ -s "$FILENAMES_TO_COMMIT" ]; then
+            filenames_json_content=$(jq -R -s -c 'split("\n") | map(select(length > 0))' < "$FILENAMES_TO_COMMIT")
+            echo "filenames_json=${filenames_json_content}" >> $GITHUB_OUTPUT
+          else
+            echo "filenames_json=[]" >> $GITHUB_OUTPUT
+          fi
+          rm "$FILENAMES_TO_COMMIT"
+
+      - name: Install jq for comment generation
+        if: steps.publish_screenshots.outputs.screenshots_committed == 'true'
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Generate comment body
+        id: generate_comment
+        if: steps.publish_screenshots.outputs.screenshots_committed == 'true'
+        env:
+          REPO: ${{ github.repository }}
+          BRANCH_NAME: ${{ steps.publish_screenshots.outputs.branch_name }}
+          FILENAMES_JSON: ${{ steps.publish_screenshots.outputs.filenames_json }}
+        run: |
+          set -e
+          echo "Branch name from previous step: ${BRANCH_NAME}"
+          echo "Filenames JSON from previous step: ${FILENAMES_JSON}"
+
+          if [ -z "${FILENAMES_JSON}" ] || [ "${FILENAMES_JSON}" == "null" ] || [ "${FILENAMES_JSON}" == "[]" ]; then
+            echo "No filenames provided or filenames list is empty."
+            echo "body=No screenshots were published or filename list was empty." >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          body=""
+          # Loop through filenames using jq
+          # Ensure the input to jq is correctly quoted if it comes from env var
+          for filename in $(echo "${FILENAMES_JSON}" | jq -r '.[]'); do
+            if [ -n "$filename" ]; then
+              body="${body}![](https://raw.githubusercontent.com/${REPO}/${BRANCH_NAME}/${filename})
+"
+            fi
+          done
+
+          if [ -z "$body" ]; then
+            echo "No image URLs generated. Filenames might have been empty after processing."
+            echo "body=No screenshots found to display." >> $GITHUB_OUTPUT
+          else
+            echo "Generated comment body:"
+            echo -e "$body" # For logging
+            # Multiline output for GitHub Actions
+            {
+              echo "body<<EOF_COMMENT_BODY"
+              echo -e "$body"
+              echo "EOF_COMMENT_BODY"
+            } >> $GITHUB_OUTPUT
+          fi
 
       - name: Comment with screenshot
-        env:
-          BRANCH: pr-screenshot-${{ github.event.pull_request.number }}-${{ github.run_id }}
-          REPO: ${{ github.repository }}
+        if: >
+          steps.publish_screenshots.outputs.screenshots_committed == 'true' &&
+          steps.generate_comment.outputs.body != '' &&
+          steps.generate_comment.outputs.body != 'No screenshots were published or filename list was empty.' &&
+          steps.generate_comment.outputs.body != 'No screenshots found to display.'
         uses: thollander/actions-comment-pull-request@v2
         with:
           message: |
-            Screenshot for this PR:
-            ![](https://raw.githubusercontent.com/${{ env.REPO }}/${{ env.BRANCH }}/pr-screenshot.png)
+            Screenshots for this PR:
+            <details>
+            <summary>Click to expand</summary>
+
+            ${{ steps.generate_comment.outputs.body }}
+            </details>
           pr_number: ${{ github.event.pull_request.number }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
