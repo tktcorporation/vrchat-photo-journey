@@ -11217,16 +11217,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-virtuoso@npm:4.7.2":
-  version: 4.7.2
-  resolution: "react-virtuoso@npm:4.7.2"
-  peerDependencies:
-    react: ">=16 || >=17 || >= 18"
-    react-dom: ">=16 || >=17 || >= 18"
-  checksum: 10c0/581c40458f6653bb1de55745761013d406ffd0b11423703fe363dd93a003b0bc35a9be754c490da97511d13cf5c3b1c286aec98a86fa64aadd5524d25847e325
-  languageName: node
-  linkType: hard
-
 "react@npm:18.2.0":
   version: 18.2.0
   resolution: "react@npm:18.2.0"
@@ -13380,7 +13370,6 @@ __metadata:
     react-hot-toast: "npm:2.4.1"
     react-intersection-observer: "npm:9.8.2"
     react-router-dom: "npm:6.23.0"
-    react-virtuoso: "npm:4.7.2"
     rimraf: "npm:5.0.5"
     rxjs: "npm:^7.8.1"
     sharp: "npm:0.33.3"
