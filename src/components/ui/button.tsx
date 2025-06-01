@@ -40,6 +40,11 @@ interface ButtonProps
   asChild?: boolean;
 }
 
+/**
+ * 各種画面で利用されるスタイリング済みのボタンコンポーネント。
+ * `variant` や `size` により見た目を変更でき、`AppHeader` や設定画面など
+ * 幅広いコンポーネントで使われている。
+ */
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : 'button';
