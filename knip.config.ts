@@ -11,6 +11,7 @@ const config: KnipConfig = {
   project: ['src/**/*.ts', 'src/**/*.tsx', 'electron/**/*.ts'],
   ignoreBinaries: ['@tktco/node-actionlint'],
   ignoreDependencies: ['@types/sharp', '@tktco/node-actionlint'],
+  ignore: ['src/components/ui/**'],
 };
 
 export default config;

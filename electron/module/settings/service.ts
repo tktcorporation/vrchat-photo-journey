@@ -48,8 +48,3 @@ export const installUpdate = async (): Promise<void> => {
   await autoUpdater.downloadUpdate();
   await autoUpdater.quitAndInstall();
 };
-
-export const isUpdateAvailable = async (): Promise<boolean> => {
-  const updateInfo = await getElectronUpdaterInfo();
-  return updateInfo.isUpdateAvailable;
-};
