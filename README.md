@@ -4,6 +4,9 @@ VRChatで撮影した写真を整理・管理するためのデスクトップ�
 
 ![Screenshot](README-image/Screenshot.jpg)
 
+## 対応プラットフォーム
+- Windows
+
 ## 主な機能
 
 - **写真ギャラリー**:
@@ -21,10 +24,7 @@ VRChatで撮影した写真を整理・管理するためのデスクトップ�
 
 ## 利用方法
 
-1. アプリケーションをダウンロードし、起動します。
-2. 初回起動時に、VRChatの写真が保存されているフォルダと、ログファイルが保存されているフォルダを指定します。
-3. 設定が完了すると、自動的に写真とログが読み込まれ、ギャラリーに写真が時系列で表示されます。
-4. 写真をクリックすると、撮影日時、ワールド名、インスタンスIDなどの詳細情報を確認できます。
+[Releases](https://github.com/tktcorporation/vrchat-albums/releases) より `VRChatAlbums-Setup-x.x.x.exe` をダウンロードして実行。
 
 ## 技術スタック
 
@@ -43,7 +43,3 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for more information.
 ## ライセンス
 
 このプロジェクトは [MIT License](LICENSE) のもとで公開されています。
-
-## 謝辞
-
-(もしあれば追記)
