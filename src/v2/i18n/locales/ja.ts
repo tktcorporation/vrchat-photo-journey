@@ -4,6 +4,7 @@ const ja: Translations = {
   common: {
     settings: '設定',
     close: '閉じる',
+    submit: '送信',
     loading: '読み込み中...',
     noPhotosFound: '写真が見つかりませんでした',
     photos: '写真',
@@ -79,9 +80,11 @@ const ja: Translations = {
     paths: {
       useDemo: 'デモデータを使用',
       useLocal: 'ローカルファイルを使用',
-      photoDirectory: '写真フォルダ',
-      logFile: 'ログファイル',
+      photoDirectory: '写真ディレクトリ',
+      logFile: 'VRChatログファイルディレクトリ',
       browse: '参照',
+      addExtraDirectory: '追加の写真フォルダを追加',
+      removeExtraDirectory: '追加の写真フォルダを削除',
       validate: '確認',
       validating: '確認中...',
       logFormat: {

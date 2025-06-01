@@ -18,7 +18,7 @@ import { getAppUserDataPath } from './lib/wrappedApp';
 import { getBackgroundUsecase } from './module/backGroundUsecase';
 import { initSettingStore } from './module/settingStore';
 
-const settingStore = initSettingStore('v0-settings');
+const settingStore = initSettingStore();
 
 export let isSentryInitializedMain = false; // Sentry初期化フラグ exportする
 
