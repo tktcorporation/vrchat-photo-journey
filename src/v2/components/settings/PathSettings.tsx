@@ -1,7 +1,14 @@
 import { invalidatePhotoGalleryQueries } from '@/queryClient';
 import { trpcReact } from '@/trpc';
-import { AlertCircle, FolderOpen, Plus, RefreshCw, Trash } from 'lucide-react';
-import React, { memo, useState } from 'react';
+import {
+  AlertCircle,
+  FolderOpen,
+  Plus,
+  RefreshCw,
+  Save,
+  Trash,
+} from 'lucide-react';
+import React, { memo, useState, useEffect } from 'react';
 import { match } from 'ts-pattern';
 import { useVRChatPhotoExtraDirList } from '../../hooks/useVRChatPhotoExtraDirList';
 import { useI18n } from '../../i18n/store';
@@ -35,6 +42,21 @@ const PathSettingsComponent = memo(({ showRefreshAll }: PathSettingsProps) => {
     trpcReact.getVRChatLogFilesDir.useQuery();
   const setLogPathMutation =
     trpcReact.setVRChatLogFilesDirByDialog.useMutation();
+  const setLogPathDirectlyMutation =
+    trpcReact.setVRChatLogFilePath.useMutation();
+
+  const [logInputValue, setLogInputValue] = useState('');
+  const [isLogPathManuallyChanged, setIsLogPathManuallyChanged] =
+    useState(false);
+
+  useEffect(() => {
+    if (logFilesDir?.path) {
+      setLogInputValue(logFilesDir.path);
+    } else {
+      setLogInputValue(''); // パスがない場合は空文字に
+    }
+    setIsLogPathManuallyChanged(false); // 初期読み込み時や参照ボタンでの変更後は手動変更フラグをリセット
+  }, [logFilesDir?.path]);
 
   /**
    * VRChatログファイルから新しいログ行を読み込むミューテーション
@@ -151,10 +173,39 @@ const PathSettingsComponent = memo(({ showRefreshAll }: PathSettingsProps) => {
 
   const handleBrowseLogFile = async () => {
     try {
-      await setLogPathMutation.mutateAsync();
-      await refetchLogFilesDir();
+      const result = await setLogPathMutation.mutateAsync();
+      if (result) {
+        await refetchLogFilesDir();
+        setIsLogPathManuallyChanged(false);
+      }
     } catch (_error) {
       setValidationError('ログファイルの選択中にエラーが発生しました');
+    }
+  };
+
+  const handleLogInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setLogInputValue(event.target.value);
+    setIsLogPathManuallyChanged(
+      event.target.value !== (logFilesDir?.path || ''),
+    );
+  };
+
+  const handleLogPathSave = async () => {
+    try {
+      await setLogPathDirectlyMutation.mutateAsync(logInputValue, {
+        onSuccess: async () => {
+          await refetchLogFilesDir();
+          setIsLogPathManuallyChanged(false);
+          setValidationError(null);
+        },
+        onError: () => {
+          setValidationError('ログファイルのパス保存中にエラーが発生しました');
+        },
+      });
+    } catch (_error) {
+      setValidationError(
+        'ログファイルのパス保存中に予期せぬエラーが発生しました',
+      );
     }
   };
 
@@ -212,6 +263,9 @@ const PathSettingsComponent = memo(({ showRefreshAll }: PathSettingsProps) => {
               />
               <button
                 type="button"
+                aria-label={`${t('settings.paths.browse')}-${t(
+                  'settings.paths.photoDirectory',
+                )}`}
                 className="px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-200"
                 onClick={handleBrowsePhotoDirectory}
               >
@@ -253,6 +307,7 @@ const PathSettingsComponent = memo(({ showRefreshAll }: PathSettingsProps) => {
                     <button
                       type="button"
                       onClick={() => handleRemoveExtraDirectory(index)}
+                      aria-label={t('settings.paths.removeExtraDirectory')}
                       className="px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-r-md text-sm text-gray-700 dark:text-gray-200 border border-l-0 border-gray-300 dark:border-gray-600"
                     >
                       <Trash className="h-4 w-4" />
@@ -262,6 +317,7 @@ const PathSettingsComponent = memo(({ showRefreshAll }: PathSettingsProps) => {
                 <button
                   type="button"
                   onClick={handleBrowseExtraDirectory}
+                  aria-label={t('settings.paths.addExtraDirectory')}
                   className="flex items-center px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-200"
                 >
                   <Plus className="h-4 w-4 mr-2" />
@@ -279,18 +335,35 @@ const PathSettingsComponent = memo(({ showRefreshAll }: PathSettingsProps) => {
             <div className="flex gap-2">
               <input
                 type="text"
-                value={logFilesDir?.path || ''}
-                readOnly
+                aria-label={`input-${t('settings.paths.logFile')}`}
+                value={logInputValue}
+                onChange={handleLogInputChange}
                 placeholder="/path/to/photo-logs.json"
                 className="flex-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
               />
-              <button
-                type="button"
-                className="px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-200"
-                onClick={handleBrowseLogFile}
-              >
-                <FolderOpen className="h-4 w-4" />
-              </button>
+              {isLogPathManuallyChanged ? (
+                <button
+                  type="button"
+                  aria-label={`${t('common.submit')}-${t(
+                    'settings.paths.logFile',
+                  )}`}
+                  className="px-3 py-2 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 rounded-md text-sm text-white"
+                  onClick={handleLogPathSave}
+                >
+                  <Save className="h-4 w-4" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  aria-label={`${t('settings.paths.browse')}-${t(
+                    'settings.paths.logFile',
+                  )}`}
+                  className="px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-200"
+                  onClick={handleBrowseLogFile}
+                >
+                  <FolderOpen className="h-4 w-4" />
+                </button>
+              )}
             </div>
             {logFilesDir?.error && (
               <div className="flex items-center text-sm text-red-600 dark:text-red-400">
@@ -321,6 +394,7 @@ const PathSettingsComponent = memo(({ showRefreshAll }: PathSettingsProps) => {
                     type="button"
                     onClick={handleRefreshAll}
                     disabled={isRefreshing}
+                    aria-label={t('common.refresh')}
                     className="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-200 disabled:opacity-50"
                   >
                     <RefreshCw

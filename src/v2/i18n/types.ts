@@ -17,6 +17,7 @@ export interface Translations {
   common: {
     settings: string;
     close: string;
+    submit: string;
     loading: string;
     noPhotosFound: string;
     photos: string;
@@ -108,6 +109,8 @@ export interface Translations {
       photoDirectory: string;
       logFile: string;
       browse: string;
+      addExtraDirectory: string;
+      removeExtraDirectory: string;
       validate: string;
       validating: string;
       logFormat: {

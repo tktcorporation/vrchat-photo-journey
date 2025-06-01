@@ -63,3 +63,8 @@ export const setVRChatLogFilesDirByDialog = async (): Promise<
     return undefined;
   });
 };
+
+export const setVRChatLogFilesDir = (logFilesDir: string) => {
+  const settingStore = getSettingStore();
+  settingStore.setLogFilesDir(logFilesDir);
+};

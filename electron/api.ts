@@ -115,6 +115,13 @@ export const router = trpcRouter({
     }
     return true;
   }),
+  setVRChatLogFilePath: procedure
+    .input(z.string().min(1, 'パスを入力してください'))
+    .mutation(async ({ input: logFilePath }) => {
+      service.setVRChatLogFilesDir(logFilePath);
+      ee.emit('toast', 'VRChatのログファイルの保存先を更新しました');
+      return true;
+    }),
   getTermsAccepted: procedure.query(() => {
     return {
       accepted: settingStore.getTermsAccepted(),
