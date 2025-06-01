@@ -2,13 +2,13 @@ import { trpcReact } from '@/trpc';
 import { useMemo } from 'react';
 import type { Photo } from '../../types/photo';
 
-export interface WorldInfo {
+interface WorldInfo {
   worldId: string;
   worldName: string;
   worldInstanceId: string;
 }
 
-export interface GroupedPhoto {
+interface GroupedPhoto {
   photos: Photo[];
   worldInfo: WorldInfo | null;
   joinDateTime: Date;

@@ -727,5 +727,3 @@ export const LocationGroupHeader = ({
     </div>
   );
 };
-
-export default LocationGroupHeader;

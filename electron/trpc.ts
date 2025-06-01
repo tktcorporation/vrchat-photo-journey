@@ -2,7 +2,7 @@ import { EventEmitter } from 'node:events';
 import { TRPCError, initTRPC } from '@trpc/server';
 import superjson from 'superjson';
 import { UserFacingError } from './lib/errors';
-import * as log from './lib/logger';
+import { logger } from './lib/logger';
 import * as settingService from './module/settings/service';
 
 const eventEmitter = new EventEmitter();
@@ -41,7 +41,7 @@ const logError = (
     originalError || (err instanceof Error ? err : new Error(String(err)));
   const appVersion = settingService.getAppVersion();
 
-  log.error({
+  logger.error({
     message: `version: ${appVersion}, request: ${requestInfo}, error: ${errorToLog.message}`,
     stack: errorToLog,
   });
@@ -93,4 +93,4 @@ const { procedure: p, router: r } = t;
 const procedure = p.use(logRequest).use(errorHandler);
 const router = r;
 
-export { procedure, router, eventEmitter, logError, UserFacingError };
+export { procedure, router, eventEmitter };

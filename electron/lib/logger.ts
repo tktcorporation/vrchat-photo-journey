@@ -69,7 +69,7 @@ const error = ({ message, stack }: ErrorLogParams): void => {
 
   // 規約同意済みの場合のみSentryへ送信
   if (termsAccepted === true) {
-    log.debug('Attempting to send error to Sentry...');
+    logger.debug('Attempting to send error to Sentry...');
     try {
       captureException(errorInfo, {
         extra: {
@@ -79,12 +79,12 @@ const error = ({ message, stack }: ErrorLogParams): void => {
           source: 'electron-main',
         },
       });
-      log.debug('Error sent to Sentry successfully');
+      logger.debug('Error sent to Sentry successfully');
     } catch (sentryError) {
-      log.debug('Failed to send error to Sentry:', sentryError);
+      logger.debug('Failed to send error to Sentry:', sentryError);
     }
   } else {
-    log.debug('Terms not accepted, skipping Sentry error');
+    logger.debug('Terms not accepted, skipping Sentry error');
   }
 };
 
@@ -95,7 +95,15 @@ const logger = {
   debug,
   error,
   warn,
+  transports: {
+    file: log.transports.file,
+    console: log.transports.console,
+  },
+  setTransportsLevel: (level: log.LevelOption) => {
+    log.transports.file.level = level;
+    log.transports.console.level = level;
+  },
   electronLogFilePath,
 };
 
-export { info, debug, error, warn, electronLogFilePath, logger, log };
+export { logger };

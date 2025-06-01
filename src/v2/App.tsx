@@ -2,7 +2,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { scrubEventData } from '@/lib/utils/masking';
 import { trpcClient, trpcReact } from '@/trpc';
 import TrpcWrapper from '@/trpcWrapper';
-import type { ErrorEvent, EventHint } from '@sentry/core';
+import type { Event, EventHint } from '@sentry/electron/main';
 import { init as initSentry } from '@sentry/electron/renderer';
 import { useEffect, useState } from 'react';
 import { AppHeader } from './components/AppHeader';
@@ -15,6 +15,10 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { useToast } from './hooks/use-toast';
 import { useStartupStage } from './hooks/useStartUpStage';
 import type { ProcessError } from './hooks/useStartUpStage';
+
+interface ErrorEvent extends Event {
+  type: undefined;
+}
 
 /**
  * 規約の確認や Sentry の初期化など、起動時の処理を行うコンポーネント。

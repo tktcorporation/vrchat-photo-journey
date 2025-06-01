@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { getDBQueue } from '../../lib/dbQueue';
+import { executeQuery } from '../../lib/dbHelper';
 import { UserFacingError } from '../../lib/errors';
-import { log, error as logError, info as logInfo } from '../../lib/logger';
+import { logger } from '../../lib/logger';
 import { procedure, router } from '../../trpc';
 
 type QueryInput = {
@@ -18,7 +18,13 @@ export const debugRouter = router({
     .mutation(async ({ input }: { input: QueryInput }) => {
       try {
         // DBQueueを使用してクエリを実行
-        return await getDBQueue().query(input.query);
+        const result = await executeQuery(input.query);
+        if (result.isErr()) {
+          throw new UserFacingError(
+            `SQLクエリの実行に失敗しました: ${result.error.message}`,
+          );
+        }
+        return result.value;
       } catch (error: unknown) {
         if (error instanceof Error) {
           throw new UserFacingError(
@@ -38,17 +44,19 @@ export const debugRouter = router({
     )
     .mutation(async ({ input }) => {
       try {
-        log.transports.file.level = input.level;
-        log.transports.console.level = input.level;
-        logInfo(`Log level set to: ${input.level}`);
+        logger.setTransportsLevel(input.level);
+        logger.info(`Log level set to: ${input.level}`);
         return { success: true };
       } catch (error: unknown) {
-        logError({ message: 'Failed to set log level', stack: error as Error });
+        logger.error({
+          message: 'Failed to set log level',
+          stack: error as Error,
+        });
         throw new UserFacingError('ログレベルの設定に失敗しました。');
       }
     }),
   getLogLevel: procedure.query(() => {
     // 現在のファイルログレベルを返す (コンソールレベルも通常は同じはず)
-    return log.transports.file.level || 'info'; // level が false の場合 'info' を返す
+    return logger.transports.file.level || 'info'; // level が false の場合 'info' を返す
   }),
 });

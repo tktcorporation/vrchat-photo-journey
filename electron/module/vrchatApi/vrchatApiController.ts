@@ -50,9 +50,7 @@ const getVrcUserInfoListByUserNameList = async (
 
 import { ofetch } from 'ofetch';
 
-export const convertImageToBase64 = async (
-  imageUrl: string,
-): Promise<string> => {
+const convertImageToBase64 = async (imageUrl: string): Promise<string> => {
   const userAgent = `Electron ${process.versions.electron}; ${process.platform}; ${process.arch}`;
   const response = await ofetch(imageUrl, {
     headers: {

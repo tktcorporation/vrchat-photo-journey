@@ -4,7 +4,7 @@ import {
   handleResultError,
   photoOperationErrorMappings,
 } from '../../lib/errorHelpers';
-import * as log from './../../lib/logger';
+import { logger } from './../../lib/logger';
 import { eventEmitter, procedure, router as trpcRouter } from './../../trpc';
 import * as utilsService from './../electronUtil/service';
 import * as vrchatPhotoService from './../vrchatPhoto/vrchatPhoto.service';
@@ -57,7 +57,7 @@ const getCountByYearMonthList = async (): Promise<
   return neverthrow.ok(countByYearMonthList);
 };
 
-export const setVRChatPhotoDirPathByDialog = async (): Promise<
+const setVRChatPhotoDirPathByDialog = async (): Promise<
   neverthrow.Result<void, 'canceled'>
 > => {
   return (await utilsService.openGetDirDialog()).map((dirPath) => {
@@ -147,7 +147,7 @@ export const vrchatPhotoRouter = () =>
         const result = await vrchatPhotoService.validateVRChatPhotoPathModel({
           fullpath: ctx.input,
         });
-        log.debug('validateVRChatPhotoPath', ctx.input, result);
+        logger.debug('validateVRChatPhotoPath', ctx.input, result);
         return {
           result,
         };

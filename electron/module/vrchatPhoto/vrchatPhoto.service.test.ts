@@ -49,9 +49,11 @@ vi.mock('sharp', () => {
   };
 });
 vi.mock('./../../lib/logger', () => ({
-  debug: vi.fn(),
-  info: vi.fn(),
-  error: vi.fn(),
+  logger: {
+    debug: vi.fn(),
+    info: vi.fn(),
+    error: vi.fn(),
+  },
 }));
 
 // Helper to create mock file stats
