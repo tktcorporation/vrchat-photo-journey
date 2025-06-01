@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -147,12 +147,9 @@ jobs:
           else
             echo "Generated comment body:"
             echo -e "$body" # For logging
-            # Multiline output for GitHub Actions
-            {
-              echo "body<<EOF_COMMENT_BODY"
-              echo -e "$body"
-              echo "EOF_COMMENT_BODY"
-            } >> $GITHUB_OUTPUT
+            echo "body<<EOF_COMMENT_BODY" >> $GITHUB_OUTPUT
+            echo -e "$body" >> $GITHUB_OUTPUT
+            echo "EOF_COMMENT_BODY" >> $GITHUB_OUTPUT
           fi
 
       - name: Comment with screenshot

@@ -365,7 +365,7 @@ describe('getPlayerJoinListInSameWorld 統合テスト', () => {
   // テスト用の一時データベースパス（sqlite:プレフィックスなし）
   const tempDbPath = path.join(
     os.tmpdir(),
-    `test-vrchat-albums-${Date.now()}.db`,
+    `test-vrchat-photo-journey-${Date.now()}.db`,
   );
   let client: ReturnType<typeof initRDBClient>;
 

@@ -57,7 +57,7 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
     onSelect,
     selectedPhotos,
     setSelectedPhotos,
-    photos,
+    // photos, // Removed to fix biome noUnusedVariables
     isMultiSelectMode,
     setIsMultiSelectMode,
     displayHeight,
@@ -93,8 +93,8 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
       });
     const copySingleMutation =
       trpcReact.electronUtil.copyImageDataByPath.useMutation();
-    const copyMultipleMutation =
-      trpcReact.electronUtil.copyMultipleImageDataByPath.useMutation();
+    // const copyMultipleMutation =
+    //   trpcReact.electronUtil.copyMultipleImageDataByPath.useMutation(); // Removed
     const openInPhotoAppMutation =
       trpcReact.electronUtil.openPhotoPathWithPhotoApp.useMutation();
     const openDirOnExplorerMutation = trpcReact.openDirOnExplorer.useMutation();
@@ -116,15 +116,13 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
     /** コンテキストメニュー: 写真データコピー (単一/複数対応) */
     const handleCopyPhotoData = (e: React.MouseEvent) => {
       e.stopPropagation();
+      // TODO: Re-implement multiple photo copy if needed, or remove UI for it
       if (selectedPhotos.size > 1) {
-        const pathsToCopy = Array.from(selectedPhotos)
-          .map((id) => {
-            const p = photos.find((p) => String(p.id) === id);
-            return p?.url;
-          })
-          .filter(Boolean) as string[];
-        console.log('Triggering multiple photo copy:', pathsToCopy);
-        copyMultipleMutation.mutate(pathsToCopy);
+        console.warn(
+          'Multiple photo copy feature disabled due to backend changes.',
+        );
+        // Optionally, provide user feedback e.g., via a toast
+        // copyMultipleMutation.mutate(pathsToCopy); // This was removed
       } else {
         copySingleMutation.mutate(photo.url);
       }

@@ -3,10 +3,6 @@ import * as React from 'react';
 
 import { cn } from '../lib/utils';
 
-/**
- * オーバーフローする内容をスクロール可能にするコンテナ。
- * 長文の規約表示など `TermsModal` で利用されている。
- */
 const ScrollArea = React.forwardRef<
   React.ElementRef<typeof ScrollAreaPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.Root>
@@ -25,10 +21,6 @@ const ScrollArea = React.forwardRef<
 ));
 ScrollArea.displayName = ScrollAreaPrimitive.Root.displayName;
 
-/**
- * `ScrollArea` 内で使用するカスタムスクロールバー。
- * 横向き・縦向き両方に対応し、ユーザーが内容をスクロールできるようにする。
- */
 const ScrollBar = React.forwardRef<
   React.ElementRef<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>,
   React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>

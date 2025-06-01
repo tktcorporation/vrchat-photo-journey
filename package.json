@@ -1,11 +1,11 @@
 {
-  "name": "vrchat-albums",
-  "version": "0.12.1",
+  "name": "vrchat-photo-journey",
+  "version": "0.12.0",
   "main": "main/index.cjs",
   "author": {
     "name": "tktcorporation"
   },
-  "description": "VRChatで撮影した写真を整理・管理するためのデスクトップアプリケーションです。VRChatのログファイルと写真を自動的に関連付けて、いつ、どのワールドで撮影したかを簡単に確認できます。",
+  "description": "",
   "keywords": [
     "vite",
     "react",
@@ -13,19 +13,19 @@
     "typescript"
   ],
   "repository": {
-    "url": "https://github.com/tktcorporation/vrchat-albums"
+    "url": "https://github.com/tktcorporation/add-world-name-to-vrc-photo"
   },
-  "productName": "VRChatAlbums",
+  "productName": "vrchat-photo-journey",
   "type": "module",
   "scripts": {
     "preinstall": "nlx only-allow yarn",
     "postinstall": "simple-git-hooks && nr license-check:generate && nr rebuild-native",
-    "rebuild-native": "electron-rebuild -f -w clip-filepaths",
+    "rebuild-native": "electron-rebuild -f -w electron-pan-clip",
     "setup:debug": "bash debug/genDevFiles.sh",
     "generate:debug-data": "nlx tsx scripts/generate-debug-data.mts",
     "dev": "./scripts/dev.sh",
     "dev:vite": "vite",
-    "dev:electron": "vite build -c electron/vite.config.ts && electron . --disable-gpu",
+    "dev:electron": "vite build -c electron/vite.config.ts && electron /workspaces/vrchat-photo-journey --disable-gpu",
     "build": "nr lint:type-check && nr build:vite && nr build:electron",
     "build:vite": "vite build",
     "build:electron": "vite build -c electron/vite.config.ts",
@@ -48,6 +48,7 @@
     "check-unused": "npx tsr 'electron/index\\.ts' 'src/main\\.tsx' '\\.config\\.ts' 'spec.ts' 'test.ts'",
     "lint": "nr lint:biome && nr lint:type-check && nr lint:actionlint",
     "lint:biome": "biome check .",
+    "lint:actionlint": "./scripts/actionlint .github/workflows/*.yml",
     "lint:type-check": "nr lint:type-check:tsgo:electron && nr lint:type-check:tsgo:src",
     "lint:type-check:tsc": "nr lint:type-check:tsc:electron && nr lint:type-check:tsc:src",
     "lint:type-check:tsc:electron": "tsc --noEmit -p electron",
@@ -55,7 +56,6 @@
     "lint:type-check:tsgo": "nr lint:type-check:tsgo:electron && nr lint:type-check:tsgo:src",
     "lint:type-check:tsgo:electron": "tsgo --noEmit -p electron",
     "lint:type-check:tsgo:src": "tsgo --noEmit",
-    "lint:actionlint": "nlx @tktco/node-actionlint",
     "lint:fix": "biome check --apply-unsafe . && nr lint:type-check",
     "lint:fix:tsc": "biome check --apply-unsafe . && nr lint:type-check:tsc",
     "sentry:sourcemaps": "nr sentry:sourcemaps:electron && nr sentry:sourcemaps:vite",
@@ -99,7 +99,6 @@
     "@trpc/server": "10.45.2",
     "@vitejs/plugin-react": "4.2.1",
     "class-variance-authority": "0.7.0",
-    "clip-filepaths": "^0.2.0",
     "clsx": "2.1.1",
     "consola": "^3.2.3",
     "date-fns": "2.30.0",
@@ -156,7 +155,6 @@
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
-    "@tktco/node-actionlint": "^1.5.2",
     "@types/babel__core": "7.20.5",
     "@types/electron-is-dev": "1.1.1",
     "@types/jest": "29.5.12",
@@ -186,11 +184,11 @@
     "vitest": "^2.1.8"
   },
   "build": {
-    "productName": "VRChatAlbums",
+    "productName": "vrchat-photo-index",
     "publish": {
       "provider": "github",
       "owner": "tktcorporation",
-      "repo": "vrchat-albums"
+      "repo": "vrchat-photo-journey"
     },
     "win": {
       "target": "nsis",

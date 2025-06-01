@@ -18,41 +18,17 @@ export function useResizeObserver<T extends HTMLElement>(): [
     if (!ref.current) return;
 
     const element = ref.current;
-    const previousSize = { width: 0, height: 0 };
+    observerRef.current = new ResizeObserver((entries) => {
+      if (!entries[0]) return;
 
-    try {
-      observerRef.current = new ResizeObserver((entries) => {
-        try {
-          if (!entries[0]) return;
+      const { width, height } = entries[0].contentRect;
+      setSize({ width, height });
+    });
 
-          const { width, height } = entries[0].contentRect;
-
-          // Only update if the size actually changed significantly
-          const threshold = 1;
-          if (
-            Math.abs(width - previousSize.width) > threshold ||
-            Math.abs(height - previousSize.height) > threshold
-          ) {
-            previousSize.width = width;
-            previousSize.height = height;
-            setSize({ width, height });
-          }
-        } catch (error) {
-          console.warn('ResizeObserver entry processing error:', error);
-        }
-      });
-
-      observerRef.current.observe(element);
-    } catch (error) {
-      console.warn('ResizeObserver creation failed:', error);
-    }
+    observerRef.current.observe(element);
 
     return () => {
-      try {
-        observerRef.current?.disconnect();
-      } catch (error) {
-        console.warn('ResizeObserver disconnect error:', error);
-      }
+      observerRef.current?.disconnect();
     };
   }, []);
 

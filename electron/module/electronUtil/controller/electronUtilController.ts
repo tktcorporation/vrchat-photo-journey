@@ -145,17 +145,4 @@ export const electronUtilRouter = () =>
         handleResultError(result, fileOperationErrorMappings);
         return true;
       }),
-    copyMultipleImageDataByPath: procedure
-      .input(z.array(z.string()))
-      .mutation(async (ctx) => {
-        const paths = ctx.input;
-        console.log(
-          'copyMultipleImageDataByPath called with paths:',
-          paths.length,
-        );
-
-        const result = await utilsService.copyMultipleFilesToClipboard(paths);
-        handleResultError(result, fileOperationErrorMappings);
-        return true;
-      }),
   });

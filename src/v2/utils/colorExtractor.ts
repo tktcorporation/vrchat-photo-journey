@@ -1,7 +1,3 @@
-/**
- * 画像要素をキャンバスに描画し、そのピクセルデータを取得するヘルパー。
- * `extractDominantColors` からのみ利用される内部関数。
- */
 function getPixelData(img: HTMLImageElement): ImageData {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
@@ -55,10 +51,6 @@ interface ColorBucket {
   hsl: [number, number, number];
 }
 
-/**
- * 与えられた画像から主要な色を抽出する関数。
- * `BoldPreview` や `previewGenerator` で背景色を決定するために使われる。
- */
 export function extractDominantColors(img: HTMLImageElement) {
   const imageData = getPixelData(img);
   const data = imageData.data;

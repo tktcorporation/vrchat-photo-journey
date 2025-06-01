@@ -2,10 +2,6 @@ import * as React from 'react';
 
 import { cn } from '../lib/utils';
 
-/**
- * フォームや検索欄で使用される標準的な入力フィールド。
- * `PhotoGallery/Header` など複数の画面で文字入力を受け付けるために利用する。
- */
 const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<'input'>>(
   ({ className, type, ...props }, ref) => {
     return (

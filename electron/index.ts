@@ -1,12 +1,10 @@
 import path from 'node:path';
 import { type BrowserWindow, app, ipcMain } from 'electron';
 
-import type { ErrorEvent } from '@sentry/core';
-import { type EventHint, init as initSentry } from '@sentry/electron/main';
+import { init as initSentry } from '@sentry/electron/main';
 // Packages
 import { createIPCHandler } from 'electron-trpc/main';
 import unhandled from 'electron-unhandled';
-import { scrubEventData } from '../src/lib/utils/masking';
 import { router } from './api';
 import * as electronUtil from './electronUtil';
 import * as log from './lib/logger';
@@ -36,15 +34,12 @@ export const initializeMainSentry = () => {
     dsn: process.env.SENTRY_DSN,
     environment: process.env.NODE_ENV,
     debug: process.env.NODE_ENV !== 'production',
-    beforeSend: (event: ErrorEvent, _hint: EventHint) => {
-      if (settingStore.getTermsAccepted() !== true) {
-        log.info('Sentry event dropped due to terms not accepted.');
-        return null;
+    beforeSend: (event) => {
+      if (settingStore.getTermsAccepted()) {
+        return event;
       }
-
-      const processedEvent = scrubEventData(event);
-
-      return processedEvent;
+      log.info('Sentry event dropped due to terms not accepted.');
+      return null; // 規約未同意の場合はイベントを送信しない
     },
   });
   log.info(

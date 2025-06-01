@@ -7,11 +7,6 @@ import superjson from 'superjson';
 
 import { trpcReact } from './trpc';
 
-/**
- * tRPC クライアントと React Query の QueryClient を初期化し、
- * アプリ全体にプロバイダーを提供するラッパーコンポーネント。
- * `App.tsx` のルートで使用され、API 通信とキャッシュ管理を行う環境を整える。
- */
 export default ({ children }: { children: React.ReactNode }) => {
   const handleError = (error: Error) => {
     window.Main.sendErrorMessage(

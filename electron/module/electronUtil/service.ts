@@ -1,7 +1,6 @@
 import * as fs from 'node:fs/promises';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import { writeClipboardFilePaths } from 'clip-filepaths';
 import { app, clipboard, dialog, nativeImage, shell } from 'electron';
 import * as neverthrow from 'neverthrow';
 import sharp from 'sharp';
@@ -232,18 +231,6 @@ export const saveFileToPath = async (
   await fs.copyFile(sourcePath, destinationPath);
 };
 
-// 複数ファイルをクリップボードにコピーする (クロスプラットフォーム対応)
-const copyMultipleFilesToClipboard = async (
-  filePaths: string[],
-): Promise<neverthrow.Result<void, Error>> => {
-  if (filePaths.length === 0) {
-    return neverthrow.ok(undefined);
-  }
-  writeClipboardFilePaths(filePaths);
-
-  return neverthrow.ok(undefined);
-};
-
 export {
   openPathInExplorer,
   openGetDirDialog,
@@ -254,5 +241,4 @@ export {
   copyImageDataByPath,
   copyImageByBase64,
   downloadImageAsPng,
-  copyMultipleFilesToClipboard,
 };

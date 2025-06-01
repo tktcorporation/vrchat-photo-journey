@@ -17,7 +17,7 @@ const PhotoGallery = memo((props: { startUpStages: ProcessStages }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showSettings, setShowSettings] = useState(false);
   const [showEmptyGroups, setShowEmptyGroups] = useState(true);
-  const { t } = useI18n();
+  // const { t } = useI18n(); // Removed to fix biome noUnusedVariables
   const { toast } = useToast();
 
   const {
@@ -35,32 +35,32 @@ const PhotoGallery = memo((props: { startUpStages: ProcessStages }) => {
   };
 
   // 複数画像をクリップボードにコピーするミューテーション
-  const { mutate: copyMultipleImagesToClipboard } =
-    trpcReact.electronUtil.copyMultipleImageDataByPath.useMutation({
-      onSuccess: (_, variables) => {
-        const count = variables.length;
-        const _isWindows = navigator.platform.includes('Win');
-
-        if (count > 1) {
-          toast({
-            title: `${count}枚の写真をコピーしました`,
-            variant: 'default',
-          });
-        } else {
-          toast({
-            title: t('locationHeader.copied'),
-            variant: 'default',
-          });
-        }
-      },
-      onError: (error) => {
-        console.error('Failed to copy multiple images to clipboard:', error);
-        toast({
-          title: '写真のコピーに失敗しました',
-          variant: 'destructive',
-        });
-      },
-    });
+  // const { mutate: copyMultipleImagesToClipboard } =
+  //   trpcReact.electronUtil.copyMultipleImageDataByPath.useMutation({
+  //     onSuccess: (_, variables) => {
+  //       const count = variables.length;
+  //       const _isWindows = navigator.platform.includes('Win');
+  //
+  //       if (count > 1) {
+  //         toast({
+  //           title: `${count}枚の写真をコピーしました`,
+  //           variant: 'default',
+  //         });
+  //       } else {
+  //         toast({
+  //           title: t('locationHeader.copied'),
+  //           variant: 'default',
+  //         });
+  //       }
+  //     },
+  //     onError: (error) => {
+  //       console.error('Failed to copy multiple images to clipboard:', error);
+  //       toast({
+  //         title: '写真のコピーに失敗しました',
+  //         variant: 'destructive',
+  //       });
+  //     },
+  //   });
 
   // 選択された写真をクリップボードにコピーするハンドラ
   const handleCopySelected = () => {
@@ -82,7 +82,14 @@ const PhotoGallery = memo((props: { startUpStages: ProcessStages }) => {
 
     // 写真をクリップボードにコピー
     if (selectedPhotoUrls.length > 0) {
-      copyMultipleImagesToClipboard(selectedPhotoUrls);
+      // copyMultipleImagesToClipboard(selectedPhotoUrls); // Feature disabled
+      console.warn(
+        'Copy multiple images feature disabled due to backend changes.',
+      );
+      toast({
+        title: '複数コピー機能は現在無効です',
+        variant: 'default',
+      });
     }
   };
 

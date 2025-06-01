@@ -1,8 +1,6 @@
 import { Toaster } from '@/components/ui/toaster';
-import { scrubEventData } from '@/lib/utils/masking';
 import { trpcClient, trpcReact } from '@/trpc';
 import TrpcWrapper from '@/trpcWrapper';
-import type { ErrorEvent, EventHint } from '@sentry/core';
 import { init as initSentry } from '@sentry/electron/renderer';
 import { useEffect, useState } from 'react';
 import { AppHeader } from './components/AppHeader';
@@ -48,27 +46,24 @@ function AppContent() {
           tags: {
             source: 'electron-renderer',
           },
-          beforeSend: async (event: ErrorEvent, _hint: EventHint) => {
+          beforeSend: async (event) => {
             try {
-              // 既存の規約同意チェック
+              // メインプロセスに直接問い合わせる
               const currentTermsStatus =
                 await trpcClient.getTermsAccepted.query();
-              if (currentTermsStatus?.accepted !== true) {
-                console.log(
-                  'Sentry event dropped in renderer due to terms not accepted (queried from main).',
-                );
-                return null;
+              if (currentTermsStatus?.accepted === true) {
+                return event;
               }
-
-              // 個人情報マスク処理を追加
-              const processedEvent = scrubEventData(event);
-
-              return processedEvent;
+              console.log(
+                'Sentry event dropped in renderer due to terms not accepted (queried from main).',
+              );
+              return null;
             } catch (error) {
               console.error(
-                'Failed to query terms status from main process for Sentry or scrub event:',
+                'Failed to query terms status from main process for Sentry:',
                 error,
               );
+              // エラー時はイベントを送信しない (あるいはデフォルトの処理に任せる場合は event を返す)
               return null;
             }
           },
