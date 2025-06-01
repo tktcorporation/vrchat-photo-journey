@@ -1,5 +1,9 @@
 import { useEffect, useRef } from 'react';
 
+/**
+ * スクロール中に表示されているグループ名を検出するフック。
+ * PhotoGallery 旧実装で使用されていたが、現行では未使用。
+ */
 export function useGroupInView(
   groupNames: string[],
   setCurrentGroup: (groupName: string) => void,

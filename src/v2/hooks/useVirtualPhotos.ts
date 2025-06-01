@@ -5,6 +5,10 @@ const INITIAL_BATCH_SIZE = 20;
 const BATCH_INCREMENT = 20;
 const SCROLL_THRESHOLD = 1000;
 
+/**
+ * 写真一覧を段階的に表示するためのフック。
+ * スクロール位置を監視し、PhotoCard 群を仮想化する用途で利用される。
+ */
 export function useVirtualPhotos(photos: Photo[]) {
   const [visibleCount, setVisibleCount] = useState(INITIAL_BATCH_SIZE);
   const [isLoading, setIsLoading] = useState(false);

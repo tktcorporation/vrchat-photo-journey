@@ -1,5 +1,9 @@
 import { trpcReact } from '@/trpc';
 
+/**
+ * PathSettings 画面で追加の写真フォルダを管理するためのフック。
+ * tRPC を用いて設定を取得・保存する。
+ */
 export const useVRChatPhotoExtraDirList = (): [
   string[],
   (dirs: string[]) => void,
