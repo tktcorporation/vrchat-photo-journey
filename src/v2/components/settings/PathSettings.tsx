@@ -9,6 +9,10 @@ import { useI18n } from '../../i18n/store';
 interface PathSettingsProps {
   showRefreshAll: boolean;
 }
+/**
+ * VRChat のログ・写真フォルダを設定する画面。
+ * データソース変更時のリフレッシュ処理もここから行われる。
+ */
 const PathSettingsComponent = memo(({ showRefreshAll }: PathSettingsProps) => {
   const { t } = useI18n();
   const [_isValidating, setIsValidating] = useState(false);

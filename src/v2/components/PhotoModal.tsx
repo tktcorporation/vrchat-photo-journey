@@ -18,6 +18,10 @@ interface PhotoModalProps {
   onClose: () => void;
 }
 
+/**
+ * 写真を拡大表示し詳細情報を確認できるモーダル。
+ * PhotoCard から呼び出され、キーボード操作にも対応する。
+ */
 const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose }) => {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [showInfo, setShowInfo] = useState(true);

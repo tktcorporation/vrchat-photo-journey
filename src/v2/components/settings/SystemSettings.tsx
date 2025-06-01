@@ -29,6 +29,10 @@ const Toggle = ({ checked, onCheckedChange, disabled }: ToggleProps) => (
   </button>
 );
 
+/**
+ * 自動起動やバックグラウンド処理の設定を行う画面。
+ * SettingsModal 内のシステムタブから利用される。
+ */
 const SystemSettings = memo(() => {
   const { t } = useI18n();
   const { toast } = useToast();

@@ -10,7 +10,10 @@ const HEADER_HEIGHT = 40; // LocationGroupHeaderの高さ
 const GAP = 4; // 写真間のギャップ
 const TARGET_ROW_HEIGHT = 200; // 目標の行の高さ
 const CONTAINER_PADDING = 16; // コンテナのパディング
-
+/**
+ * 写真グループの高さを計測し `onMeasure` へ渡すコンポーネント。
+ * GalleryContent の仮想スクロールで各グループのサイズ計算に使用される。
+ */
 export function MeasurePhotoGroup({
   photos,
   onMeasure,

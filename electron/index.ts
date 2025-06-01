@@ -68,6 +68,10 @@ const CHANNELS = {
   TOAST: 'toast',
 };
 
+/**
+ * ipcMain ハンドラを登録し、設定の取得や保存、エラー通知を受け付ける。
+ * レンダラープロセスからの通信窓口として初期化時に呼び出される。
+ */
 const registerIpcMainListeners = () => {
   ipcMain.on(CHANNELS.ERROR_MESSAGE, (_, message) => {
     logger.error({
@@ -102,12 +106,20 @@ const registerIpcMainListeners = () => {
 
 const backgroundUsecase = getBackgroundUsecase(settingStore);
 
+/**
+ * 既存のメインウィンドウを取得し、なければ新規作成する非同期関数。
+ * 初期化処理やアクティベート時に呼び出される。
+ */
 const createOrGetMainWindow = async (): Promise<BrowserWindow> => {
   const mainWindow = electronUtil.createOrGetWindow();
   // 他のウィンドウ設定やイベントリスナーをここに追加
   return mainWindow;
 };
 
+/**
+ * SQLite データベースクライアントを初期化する。
+ * ファイルパスはユーザーデータディレクトリ配下に生成される。
+ */
 const initializeRDBClient = async () => {
   const filePath = path
     .join(getAppUserDataPath(), 'db.sqlite')
@@ -118,6 +130,10 @@ const initializeRDBClient = async () => {
   });
 };
 
+/**
+ * アプリケーション全体の初期化を行うメイン関数。
+ * ウィンドウ生成や IPC ハンドラ登録、Sentry 設定をここで実行する。
+ */
 const initializeApp = async () => {
   const gotTheLock = app.requestSingleInstanceLock();
   if (!gotTheLock) {
