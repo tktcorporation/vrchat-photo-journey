@@ -95,7 +95,15 @@ const logger = {
   debug,
   error,
   warn,
+  transports: {
+    file: log.transports.file,
+    console: log.transports.console,
+  },
+  setTransportsLevel: (level: log.LevelOption) => {
+    log.transports.file.level = level;
+    log.transports.console.level = level;
+  },
   electronLogFilePath,
 };
 
-export { info, debug, error, warn, electronLogFilePath, logger, log };
+export { logger };

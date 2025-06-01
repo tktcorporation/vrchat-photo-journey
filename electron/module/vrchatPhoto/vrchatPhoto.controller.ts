@@ -57,7 +57,7 @@ const getCountByYearMonthList = async (): Promise<
   return neverthrow.ok(countByYearMonthList);
 };
 
-export const setVRChatPhotoDirPathByDialog = async (): Promise<
+const setVRChatPhotoDirPathByDialog = async (): Promise<
   neverthrow.Result<void, 'canceled'>
 > => {
   return (await utilsService.openGetDirDialog()).map((dirPath) => {

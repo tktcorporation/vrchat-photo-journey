@@ -44,7 +44,6 @@
     "test:web": "vitest run --project web",
     "test:electron": "vitest run --project electron",
     "test:playwright": "playwright install --with-deps && playwright test",
-    "check-unused": "npx tsr 'electron/index\\.ts' 'src/main\\.tsx' '\\.config\\.ts' 'spec.ts' 'test.ts'",
     "lint": "nr lint:biome && nr lint:type-check && nr lint:actionlint",
     "lint:biome": "biome check .",
     "lint:type-check": "nr lint:type-check:tsgo:electron && nr lint:type-check:tsgo:src",

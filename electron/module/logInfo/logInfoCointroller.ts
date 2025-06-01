@@ -26,7 +26,7 @@ const getVRCWorldJoinLogList = async () => {
   });
 };
 
-export const getRecentVRChatWorldJoinLogByVRChatPhotoName = async (
+const getRecentVRChatWorldJoinLogByVRChatPhotoName = async (
   vrchatPhotoName: VRChatPhotoFileNameWithExt,
 ): Promise<
   neverthrow.Result<

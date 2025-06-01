@@ -8,15 +8,15 @@ export class UserFacingError extends Error {
 }
 
 // 特定の操作に失敗したことを示すエラーなど、より具体的なエラーも定義可能
-export class OperationFailedError extends UserFacingError {
-  constructor(operationName: string, details?: string, options?: ErrorOptions) {
-    super(
-      details
-        ? `${operationName}に失敗しました: ${details}`
-        : `${operationName}に失敗しました。`,
-      options,
-    );
-    this.name = 'OperationFailedError';
-    Object.setPrototypeOf(this, OperationFailedError.prototype);
-  }
-}
+// export class OperationFailedError extends UserFacingError {
+//   constructor(operationName: string, details?: string, options?: ErrorOptions) {
+//     super(
+//       details
+//         ? `${operationName}に失敗しました: ${details}`
+//         : `${operationName}に失敗しました。`,
+//       options,
+//     );
+//     this.name = 'OperationFailedError';
+//     Object.setPrototypeOf(this, OperationFailedError.prototype);
+//   }
+// }

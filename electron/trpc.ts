@@ -93,4 +93,4 @@ const { procedure: p, router: r } = t;
 const procedure = p.use(logRequest).use(errorHandler);
 const router = r;
 
-export { procedure, router, eventEmitter, UserFacingError };
+export { procedure, router, eventEmitter };

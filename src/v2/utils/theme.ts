@@ -12,7 +12,7 @@ export interface ThemeOption {
  * OS のカラースキーム設定を取得するユーティリティ。
  * shouldUseDarkTheme から呼び出される。
  */
-export function getSystemTheme(): boolean {
+function getSystemTheme(): boolean {
   return window.matchMedia('(prefers-color-scheme: dark)').matches;
 }
 
