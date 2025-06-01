@@ -4,6 +4,10 @@ import { useTheme } from '../../hooks/useTheme';
 import { useI18n } from '../../i18n/store';
 import { Theme, type ThemeOption } from '../../utils/theme';
 
+/**
+ * テーマをシステム・ダーク・ライトから選択する UI。
+ * SettingsModal のテーマタブで利用される。
+ */
 const ThemeSelector = memo(() => {
   const { t } = useI18n();
   const { theme, setTheme } = useTheme();

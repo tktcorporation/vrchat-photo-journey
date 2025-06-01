@@ -7,6 +7,10 @@ import { Button } from '../../../components/ui/button';
 import { useI18n } from '../../i18n/store';
 import SqliteConsole from './SqliteConsole';
 
+/**
+ * アプリのバージョンやログフォルダを表示する設定項目。
+ * SettingsModal 内で使用され、隠し機能として SQL コンソールの起動も行う。
+ */
 const AppInfo = memo(() => {
   const { t } = useI18n();
   const { mutate: openLog } = trpcReact.openElectronLogOnExplorer.useMutation();

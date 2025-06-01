@@ -152,6 +152,10 @@ function AppContent() {
   );
 }
 
+/**
+ * アプリ全体をエラーバウンダリや各種プロバイダーで包むルートコンポーネント。
+ * `main.tsx` から呼び出され、UI をレンダリングするエントリーポイントとなる。
+ */
 function App() {
   return (
     <ErrorBoundary>
@@ -191,6 +195,10 @@ const ToasterWrapper = () => {
   );
 };
 
+/**
+ * 起動処理の進行状況に応じて UI を切り替えるメインコンテンツ部分。
+ * 初期同期やエラー状態を監視しながら各画面を表示する。
+ */
 const Contents = () => {
   const { toast } = useToast();
   const { stages, retryProcess } = useStartupStage({

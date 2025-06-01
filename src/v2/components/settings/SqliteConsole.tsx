@@ -19,6 +19,10 @@ interface SqliteConsoleProps {
   onClose: () => void;
 }
 
+/**
+ * デバッグ目的で SQLite に直接クエリを実行するためのコンソール。
+ * AppInfo から特定の操作で開かれる隠し機能となっている。
+ */
 const SqliteConsole: React.FC<SqliteConsoleProps> = ({ isOpen, onClose }) => {
   const { t } = useI18n();
   const [query, setQuery] = useState('');

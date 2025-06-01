@@ -4,6 +4,10 @@ import type React from 'react';
 import { useEffect, useState } from 'react';
 import { trpcReact as trpc } from '../../trpc';
 
+/**
+ * ウィンドウ操作ボタンとアップデート通知を表示するアプリ上部のヘッダー。
+ * アプリ全体で共通して使用される。
+ */
 export const AppHeader: React.FC = () => {
   const [updateDownloaded, setUpdateDownloaded] = useState(false);
 

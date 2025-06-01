@@ -142,6 +142,10 @@ function dispatch(action: Action) {
 
 type Toast = Omit<ToasterToast, 'id'>;
 
+/**
+ * 新しいトーストを表示するための関数。
+ * `useToast` フック内部から返され、任意のコンポーネントで利用される。
+ */
 function toast({ ...props }: Toast) {
   const id = genId();
 

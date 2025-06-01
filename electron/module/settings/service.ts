@@ -2,6 +2,10 @@ import { app } from 'electron';
 import { type UpdateCheckResult, autoUpdater } from 'electron-updater';
 import { logger } from '../../lib/logger';
 
+/**
+ * アプリのバージョン文字列を取得するユーティリティ。
+ * 開発環境では package.json の値を優先する。
+ */
 export const getAppVersion = (): string => {
   // 本番では app.getVersion() を使用してバージョンを取得
   const appVersionDev = process.env.npm_package_version;
@@ -19,6 +23,10 @@ export const getAppVersion = (): string => {
   return appVersion;
 };
 
+/**
+ * アップデートの有無と更新情報を取得する関数。
+ * SettingsModal から呼び出される。
+ */
 export const getElectronUpdaterInfo = async (): Promise<{
   isUpdateAvailable: boolean;
   updateInfo: UpdateCheckResult | null;
@@ -40,6 +48,9 @@ export const getElectronUpdaterInfo = async (): Promise<{
   };
 };
 
+/**
+ * ダウンロード済みの更新をインストールしアプリを再起動する。
+ */
 export const installUpdate = async (): Promise<void> => {
   const updateInfo = await getElectronUpdaterInfo();
   if (!updateInfo.isUpdateAvailable) {
