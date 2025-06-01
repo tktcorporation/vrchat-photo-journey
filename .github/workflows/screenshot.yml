@@ -7,7 +7,7 @@ jobs:
   screenshot:
     runs-on: ubuntu-22.04
     permissions:
-      contents: write # Changed from read to write
+      contents: write
       pull-requests: write
 
     steps:
@@ -35,62 +35,99 @@ jobs:
       - name: Run Playwright tests
         run: xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" -- nr test:playwright
 
-      - name: upload screenshot
-        id: upload-screenshot
+      - name: Upload screenshot artifact
         uses: actions/upload-artifact@v4
         with:
           name: screenshots
           path: playwright/previews/*.png
 
-      - name: Publish screenshots to branch
-        id: publish_screenshots # Added an id to reference outputs
+      - name: Publish screenshots to branch and list files
+        id: publish_and_list_screenshots
         env:
-          BRANCH: pr-screenshot-${{ github.event.pull_request.number }}-${{ github.run_id }}
+          BRANCH_NAME: pr-screenshot-${{ github.event.pull_request.number }}-${{ github.run_id }}
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           SCREENSHOT_DIR="playwright/previews"
-          SCREENSHOT_FILES=$(find "$SCREENSHOT_DIR" -maxdepth 1 -name '*.png')
+          UPLOAD_DIR="upload_screenshots"
 
-          if [ -z "$SCREENSHOT_FILES" ]; then
+          mkdir -p "$UPLOAD_DIR"
+
+          shopt -s nullglob
+          files_to_copy=("$SCREENSHOT_DIR"/*.png)
+          shopt -u nullglob
+
+          if [ ${#files_to_copy[@]} -eq 0 ]; then
             echo "No PNG screenshots found in $SCREENSHOT_DIR"
-            exit 1
+            echo "screenshots_found=false" >> $GITHUB_OUTPUT
+            exit 0
           fi
 
-          echo "Found screenshots:"
-          echo "$SCREENSHOT_FILES"
+          cp "$SCREENSHOT_DIR"/*.png "$UPLOAD_DIR/"
+          echo "screenshots_found=true" >> $GITHUB_OUTPUT
 
-          mkdir upload
-          cd upload
+          echo "Found screenshots to publish:"
+          ls "$UPLOAD_DIR"/*.png
+
+          cd "$UPLOAD_DIR"
+
+          filenames_for_output=$(ls *.png)
+          {
+            echo "filenames_list<<HEREDOC_DELIMITER_RANDOM_STRING"
+            echo "$filenames_for_output"
+            echo "HEREDOC_DELIMITER_RANDOM_STRING"
+          } >> "$GITHUB_OUTPUT"
+
           git init
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-
-          IMAGE_URLS=""
-          for FILE_PATH in $SCREENSHOT_FILES; do
-            FILE_NAME=$(basename "$FILE_PATH")
-            cp "../$FILE_PATH" "./$FILE_NAME" # Corrected path for cp
-            git add "$FILE_NAME"
-            IMAGE_URLS="${IMAGE_URLS}![](https://raw.githubusercontent.com/${REPO}/${BRANCH}/${FILE_NAME})
-"
-          done
-
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add *.png
           git commit -m "Add screenshots for PR #${{ github.event.pull_request.number }}"
-          git branch -M "$BRANCH"
+          git branch -M "$BRANCH_NAME"
           git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
-          git push origin "$BRANCH" --force
+          git push origin "$BRANCH_NAME" --force
 
-          # Set output for the next step
-          echo "image_urls<<EOF" >> $GITHUB_OUTPUT
-          echo -e "$IMAGE_URLS" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-          echo "branch_name=$BRANCH" >> $GITHUB_OUTPUT
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+
+      - name: Prepare comment message
+        id: prepare_comment_message
+        if: steps.publish_and_list_screenshots.outputs.screenshots_found == 'true'
+        env:
+          BRANCH: ${{ steps.publish_and_list_screenshots.outputs.branch_name }}
+          REPO: ${{ github.repository }}
+          FILENAMES_LIST: ${{ steps.publish_and_list_screenshots.outputs.filenames_list }}
+        run: |
+          MESSAGE="Screenshots for this PR:\n\n"
+          echo "Using branch: $BRANCH for repository: $REPO"
+          echo "Files to process from FILENAMES_LIST:"
+          echo "$FILENAMES_LIST"
+
+          OLD_IFS="$IFS"
+          NEWLINE_CHAR=$(printf '\n')
+          IFS="$NEWLINE_CHAR"
+
+          for filename in $FILENAMES_LIST; do
+            if [ -n "$filename" ]; then
+              encoded_filename=$(echo "$filename" | sed 's/ /%20/g' | sed 's/#/%23/g' | sed 's/?/%3F/g')
+              MESSAGE="${MESSAGE}**${filename}**\n"
+              MESSAGE="${MESSAGE}![](https://raw.githubusercontent.com/${REPO}/${BRANCH}/${encoded_filename})\n\n"
+            fi
+          done
+          IFS="$OLD_IFS"
+
+          echo "Final message body to be set in output:"
+          echo -e "$MESSAGE"
+
+          {
+            echo "markdown_message<<HEREDOC_DELIMITER_RANDOM_STRING"
+            echo -e "$MESSAGE"
+            echo "HEREDOC_DELIMITER_RANDOM_STRING"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Comment with screenshots
+        if: steps.publish_and_list_screenshots.outputs.screenshots_found == 'true'
         uses: thollander/actions-comment-pull-request@v2
         with:
-          message: |
-            Screenshots for this PR:
-            ${{ steps.publish_screenshots.outputs.image_urls }}
+          message: ${{ steps.prepare_comment_message.outputs.markdown_message }}
           pr_number: ${{ github.event.pull_request.number }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -146,7 +146,6 @@
     "@vitest/coverage-v8": "^2.1.8",
     "@welldone-software/why-did-you-render": "^8.0.3",
     "autoprefixer": "10.4.19",
-    "chalk": "4.1.2",
     "electron": "34.3.0",
     "electron-builder": "24.13.3",
     "electron-rebuild": "^3.2.9",
@@ -162,9 +161,6 @@
     "typescript": "^5.8.3",
     "uuid": "^10.0.0",
     "vitest": "^2.1.8"
-  },
-  "resolutions": {
-    "chalk": "4.1.2"
   },
   "build": {
     "productName": "VRChatAlbums",

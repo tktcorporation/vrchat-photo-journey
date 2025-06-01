@@ -295,6 +295,10 @@ const ShareModal = ({
   );
 };
 
+/**
+ * 写真グループのヘッダー部分を表示するコンポーネント。
+ * 共有ボタンやプレイヤー一覧モーダルなどを管理する。
+ */
 export const LocationGroupHeader = ({
   worldId,
   worldName,

@@ -6,6 +6,10 @@ interface SearchBarProps {
   onSearch: (query: string) => void;
 }
 
+/**
+ * ギャラリー画面上部で写真を検索するテキスト入力欄。
+ * 入力値は usePhotoGallery フックに渡されフィルタリングに使われる。
+ */
 const SearchBar = memo(({ onSearch }: SearchBarProps) => {
   const { t } = useI18n();
 

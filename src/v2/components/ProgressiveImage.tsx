@@ -11,6 +11,10 @@ interface ProgressiveImageProps {
   loading?: 'lazy' | 'eager';
 }
 
+/**
+ * 低解像度画像を先に表示し、読み込み完了後に本画像へ差し替えるコンポーネント。
+ * PhotoCard 内で使用され、スクロール時の視覚的な滑らかさを向上させる。
+ */
 const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
   src,
   placeholderSrc,

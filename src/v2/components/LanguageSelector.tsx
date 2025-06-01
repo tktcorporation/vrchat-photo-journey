@@ -8,6 +8,10 @@ const languages: { value: Language; label: string }[] = [
   { value: 'en', label: 'English' },
 ];
 
+/**
+ * UI の表示言語を選択するコンポーネント。
+ * SettingsModal の言語タブとして表示される。
+ */
 const LanguageSelector = memo(() => {
   const { language, setLanguage } = useI18n();
 
