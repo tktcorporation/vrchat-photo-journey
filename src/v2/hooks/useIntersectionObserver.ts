@@ -6,6 +6,10 @@ interface UseIntersectionObserverOptions {
   rootMargin?: string;
 }
 
+/**
+ * PhotoCard コンポーネントで遅延読み込み判定に利用されるフック。
+ * 指定要素がビューポートに入ったかどうかを返す。
+ */
 export function useIntersectionObserver(
   elementRef: RefObject<Element>,
   options: UseIntersectionObserverOptions = {},

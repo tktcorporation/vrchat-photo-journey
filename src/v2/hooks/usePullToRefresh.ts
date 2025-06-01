@@ -8,6 +8,10 @@ interface UsePullToRefreshOptions {
   containerRef: RefObject<HTMLElement>;
 }
 
+/**
+ * モバイル向けのプルダウン更新挙動を提供するフック。
+ * PhotoGallery などのスクロールコンテナに組み込んで使用することを想定。
+ */
 export function usePullToRefresh({
   onRefresh,
   isRefreshing,

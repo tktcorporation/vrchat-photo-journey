@@ -13,6 +13,10 @@ interface ColorBucket {
   hsl: [number, number, number];
 }
 
+/**
+ * RGB 値を HSL 値に変換するヘルパー関数。
+ * dominant color 抽出処理から利用される。
+ */
 function rgbToHsl(r: number, g: number, b: number): [number, number, number] {
   const normalizedR = r / 255;
   const normalizedG = g / 255;
@@ -47,6 +51,10 @@ function rgbToHsl(r: number, g: number, b: number): [number, number, number] {
   return [h * 360, s * 100, l * 100];
 }
 
+/**
+ * 画像データから支配色を抽出する。
+ * generatePreviewSvg で背景色を決める際に使われる。
+ */
 async function extractDominantColors(imageBase64: string): Promise<{
   primary: string;
   secondary: string;
@@ -146,6 +154,10 @@ async function extractDominantColors(imageBase64: string): Promise<{
   };
 }
 
+/**
+ * プレイヤー名リストを SVG 用に整形する内部関数。
+ * generatePreviewSvg からのみ呼び出される。
+ */
 function generatePlayerElements(
   players: { playerName: string }[] | null,
   showAllPlayers: boolean,
@@ -305,6 +317,10 @@ function generatePlayerElements(
   };
 }
 
+/**
+ * 背景画像とプレイヤー情報からプレビュー用 SVG を生成する。
+ * generatePreviewPng の下位処理として呼び出される。
+ */
 async function generatePreviewSvg({
   worldName,
   imageBase64,
@@ -444,6 +460,10 @@ async function generatePreviewSvg({
   return { svg, height: totalHeight };
 }
 
+/**
+ * 生成した SVG を PNG 形式の Base64 文字列へ変換する。
+ * PhotoCard などでプレビュー画像として利用される。
+ */
 export async function generatePreviewPng(
   params: GeneratePreviewParams,
 ): Promise<string> {

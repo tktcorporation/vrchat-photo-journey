@@ -6,6 +6,10 @@ interface Size {
   height: number;
 }
 
+/**
+ * 要素サイズの変化を検知する汎用フック。
+ * コンポーネントのレイアウト調整に利用される。
+ */
 export function useResizeObserver<T extends HTMLElement>(): [
   RefObject<T>,
   Size,

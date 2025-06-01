@@ -10,6 +10,10 @@ interface UseVirtualGridOptions {
   overscan?: number;
 }
 
+/**
+ * 大量の写真を効率的に表示するためのグリッド仮想化フック。
+ * 現状は未使用だが無限スクロール実装の基礎として準備されている。
+ */
 export const useVirtualGrid = ({
   items,
   parentRef,

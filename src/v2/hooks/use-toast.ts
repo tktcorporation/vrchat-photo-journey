@@ -24,6 +24,9 @@ const actionTypes = {
 
 let count = 0;
 
+/**
+ * toast ごとに一意な ID を発行する内部関数。
+ */
 function genId() {
   count = (count + 1) % Number.MAX_SAFE_INTEGER;
   return count.toString();
@@ -168,6 +171,10 @@ function toast({ ...props }: Toast) {
   };
 }
 
+/**
+ * React コンポーネントからトーストを表示するためのカスタムフック。
+ * toast 関数と現在のトースト状態を提供する。
+ */
 function useToast() {
   const [state, setState] = React.useState<State>(memoryState);
 

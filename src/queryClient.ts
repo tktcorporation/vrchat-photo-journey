@@ -3,7 +3,7 @@ import type { trpcReact } from '@/trpc';
 /**
  * 写真ギャラリー関連の tRPC クエリを再取得させるためのユーティリティ関数。
  * `PathSettings` や `PhotoGallery/Header` などから呼び出され、
- * データ更新後にキャッシュを無効化して UI を最新状態に保つ。
+ * tRPC クエリキャッシュを無効化して最新のギャラリーデータを再取得させる。
  */
 export const invalidatePhotoGalleryQueries = (
   trpsUtils: ReturnType<typeof trpcReact.useUtils>,

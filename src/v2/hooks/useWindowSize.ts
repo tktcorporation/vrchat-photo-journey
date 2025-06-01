@@ -5,6 +5,10 @@ interface WindowSize {
   height?: number;
 }
 
+/**
+ * 画面幅に応じたレイアウト計算で利用するウィンドウサイズ取得フック。
+ * useVirtualGrid などから参照される。
+ */
 export function useWindowSize() {
   const [windowSize, setWindowSize] = useState<WindowSize>({});
 
