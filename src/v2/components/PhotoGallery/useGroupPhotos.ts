@@ -213,9 +213,13 @@ function convertGroupsToRecord(groups: GroupedPhoto[]): GroupedPhotos {
  * 写真一覧をセッションごとにまとめた結果を返すフック。
  *
  * @param photos - グループ化対象の写真配列。
+ * @param onGroupingEnd - グループ化処理が完了したときに呼び出されるコールバック
  * @returns グループ化結果と読み込み状態を含むオブジェクト。
  */
-export function useGroupPhotos(photos: Photo[]): {
+export function useGroupPhotos(
+  photos: Photo[],
+  onGroupingEnd?: () => void,
+): {
   groupedPhotos: GroupedPhotos;
   isLoading: boolean;
   debug: DebugInfo;
@@ -236,8 +240,10 @@ export function useGroupPhotos(photos: Photo[]): {
     if (joinLogs.length === 0) return {};
 
     const groups = groupPhotosBySession(photos, joinLogs);
-    return convertGroupsToRecord(groups);
-  }, [photos, joinLogs, isLoadingLogs]);
+    const result = convertGroupsToRecord(groups);
+    onGroupingEnd?.();
+    return result;
+  }, [photos, joinLogs, isLoadingLogs, onGroupingEnd]);
 
   const debug: DebugInfo = {
     totalPhotos: photos.length,

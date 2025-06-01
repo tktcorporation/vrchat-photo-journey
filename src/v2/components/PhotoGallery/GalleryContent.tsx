@@ -2,6 +2,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import { LoaderCircle } from 'lucide-react';
 import type React from 'react';
 import { memo, useCallback, useMemo, useRef } from 'react';
+import type { UseLoadingStateResult } from '../../hooks/useLoadingState';
 import { LocationGroupHeader } from '../LocationGroupHeader';
 import PhotoGrid from '../PhotoGrid';
 import PhotoModal from '../PhotoModal';
@@ -12,13 +13,15 @@ import { usePhotoGallery } from './usePhotoGallery';
 /**
  * ギャラリーコンテンツコンポーネントのプロパティ定義
  */
-interface GalleryContentProps {
+interface GalleryContentProps
+  extends Pick<
+    UseLoadingStateResult,
+    'isLoadingStartupSync' | 'isLoadingGrouping' | 'finishLoadingGrouping'
+  > {
   /** ヘッダーから渡される検索クエリ */
   searchQuery: string;
   /** 写真がないグループを表示するかどうか */
   showEmptyGroups: boolean;
-  /** アプリ起動時の同期処理（ログ読み込み、インデックス構築）が進行中かどうか */
-  isLoadingStartupSync: boolean;
 }
 
 const GROUP_SPACING = 52;
@@ -46,17 +49,18 @@ const GalleryContent = memo(
     searchQuery,
     showEmptyGroups,
     isLoadingStartupSync,
+    isLoadingGrouping,
+    finishLoadingGrouping,
   }: GalleryContentProps) => {
     const {
       groupedPhotos,
-      isLoading: isLoadingGrouping,
       selectedPhoto,
       setSelectedPhoto,
       selectedPhotos,
       setSelectedPhotos,
       isMultiSelectMode,
       setIsMultiSelectMode,
-    } = usePhotoGallery(searchQuery);
+    } = usePhotoGallery(searchQuery, { onGroupingEnd: finishLoadingGrouping });
     const containerRef = useRef<HTMLDivElement>(null);
     const groupSizesRef = useRef<Map<string, number>>(new Map());
 

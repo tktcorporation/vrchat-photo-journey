@@ -1,6 +1,7 @@
 import { trpcReact } from '@/trpc';
 import { memo, useEffect, useState } from 'react';
 import { useToast } from '../hooks/use-toast';
+import type { UseLoadingStateResult } from '../hooks/useLoadingState';
 import type { ProcessStages } from '../hooks/useStartUpStage';
 import { useI18n } from '../i18n/store';
 import GalleryContent from './PhotoGallery/GalleryContent';
@@ -8,12 +9,16 @@ import Header from './PhotoGallery/Header';
 import { usePhotoGallery } from './PhotoGallery/usePhotoGallery';
 import SettingsModal from './settings/SettingsModal';
 
+interface PhotoGalleryProps extends UseLoadingStateResult {
+  startUpStages: ProcessStages;
+}
+
 /**
  * 写真ギャラリーのメインコンポーネント
  * ヘッダー、ギャラリーコンテンツ、設定モーダルを表示します。
  * @param props.startUpStages - アプリ起動時の各処理段階の状態
  */
-const PhotoGallery = memo((props: { startUpStages: ProcessStages }) => {
+const PhotoGallery = memo((props: PhotoGalleryProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showSettings, setShowSettings] = useState(false);
   const [showEmptyGroups, setShowEmptyGroups] = useState(true);
@@ -26,7 +31,9 @@ const PhotoGallery = memo((props: { startUpStages: ProcessStages }) => {
     isMultiSelectMode,
     setIsMultiSelectMode,
     groupedPhotos,
-  } = usePhotoGallery(searchQuery);
+  } = usePhotoGallery(searchQuery, {
+    onGroupingEnd: props.finishLoadingGrouping,
+  });
 
   /** 選択をクリアし、複数選択モードを解除するハンドラ */
   const handleClearSelection = () => {
@@ -111,14 +118,16 @@ const PhotoGallery = memo((props: { startUpStages: ProcessStages }) => {
         onClearSelection={handleClearSelection}
         isMultiSelectMode={isMultiSelectMode}
         onCopySelected={handleCopySelected}
+        isRefreshing={props.isRefreshing}
+        startRefreshing={props.startRefreshing}
+        finishRefreshing={props.finishRefreshing}
       />
       <GalleryContent
         searchQuery={searchQuery}
         showEmptyGroups={showEmptyGroups}
-        isLoadingStartupSync={
-          props.startUpStages.logsStored === 'inProgress' ||
-          props.startUpStages.indexLoaded === 'inProgress'
-        }
+        isLoadingStartupSync={props.isLoadingStartupSync}
+        isLoadingGrouping={props.isLoadingGrouping}
+        finishLoadingGrouping={props.finishLoadingGrouping}
       />
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
     </div>

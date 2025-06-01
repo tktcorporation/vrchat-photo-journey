@@ -13,6 +13,7 @@ import PathSettings from './components/settings/PathSettings';
 import { terms } from './constants/terms/ja';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { useToast } from './hooks/use-toast';
+import { useLoadingState } from './hooks/useLoadingState';
 import { useStartupStage } from './hooks/useStartUpStage';
 import type { ProcessError } from './hooks/useStartUpStage';
 
@@ -209,6 +210,18 @@ const Contents = () => {
       });
     },
   });
+  const loadingState = useLoadingState();
+
+  useEffect(() => {
+    if (
+      stages.startingSync === 'inProgress' ||
+      stages.syncDone === 'inProgress'
+    ) {
+      loadingState.startLoadingStartupSync();
+    } else {
+      loadingState.finishLoadingStartupSync();
+    }
+  }, [stages.startingSync, stages.syncDone, loadingState]);
 
   if (
     stages.startingSync === 'error' ||
@@ -336,7 +349,7 @@ const Contents = () => {
     );
   }
 
-  return <PhotoGallery startUpStages={stages} />;
+  return <PhotoGallery {...loadingState} startUpStages={stages} />;
 };
 
 export default App;
