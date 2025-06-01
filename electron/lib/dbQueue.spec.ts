@@ -1,6 +1,14 @@
 import type { Result } from 'neverthrow';
 import type PQueue from 'p-queue';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
 import DBQueue, {
   type DBQueueError,
   getDBQueue,
@@ -16,9 +24,11 @@ import {
 
 // ログ関数をモック化
 vi.mock('./logger', () => ({
-  debug: vi.fn(),
-  error: vi.fn(),
-  info: vi.fn(),
+  logger: {
+    debug: vi.fn(),
+    error: vi.fn(),
+    info: vi.fn(),
+  },
 }));
 
 describe('DBQueue', () => {
