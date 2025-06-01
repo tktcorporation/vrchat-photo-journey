@@ -17,7 +17,7 @@ import {
 import isDev from 'electron-is-dev';
 
 // Local
-import * as log from './lib/logger';
+import { logger } from './lib/logger';
 
 const WINDOW_CONFIG = {
   DEFAULT_WIDTH: 1024,
@@ -213,17 +213,17 @@ const setTray = () => {
     // アイコンパスの存在確認とログ出力
     try {
       await fs.access(iconPath);
-      log.info({ message: `トレイアイコンが見つかりました: ${iconPath}` });
+      logger.info({ message: `トレイアイコンが見つかりました: ${iconPath}` });
     } catch {
-      log.error({ message: `トレイアイコンが見つかりません: ${iconPath}` });
+      logger.error({ message: `トレイアイコンが見つかりません: ${iconPath}` });
       return;
     }
 
     try {
       tray = new Tray(iconPath);
-      log.info({ message: 'トレイの作成に成功しました' });
+      logger.info({ message: 'トレイの作成に成功しました' });
     } catch (error) {
-      log.error({
+      logger.error({
         message: `トレイの作成に失敗しました: ${JSON.stringify(error)}`,
       });
       return;
@@ -296,7 +296,7 @@ const setTimeEventEmitter = (
 
   intervalEventEmitter.on('time', async (now: Date) => {
     if (!settingStore.getBackgroundFileCreateFlag()) {
-      log.debug('バックグラウンド処理が無効になっています');
+      logger.debug('バックグラウンド処理が無効になっています');
       return;
     }
 
@@ -322,7 +322,7 @@ const setTimeEventEmitter = (
         .with({ code: 'UNKNOWN' }, () => '不明なエラーが発生しました')
         .otherwise(() => '予期せぬエラーが発生しました');
 
-      log.error({ message: error });
+      logger.error({ message: error });
 
       new Notification({
         title: `joinの記録に失敗しました: ${now.toString()}`,

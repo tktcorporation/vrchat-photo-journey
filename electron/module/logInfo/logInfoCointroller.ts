@@ -3,7 +3,7 @@ import { P, match } from 'ts-pattern';
 import z from 'zod';
 import * as playerJoinLogService from '../VRChatPlayerJoinLogModel/playerJoinLog.service';
 import * as worldJoinLogService from '../vrchatWorldJoinLog/service';
-import * as log from './../../lib/logger';
+import { logger } from './../../lib/logger';
 import { procedure, router as trpcRouter } from './../../trpc';
 import {
   type VRChatPhotoFileNameWithExt,
@@ -26,7 +26,7 @@ const getVRCWorldJoinLogList = async () => {
   });
 };
 
-export const getRecentVRChatWorldJoinLogByVRChatPhotoName = async (
+const getRecentVRChatWorldJoinLogByVRChatPhotoName = async (
   vrchatPhotoName: VRChatPhotoFileNameWithExt,
 ): Promise<
   neverthrow.Result<
@@ -126,7 +126,7 @@ export const getPlayerJoinListInSameWorld = async (
   if (playerJoinLogResult.isErr()) {
     // エラータイプに基づいて適切な処理を行う
     const error = playerJoinLogResult.error;
-    log.error({
+    logger.error({
       message: `プレイヤー参加ログの取得に失敗しました: ${error.message}`,
       stack: new Error(`プレイヤー参加ログエラー: ${error.type}`),
     });
@@ -159,7 +159,7 @@ export const logInfoRouter = () =>
         }),
       )
       .mutation(async (ctx) => {
-        log.info('loadLogInfoIndex');
+        logger.info('loadLogInfoIndex');
         const result = await loadLogInfoIndexFromVRChatLog({
           excludeOldLogLoad: ctx.input.excludeOldLogLoad,
         });
@@ -174,7 +174,7 @@ export const logInfoRouter = () =>
     getRecentVRChatWorldJoinLogByVRChatPhotoName: procedure
       .input(VRChatPhotoFileNameWithExtSchema)
       .query(async (ctx) => {
-        log.info('getRecentVRChatWorldJoinLogByVRChatPhotoName', ctx.input);
+        logger.info('getRecentVRChatWorldJoinLogByVRChatPhotoName', ctx.input);
         const joinLogResult =
           await getRecentVRChatWorldJoinLogByVRChatPhotoName(ctx.input);
         return joinLogResult.match(
@@ -198,7 +198,7 @@ export const logInfoRouter = () =>
       if (playerJoinLogListResult.isErr()) {
         return match(playerJoinLogListResult.error)
           .with('RECENT_JOIN_LOG_NOT_FOUND', () => {
-            log.debug('getPlayerListInSameWorld: RECENT_JOIN_LOG_NOT_FOUND');
+            logger.debug('getPlayerListInSameWorld: RECENT_JOIN_LOG_NOT_FOUND');
             return [];
           })
           .exhaustive();

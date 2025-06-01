@@ -9,7 +9,7 @@ import { VRChatPhotoPathModel } from '../module/vrchatPhoto/model/vrchatPhotoPat
 import { VRChatWorldJoinLogModel } from '../module/vrchatWorldJoinLog/VRChatWorldJoinLogModel/s_model';
 import { VRChatWorldJoinLogFromPhotoModel } from '../module/vrchatWorldJoinLogFromPhoto/vrchatWorldJoinLogFromPhoto.model';
 import * as settingService from './../module/settings/service';
-import * as log from './logger';
+import { logger } from './logger';
 import { Migrations } from './sequelize/migrations.model';
 
 let rdbClient: ReturnType<typeof _newRDBClient> | null = null;
@@ -35,7 +35,7 @@ const _newRDBClient = (props: { db_url: string }) => {
       Migrations,
     ],
   };
-  log.debug(`sequelizeOptions: ${JSON.stringify(sequelizeOptions)}`);
+  logger.debug(`sequelizeOptions: ${JSON.stringify(sequelizeOptions)}`);
   const client = new Sequelize(sequelizeOptions);
   return {
     __db_url: props.db_url,
@@ -99,7 +99,7 @@ export const getRDBClient = () => {
 const executeSyncRDB = async (options: { force: boolean }) => {
   // 実行中は何もしない
   if (migrationProgeress) {
-    log.info('migrationProgeress');
+    logger.info('migrationProgeress');
     return;
   }
 
@@ -111,7 +111,7 @@ const executeSyncRDB = async (options: { force: boolean }) => {
       force: options.force,
       alter: true,
     });
-    log.info('executeSyncRDB', result.options);
+    logger.info('executeSyncRDB', result.options);
 
     // migration のバージョンを保存
     const now = new Date();

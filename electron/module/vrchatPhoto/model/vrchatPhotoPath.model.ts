@@ -57,7 +57,7 @@ export class VRChatPhotoPathModel extends Model<
   declare updatedAt: CreationOptional<Date>;
 }
 
-export interface VRChatPhotoPathCreationAttributes {
+interface VRChatPhotoPathCreationAttributes {
   photoPath: string;
   photoTakenAt: Date;
   width: number;

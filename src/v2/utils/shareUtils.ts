@@ -12,7 +12,7 @@ interface ShareImageOptions {
 /**
  * SVG要素を画像として処理するための共通処理
  */
-const processSvgElement = async (
+const _processSvgElement = async (
   svgElement: SVGSVGElement,
 ): Promise<HTMLCanvasElement> => {
   // インラインスタイルを追加
@@ -93,15 +93,6 @@ const extractSvgWidthAndHeight = (
 
   const [, , width, height] = viewBox.split(' ').map(Number);
   return { width: width || 800, height: height || 600 };
-};
-
-export const generatePngBase64FromSvgElement = async (
-  svgElement: SVGSVGElement,
-): Promise<string> => {
-  const clonedSvg = svgElement.cloneNode(true) as SVGSVGElement;
-  const canvas = await processSvgElement(clonedSvg);
-  const base64 = canvas.toDataURL('image/png').split(',')[1];
-  return base64;
 };
 
 /**

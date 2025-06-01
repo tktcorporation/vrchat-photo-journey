@@ -2,7 +2,7 @@ import type { Transaction } from '@sequelize/core';
 import type { Result } from 'neverthrow';
 import { err, ok } from 'neverthrow';
 import PQueue from 'p-queue';
-import * as log from './logger';
+import { logger } from './logger';
 import { getRDBClient } from './sequelize';
 
 /**
@@ -67,17 +67,17 @@ class DBQueue {
 
     // キューの状態変化をログに出力
     this.queue.on('active', () => {
-      log.debug(
+      logger.debug(
         `DBQueue: サイズ ${this.queue.size}, 保留中 ${this.queue.pending}`,
       );
     });
 
     this.queue.on('idle', () => {
-      log.debug('DBQueue: すべてのタスクが完了しました');
+      logger.debug('DBQueue: すべてのタスクが完了しました');
     });
 
     this.queue.on('error', (error) => {
-      log.error({
+      logger.error({
         message: 'DBQueue: エラーが発生しました',
         stack: error instanceof Error ? error : new Error(String(error)),
       });
@@ -103,7 +103,7 @@ class DBQueue {
       return (await this.queue.add(task)) as T;
     } catch (error) {
       if (error instanceof Error && error.name === 'TimeoutError') {
-        log.error({ message: 'DBQueue: タスクがタイムアウトしました' });
+        logger.error({ message: 'DBQueue: タスクがタイムアウトしました' });
       }
       throw error;
     }
@@ -133,7 +133,7 @@ class DBQueue {
       return ok(result as T);
     } catch (error) {
       if (error instanceof Error && error.name === 'TimeoutError') {
-        log.error({
+        logger.error({
           message: 'DBQueue: タスクがタイムアウトしました',
           stack: error,
         });
@@ -143,7 +143,7 @@ class DBQueue {
         });
       }
       // 予期せぬエラーの場合はログを出力して例外をスロー
-      log.error({
+      logger.error({
         message: 'DBQueue: タスク実行中に予期せぬエラーが発生しました',
         stack: error instanceof Error ? error : new Error(String(error)),
       });
@@ -218,7 +218,7 @@ class DBQueue {
       try {
         return await client.transaction(task);
       } catch (error) {
-        log.error({
+        logger.error({
           message: 'DBQueue: トランザクション実行中にエラーが発生しました',
           stack: error instanceof Error ? error : new Error(String(error)),
         });

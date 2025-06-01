@@ -1,0 +1,96 @@
+name: PR Screenshot Commenter
+
+on:
+  pull_request:
+
+jobs:
+  screenshot:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write # Changed from read to write
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: 'package.json'
+
+      - run: npm i -g @antfu/ni
+
+      - name: Install dependencies
+        run: nci
+
+      - name: build app
+        run: nr build
+
+      - name: Remove old screenshots
+        run: rm -rf playwright/previews/*.png
+
+      - name: Install Playwright Browsers
+        run: nr playwright install --with-deps
+      - name: Run Playwright tests
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" -- nr test:playwright
+
+      - name: upload screenshot
+        id: upload-screenshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: playwright/previews/*.png
+
+      - name: Publish screenshots to branch
+        id: publish_screenshots # Added an id to reference outputs
+        env:
+          BRANCH: pr-screenshot-${{ github.event.pull_request.number }}-${{ github.run_id }}
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          SCREENSHOT_DIR="playwright/previews"
+          SCREENSHOT_FILES=$(find "$SCREENSHOT_DIR" -maxdepth 1 -name '*.png')
+
+          if [ -z "$SCREENSHOT_FILES" ]; then
+            echo "No PNG screenshots found in $SCREENSHOT_DIR"
+            exit 1
+          fi
+
+          echo "Found screenshots:"
+          echo "$SCREENSHOT_FILES"
+
+          mkdir upload
+          cd upload
+          git init
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          IMAGE_URLS=""
+          for FILE_PATH in $SCREENSHOT_FILES; do
+            FILE_NAME=$(basename "$FILE_PATH")
+            cp "../$FILE_PATH" "./$FILE_NAME" # Corrected path for cp
+            git add "$FILE_NAME"
+            IMAGE_URLS="${IMAGE_URLS}![](https://raw.githubusercontent.com/${REPO}/${BRANCH}/${FILE_NAME})
+"
+          done
+
+          git commit -m "Add screenshots for PR #${{ github.event.pull_request.number }}"
+          git branch -M "$BRANCH"
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
+          git push origin "$BRANCH" --force
+
+          # Set output for the next step
+          echo "image_urls<<EOF" >> $GITHUB_OUTPUT
+          echo -e "$IMAGE_URLS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "branch_name=$BRANCH" >> $GITHUB_OUTPUT
+
+      - name: Comment with screenshots
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: |
+            Screenshots for this PR:
+            ${{ steps.publish_screenshots.outputs.image_urls }}
+          pr_number: ${{ github.event.pull_request.number }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

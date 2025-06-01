@@ -1,7 +1,7 @@
 import type * as neverthrow from 'neverthrow';
 
 import path from 'node:path';
-import * as log from './../lib/logger';
+import { logger } from './../lib/logger';
 // import * as infoFileService from './joinLogInfoFile/service';
 // import { getToCreateWorldJoinLogInfos } from './joinLogInfoFile/service';
 // import { YearMonthPathNotFoundError } from './service/error';
@@ -39,13 +39,13 @@ export const clearStoredSetting = (
 };
 
 export const openPathOnExplorer = (filePath: string) => {
-  log.debug(`openPathOnExplorer ${filePath}`);
+  logger.debug(`openPathOnExplorer ${filePath}`);
   return utilsService.openPathInExplorer(filePath);
 };
 
 export const openElectronLogOnExplorer = async () => {
-  const electronLogPath = log.electronLogFilePath;
-  log.debug(`electronLogPath ${electronLogPath}`);
+  const electronLogPath = logger.electronLogFilePath;
+  logger.debug(`electronLogPath ${electronLogPath}`);
   return utilsService.openPathInExplorer(electronLogPath);
 };
 
@@ -62,4 +62,9 @@ export const setVRChatLogFilesDirByDialog = async (): Promise<
     settingStore.setLogFilesDir(dirPath);
     return undefined;
   });
+};
+
+export const setVRChatLogFilesDir = (logFilesDir: string) => {
+  const settingStore = getSettingStore();
+  settingStore.setLogFilesDir(logFilesDir);
 };

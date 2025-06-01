@@ -1,6 +1,6 @@
 import type { Event } from '@sentry/electron/main';
 
-export interface ErrorEvent extends Event {
+interface ErrorEvent extends Event {
   type: undefined;
 }
 
@@ -9,7 +9,7 @@ export interface ErrorEvent extends Event {
  * 例: /Users/username/path -> /Users/[REDACTED_USER]/path
  *     C:\Users\username\path -> C:\Users\[REDACTED_USER]\path
  */
-export function maskFilePaths(str: string | undefined): string | undefined {
+function maskFilePaths(str: string | undefined): string | undefined {
   if (!str) {
     return str;
   }

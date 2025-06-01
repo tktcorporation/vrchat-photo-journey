@@ -1,3 +1,4 @@
+import consola from 'consola';
 import * as datefns from 'date-fns';
 import { clipboard } from 'electron';
 import * as path from 'pathe';
@@ -26,12 +27,12 @@ export const electronUtilRouter = () =>
     openUrlInDefaultBrowser: procedure
       .input(z.string())
       .mutation(async (ctx) => {
-        console.log('openUrlInDefaultBrowser', ctx.input);
+        consola.log('openUrlInDefaultBrowser', ctx.input);
         await utilsService.openUrlInDefaultBrowser(ctx.input);
         return true;
       }),
     reloadWindow: procedure.mutation(async () => {
-      console.log('reloadWindow');
+      consola.log('reloadWindow');
       await reloadWindow();
     }),
     getVRChatPhotoItemData: procedure.input(z.string()).query(async (ctx) => {
@@ -149,7 +150,7 @@ export const electronUtilRouter = () =>
       .input(z.array(z.string()))
       .mutation(async (ctx) => {
         const paths = ctx.input;
-        console.log(
+        consola.log(
           'copyMultipleImageDataByPath called with paths:',
           paths.length,
         );

@@ -1,5 +1,5 @@
 import type { Result } from 'neverthrow';
-import { OperationFailedError, UserFacingError } from './errors';
+import { UserFacingError } from './errors';
 
 /**
  * neverthrowのResultパターンとUserFacingErrorパターンを橋渡しするヘルパー関数群
@@ -109,22 +109,6 @@ export const fileOperationErrorMappings = {
 } as const;
 
 /**
- * VRChatログファイル関連のエラーマッピング
- */
-export const vrchatLogErrorMappings = {
-  logFilesNotFound: () =>
-    new UserFacingError(
-      'VRChatのログファイルが見つかりません。VRChatを一度起動してからお試しください。',
-    ),
-  logFileDirNotFound: () =>
-    new UserFacingError(
-      'VRChatのログフォルダが見つかりません。設定からログフォルダのパスを確認してください。',
-    ),
-  logFilesDirNotSet: () =>
-    new UserFacingError('VRChatのログフォルダが設定されていません。'),
-} as const;
-
-/**
  * 写真操作関連のエラーマッピング
  */
 export const photoOperationErrorMappings = {
@@ -137,21 +121,4 @@ export const photoOperationErrorMappings = {
     new UserFacingError(
       '写真ファイルが見つからないため、データベースから削除されました。',
     ),
-} as const;
-
-/**
- * データベース操作関連のエラーマッピング
- */
-export const databaseErrorMappings = {
-  DATABASE_ERROR: () => new OperationFailedError('データベース操作'),
-  QUEUE_FULL: () =>
-    new OperationFailedError(
-      'データベース操作',
-      'システムが混雑しています。しばらく待ってからお試しください。',
-    ),
-  TASK_TIMEOUT: () =>
-    new OperationFailedError('データベース操作', 'タイムアウトしました。'),
-  QUERY_ERROR: () => new OperationFailedError('データベースクエリ'),
-  TRANSACTION_ERROR: () =>
-    new OperationFailedError('データベーストランザクション'),
 } as const;

@@ -4,7 +4,7 @@ import { P, match } from 'ts-pattern';
 // import type * as vrchatLogService from '../service/vrchatLog/vrchatLog';
 import * as fs from '../../lib/wrappedFs';
 import { getSettingStore } from '../settingStore';
-import * as log from './../../lib/logger';
+import { logger } from './../../lib/logger';
 import {
   type NotValidatedVRChatLogFilesDirPath,
   NotValidatedVRChatLogFilesDirPathSchema,
@@ -144,7 +144,7 @@ export const getVRChatLogFilePathList = async (
           `${path.join(vrChatlogFilesDir.value, fileName.name.toString())}`,
         );
       } catch (e) {
-        log.debug('generally ignore this log', e);
+        logger.debug('generally ignore this log', e);
         return null;
       }
     })

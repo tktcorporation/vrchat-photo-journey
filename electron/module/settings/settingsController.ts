@@ -1,6 +1,6 @@
 import type { UpdateCheckResult } from 'electron-updater';
 import { getWindow } from '../../electronUtil';
-import * as log from '../../lib/logger';
+import { logger } from '../../lib/logger';
 import * as sequelizeLib from '../../lib/sequelize';
 import * as electronUtilService from '../electronUtil/service';
 import { procedure, router as trpcRouter } from './../../trpc';
@@ -69,11 +69,11 @@ export const settingsRouter = () =>
     }),
     openApplicationLogInExploler: procedure.mutation(async () => {
       const logPath = electronUtilService.getApplicationLogPath();
-      log.debug('openApplicationLogInExploler', logPath);
+      logger.debug('openApplicationLogInExploler', logPath);
       await electronUtilService.openPathInExplorer(logPath);
     }),
     throwErrorForSentryTest: procedure.mutation(async () => {
-      log.debug('Throwing test error for Sentry integration');
+      logger.debug('Throwing test error for Sentry integration');
       const sentryTestError = new Error(
         'This is a test error for Sentry integration.',
       );

@@ -1,7 +1,7 @@
 export type Language = 'en' | 'ja';
 
 // 翻訳キーのパスを生成するための型
-export type RecursiveKeyOf<TObj> = {
+type RecursiveKeyOf<TObj> = {
   [TKey in keyof TObj & (string | number)]: TObj[TKey] extends Record<
     string,
     unknown
@@ -17,6 +17,7 @@ export interface Translations {
   common: {
     settings: string;
     close: string;
+    submit: string;
     loading: string;
     noPhotosFound: string;
     photos: string;
@@ -108,6 +109,8 @@ export interface Translations {
       photoDirectory: string;
       logFile: string;
       browse: string;
+      addExtraDirectory: string;
+      removeExtraDirectory: string;
       validate: string;
       validating: string;
       logFormat: {

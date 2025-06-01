@@ -1,4 +1,4 @@
-export type Code =
+type Code =
   | 'LOG_FILE_NOT_FOUND'
   | 'LOG_FILE_DIR_NOT_FOUND'
   | 'LOG_FILES_NOT_FOUND'
