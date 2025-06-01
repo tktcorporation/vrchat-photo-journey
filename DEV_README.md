@@ -1,4 +1,4 @@
-# vrchat-photo-journey
+# vrchat-albums
 
 ## 確認済み 開発環境
 * Ubuntu focal (GitHub Codespaces)

@@ -1,5 +1,5 @@
 {
-  "name": "vrchat-photo-journey",
+  "name": "vrchat-albums",
   "version": "0.12.1",
   "main": "main/index.cjs",
   "author": {
@@ -15,7 +15,7 @@
   "repository": {
     "url": "https://github.com/tktcorporation/add-world-name-to-vrc-photo"
   },
-  "productName": "vrchat-photo-journey",
+  "productName": "VRChatAlbums",
   "type": "module",
   "scripts": {
     "preinstall": "nlx only-allow yarn",
@@ -186,7 +186,7 @@
     "vitest": "^2.1.8"
   },
   "build": {
-    "productName": "vrchat-photo-index",
+    "productName": "VRChatAlbums",
     "publish": {
       "provider": "github",
       "owner": "tktcorporation",
