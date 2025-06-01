@@ -6,7 +6,7 @@ import DBQueue, {
   getDBQueue,
   resetDBQueue,
 } from './dbQueue';
-import * as log from './logger';
+import { logger } from './logger';
 import {
   __cleanupTestRDBClient,
   __forceSyncRDBClient,

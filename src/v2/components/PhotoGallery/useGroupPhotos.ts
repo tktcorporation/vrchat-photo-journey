@@ -8,7 +8,7 @@ interface WorldInfo {
   worldInstanceId: string;
 }
 
-export interface GroupedPhoto {
+interface GroupedPhoto {
   photos: Photo[];
   worldInfo: WorldInfo | null;
   joinDateTime: Date;

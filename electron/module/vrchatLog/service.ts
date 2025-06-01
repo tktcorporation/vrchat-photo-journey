@@ -322,7 +322,7 @@ const extractPlayerLeaveInfoFromLog = (
  * これは月ごとに整理され、`logStore/YYYY-MM/logStore-YYYY-MM.txt`という形式で保存されます。
  * 月ごとのログファイルがサイズ制限（10MB）を超えると、タイムスタンプ付きの新しいファイルが作成されます。
  */
-export const getLogStoreDir = (): string => {
+const getLogStoreDir = (): string => {
   return path.join(getAppUserDataPath(), 'logStore');
 };
 

@@ -12,7 +12,7 @@ import unhandled from 'electron-unhandled';
 import { scrubEventData } from '../src/lib/utils/masking';
 import { router } from './api';
 import * as electronUtil from './electronUtil';
-import * as log from './lib/logger';
+import { logger } from './lib/logger';
 import * as sequelizeClient from './lib/sequelize';
 import { getAppUserDataPath } from './lib/wrappedApp';
 import { getBackgroundUsecase } from './module/backGroundUsecase';
@@ -29,23 +29,23 @@ export interface ErrorEvent extends Event {
 // Sentryの初期化関数 exportする
 export const initializeMainSentry = () => {
   if (isSentryInitializedMain) {
-    log.info('Sentry already initialized in main process.');
+    logger.info('Sentry already initialized in main process.');
     return;
   }
   // SENTRY_DSN がなければ初期化しない
   if (!process.env.SENTRY_DSN) {
-    log.info('Sentry not initialized in main process (SENTRY_DSN not set)');
+    logger.info('Sentry not initialized in main process (SENTRY_DSN not set)');
     return;
   }
 
-  log.info('Sentry initializing in main process via electron/index.ts');
+  logger.info('Sentry initializing in main process via electron/index.ts');
   initSentry({
     dsn: process.env.SENTRY_DSN,
     environment: process.env.NODE_ENV,
     debug: process.env.NODE_ENV !== 'production',
     beforeSend: (event: ErrorEvent, _hint: EventHint) => {
       if (settingStore.getTermsAccepted() !== true) {
-        log.info('Sentry event dropped due to terms not accepted.');
+        logger.info('Sentry event dropped due to terms not accepted.');
         return null;
       }
 
@@ -54,7 +54,7 @@ export const initializeMainSentry = () => {
       return processedEvent;
     },
   });
-  log.info(
+  logger.info(
     'Sentry initialized in main process via electron/index.ts. Event sending depends on terms acceptance.',
   );
   isSentryInitializedMain = true;
@@ -70,7 +70,7 @@ const CHANNELS = {
 
 const registerIpcMainListeners = () => {
   ipcMain.on(CHANNELS.ERROR_MESSAGE, (_, message) => {
-    log.error({
+    logger.error({
       message,
     });
   });
@@ -132,17 +132,17 @@ const initializeApp = async () => {
   electronUtil.setTray();
 
   unhandled({
-    logger: (error) => log.error({ message: error }),
+    logger: (error) => logger.error({ message: error }),
   });
 };
 
 app
   .whenReady()
   .then(initializeApp)
-  .catch((error) => log.error({ message: error }));
+  .catch((error) => logger.error({ message: error }));
 
-process.on('uncaughtException', (error) => log.error({ message: error }));
-process.on('unhandledRejection', (error) => log.error({ message: error }));
+process.on('uncaughtException', (error) => logger.error({ message: error }));
+process.on('unhandledRejection', (error) => logger.error({ message: error }));
 
 app.on('second-instance', () => {
   const mainWindow = electronUtil.createOrGetWindow();

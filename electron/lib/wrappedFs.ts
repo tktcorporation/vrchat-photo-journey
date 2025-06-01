@@ -98,14 +98,6 @@ export const existsSyncSafe = (path: string): boolean => {
   return fs.existsSync(path);
 };
 
-export const readFileSafe = (
-  filePath: string,
-  options?: { encoding?: null; flag?: string } | null,
-): Result<Buffer, Error> => {
-  const content = fs.readFileSync(filePath, options);
-  return ok(content);
-};
-
 type PromiseType<T extends PromiseLike<unknown>> = T extends PromiseLike<
   infer P
 >
@@ -151,13 +143,4 @@ export const createReadStream = (
   options?: Parameters<typeof fs.createReadStream>[1],
 ): fs.ReadStream => {
   return fs.createReadStream(filePath, options);
-};
-
-export const readdir = async (path: string): Promise<string[]> => {
-  try {
-    return await promisify(fs.readdir)(path);
-  } catch (error) {
-    console.error(`Failed to read directory: ${path}`, error);
-    return [];
-  }
 };

@@ -13,7 +13,7 @@ const settingStoreKey = [
   'termsAccepted',
   'termsVersion',
 ] as const;
-export type SettingStoreKey = (typeof settingStoreKey)[number];
+type SettingStoreKey = (typeof settingStoreKey)[number];
 
 const getValue =
   (settingsStore: Store) =>
@@ -150,7 +150,7 @@ const clearStoredSetting =
   };
 
 import path from 'node:path';
-import * as log from './../lib/logger';
+import { logger } from './../lib/logger';
 import {
   type VRChatPhotoDirPath,
   VRChatPhotoDirPathSchema,
@@ -229,7 +229,7 @@ const initSettingStore = (name: storeName) => {
   if (settingStore !== null) {
     const existsPath = settingStore.__store.path;
     const existsName = path.basename(existsPath, '.json');
-    log.info(
+    logger.info(
       `SettingStore already initialized. existsName: ${existsName}, newName: ${name}。file: ${existsPath}`,
     );
     if (existsName === name) {

@@ -4,7 +4,7 @@ import {
   handleResultError,
   photoOperationErrorMappings,
 } from '../../lib/errorHelpers';
-import * as log from './../../lib/logger';
+import { logger } from './../../lib/logger';
 import { eventEmitter, procedure, router as trpcRouter } from './../../trpc';
 import * as utilsService from './../electronUtil/service';
 import * as vrchatPhotoService from './../vrchatPhoto/vrchatPhoto.service';
@@ -147,7 +147,7 @@ export const vrchatPhotoRouter = () =>
         const result = await vrchatPhotoService.validateVRChatPhotoPathModel({
           fullpath: ctx.input,
         });
-        log.debug('validateVRChatPhotoPath', ctx.input, result);
+        logger.debug('validateVRChatPhotoPath', ctx.input, result);
         return {
           result,
         };

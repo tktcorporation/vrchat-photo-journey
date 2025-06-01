@@ -7,7 +7,7 @@ import * as model from './playerJoinInfoLog.model';
 /**
  * プレイヤー参加ログに関するエラー型
  */
-export type PlayerJoinLogError =
+type PlayerJoinLogError =
   | { type: 'DATABASE_ERROR'; message: string }
   | { type: 'NOT_FOUND'; message: string }
   | { type: 'INVALID_DATE_RANGE'; message: string };
@@ -26,7 +26,7 @@ export const createVRChatPlayerJoinLogModel = (
 /**
  * プレイヤー参加ログのデータ型
  */
-export type PlayerJoinLogData = {
+type PlayerJoinLogData = {
   id: string;
   playerId: string | null;
   playerName: string;

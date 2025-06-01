@@ -9,7 +9,7 @@ const config: KnipConfig = {
     'vitest.config.ts',
   ],
   project: ['src/**/*.ts', 'src/**/*.tsx', 'electron/**/*.ts'],
-  ignoreBinaries: ['@tktco/node-actionlint'],
+  ignoreBinaries: [],
   ignoreDependencies: ['@types/sharp', '@tktco/node-actionlint'],
   ignore: ['src/components/ui/**'],
 };

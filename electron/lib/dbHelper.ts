@@ -2,7 +2,7 @@ import type { Transaction } from '@sequelize/core';
 import type { Result } from 'neverthrow';
 import { err } from 'neverthrow';
 import { type DBQueueError, getDBQueue } from './dbQueue';
-import * as log from './logger';
+import { logger } from './logger';
 
 /**
  * データベースアクセスのユーティリティ関数を提供するモジュール
@@ -66,7 +66,7 @@ export async function executeBatch<T>(
         const result = await operation(transaction);
         results.push(result);
       } catch (error) {
-        log.error({
+        logger.error({
           message: 'バッチ処理中にエラーが発生しました',
           stack: error instanceof Error ? error : new Error(String(error)),
         });
@@ -128,7 +128,9 @@ export async function withRetry<T>(
       break;
     }
 
-    log.debug(`データベース操作を再試行します (${attempt + 1}/${maxRetries})`);
+    logger.debug(
+      `データベース操作を再試行します (${attempt + 1}/${maxRetries})`,
+    );
     await new Promise((resolve) => setTimeout(resolve, retryDelay));
   }
 

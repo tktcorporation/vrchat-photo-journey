@@ -7,7 +7,7 @@ import * as path from 'pathe';
 import sharp from 'sharp';
 import { P, match } from 'ts-pattern';
 import { getSettingStore } from '../settingStore';
-import * as logger from './../../lib/logger';
+import { logger } from './../../lib/logger';
 import * as fs from './../../lib/wrappedFs';
 import * as model from './model/vrchatPhotoPath.model';
 import {

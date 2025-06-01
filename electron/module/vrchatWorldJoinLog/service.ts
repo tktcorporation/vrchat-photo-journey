@@ -1,5 +1,5 @@
 import { getDBQueue } from '../../lib/dbQueue';
-import * as log from '../../lib/logger';
+import { logger } from '../../lib/logger';
 import type { VRChatWorldJoinLog } from '../vrchatLog/service';
 import * as model from './VRChatWorldJoinLogModel/s_model';
 
@@ -53,7 +53,7 @@ export const findRecentVRChatWorldJoinLog = async (
       }),
     );
   } catch (error) {
-    log.error({
+    logger.error({
       message: '直近のワールド参加ログ取得中にエラーが発生しました',
       stack: error instanceof Error ? error : new Error(String(error)),
     });
@@ -70,7 +70,7 @@ export const findNextVRChatWorldJoinLog = async (
       model.findNextVRChatWorldJoinLog(joinDateTime),
     );
   } catch (error) {
-    log.error({
+    logger.error({
       message: '次のワールド参加ログ取得中にエラーが発生しました',
       stack: error instanceof Error ? error : new Error(String(error)),
     });
@@ -83,7 +83,7 @@ export const findLatestWorldJoinLog = async () => {
   try {
     return await dbQueue.add(() => model.findLatestWorldJoinLog());
   } catch (error) {
-    log.error({
+    logger.error({
       message: '最新のワールド参加ログ取得中にエラーが発生しました',
       stack: error instanceof Error ? error : new Error(String(error)),
     });
@@ -91,7 +91,7 @@ export const findLatestWorldJoinLog = async () => {
   }
 };
 
-export type VRChatWorldJoinLogWithSource = {
+type VRChatWorldJoinLogWithSource = {
   id: string;
   worldId: string;
   worldName: string;

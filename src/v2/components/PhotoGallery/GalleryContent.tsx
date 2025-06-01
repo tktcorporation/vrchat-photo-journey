@@ -2,7 +2,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import { LoaderCircle } from 'lucide-react';
 import type React from 'react';
 import { memo, useCallback, useMemo, useRef } from 'react';
-import LocationGroupHeader from '../LocationGroupHeader';
+import { LocationGroupHeader } from '../LocationGroupHeader';
 import PhotoGrid from '../PhotoGrid';
 import PhotoModal from '../PhotoModal';
 import { GalleryErrorBoundary } from './GalleryErrorBoundary';

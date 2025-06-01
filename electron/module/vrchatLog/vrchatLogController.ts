@@ -1,7 +1,7 @@
 import * as neverthrow from 'neverthrow';
 import { match } from 'ts-pattern';
 import z from 'zod';
-import * as log from './../../lib/logger';
+import { logger } from './../../lib/logger';
 import { procedure, router as trpcRouter } from './../../trpc';
 import * as vrchatLogFileDirService from './../vrchatLogFileDir/service';
 import * as worldJoinLogService from './../vrchatWorldJoinLog/service';
@@ -40,12 +40,12 @@ const appendLoglinesToFileFromLogFilePathList = async (
       await worldJoinLogService.findLatestWorldJoinLog();
     if (latestWorldJoinLog) {
       startDate = latestWorldJoinLog.joinDateTime;
-      log.info(`Processing logs after ${startDate.toISOString()}`);
+      logger.info(`Processing logs after ${startDate.toISOString()}`);
     } else {
-      log.info('No existing logs found in DB, processing all logs');
+      logger.info('No existing logs found in DB, processing all logs');
     }
   } else {
-    log.info('Processing all logs (processAll=true)');
+    logger.info('Processing all logs (processAll=true)');
   }
 
   // すべてのログファイルパスを取得
@@ -66,7 +66,7 @@ const appendLoglinesToFileFromLogFilePathList = async (
     );
   }
 
-  log.info(`Found ${logFilePathList.value.length} log files to process`);
+  logger.info(`Found ${logFilePathList.value.length} log files to process`);
 
   const logLineList = await vrchatLogService.getLogLinesByLogFilePathList({
     logFilePathList: logFilePathList.value,
@@ -88,11 +88,11 @@ const appendLoglinesToFileFromLogFilePathList = async (
     : vrchatLogService.filterLogLinesByDate(logLineList.value, startDate);
 
   if (filteredLogLines.length === 0) {
-    log.info('No new log lines to process after filtering');
+    logger.info('No new log lines to process after filtering');
     return neverthrow.ok(undefined);
   }
 
-  log.info(`Processing ${filteredLogLines.length} log lines`);
+  logger.info(`Processing ${filteredLogLines.length} log lines`);
 
   // 日付ごとに適切なファイルに保存するため、logStoreFilePathは指定しない
   const result = await vrchatLogService.appendLoglinesToFile({
@@ -118,7 +118,7 @@ export const vrchatLogRouter = () =>
       )
       .mutation(async (opts) => {
         const { input } = opts;
-        log.info(
+        logger.info(
           `appendLoglinesToFileFromLogFilePathList (processAll=${input.processAll})`,
         );
         const result = await appendLoglinesToFileFromLogFilePathList(

@@ -1,7 +1,7 @@
 export type Language = 'en' | 'ja';
 
 // 翻訳キーのパスを生成するための型
-export type RecursiveKeyOf<TObj> = {
+type RecursiveKeyOf<TObj> = {
   [TKey in keyof TObj & (string | number)]: TObj[TKey] extends Record<
     string,
     unknown
