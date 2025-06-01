@@ -27,7 +27,7 @@ import { eventEmitter as ee, procedure, router as trpcRouter } from './trpc';
 //   ? T
 //   : never;
 
-const settingStore = initSettingStore('v0-settings');
+const settingStore = initSettingStore();
 
 export const router = trpcRouter({
   backgroundSettings: backgroundSettingsRouter(settingStore),

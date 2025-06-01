@@ -11,6 +11,11 @@ const launchElectronApp = async () => {
   // Launch Electron app.
   const electronApp = await _electron.launch({
     args: [path.join(__dirname, '../main/index.cjs')],
+    env: {
+      ...process.env,
+      PLAYWRIGHT_TEST: 'true',
+      PLAYWRIGHT_STORE_HASH: Date.now().toString(),
+    },
   });
 
   return electronApp;

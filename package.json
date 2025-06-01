@@ -43,7 +43,7 @@
     "test": "nr vitest run",
     "test:web": "vitest run --project web",
     "test:electron": "vitest run --project electron",
-    "test:playwright": "playwright install --with-deps && playwright test",
+    "test:playwright": "nr build && playwright install --with-deps && playwright test",
     "lint": "nr lint:biome && nr lint:type-check && nr lint:actionlint",
     "lint:biome": "biome check .",
     "lint:type-check": "nr lint:type-check:tsgo:electron && nr lint:type-check:tsgo:src",
