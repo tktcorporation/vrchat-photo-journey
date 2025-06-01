@@ -1,8 +1,11 @@
 import path from 'node:path';
 import { type BrowserWindow, app, ipcMain } from 'electron';
 
-import type { ErrorEvent } from '@sentry/core';
-import { type EventHint, init as initSentry } from '@sentry/electron/main';
+import {
+  type Event,
+  type EventHint,
+  init as initSentry,
+} from '@sentry/electron/main';
 // Packages
 import { createIPCHandler } from 'electron-trpc/main';
 import unhandled from 'electron-unhandled';
@@ -18,6 +21,10 @@ import { initSettingStore } from './module/settingStore';
 const settingStore = initSettingStore('v0-settings');
 
 export let isSentryInitializedMain = false; // Sentry初期化フラグ exportする
+
+export interface ErrorEvent extends Event {
+  type: undefined;
+}
 
 // Sentryの初期化関数 exportする
 export const initializeMainSentry = () => {
