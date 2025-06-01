@@ -6,6 +6,10 @@ import * as React from 'react';
 
 import { cn } from '../lib/utils'; // パス修正
 
+/**
+ * Radix UI を利用したカスタムチェックボックス。
+ * データベース操作用の設定画面などで選択の有無を入力するために使われる。
+ */
 const Checkbox = React.forwardRef<
   React.ElementRef<typeof CheckboxPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root>
