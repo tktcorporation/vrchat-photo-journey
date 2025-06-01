@@ -1,6 +1,6 @@
 import * as datefns from 'date-fns';
 import { type Result, err, ok } from 'neverthrow';
-import * as dbQueue from '../../lib/dbQueue';
+import { enqueueTask } from '../../lib/dbHelper';
 import type { VRChatPlayerJoinLog } from '../vrchatLog/service';
 import * as model from './playerJoinInfoLog.model';
 
@@ -61,7 +61,7 @@ export const getVRChatPlayerJoinLogListByJoinDateTime = async (props: {
   // 終了日時が指定されていない場合は開始日時から7日間のログを取得
   if (!props.endJoinDateTime) {
     const endDate = datefns.addDays(props.startJoinDateTime, 7);
-    const result = await dbQueue.getDBQueue().addWithResult(() =>
+    const result = await enqueueTask(() =>
       model.getVRChatPlayerJoinLogListByJoinDateTime({
         gteJoinDateTime: props.startJoinDateTime,
         ltJoinDateTime: endDate,
@@ -80,7 +80,7 @@ export const getVRChatPlayerJoinLogListByJoinDateTime = async (props: {
     modelList = result.value as model.VRChatPlayerJoinLogModel[];
   } else {
     const endDate: Date = props.endJoinDateTime;
-    const result = await dbQueue.getDBQueue().addWithResult(() =>
+    const result = await enqueueTask(() =>
       model.getVRChatPlayerJoinLogListByJoinDateTime({
         gteJoinDateTime: props.startJoinDateTime,
         ltJoinDateTime: endDate,
@@ -119,9 +119,7 @@ export const getVRChatPlayerJoinLogListByJoinDateTime = async (props: {
 export const getLatestDetectedDate = async (): Promise<
   Result<string | null, PlayerJoinLogError>
 > => {
-  const result = await dbQueue
-    .getDBQueue()
-    .addWithResult(() => model.findLatestPlayerJoinLog());
+  const result = await enqueueTask(() => model.findLatestPlayerJoinLog());
 
   if (result.isErr()) {
     return err({
@@ -141,9 +139,7 @@ export const getLatestDetectedDate = async (): Promise<
 export const findLatestPlayerJoinLog = async (): Promise<
   Result<model.VRChatPlayerJoinLogModel | null, PlayerJoinLogError>
 > => {
-  const result = await dbQueue
-    .getDBQueue()
-    .addWithResult(() => model.findLatestPlayerJoinLog());
+  const result = await enqueueTask(() => model.findLatestPlayerJoinLog());
 
   if (result.isErr()) {
     return err({

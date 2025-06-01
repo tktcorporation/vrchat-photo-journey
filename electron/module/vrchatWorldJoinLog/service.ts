@@ -1,4 +1,4 @@
-import { getDBQueue } from '../../lib/dbQueue';
+import { enqueueTask } from '../../lib/dbHelper';
 import { logger } from '../../lib/logger';
 import type { VRChatWorldJoinLog } from '../vrchatLog/service';
 import * as model from './VRChatWorldJoinLogModel/s_model';
@@ -45,50 +45,50 @@ export const findVRChatWorldJoinLogList = async ({
 export const findRecentVRChatWorldJoinLog = async (
   joinDateTime: Date,
 ): Promise<model.VRChatWorldJoinLogModel | null> => {
-  const dbQueue = getDBQueue();
-  try {
-    return await dbQueue.add(() =>
-      model.findRecentVRChatWorldJoinLog({
-        dateTime: joinDateTime,
-      }),
-    );
-  } catch (error) {
+  const result = await enqueueTask(() =>
+    model.findRecentVRChatWorldJoinLog({
+      dateTime: joinDateTime,
+    }),
+  );
+
+  if (result.isErr()) {
     logger.error({
       message: '直近のワールド参加ログ取得中にエラーが発生しました',
-      stack: error instanceof Error ? error : new Error(String(error)),
+      stack: new Error(JSON.stringify(result.error)),
     });
     return null;
   }
+  return result.value;
 };
 
 export const findNextVRChatWorldJoinLog = async (
   joinDateTime: Date,
 ): Promise<model.VRChatWorldJoinLogModel | null> => {
-  const dbQueue = getDBQueue();
-  try {
-    return await dbQueue.add(() =>
-      model.findNextVRChatWorldJoinLog(joinDateTime),
-    );
-  } catch (error) {
+  const result = await enqueueTask(() =>
+    model.findNextVRChatWorldJoinLog(joinDateTime),
+  );
+
+  if (result.isErr()) {
     logger.error({
       message: '次のワールド参加ログ取得中にエラーが発生しました',
-      stack: error instanceof Error ? error : new Error(String(error)),
+      stack: new Error(JSON.stringify(result.error)),
     });
     return null;
   }
+  return result.value;
 };
 
 export const findLatestWorldJoinLog = async () => {
-  const dbQueue = getDBQueue();
-  try {
-    return await dbQueue.add(() => model.findLatestWorldJoinLog());
-  } catch (error) {
+  const result = await enqueueTask(() => model.findLatestWorldJoinLog());
+
+  if (result.isErr()) {
     logger.error({
       message: '最新のワールド参加ログ取得中にエラーが発生しました',
-      stack: error instanceof Error ? error : new Error(String(error)),
+      stack: new Error(JSON.stringify(result.error)),
     });
     return null;
   }
+  return result.value;
 };
 
 type VRChatWorldJoinLogWithSource = {
