@@ -14,8 +14,8 @@
 
 1.  **リポジトリのクローン**:
     ```bash
-    git clone https://github.com/tktcorporation/vrchat-photo-journey.git
-    cd vrchat-photo-journey
+    git clone https://github.com/tktcorporation/vrchat-albums.git
+    cd vrchat-albums
     ```
 
 2.  **使用ツールの準備 (任意)**:

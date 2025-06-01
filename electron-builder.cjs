@@ -18,7 +18,7 @@ const config = {
     {
       provider: 'github',
       owner: 'tktcorporation',
-      repo: 'vrchat-photo-journey',
+      repo: 'vrchat-albums',
       releaseType:
         process.env.NOT_DRAFT_RELEASE === 'true' ? 'release' : 'draft',
     },
