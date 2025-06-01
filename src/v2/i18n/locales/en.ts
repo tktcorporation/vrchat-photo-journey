@@ -4,6 +4,7 @@ const en: Translations = {
   common: {
     settings: 'Settings',
     close: 'Close',
+    submit: 'Submit',
     loading: 'Loading...',
     noPhotosFound: 'No photos found',
     photos: 'Photos',
@@ -87,8 +88,10 @@ const en: Translations = {
       useDemo: 'Use Demo Data',
       useLocal: 'Use Local Files',
       photoDirectory: 'Photo Directory',
-      logFile: 'Log File',
+      logFile: 'VRChat Log Files Directory',
       browse: 'Browse',
+      addExtraDirectory: 'Add Extra Photo Folder',
+      removeExtraDirectory: 'Remove Extra Photo Folder',
       validate: 'Validate Paths',
       validating: 'Validating...',
       logFormat: {

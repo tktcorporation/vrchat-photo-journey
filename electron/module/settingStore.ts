@@ -2,7 +2,8 @@ import type { Rectangle } from 'electron';
 import Store from 'electron-store';
 import * as neverthrow from 'neverthrow';
 
-type storeName = 'v0-settings' | 'test-settings';
+type TestPlaywrightStoreName = `test-playwright-settings-${string}`;
+type StoreName = 'v0-settings' | 'test-settings' | TestPlaywrightStoreName;
 
 const settingStoreKey = [
   'logFilesDir',
@@ -150,13 +151,14 @@ const clearStoredSetting =
   };
 
 import path from 'node:path';
+import consola from 'consola';
 import { logger } from './../lib/logger';
 import {
   type VRChatPhotoDirPath,
   VRChatPhotoDirPathSchema,
 } from './vrchatPhoto/valueObjects';
 let settingStore: ReturnType<typeof setSettingStore> | null = null;
-const setSettingStore = (name: storeName) => {
+const setSettingStore = (name: StoreName) => {
   const store = new Store({ name });
   const { get, set } = {
     get: getValue(store),
@@ -225,19 +227,27 @@ const setSettingStore = (name: storeName) => {
   return _settingStore;
 };
 
-const initSettingStore = (name: storeName) => {
+const initSettingStore = (name?: StoreName) => {
+  consola.log('process.env.PLAYWRIGHT_TEST', process.env.PLAYWRIGHT_TEST);
+  const storeName: StoreName =
+    name ??
+    (process.env.PLAYWRIGHT_TEST === 'true' && process.env.PLAYWRIGHT_STORE_HASH
+      ? `test-playwright-settings-${process.env.PLAYWRIGHT_STORE_HASH}`
+      : 'v0-settings');
+  console.log('storeName', storeName);
+
   if (settingStore !== null) {
     const existsPath = settingStore.__store.path;
     const existsName = path.basename(existsPath, '.json');
     logger.info(
-      `SettingStore already initialized. existsName: ${existsName}, newName: ${name}。file: ${existsPath}`,
+      `SettingStore already initialized. existsName: ${existsName}, newName: ${storeName}。file: ${existsPath}`,
     );
-    if (existsName === name) {
+    if (existsName === storeName) {
       return getSettingStore();
     }
     throw new Error('SettingStore already initialized');
   }
-  setSettingStore(name);
+  setSettingStore(storeName);
   return getSettingStore();
 };
 const initSettingStoreForTest = (

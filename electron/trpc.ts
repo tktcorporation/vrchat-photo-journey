@@ -1,6 +1,7 @@
 import { EventEmitter } from 'node:events';
 import { TRPCError, initTRPC } from '@trpc/server';
 import superjson from 'superjson';
+import type { ZodError } from 'zod';
 import { UserFacingError } from './lib/errors';
 import { logger } from './lib/logger';
 import * as settingService from './module/settings/service';
@@ -13,11 +14,20 @@ const t = initTRPC.context<{ eventEmitter: EventEmitter }>().create({
   errorFormatter: (opts) => {
     const { shape, error } = opts;
     let userMessage = '予期しないエラーが発生しました。';
-    if (error.cause instanceof UserFacingError) {
-      userMessage = error.cause.message;
+    const cause = error.cause;
+
+    if (cause instanceof UserFacingError) {
+      userMessage = cause.message;
     } else if (
-      error.cause instanceof Error &&
-      error.cause.message.includes('test error for Sentry')
+      cause instanceof Error &&
+      cause.name === 'ZodError' &&
+      Array.isArray((cause as ZodError).issues) &&
+      (cause as ZodError).issues.length > 0
+    ) {
+      userMessage = (cause as ZodError).issues[0].message;
+    } else if (
+      cause instanceof Error &&
+      cause.message.includes('test error for Sentry')
     ) {
       userMessage = 'Sentryテスト用のエラーが発生しました。';
     }
@@ -46,14 +56,24 @@ const logError = (
     stack: errorToLog,
   });
 
-  if (
-    err instanceof UserFacingError ||
-    (err instanceof Error && err.message.includes('test error for Sentry'))
+  let toastMessage = '予期しないエラーが発生しました。';
+  if (err instanceof UserFacingError) {
+    toastMessage = err.message;
+  } else if (
+    err instanceof Error &&
+    err.name === 'ZodError' &&
+    Array.isArray((err as ZodError).issues) &&
+    (err as ZodError).issues.length > 0
   ) {
-    eventEmitter.emit('toast', err.message);
-  } else {
-    eventEmitter.emit('toast', '予期しないエラーが発生しました。');
+    toastMessage = (err as ZodError).issues[0].message;
+  } else if (
+    err instanceof Error &&
+    err.message.includes('test error for Sentry')
+  ) {
+    toastMessage = 'Sentryテスト用のエラーが発生しました。';
   }
+
+  eventEmitter.emit('toast', toastMessage);
 };
 
 const errorHandler = t.middleware(async (opts) => {
