@@ -68,7 +68,7 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
     // Intersection Observer でビューポート内に入ったか判定
     const isIntersecting = useIntersectionObserver(elementRef, {
       threshold: 0,
-      rootMargin: '200px',
+      rootMargin: '100px',
     });
 
     const currentPhotoId = String(photo.id);

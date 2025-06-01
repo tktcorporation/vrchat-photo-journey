@@ -80,11 +80,13 @@ const GalleryContent = memo(
       estimateSize: useCallback(
         (index) => {
           const [key] = filteredGroups[index];
-          return (groupSizesRef.current.get(key) ?? 0) + GROUP_SPACING;
+          const size = groupSizesRef.current.get(key);
+          // Provide better fallback estimate for unmeasured groups
+          return (size ?? 300) + GROUP_SPACING;
         },
         [filteredGroups],
       ),
-      overscan: 1,
+      overscan: 3,
       measureElement: useCallback(
         (element: HTMLElement) => {
           const height = element.getBoundingClientRect().height;
@@ -94,6 +96,9 @@ const GalleryContent = memo(
             if (!Number.isNaN(indexNum) && filteredGroups[indexNum]) {
               const [key] = filteredGroups[indexNum];
               groupSizesRef.current.set(key, height);
+
+              // Note: virtualizer.measure() will be called automatically by the virtualizer
+              // when measureElement returns the updated height
             }
           }
           return height + GROUP_SPACING;
@@ -133,7 +138,7 @@ const GalleryContent = memo(
       <GalleryErrorBoundary>
         <div
           ref={containerRef}
-          className="flex-1 overflow-y-auto p-4"
+          className="flex-1 overflow-y-auto p-4 photo-gallery-container"
           onClick={handleBackgroundClick}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
@@ -158,12 +163,13 @@ const GalleryContent = memo(
                   key={key}
                   data-index={virtualRow.index}
                   ref={virtualizer.measureElement}
+                  className="photo-group"
                   style={{
                     position: 'absolute',
                     top: 0,
                     left: 0,
                     width: '100%',
-                    transform: `translateY(${virtualRow.start}px)`,
+                    transform: `translate3d(0, ${virtualRow.start}px, 0)`,
                   }}
                 >
                   <div className="space-y-2">
@@ -189,8 +195,14 @@ const GalleryContent = memo(
                   <MeasurePhotoGroup
                     photos={group.photos}
                     onMeasure={(height) => {
+                      const previousHeight =
+                        groupSizesRef.current.get(key) || 0;
                       groupSizesRef.current.set(key, height);
-                      virtualizer.measure();
+
+                      // Only trigger virtualizer measure if height changed significantly
+                      if (Math.abs(height - previousHeight) > 1) {
+                        virtualizer.measure();
+                      }
                     }}
                   />
                 </div>

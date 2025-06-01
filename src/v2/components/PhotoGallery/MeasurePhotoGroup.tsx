@@ -21,7 +21,7 @@ export function MeasurePhotoGroup({
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
   const previousHeightRef = useRef<number>(0);
-  const resizeTimeoutRef = useRef<number>();
+  const scrollCompensationRef = useRef<{ heightDelta?: number }>({});
 
   const calculateGridHeight = useCallback(
     (width: number) => {
@@ -77,15 +77,9 @@ export function MeasurePhotoGroup({
     if (!containerRef.current) return;
 
     const handleResize = () => {
-      if (resizeTimeoutRef.current) {
-        window.clearTimeout(resizeTimeoutRef.current);
+      if (containerRef.current) {
+        setContainerWidth(containerRef.current.clientWidth);
       }
-
-      resizeTimeoutRef.current = window.setTimeout(() => {
-        if (containerRef.current) {
-          setContainerWidth(containerRef.current.clientWidth);
-        }
-      }, 100);
     };
 
     let resizeObserver: ResizeObserver;
@@ -107,11 +101,19 @@ export function MeasurePhotoGroup({
     setContainerWidth(containerRef.current.clientWidth);
 
     return () => {
-      if (resizeTimeoutRef.current) {
-        window.clearTimeout(resizeTimeoutRef.current);
-      }
       resizeObserver.disconnect();
     };
+  }, []);
+
+  const compensateScroll = useCallback(() => {
+    if (
+      scrollCompensationRef.current.heightDelta &&
+      containerRef.current?.parentElement?.parentElement
+    ) {
+      const scrollContainer = containerRef.current.parentElement.parentElement;
+      scrollContainer.scrollBy(0, scrollCompensationRef.current.heightDelta);
+      scrollCompensationRef.current = {};
+    }
   }, []);
 
   useEffect(() => {
@@ -119,10 +121,18 @@ export function MeasurePhotoGroup({
 
     const newHeight = calculateGridHeight(containerWidth);
     if (newHeight !== previousHeightRef.current) {
+      const heightDelta = newHeight - previousHeightRef.current;
       previousHeightRef.current = newHeight;
+
+      // Store height delta for scroll compensation
+      if (heightDelta !== 0) {
+        scrollCompensationRef.current.heightDelta = heightDelta;
+        requestAnimationFrame(compensateScroll);
+      }
+
       onMeasure(newHeight);
     }
-  }, [containerWidth, calculateGridHeight, onMeasure]);
+  }, [containerWidth, calculateGridHeight, onMeasure, compensateScroll]);
 
-  return <div ref={containerRef} className="w-full" />;
+  return <div ref={containerRef} className="w-full photo-group-measure" />;
 }

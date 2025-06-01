@@ -142,7 +142,7 @@ export default function PhotoGrid({
   );
 
   return (
-    <div ref={containerRef} className="w-full">
+    <div ref={containerRef} className="w-full photo-grid">
       <div className="space-y-1">
         {layout.map((row, rowIndex) => {
           const rowKey = `row-${rowIndex}-${row[0]?.id}`;
