@@ -43,41 +43,65 @@ jobs:
           path: playwright/previews/*.png
 
       - name: Publish screenshot to branch
+        id: publish_screenshots
         env:
           BRANCH: pr-screenshot-${{ github.event.pull_request.number }}-${{ github.run_id }}
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           SCREENSHOT_DIR="playwright/previews"
-          # Find the first PNG file in the directory
-          SCREENSHOT_FILE=$(find "$SCREENSHOT_DIR" -maxdepth 1 -name '*.png' -print -quit)
+          UPLOAD_DIR="upload"
+          
+          FINAL_MESSAGE="Screenshots for this PR:"
 
-          if [ -z "$SCREENSHOT_FILE" ]; then
-            echo "No PNG screenshot found in $SCREENSHOT_DIR"
-            exit 1
+          mkdir -p "$UPLOAD_DIR"
+
+          shopt -s nullglob
+          SCREENSHOT_FILES=("$SCREENSHOT_DIR"/*.png)
+          shopt -u nullglob
+
+          if [ ${#SCREENSHOT_FILES[@]} -eq 0 ]; then
+            echo "No PNG screenshots found in $SCREENSHOT_DIR"
+            FINAL_MESSAGE="No screenshots found for this PR."
+          else
+            echo "Copying screenshots to $UPLOAD_DIR:"
+            cp "${SCREENSHOT_FILES[@]}" "$UPLOAD_DIR/"
+            
+            echo "Screenshots in $UPLOAD_DIR:"
+            ls "$UPLOAD_DIR"
+
+            cd "$UPLOAD_DIR"
+
+            for FILE in *.png; do
+              ENCODED_FILE=$(printf %s "$FILE" | jq -sRr @uri)
+              FINAL_MESSAGE="${FINAL_MESSAGE}\\n![](https://raw.githubusercontent.com/${REPO}/${BRANCH}/${ENCODED_FILE})"
+            done
+            
+            git init -b "$BRANCH" 
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add .
+            
+            if ! git diff --staged --quiet; then
+              echo "Committing and pushing screenshots..."
+              git commit -m "Add screenshots for PR #${{ github.event.pull_request.number }}"
+              git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
+              git push origin "$BRANCH" --force
+            else
+              echo "No new screenshots were staged for commit."
+            fi
+            cd ..
           fi
-
-          echo "Found screenshot: $SCREENSHOT_FILE"
-
-          mkdir upload && cp "$SCREENSHOT_FILE" upload/pr-screenshot.png
-          cd upload
-          git init
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git add pr-screenshot.png
-          git commit -m "Add screenshot for PR #${{ github.event.pull_request.number }}"
-          git branch -M "$BRANCH"
-          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
-          git push origin "$BRANCH" --force
+          
+          {
+            echo "screenshot_comment_body<<EOF"
+            echo -e "${FINAL_MESSAGE}"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
 
       - name: Comment with screenshot
-        env:
-          BRANCH: pr-screenshot-${{ github.event.pull_request.number }}-${{ github.run_id }}
-          REPO: ${{ github.repository }}
         uses: thollander/actions-comment-pull-request@v2
         with:
-          message: |
-            Screenshot for this PR:
-            ![](https://raw.githubusercontent.com/${{ env.REPO }}/${{ env.BRANCH }}/pr-screenshot.png)
+          message: ${{ steps.publish_screenshots.outputs.screenshot_comment_body }}
           pr_number: ${{ github.event.pull_request.number }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
