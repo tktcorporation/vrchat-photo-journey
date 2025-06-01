@@ -46,35 +46,60 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           SCREENSHOT_DIR="playwright/previews"
-          # Find the first PNG file in the directory
-          SCREENSHOT_FILE=$(find "$SCREENSHOT_DIR" -maxdepth 1 -name '*.png' -print -quit)
+          SCREENSHOT_FILES=$(find "$SCREENSHOT_DIR" -maxdepth 1 -name '*.png')
 
-          if [ -z "$SCREENSHOT_FILE" ]; then
-            echo "No PNG screenshot found in $SCREENSHOT_DIR"
+          if [ -z "$SCREENSHOT_FILES" ]; then
+            echo "No PNG screenshots found in $SCREENSHOT_DIR"
             exit 1
           fi
 
-          echo "Found screenshot: $SCREENSHOT_FILE"
+          echo "Found screenshots:"
+          echo "$SCREENSHOT_FILES"
 
-          mkdir upload && cp "$SCREENSHOT_FILE" upload/pr-screenshot.png
+          mkdir upload
+          for file in $SCREENSHOT_FILES; do
+            cp "$file" upload/
+          done
           cd upload
           git init
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add pr-screenshot.png
-          git commit -m "Add screenshot for PR #${{ github.event.pull_request.number }}"
+          git add .
+          git commit -m "Add screenshots for PR #${{ github.event.pull_request.number }}"
           git branch -M "$BRANCH"
           git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
           git push origin "$BRANCH" --force
+          echo "SCREENSHOT_FILES=$(echo $SCREENSHOT_FILES | xargs -n 1 basename | paste -sd ',' -)" >> $GITHUB_OUTPUT
 
-      - name: Comment with screenshot
+      - name: Prepare screenshot comment
+        id: prepare-comment
         env:
           BRANCH: pr-screenshot-${{ github.event.pull_request.number }}-${{ github.run_id }}
           REPO: ${{ github.repository }}
+          SCREENSHOT_FILENAMES: ${{ steps.publish-screenshot.outputs.SCREENSHOT_FILES }} # Corrected: steps.publish-screenshot.outputs.SCREENSHOT_FILES
+        run: |
+          SCREENSHOT_FILENAMES_STR="${{ env.SCREENSHOT_FILENAMES }}"
+          IFS=',' read -ra SCREENSHOT_FILENAMES_ARRAY <<< "$SCREENSHOT_FILENAMES_STR"
+          SCREENSHOT_MARKDOWN="Screenshots for this PR:\n" # Added title
+          for filename in "${SCREENSHOT_FILENAMES_ARRAY[@]}"; do
+            SCREENSHOT_MARKDOWN="${SCREENSHOT_MARKDOWN}![](https://raw.githubusercontent.com/${{ env.REPO }}/${{ env.BRANCH }}/${filename})\n"
+          done
+          echo "SCREENSHOT_MARKDOWN<<EOF" >> $GITHUB_OUTPUT
+          echo -e "$SCREENSHOT_MARKDOWN" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Comment with screenshot
+        id: comment-with-screenshot # Corrected: id for this step
         uses: thollander/actions-comment-pull-request@v2
         with:
-          message: |
-            Screenshot for this PR:
-            ![](https://raw.githubusercontent.com/${{ env.REPO }}/${{ env.BRANCH }}/pr-screenshot.png)
+          message: ${{ steps.prepare-comment.outputs.SCREENSHOT_MARKDOWN }} # Corrected: consume output from prepare-comment
           pr_number: ${{ github.event.pull_request.number }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IFS=',' read -ra SCREENSHOT_FILENAMES_ARRAY <<< "$SCREENSHOT_FILENAMES_STR"
+          SCREENSHOT_MARKDOWN=""
+          for filename in "${SCREENSHOT_FILENAMES_ARRAY[@]}"; do
+            SCREENSHOT_MARKDOWN="${SCREENSHOT_MARKDOWN}![](https://raw.githubusercontent.com/${{ env.REPO }}/${{ env.BRANCH }}/${filename})\n"
+          done
+          echo "SCREENSHOT_MARKDOWN<<EOF" >> $GITHUB_OUTPUT
+          echo -e "$SCREENSHOT_MARKDOWN" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
