@@ -109,22 +109,6 @@ export const fileOperationErrorMappings = {
 } as const;
 
 /**
- * VRChatログファイル関連のエラーマッピング
- */
-export const vrchatLogErrorMappings = {
-  logFilesNotFound: () =>
-    new UserFacingError(
-      'VRChatのログファイルが見つかりません。VRChatを一度起動してからお試しください。',
-    ),
-  logFileDirNotFound: () =>
-    new UserFacingError(
-      'VRChatのログフォルダが見つかりません。設定からログフォルダのパスを確認してください。',
-    ),
-  logFilesDirNotSet: () =>
-    new UserFacingError('VRChatのログフォルダが設定されていません。'),
-} as const;
-
-/**
  * 写真操作関連のエラーマッピング
  */
 export const photoOperationErrorMappings = {

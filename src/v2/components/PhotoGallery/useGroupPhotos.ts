@@ -2,7 +2,7 @@ import { trpcReact } from '@/trpc';
 import { useMemo } from 'react';
 import type { Photo } from '../../types/photo';
 
-export interface WorldInfo {
+interface WorldInfo {
   worldId: string;
   worldName: string;
   worldInstanceId: string;

@@ -106,19 +106,11 @@ export const readFileSafe = (
   return ok(content);
 };
 
-const readFilePromisified = promisify(fs.readFile);
 type PromiseType<T extends PromiseLike<unknown>> = T extends PromiseLike<
   infer P
 >
   ? P
   : never;
-type ReadFileReturn = PromiseType<ReturnType<typeof readFilePromisified>>;
-export const readFileAsync = async (
-  ...args: Parameters<typeof readFilePromisified>
-): Promise<Result<ReadFileReturn, Error>> => {
-  const data = await readFilePromisified(...args);
-  return ok(data);
-};
 
 const appendFilePromisified = promisify(fs.appendFile);
 type AppendFileReturn = PromiseType<ReturnType<typeof appendFilePromisified>>;

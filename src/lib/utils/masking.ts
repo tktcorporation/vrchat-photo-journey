@@ -1,6 +1,6 @@
 import type { Event } from '@sentry/electron/main';
 
-export interface ErrorEvent extends Event {
+interface ErrorEvent extends Event {
   type: undefined;
 }
 

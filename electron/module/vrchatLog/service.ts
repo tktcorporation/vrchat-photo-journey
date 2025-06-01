@@ -330,7 +330,7 @@ export const getLogStoreDir = (): string => {
  * logStoreディレクトリを初期化する
  * ディレクトリが存在しない場合は作成する
  */
-export const initLogStoreDir = (): void => {
+const initLogStoreDir = (): void => {
   const logStoreDir = getLogStoreDir();
   if (!nodeFs.existsSync(logStoreDir)) {
     nodeFs.mkdirSync(logStoreDir, { recursive: true });
@@ -466,10 +466,7 @@ export const appendLoglinesToFile = async (props: {
     const monthDir = path.join(getLogStoreDir(), yearMonth);
 
     // ログストアのルートディレクトリを先に確認・作成
-    const logStoreDir = getLogStoreDir();
-    if (!nodeFs.existsSync(logStoreDir)) {
-      nodeFs.mkdirSync(logStoreDir, { recursive: true });
-    }
+    initLogStoreDir();
 
     // 月別ディレクトリを作成
     if (!nodeFs.existsSync(monthDir)) {
@@ -547,7 +544,7 @@ import type { VRChatWorldJoinLogFromPhoto } from '../vrchatWorldJoinLogFromPhoto
  *
  * VRChatWorldJoinLog に変換して返す
  */
-export const getLogLinesFromLogPhotoDirPath = async ({
+const getLogLinesFromLogPhotoDirPath = async ({
   vrChatPhotoDirPath,
 }: { vrChatPhotoDirPath: VRChatPhotoDirPath }): Promise<
   VRChatWorldJoinLogFromPhoto[]

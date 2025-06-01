@@ -78,20 +78,6 @@ export const findNextVRChatWorldJoinLog = async (
   }
 };
 
-export const getLatestJoinDate = async (): Promise<string | null> => {
-  const dbQueue = getDBQueue();
-  try {
-    const latestLog = await dbQueue.add(() => model.findLatestWorldJoinLog());
-    return latestLog?.joinDateTime.toISOString() ?? null;
-  } catch (error) {
-    log.error({
-      message: '最新のワールド参加日時取得中にエラーが発生しました',
-      stack: error instanceof Error ? error : new Error(String(error)),
-    });
-    return null;
-  }
-};
-
 export const findLatestWorldJoinLog = async () => {
   const dbQueue = getDBQueue();
   try {
