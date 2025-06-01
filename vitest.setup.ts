@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { afterAll, vi } from 'vitest';
 
 import * as client from './electron/lib/sequelize';
 

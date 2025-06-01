@@ -126,6 +126,7 @@ export const getVRChatLogFilePathList = async (
 ): Promise<neverthrow.Result<VRChatLogFilePath[], fs.FSError>> => {
   const logFileNamesResult = await fs.readdirAsync(vrChatlogFilesDir.value, {
     withFileTypes: true,
+    encoding: 'buffer',
   });
   if (logFileNamesResult.isErr()) {
     return neverthrow.err(
@@ -140,7 +141,7 @@ export const getVRChatLogFilePathList = async (
     .map((fileName) => {
       try {
         return VRChatLogFilePathSchema.parse(
-          `${path.join(vrChatlogFilesDir.value, fileName.name)}`,
+          `${path.join(vrChatlogFilesDir.value, fileName.name.toString())}`,
         );
       } catch (e) {
         log.debug('generally ignore this log', e);

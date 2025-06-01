@@ -996,14 +996,6 @@
     "path": "node_modules/@radix-ui/rect",
     "licenseFile": "node_modules/@radix-ui/rect/README.md"
   },
-  "@remix-run/router@1.16.0": {
-    "licenses": "MIT",
-    "repository": "https://github.com/remix-run/react-router",
-    "publisher": "Remix Software",
-    "email": "hello@remix.run",
-    "path": "node_modules/@remix-run/router",
-    "licenseFile": "node_modules/@remix-run/router/LICENSE.md"
-  },
   "@rollup/rollup-linux-arm64-gnu@4.40.0": {
     "licenses": "MIT",
     "repository": "https://github.com/rollup/rollup",
@@ -1183,18 +1175,6 @@
     "path": "node_modules/@tanstack/virtual-core",
     "licenseFile": "node_modules/@tanstack/virtual-core/LICENSE"
   },
-  "@tktcorporation/hello-napi-linux-arm64-gnu@1.0.4": {
-    "licenses": "MIT",
-    "repository": "https://github.com/tktcorporation/hello-napi-rs",
-    "path": "node_modules/@tktcorporation/hello-napi-linux-arm64-gnu",
-    "licenseFile": "node_modules/@tktcorporation/hello-napi-linux-arm64-gnu/README.md"
-  },
-  "@tktcorporation/hello-napi@1.0.4": {
-    "licenses": "MIT",
-    "repository": "https://github.com/tktcorporation/hello-napi-rs",
-    "path": "node_modules/@tktcorporation/hello-napi",
-    "licenseFile": "node_modules/@tktcorporation/hello-napi/LICENSE"
-  },
   "@tootallnate/once@1.1.2": {
     "licenses": "MIT",
     "repository": "https://github.com/TooTallNate/once",
@@ -1308,12 +1288,6 @@
     "path": "node_modules/@types/mysql",
     "licenseFile": "node_modules/@types/mysql/LICENSE"
   },
-  "@types/node@20.12.7": {
-    "licenses": "MIT",
-    "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
-    "path": "node_modules/@types/node",
-    "licenseFile": "node_modules/@types/node/LICENSE"
-  },
   "@types/node@20.17.31": {
     "licenses": "MIT",
     "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
@@ -1325,6 +1299,12 @@
     "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
     "path": "node_modules/@types/connect/node_modules/@types/node",
     "licenseFile": "node_modules/@types/connect/node_modules/@types/node/LICENSE"
+  },
+  "@types/node@22.15.29": {
+    "licenses": "MIT",
+    "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+    "path": "node_modules/@types/node",
+    "licenseFile": "node_modules/@types/node/LICENSE"
   },
   "@types/pg-pool@2.0.6": {
     "licenses": "MIT",
@@ -2275,8 +2255,8 @@
     "publisher": "Sindre Sorhus",
     "email": "sindresorhus@gmail.com",
     "url": "https://sindresorhus.com",
-    "path": "node_modules/matcher/node_modules/escape-string-regexp",
-    "licenseFile": "node_modules/matcher/node_modules/escape-string-regexp/license"
+    "path": "node_modules/escape-string-regexp",
+    "licenseFile": "node_modules/escape-string-regexp/license"
   },
   "eventemitter3@5.0.1": {
     "licenses": "MIT",
@@ -2388,8 +2368,8 @@
     "publisher": "Sindre Sorhus",
     "email": "sindresorhus@gmail.com",
     "url": "https://sindresorhus.com",
-    "path": "node_modules/@sentry/bundler-plugin-core/node_modules/find-up",
-    "licenseFile": "node_modules/@sentry/bundler-plugin-core/node_modules/find-up/license"
+    "path": "node_modules/find-up",
+    "licenseFile": "node_modules/find-up/license"
   },
   "foreground-child@3.3.1": {
     "licenses": "ISC",
@@ -2696,15 +2676,6 @@
     "url": "http://deadhorse.me",
     "path": "node_modules/humanize-ms",
     "licenseFile": "node_modules/humanize-ms/LICENSE"
-  },
-  "i@0.3.7": {
-    "licenses": "MIT",
-    "repository": "https://github.com/pksunkara/inflect",
-    "publisher": "Pavan Kumar Sunkara",
-    "email": "pavan.sss1991@gmail.com",
-    "url": "pksunkara.github.com",
-    "path": "node_modules/i",
-    "licenseFile": "node_modules/i/LICENSE"
   },
   "iconv-lite@0.6.3": {
     "licenses": "MIT",
@@ -3555,14 +3526,6 @@
     "path": "node_modules/onetime",
     "licenseFile": "node_modules/onetime/license"
   },
-  "opentype.js@1.3.4": {
-    "licenses": "MIT",
-    "repository": "https://github.com/opentypejs/opentype.js",
-    "publisher": "Frederik De Bleser",
-    "email": "frederik@debleser.be",
-    "path": "node_modules/opentype.js",
-    "licenseFile": "node_modules/opentype.js/LICENSE"
-  },
   "p-cancelable@2.1.1": {
     "licenses": "MIT",
     "repository": "https://github.com/sindresorhus/p-cancelable",
@@ -4069,22 +4032,6 @@
     "path": "node_modules/react-remove-scroll",
     "licenseFile": "node_modules/react-remove-scroll/LICENSE"
   },
-  "react-router-dom@6.23.0": {
-    "licenses": "MIT",
-    "repository": "https://github.com/remix-run/react-router",
-    "publisher": "Remix Software",
-    "email": "hello@remix.run",
-    "path": "node_modules/react-router-dom",
-    "licenseFile": "node_modules/react-router-dom/LICENSE.md"
-  },
-  "react-router@6.23.0": {
-    "licenses": "MIT",
-    "repository": "https://github.com/remix-run/react-router",
-    "publisher": "Remix Software",
-    "email": "hello@remix.run",
-    "path": "node_modules/react-router",
-    "licenseFile": "node_modules/react-router/LICENSE.md"
-  },
   "react-style-singleton@2.2.3": {
     "licenses": "MIT",
     "repository": "https://github.com/theKashey/react-style-singleton",
@@ -4092,13 +4039,6 @@
     "url": "thekashey@gmail.com",
     "path": "node_modules/react-style-singleton",
     "licenseFile": "node_modules/react-style-singleton/LICENSE"
-  },
-  "react-virtuoso@4.7.2": {
-    "licenses": "MIT",
-    "repository": "https://github.com/petyosi/react-virtuoso",
-    "publisher": "Petyo Ivanov",
-    "path": "node_modules/react-virtuoso",
-    "licenseFile": "node_modules/react-virtuoso/LICENSE"
   },
   "react@18.2.0": {
     "licenses": "MIT",
@@ -4374,16 +4314,16 @@
     "repository": "https://github.com/tapjs/signal-exit",
     "publisher": "Ben Coe",
     "email": "ben@npmjs.com",
-    "path": "node_modules/signal-exit",
-    "licenseFile": "node_modules/signal-exit/LICENSE.txt"
+    "path": "node_modules/gauge/node_modules/signal-exit",
+    "licenseFile": "node_modules/gauge/node_modules/signal-exit/LICENSE.txt"
   },
   "signal-exit@4.1.0": {
     "licenses": "ISC",
     "repository": "https://github.com/tapjs/signal-exit",
     "publisher": "Ben Coe",
     "email": "ben@npmjs.com",
-    "path": "node_modules/foreground-child/node_modules/signal-exit",
-    "licenseFile": "node_modules/foreground-child/node_modules/signal-exit/LICENSE.txt"
+    "path": "node_modules/signal-exit",
+    "licenseFile": "node_modules/signal-exit/LICENSE.txt"
   },
   "simple-concat@1.0.1": {
     "licenses": "MIT",
@@ -4483,14 +4423,6 @@
     "url": "https://sindresorhus.com",
     "path": "node_modules/@isaacs/cliui/node_modules/string-width",
     "licenseFile": "node_modules/@isaacs/cliui/node_modules/string-width/license"
-  },
-  "string.prototype.codepointat@0.2.1": {
-    "licenses": "MIT",
-    "repository": "https://github.com/mathiasbynens/String.prototype.codePointAt",
-    "publisher": "Mathias Bynens",
-    "url": "https://mathiasbynens.be/",
-    "path": "node_modules/string.prototype.codepointat",
-    "licenseFile": "node_modules/string.prototype.codepointat/LICENSE-MIT.txt"
   },
   "string_decoder@1.3.0": {
     "licenses": "MIT",
@@ -4626,14 +4558,6 @@
     "path": "node_modules/thenify",
     "licenseFile": "node_modules/thenify/LICENSE"
   },
-  "tiny-inflate@1.0.3": {
-    "licenses": "MIT",
-    "repository": "https://github.com/devongovett/tiny-inflate",
-    "publisher": "Devon Govett",
-    "email": "devongovett@gmail.com",
-    "path": "node_modules/tiny-inflate",
-    "licenseFile": "node_modules/tiny-inflate/LICENSE"
-  },
   "tiny-typed-emitter@2.1.0": {
     "licenses": "MIT",
     "repository": "https://github.com/binier/tiny-typed-emitter",
@@ -4751,12 +4675,6 @@
     "path": "node_modules/ufo",
     "licenseFile": "node_modules/ufo/LICENSE"
   },
-  "undici-types@5.26.5": {
-    "licenses": "MIT",
-    "repository": "https://github.com/nodejs/undici",
-    "path": "node_modules/@types/node/node_modules/undici-types",
-    "licenseFile": "node_modules/@types/node/node_modules/undici-types/README.md"
-  },
   "undici-types@6.19.8": {
     "licenses": "MIT",
     "repository": "https://github.com/nodejs/undici",
@@ -4768,12 +4686,6 @@
     "repository": "https://github.com/nodejs/undici",
     "path": "node_modules/undici-types",
     "licenseFile": "node_modules/undici-types/LICENSE"
-  },
-  "undici@7.8.0": {
-    "licenses": "MIT",
-    "repository": "https://github.com/nodejs/undici",
-    "path": "node_modules/undici",
-    "licenseFile": "node_modules/undici/LICENSE"
   },
   "unique-filename@1.1.1": {
     "licenses": "ISC",
@@ -4882,14 +4794,6 @@
     "path": "node_modules/validator",
     "licenseFile": "node_modules/validator/LICENSE"
   },
-  "vaul@0.9.0": {
-    "licenses": "MIT",
-    "repository": "https://github.com/emilkowalski/vaul",
-    "publisher": "Emil Kowalski",
-    "email": "e@emilkowal.ski",
-    "path": "node_modules/vaul",
-    "licenseFile": "node_modules/vaul/LICENSE.md"
-  },
   "vite@5.4.14": {
     "licenses": "MIT",
     "repository": "https://github.com/vitejs/vite",
@@ -4898,8 +4802,8 @@
     "licenseFile": "node_modules/vite/LICENSE.md"
   },
   "vrchat-albums@0.12.1": {
-    "licenses": "UNKNOWN",
-    "repository": "https://github.com/tktcorporation/add-world-name-to-vrc-photo",
+    "licenses": "MIT*",
+    "repository": "https://github.com/tktcorporation/vrchat-albums",
     "publisher": "tktcorporation",
     "path": "",
     "licenseFile": "README.md"
