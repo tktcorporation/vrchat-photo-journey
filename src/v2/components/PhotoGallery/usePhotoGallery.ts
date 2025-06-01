@@ -34,11 +34,23 @@ const selectedPhotosAtom = atom<Set<string>>(new Set<string>());
 const isMultiSelectModeAtom = atom<boolean>(false);
 
 /**
+ * usePhotoGallery フックのオプション
+ */
+interface UsePhotoGalleryOptions {
+  /** グルーピング処理が完了したときに呼び出されるコールバック */
+  onGroupingEnd?: () => void;
+}
+
+/**
  * 写真ギャラリーの状態管理とロジックを提供するカスタムフック
  * @param searchQuery - ヘッダーの検索バーに入力された検索クエリ
+ * @param options - オプション
  * @returns ギャラリー表示に必要な状態とセッター関数
  */
-export function usePhotoGallery(searchQuery: string): {
+export function usePhotoGallery(
+  searchQuery: string,
+  options?: UsePhotoGalleryOptions,
+): {
   /** ワールドセッションごとにグループ化され、検索クエリでフィルタリングされた写真データ */
   groupedPhotos: GroupedPhotos;
   /** 写真データやグルーピング処理がロード中かどうか */
@@ -110,7 +122,7 @@ export function usePhotoGallery(searchQuery: string): {
     groupedPhotos: originalGroupedPhotos,
     isLoading: isLoadingGrouping,
     debug: groupingDebug,
-  } = useGroupPhotos(photoList);
+  } = useGroupPhotos(photoList, options?.onGroupingEnd);
 
   const filteredGroupedPhotos = useMemo(() => {
     if (!searchQuery) return originalGroupedPhotos;

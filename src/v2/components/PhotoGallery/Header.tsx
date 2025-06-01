@@ -21,12 +21,17 @@ import {
   X,
 } from 'lucide-react';
 import type React from 'react';
-import { memo, useState } from 'react';
+import { memo } from 'react';
+import type { UseLoadingStateResult } from '../../hooks/useLoadingState';
 import { useI18n } from '../../i18n/store';
 import SearchBar from '../SearchBar';
 // import DarkModeToggle from '../settings/DarkModeToggle'; // ★ コメントアウト
 
-interface HeaderProps {
+interface HeaderProps
+  extends Pick<
+    UseLoadingStateResult,
+    'isRefreshing' | 'startRefreshing' | 'finishRefreshing'
+  > {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   onOpenSettings: () => void;
@@ -56,9 +61,11 @@ const Header = memo(
     onClearSelection,
     isMultiSelectMode,
     onCopySelected,
+    isRefreshing,
+    startRefreshing,
+    finishRefreshing,
   }: HeaderProps) => {
     const { t } = useI18n();
-    const [isRefreshing, setIsRefreshing] = useState(false);
     const utils = trpcReact.useUtils();
 
     /**
@@ -78,7 +85,7 @@ const Header = memo(
         },
         onError: (error) => {
           console.error('Failed to append log lines:', error);
-          setIsRefreshing(false);
+          finishRefreshing();
         },
       });
 
@@ -100,7 +107,7 @@ const Header = memo(
           invalidatePhotoGalleryQueries(utils);
         },
         onSettled: () => {
-          setIsRefreshing(false);
+          finishRefreshing();
         },
       });
 
@@ -119,11 +126,14 @@ const Header = memo(
      *   明示的にこの順序で処理を行う必要があります
      */
     const _handleRefresh = async () => {
-      if (!isRefreshing) {
-        setIsRefreshing(true);
-        // 先に VRChat ログファイルを処理
-        appendLoglines();
+      if (isRefreshing) {
+        return;
       }
+      startRefreshing();
+      // 先に VRChat ログファイルを処理
+      appendLoglines();
+      // その後ログ情報をロード
+      loadLogInfo({ excludeOldLogLoad: true });
     };
 
     return (
@@ -225,8 +235,6 @@ const Header = memo(
             </SelectContent>
           </Select>
           <Separator orientation="vertical" className="h-6" />
-          {/* <DarkModeToggle /> */}
-          {/* ★ コメントアウト */}
         </div>
       </header>
     );
