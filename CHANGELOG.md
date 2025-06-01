@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### ⚙️ Miscellaneous Tasks
+
+- Cleans up unused exports, standardizes logging, and refactors database queue usage across the Electron modules (#360)
+- Update playwright test (#361)
+- ローディング状態管理のためのカスタムフックを追加し、関連コンポーネントを更新 (#364)
+- 複数のスクリーンショットをコメントに添付できるようにする (#367)
+
+## [0.12.1] - 2025-06-01
+
 ### 🚀 Features
 
 - Sentry setup (#323)
