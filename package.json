@@ -13,7 +13,7 @@
     "typescript"
   ],
   "repository": {
-    "url": "https://github.com/tktcorporation/vrchat-photo-journey"
+    "url": "https://github.com/tktcorporation/vrchat-albums"
   },
   "productName": "VRChatAlbums",
   "type": "module",
@@ -25,7 +25,7 @@
     "generate:debug-data": "nlx tsx scripts/generate-debug-data.mts",
     "dev": "./scripts/dev.sh",
     "dev:vite": "vite",
-    "dev:electron": "vite build -c electron/vite.config.ts && electron /workspaces/vrchat-photo-journey --disable-gpu",
+    "dev:electron": "vite build -c electron/vite.config.ts && electron . --disable-gpu",
     "build": "nr lint:type-check && nr build:vite && nr build:electron",
     "build:vite": "vite build",
     "build:electron": "vite build -c electron/vite.config.ts",
@@ -190,7 +190,7 @@
     "publish": {
       "provider": "github",
       "owner": "tktcorporation",
-      "repo": "vrchat-photo-journey"
+      "repo": "vrchat-albums"
     },
     "win": {
       "target": "nsis",
