@@ -26,6 +26,10 @@ const WINDOW_CONFIG = {
   MIN_HEIGHT: 600,
 } as const;
 
+/**
+ * メインウィンドウを生成するヘルパー関数。
+ * 既存のウィンドウがなければ初期サイズで作成する。
+ */
 function createWindow(): BrowserWindow {
   const savedBounds = null; //settingStore.getWindowBounds();
 
@@ -175,6 +179,10 @@ function createWindow(): BrowserWindow {
 
 let mainWindow: BrowserWindow | null = null;
 // FIXME: このexport はやめたい
+/**
+ * 既存の BrowserWindow を取得する。
+ * 存在しない場合は null を返す。
+ */
 export const getWindow = (): BrowserWindow | null => {
   if (mainWindow && !mainWindow.isDestroyed()) {
     return mainWindow;
@@ -199,6 +207,10 @@ const createOrGetWindow = (): BrowserWindow => {
   return mainWindow;
 };
 
+/**
+ * システムトレイに常駐させるための初期化処理を行う。
+ * アプリ終了時に破棄され、ウィンドウ表示などのメニューを提供する。
+ */
 const setTray = () => {
   let tray: Tray | null = null;
 
@@ -282,6 +294,10 @@ const setTray = () => {
 import { match } from 'ts-pattern';
 import { loadLogInfoIndexFromVRChatLog } from './module/logInfo/service';
 import type { getSettingStore } from './module/settingStore';
+/**
+ * 一定間隔でログ処理を実行するタイマーイベントを設定する。
+ * バックグラウンド処理が有効な場合のみログを読み込み通知を送る。
+ */
 const setTimeEventEmitter = (
   settingStore: ReturnType<typeof getSettingStore>,
 ) => {

@@ -14,6 +14,10 @@ interface LibraryMetadata {
   licenseFile?: string;
 }
 
+/**
+ * 使用している OSS ライブラリのライセンス一覧を表示する設定項目。
+ * SettingsModal の「ライセンス」タブで利用される。
+ */
 const LicenseInfo = memo(() => {
   const { t } = useI18n();
 

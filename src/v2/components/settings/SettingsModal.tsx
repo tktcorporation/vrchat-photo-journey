@@ -40,6 +40,10 @@ interface TabConfig {
   component: React.ComponentType;
 }
 
+/**
+ * 各種設定タブをまとめたモーダルダイアログ。
+ * AppHeader から開かれ、パス設定やテーマ設定などを切り替えて表示する。
+ */
 const SettingsModal = memo(({ onClose }: SettingsModalProps) => {
   const { t } = useI18n();
   const [activeTab, setActiveTab] = useState<SettingsTab>('paths');
