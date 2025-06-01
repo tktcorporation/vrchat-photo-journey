@@ -19,8 +19,8 @@ import {
  * VRChat の写真が保存されている場所のデフォルト値を取得する
  */
 const getDefaultVRChatPhotoDir = (): VRChatPhotoDirPath => {
-  // /workspaces/vrchat-photo-journey/debug/photos/VRChat
-  // return path.join('/workspaces/vrchat-photo-journey/debug/photos');
+  // /workspaces/vrchat-albums/debug/photos/VRChat
+  // return path.join('/workspaces/vrchat-albums/debug/photos');
   const logFilesDir =
     process.platform === 'win32' && process.env.USERPROFILE
       ? path.join(app.getPath('pictures') || '', 'VRChat')

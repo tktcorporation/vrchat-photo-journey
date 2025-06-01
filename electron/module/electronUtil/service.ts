@@ -1,8 +1,8 @@
 import * as fs from 'node:fs/promises';
 import * as os from 'node:os';
 import * as path from 'node:path';
+import { writeClipboardFilePaths } from 'clip-filepaths';
 import { app, clipboard, dialog, nativeImage, shell } from 'electron';
-import { copyFiles } from 'electron-pan-clip';
 import * as neverthrow from 'neverthrow';
 import sharp from 'sharp';
 
@@ -239,7 +239,7 @@ const copyMultipleFilesToClipboard = async (
   if (filePaths.length === 0) {
     return neverthrow.ok(undefined);
   }
-  copyFiles(filePaths);
+  writeClipboardFilePaths(filePaths);
 
   return neverthrow.ok(undefined);
 };

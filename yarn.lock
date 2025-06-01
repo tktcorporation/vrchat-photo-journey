@@ -75,6 +75,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/code-frame@npm:^7.27.1":
+  version: 7.27.1
+  resolution: "@babel/code-frame@npm:7.27.1"
+  dependencies:
+    "@babel/helper-validator-identifier": "npm:^7.27.1"
+    js-tokens: "npm:^4.0.0"
+    picocolors: "npm:^1.1.1"
+  checksum: 10c0/5dd9a18baa5fce4741ba729acc3a3272c49c25cb8736c4b18e113099520e7ef7b545a4096a26d600e4416157e63e87d66db46aa3fbf0a5f2286da2705c12da00
+  languageName: node
+  linkType: hard
+
 "@babel/compat-data@npm:^7.26.8":
   version: 7.26.8
   resolution: "@babel/compat-data@npm:7.26.8"
@@ -172,6 +183,13 @@ __metadata:
   version: 7.25.9
   resolution: "@babel/helper-validator-identifier@npm:7.25.9"
   checksum: 10c0/4fc6f830177b7b7e887ad3277ddb3b91d81e6c4a24151540d9d1023e8dc6b1c0505f0f0628ae653601eb4388a8db45c1c14b2c07a9173837aef7e4116456259d
+  languageName: node
+  linkType: hard
+
+"@babel/helper-validator-identifier@npm:^7.27.1":
+  version: 7.27.1
+  resolution: "@babel/helper-validator-identifier@npm:7.27.1"
+  checksum: 10c0/c558f11c4871d526498e49d07a84752d1800bf72ac0d3dad100309a2eaba24efbf56ea59af5137ff15e3a00280ebe588560534b0e894a4750f8b1411d8f78b84
   languageName: node
   linkType: hard
 
@@ -4310,6 +4328,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tktco/node-actionlint@npm:^1.5.2":
+  version: 1.5.2
+  resolution: "@tktco/node-actionlint@npm:1.5.2"
+  dependencies:
+    "@babel/code-frame": "npm:^7.27.1"
+    chalk: "npm:^5.4.1"
+    fast-glob: "npm:^3.3.3"
+  bin:
+    node-actionlint: bin/node-actionlint.js
+  checksum: 10c0/2123b0232ec1a1ebe6f05fa9ae514bd1765713a34c09737745aac18462a2e9769ca15105f61100bb44e114ab1cdcde4e6dc5a4aac900b913ef19edc48b7161db
+  languageName: node
+  linkType: hard
+
 "@tktcorporation/hello-napi-android-arm-eabi@npm:1.0.4":
   version: 1.0.4
   resolution: "@tktcorporation/hello-napi-android-arm-eabi@npm:1.0.4"
@@ -5961,6 +5992,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"chalk@npm:^5.4.1":
+  version: 5.4.1
+  resolution: "chalk@npm:5.4.1"
+  checksum: 10c0/b23e88132c702f4855ca6d25cb5538b1114343e41472d5263ee8a37cccfccd9c4216d111e1097c6a27830407a1dc81fecdf2a56f2c63033d4dbbd88c10b0dcef
+  languageName: node
+  linkType: hard
+
 "char-regex@npm:^1.0.2":
   version: 1.0.2
   resolution: "char-regex@npm:1.0.2"
@@ -6075,6 +6113,95 @@ __metadata:
     slice-ansi: "npm:^3.0.0"
     string-width: "npm:^4.2.0"
   checksum: 10c0/dfaa3df675bcef7a3254773de768712b590250420345a4c7ac151f041a4bacb4c25864b1377bee54a39b5925a030c00eabf014e312e3a4ac130952ed3b3879e9
+  languageName: node
+  linkType: hard
+
+"clip-filepaths-darwin-arm64@npm:0.2.0":
+  version: 0.2.0
+  resolution: "clip-filepaths-darwin-arm64@npm:0.2.0"
+  conditions: os=darwin & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"clip-filepaths-darwin-x64@npm:0.2.0":
+  version: 0.2.0
+  resolution: "clip-filepaths-darwin-x64@npm:0.2.0"
+  conditions: os=darwin & cpu=x64
+  languageName: node
+  linkType: hard
+
+"clip-filepaths-linux-arm64-gnu@npm:0.2.0":
+  version: 0.2.0
+  resolution: "clip-filepaths-linux-arm64-gnu@npm:0.2.0"
+  conditions: os=linux & cpu=arm64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"clip-filepaths-linux-arm64-musl@npm:0.2.0":
+  version: 0.2.0
+  resolution: "clip-filepaths-linux-arm64-musl@npm:0.2.0"
+  conditions: os=linux & cpu=arm64 & libc=musl
+  languageName: node
+  linkType: hard
+
+"clip-filepaths-linux-x64-gnu@npm:0.2.0":
+  version: 0.2.0
+  resolution: "clip-filepaths-linux-x64-gnu@npm:0.2.0"
+  conditions: os=linux & cpu=x64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"clip-filepaths-linux-x64-musl@npm:0.2.0":
+  version: 0.2.0
+  resolution: "clip-filepaths-linux-x64-musl@npm:0.2.0"
+  conditions: os=linux & cpu=x64 & libc=musl
+  languageName: node
+  linkType: hard
+
+"clip-filepaths-win32-arm64-msvc@npm:0.2.0":
+  version: 0.2.0
+  resolution: "clip-filepaths-win32-arm64-msvc@npm:0.2.0"
+  conditions: os=win32 & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"clip-filepaths-win32-x64-msvc@npm:0.2.0":
+  version: 0.2.0
+  resolution: "clip-filepaths-win32-x64-msvc@npm:0.2.0"
+  conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
+"clip-filepaths@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "clip-filepaths@npm:0.2.0"
+  dependencies:
+    clip-filepaths-darwin-arm64: "npm:0.2.0"
+    clip-filepaths-darwin-x64: "npm:0.2.0"
+    clip-filepaths-linux-arm64-gnu: "npm:0.2.0"
+    clip-filepaths-linux-arm64-musl: "npm:0.2.0"
+    clip-filepaths-linux-x64-gnu: "npm:0.2.0"
+    clip-filepaths-linux-x64-musl: "npm:0.2.0"
+    clip-filepaths-win32-arm64-msvc: "npm:0.2.0"
+    clip-filepaths-win32-x64-msvc: "npm:0.2.0"
+  dependenciesMeta:
+    clip-filepaths-darwin-arm64:
+      optional: true
+    clip-filepaths-darwin-x64:
+      optional: true
+    clip-filepaths-linux-arm64-gnu:
+      optional: true
+    clip-filepaths-linux-arm64-musl:
+      optional: true
+    clip-filepaths-linux-x64-gnu:
+      optional: true
+    clip-filepaths-linux-x64-musl:
+      optional: true
+    clip-filepaths-win32-arm64-msvc:
+      optional: true
+    clip-filepaths-win32-x64-msvc:
+      optional: true
+  checksum: 10c0/f9d35ad7ca357e049fc6fa5cb9e85b61b7dfdf92ca7755124b1252e4ccc1cddddbe6d94ebd08905f2424f56a8146dc407612366683b4409f95880c82592fa76b
   languageName: node
   linkType: hard
 
@@ -6828,95 +6955,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron-pan-clip-darwin-arm64@npm:0.0.32":
-  version: 0.0.32
-  resolution: "electron-pan-clip-darwin-arm64@npm:0.0.32"
-  conditions: os=darwin & cpu=arm64
-  languageName: node
-  linkType: hard
-
-"electron-pan-clip-darwin-x64@npm:0.0.32":
-  version: 0.0.32
-  resolution: "electron-pan-clip-darwin-x64@npm:0.0.32"
-  conditions: os=darwin & cpu=x64
-  languageName: node
-  linkType: hard
-
-"electron-pan-clip-linux-arm64-gnu@npm:0.0.32":
-  version: 0.0.32
-  resolution: "electron-pan-clip-linux-arm64-gnu@npm:0.0.32"
-  conditions: os=linux & cpu=arm64 & libc=glibc
-  languageName: node
-  linkType: hard
-
-"electron-pan-clip-linux-arm64-musl@npm:0.0.32":
-  version: 0.0.32
-  resolution: "electron-pan-clip-linux-arm64-musl@npm:0.0.32"
-  conditions: os=linux & cpu=arm64 & libc=musl
-  languageName: node
-  linkType: hard
-
-"electron-pan-clip-linux-x64-gnu@npm:0.0.32":
-  version: 0.0.32
-  resolution: "electron-pan-clip-linux-x64-gnu@npm:0.0.32"
-  conditions: os=linux & cpu=x64 & libc=glibc
-  languageName: node
-  linkType: hard
-
-"electron-pan-clip-linux-x64-musl@npm:0.0.32":
-  version: 0.0.32
-  resolution: "electron-pan-clip-linux-x64-musl@npm:0.0.32"
-  conditions: os=linux & cpu=x64 & libc=musl
-  languageName: node
-  linkType: hard
-
-"electron-pan-clip-win32-arm64-msvc@npm:0.0.32":
-  version: 0.0.32
-  resolution: "electron-pan-clip-win32-arm64-msvc@npm:0.0.32"
-  conditions: os=win32 & cpu=arm64
-  languageName: node
-  linkType: hard
-
-"electron-pan-clip-win32-x64-msvc@npm:0.0.32":
-  version: 0.0.32
-  resolution: "electron-pan-clip-win32-x64-msvc@npm:0.0.32"
-  conditions: os=win32 & cpu=x64
-  languageName: node
-  linkType: hard
-
-"electron-pan-clip@npm:^0.0.32":
-  version: 0.0.32
-  resolution: "electron-pan-clip@npm:0.0.32"
-  dependencies:
-    electron-pan-clip-darwin-arm64: "npm:0.0.32"
-    electron-pan-clip-darwin-x64: "npm:0.0.32"
-    electron-pan-clip-linux-arm64-gnu: "npm:0.0.32"
-    electron-pan-clip-linux-arm64-musl: "npm:0.0.32"
-    electron-pan-clip-linux-x64-gnu: "npm:0.0.32"
-    electron-pan-clip-linux-x64-musl: "npm:0.0.32"
-    electron-pan-clip-win32-arm64-msvc: "npm:0.0.32"
-    electron-pan-clip-win32-x64-msvc: "npm:0.0.32"
-  dependenciesMeta:
-    electron-pan-clip-darwin-arm64:
-      optional: true
-    electron-pan-clip-darwin-x64:
-      optional: true
-    electron-pan-clip-linux-arm64-gnu:
-      optional: true
-    electron-pan-clip-linux-arm64-musl:
-      optional: true
-    electron-pan-clip-linux-x64-gnu:
-      optional: true
-    electron-pan-clip-linux-x64-musl:
-      optional: true
-    electron-pan-clip-win32-arm64-msvc:
-      optional: true
-    electron-pan-clip-win32-x64-msvc:
-      optional: true
-  checksum: 10c0/e162c5f9deec4ed0abcd52c3f9b877536b47db6aea0ea90343c6381fac97ac57a85685a7aa0c72f89993238d6ef08e6299eafee5a762a3f79d2a7bde268f3182
-  languageName: node
-  linkType: hard
-
 "electron-publish@npm:24.13.1":
   version: 24.13.1
   resolution: "electron-publish@npm:24.13.1"
@@ -7427,7 +7465,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-glob@npm:^3.2.7, fast-glob@npm:^3.3.0, fast-glob@npm:^3.3.2":
+"fast-glob@npm:^3.2.7, fast-glob@npm:^3.3.0, fast-glob@npm:^3.3.2, fast-glob@npm:^3.3.3":
   version: 3.3.3
   resolution: "fast-glob@npm:3.3.3"
   dependencies:
@@ -13287,9 +13325,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vrchat-photo-journey@workspace:.":
+"vrchat-albums@workspace:.":
   version: 0.0.0-use.local
-  resolution: "vrchat-photo-journey@workspace:."
+  resolution: "vrchat-albums@workspace:."
   dependencies:
     "@antfu/ni": "npm:^0.23.0"
     "@biomejs/biome": "npm:1.6.0"
@@ -13321,6 +13359,7 @@ __metadata:
     "@testing-library/dom": "npm:^10.4.0"
     "@testing-library/jest-dom": "npm:^6.6.3"
     "@testing-library/react": "npm:^16.1.0"
+    "@tktco/node-actionlint": "npm:^1.5.2"
     "@tktcorporation/hello-napi": "npm:^1.0.4"
     "@trpc/client": "npm:10.45.2"
     "@trpc/react-query": "npm:10.45.2"
@@ -13339,6 +13378,7 @@ __metadata:
     "@welldone-software/why-did-you-render": "npm:^8.0.3"
     autoprefixer: "npm:10.4.19"
     class-variance-authority: "npm:0.7.0"
+    clip-filepaths: "npm:^0.2.0"
     clsx: "npm:2.1.1"
     concurrently: "npm:8.2.2"
     consola: "npm:^3.2.3"
@@ -13348,7 +13388,6 @@ __metadata:
     electron-builder: "npm:24.13.3"
     electron-is-dev: "npm:2.0.0"
     electron-log: "npm:5.3.0"
-    electron-pan-clip: "npm:^0.0.32"
     electron-rebuild: "npm:^3.2.9"
     electron-store: "npm:8.2.0"
     electron-trpc: "npm:0.5.2"

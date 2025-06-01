@@ -81,14 +81,21 @@ const GalleryContent = memo(
         [filteredGroups],
       ),
       overscan: 1,
-      measureElement: useCallback((element: HTMLElement) => {
-        const height = element.getBoundingClientRect().height;
-        const key = element.getAttribute('data-key');
-        if (key) {
-          groupSizesRef.current.set(key, height);
-        }
-        return height + GROUP_SPACING;
-      }, []),
+      measureElement: useCallback(
+        (element: HTMLElement) => {
+          const height = element.getBoundingClientRect().height;
+          const index = element.getAttribute('data-index');
+          if (index) {
+            const indexNum = Number.parseInt(index, 10);
+            if (!Number.isNaN(indexNum) && filteredGroups[indexNum]) {
+              const [key] = filteredGroups[indexNum];
+              groupSizesRef.current.set(key, height);
+            }
+          }
+          return height + GROUP_SPACING;
+        },
+        [filteredGroups],
+      ),
     });
 
     /**
@@ -145,7 +152,7 @@ const GalleryContent = memo(
               return (
                 <div
                   key={key}
-                  data-key={key}
+                  data-index={virtualRow.index}
                   ref={virtualizer.measureElement}
                   style={{
                     position: 'absolute',

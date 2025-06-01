@@ -13,7 +13,7 @@ yarn build:electron
 # ビルドが成功したら、Electronを起動
 if [ $? -eq 0 ]; then
   echo "Starting Electron..."
-  electron /workspaces/vrchat-photo-journey --disable-gpu
+  electron . --disable-gpu
 else
   echo "Electron build failed"
 fi
