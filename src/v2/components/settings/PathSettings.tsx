@@ -74,7 +74,8 @@ const PathSettingsComponent = memo(({ showRefreshAll }: PathSettingsProps) => {
     trpcReact.vrchatLog.appendLoglinesToFileFromLogFilePathList.useMutation({
       onSuccess: () => {
         // ログ行の抽出・保存に成功したら、ログ情報をロード
-        loadLogInfo({ excludeOldLogLoad: true });
+        // 過去にさかのぼって全ログをロードする
+        loadLogInfo({ excludeOldLogLoad: false });
       },
       onError: (error) => {
         console.error('Failed to append log lines:', error);
