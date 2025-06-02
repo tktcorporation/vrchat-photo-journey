@@ -18,10 +18,10 @@ import {
 import isDev from 'electron-is-dev';
 
 // Local
-import { getSettingStore } from './module/settingStore';
+import { getSettingStore, type SettingStore } from './module/settingStore'; // Import the type
 import { logger } from './lib/logger';
 
-const settingStore = getSettingStore();
+let settingStore: SettingStore | null = null;
 
 const WINDOW_CONFIG = {
   DEFAULT_WIDTH: 1024,
@@ -35,6 +35,9 @@ const WINDOW_CONFIG = {
  * 既存のウィンドウがなければ初期サイズで作成する。
  */
 function createWindow(): BrowserWindow {
+  if (!settingStore) {
+    throw new Error('settingStore not initialized in electronUtil');
+  }
   const savedBounds = settingStore.getWindowBounds(); // Uncomment and use this
 
   // Default width and height if no saved bounds
@@ -130,6 +133,11 @@ function createWindow(): BrowserWindow {
 
   // ウィンドウの状態を保存
   mainWindow.on('close', () => {
+    if (!settingStore) {
+      // It's unlikely to reach here if createWindow succeeded, but good for safety
+      logger.error('settingStore not initialized in mainWindow close event');
+      return;
+    }
     const bounds = mainWindow.getBounds();
     settingStore.setWindowBounds(bounds);
   });
@@ -293,7 +301,7 @@ import type { getSettingStore } from './module/settingStore';
  * バックグラウンド処理が有効な場合のみログを読み込み通知を送る。
  */
 const setTimeEventEmitter = (
-  settingStore: ReturnType<typeof getSettingStore>,
+  setTimeEventEmitter(passedSettingStore: ReturnType<typeof getSettingStore>) // Renamed to avoid conflict
 ) => {
   const intervalEventEmitter = new EventEmitter();
   // 6時間ごとに実行
@@ -305,7 +313,7 @@ const setTimeEventEmitter = (
   );
 
   intervalEventEmitter.on('time', async (now: Date) => {
-    if (!settingStore.getBackgroundFileCreateFlag()) {
+    if (!passedSettingStore.getBackgroundFileCreateFlag()) { // Use passedSettingStore
       logger.debug('バックグラウンド処理が無効になっています');
       return;
     }
@@ -367,3 +375,10 @@ const setTimeEventEmitter = (
 };
 
 export { setTray, createOrGetWindow, setTimeEventEmitter };
+
+export const initializeSettingStoreForUtil = (): void => {
+  if (settingStore === null) {
+    settingStore = getSettingStore();
+    logger.info('SettingStore initialized for electronUtil.ts');
+  }
+};
