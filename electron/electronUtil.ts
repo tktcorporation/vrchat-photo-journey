@@ -12,14 +12,14 @@ import {
   Tray,
   app,
   ipcMain,
-  shell,
   screen, // Ensure screen is imported
+  shell,
 } from 'electron';
 import isDev from 'electron-is-dev';
 
-// Local
-import { getSettingStore, type SettingStore } from './module/settingStore'; // Import the type
 import { logger } from './lib/logger';
+// Local
+import { type SettingStore, getSettingStore } from './module/settingStore'; // Import the type
 
 let settingStore: SettingStore | null = null;
 
@@ -41,8 +41,8 @@ function createWindow(): BrowserWindow {
   const savedBounds = settingStore.getWindowBounds(); // Uncomment and use this
 
   // Default width and height if no saved bounds
-  let width = WINDOW_CONFIG.DEFAULT_WIDTH;
-  let height = WINDOW_CONFIG.DEFAULT_HEIGHT;
+  let width: number = WINDOW_CONFIG.DEFAULT_WIDTH;
+  let height: number = WINDOW_CONFIG.DEFAULT_HEIGHT;
   let x: number | undefined = undefined;
   let y: number | undefined = undefined;
 
@@ -51,14 +51,26 @@ function createWindow(): BrowserWindow {
     const { workArea } = primaryDisplay;
 
     // Restore size, ensuring it's not smaller than min size and not larger than work area
-    width = Math.max(WINDOW_CONFIG.MIN_WIDTH, Math.min(savedBounds.width, workArea.width));
-    height = Math.max(WINDOW_CONFIG.MIN_HEIGHT, Math.min(savedBounds.height, workArea.height));
+    width = Math.max(
+      WINDOW_CONFIG.MIN_WIDTH,
+      Math.min(savedBounds.width, workArea.width),
+    );
+    height = Math.max(
+      WINDOW_CONFIG.MIN_HEIGHT,
+      Math.min(savedBounds.height, workArea.height),
+    );
 
     // Restore position, ensuring it's within the work area
     // Adjust if the window would be off-screen
     if (savedBounds.x !== undefined && savedBounds.y !== undefined) {
-        x = Math.max(workArea.x, Math.min(savedBounds.x, workArea.x + workArea.width - width));
-        y = Math.max(workArea.y, Math.min(savedBounds.y, workArea.y + workArea.height - height));
+      x = Math.max(
+        workArea.x,
+        Math.min(savedBounds.x, workArea.x + workArea.width - width),
+      );
+      y = Math.max(
+        workArea.y,
+        Math.min(savedBounds.y, workArea.y + workArea.height - height),
+      );
     }
   }
 
@@ -135,7 +147,9 @@ function createWindow(): BrowserWindow {
   mainWindow.on('close', () => {
     if (!settingStore) {
       // It's unlikely to reach here if createWindow succeeded, but good for safety
-      logger.error('settingStore not initialized in mainWindow close event');
+      logger.error({
+        message: 'settingStore not initialized in mainWindow close event',
+      });
       return;
     }
     const bounds = mainWindow.getBounds();
@@ -161,14 +175,18 @@ function createWindow(): BrowserWindow {
         currentDisplay.workArea.x, // Ensure x is within workArea.x
         Math.min(
           currentBounds.x,
-          currentDisplay.workArea.x + currentDisplay.workAreaSize.width - currentBounds.width,
+          currentDisplay.workArea.x +
+            currentDisplay.workAreaSize.width -
+            currentBounds.width,
         ),
       ),
       y: Math.max(
         currentDisplay.workArea.y, // Ensure y is within workArea.y
         Math.min(
           currentBounds.y,
-          currentDisplay.workArea.y + currentDisplay.workAreaSize.height - currentBounds.height,
+          currentDisplay.workArea.y +
+            currentDisplay.workAreaSize.height -
+            currentBounds.height,
         ),
       ),
     };
@@ -295,13 +313,12 @@ const setTray = () => {
 };
 import { match } from 'ts-pattern';
 import { loadLogInfoIndexFromVRChatLog } from './module/logInfo/service';
-import type { getSettingStore } from './module/settingStore';
 /**
  * 一定間隔でログ処理を実行するタイマーイベントを設定する。
  * バックグラウンド処理が有効な場合のみログを読み込み通知を送る。
  */
 const setTimeEventEmitter = (
-  setTimeEventEmitter(passedSettingStore: ReturnType<typeof getSettingStore>) // Renamed to avoid conflict
+  passedSettingStore: ReturnType<typeof getSettingStore>,
 ) => {
   const intervalEventEmitter = new EventEmitter();
   // 6時間ごとに実行
@@ -313,7 +330,8 @@ const setTimeEventEmitter = (
   );
 
   intervalEventEmitter.on('time', async (now: Date) => {
-    if (!passedSettingStore.getBackgroundFileCreateFlag()) { // Use passedSettingStore
+    if (!passedSettingStore.getBackgroundFileCreateFlag()) {
+      // Use passedSettingStore
       logger.debug('バックグラウンド処理が無効になっています');
       return;
     }
