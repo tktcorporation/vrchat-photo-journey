@@ -12,12 +12,16 @@ import {
   Tray,
   app,
   ipcMain,
+  screen, // Ensure screen is imported
   shell,
 } from 'electron';
 import isDev from 'electron-is-dev';
 
-// Local
 import { logger } from './lib/logger';
+// Local
+import { type SettingStore, getSettingStore } from './module/settingStore'; // Import the type
+
+let settingStore: SettingStore | null = null;
 
 const WINDOW_CONFIG = {
   DEFAULT_WIDTH: 1024,
@@ -31,45 +35,50 @@ const WINDOW_CONFIG = {
  * 既存のウィンドウがなければ初期サイズで作成する。
  */
 function createWindow(): BrowserWindow {
-  const savedBounds = null; //settingStore.getWindowBounds();
+  if (!settingStore) {
+    throw new Error('settingStore not initialized in electronUtil');
+  }
+  const savedBounds = settingStore.getWindowBounds(); // Uncomment and use this
 
-  const { width, height } = savedBounds || {
-    width: WINDOW_CONFIG.DEFAULT_WIDTH,
-    height: WINDOW_CONFIG.DEFAULT_HEIGHT,
-  };
+  // Default width and height if no saved bounds
+  let width: number = WINDOW_CONFIG.DEFAULT_WIDTH;
+  let height: number = WINDOW_CONFIG.DEFAULT_HEIGHT;
+  let x: number | undefined = undefined;
+  let y: number | undefined = undefined;
 
-  // 保存された位置に最も近いディスプレイを取得
-  // const nearestDisplay = savedBounds
-  //   ? screen.getDisplayNearestPoint({ x: savedBounds.x, y: savedBounds.y })
-  //   : screen.getPrimaryDisplay();
+  if (savedBounds) {
+    const primaryDisplay = screen.getPrimaryDisplay();
+    const { workArea } = primaryDisplay;
 
-  // const workAreaSize = nearestDisplay.workArea;
+    // Restore size, ensuring it's not smaller than min size and not larger than work area
+    width = Math.max(
+      WINDOW_CONFIG.MIN_WIDTH,
+      Math.min(savedBounds.width, workArea.width),
+    );
+    height = Math.max(
+      WINDOW_CONFIG.MIN_HEIGHT,
+      Math.min(savedBounds.height, workArea.height),
+    );
 
-  // ウィンドウサイズを画面サイズに合わせて調整
-  // const width = Math.min(
-  //   savedBounds?.width || WINDOW_CONFIG.DEFAULT_WIDTH,
-  //   workAreaSize.width,
-  // );
-  // const height = Math.min(
-  //   savedBounds?.height || WINDOW_CONFIG.DEFAULT_HEIGHT,
-  //   workAreaSize.height,
-  // );
-
-  // ウィンドウ位置が画面外にはみ出していないか確認
-  // const x =
-  //   savedBounds?.x !== undefined
-  //     ? Math.max(0, Math.min(savedBounds.x, workAreaSize.width - width))
-  //     : undefined;
-  // const y =
-  //   savedBounds?.y !== undefined
-  //     ? Math.max(0, Math.min(savedBounds.y, workAreaSize.height - height))
-  //     : undefined;
+    // Restore position, ensuring it's within the work area
+    // Adjust if the window would be off-screen
+    if (savedBounds.x !== undefined && savedBounds.y !== undefined) {
+      x = Math.max(
+        workArea.x,
+        Math.min(savedBounds.x, workArea.x + workArea.width - width),
+      );
+      y = Math.max(
+        workArea.y,
+        Math.min(savedBounds.y, workArea.y + workArea.height - height),
+      );
+    }
+  }
 
   const mainWindow = new BrowserWindow({
     width,
     height,
-    // x,
-    // y,
+    x, // Use x from savedBounds or undefined
+    y, // Use y from savedBounds or undefined
     minWidth: WINDOW_CONFIG.MIN_WIDTH,
     minHeight: WINDOW_CONFIG.MIN_HEIGHT,
     frame: false,
@@ -136,43 +145,54 @@ function createWindow(): BrowserWindow {
 
   // ウィンドウの状態を保存
   mainWindow.on('close', () => {
-    // const bounds = mainWindow.getBounds();
-    // settingStore.setWindowBounds(bounds);
+    if (!settingStore) {
+      // It's unlikely to reach here if createWindow succeeded, but good for safety
+      logger.error({
+        message: 'settingStore not initialized in mainWindow close event',
+      });
+      return;
+    }
+    const bounds = mainWindow.getBounds();
+    settingStore.setWindowBounds(bounds);
   });
 
   // ディスプレイ構成が変更された時のハンドリング
-  // screen.on('display-metrics-changed', () => {
-  //   const currentBounds = mainWindow.getBounds();
-  //   const currentDisplay = screen.getDisplayNearestPoint({
-  //     x: currentBounds.x,
-  //     y: currentBounds.y,
-  //   });
+  screen.on('display-metrics-changed', () => {
+    const currentBounds = mainWindow.getBounds();
+    const currentDisplay = screen.getDisplayNearestPoint({
+      x: currentBounds.x,
+      y: currentBounds.y,
+    });
 
-  //   // ウィンドウが表示可能な領域に収まるように調整
-  //   const adjustedBounds = {
-  //     width: Math.min(currentBounds.width, currentDisplay.workAreaSize.width),
-  //     height: Math.min(
-  //       currentBounds.height,
-  //       currentDisplay.workAreaSize.height,
-  //     ),
-  //     x: Math.max(
-  //       0,
-  //       Math.min(
-  //         currentBounds.x,
-  //         currentDisplay.workAreaSize.width - currentBounds.width,
-  //       ),
-  //     ),
-  //     y: Math.max(
-  //       0,
-  //       Math.min(
-  //         currentBounds.y,
-  //         currentDisplay.workAreaSize.height - currentBounds.height,
-  //       ),
-  //     ),
-  //   };
+    // ウィンドウが表示可能な領域に収まるように調整
+    const adjustedBounds = {
+      width: Math.min(currentBounds.width, currentDisplay.workAreaSize.width),
+      height: Math.min(
+        currentBounds.height,
+        currentDisplay.workAreaSize.height,
+      ),
+      x: Math.max(
+        currentDisplay.workArea.x, // Ensure x is within workArea.x
+        Math.min(
+          currentBounds.x,
+          currentDisplay.workArea.x +
+            currentDisplay.workAreaSize.width -
+            currentBounds.width,
+        ),
+      ),
+      y: Math.max(
+        currentDisplay.workArea.y, // Ensure y is within workArea.y
+        Math.min(
+          currentBounds.y,
+          currentDisplay.workArea.y +
+            currentDisplay.workAreaSize.height -
+            currentBounds.height,
+        ),
+      ),
+    };
 
-  //   mainWindow.setBounds(adjustedBounds);
-  // });
+    mainWindow.setBounds(adjustedBounds);
+  });
 
   return mainWindow;
 }
@@ -293,13 +313,12 @@ const setTray = () => {
 };
 import { match } from 'ts-pattern';
 import { loadLogInfoIndexFromVRChatLog } from './module/logInfo/service';
-import type { getSettingStore } from './module/settingStore';
 /**
  * 一定間隔でログ処理を実行するタイマーイベントを設定する。
  * バックグラウンド処理が有効な場合のみログを読み込み通知を送る。
  */
 const setTimeEventEmitter = (
-  settingStore: ReturnType<typeof getSettingStore>,
+  passedSettingStore: ReturnType<typeof getSettingStore>,
 ) => {
   const intervalEventEmitter = new EventEmitter();
   // 6時間ごとに実行
@@ -311,7 +330,8 @@ const setTimeEventEmitter = (
   );
 
   intervalEventEmitter.on('time', async (now: Date) => {
-    if (!settingStore.getBackgroundFileCreateFlag()) {
+    if (!passedSettingStore.getBackgroundFileCreateFlag()) {
+      // Use passedSettingStore
       logger.debug('バックグラウンド処理が無効になっています');
       return;
     }
@@ -373,3 +393,10 @@ const setTimeEventEmitter = (
 };
 
 export { setTray, createOrGetWindow, setTimeEventEmitter };
+
+export const initializeSettingStoreForUtil = (): void => {
+  if (settingStore === null) {
+    settingStore = getSettingStore();
+    logger.info('SettingStore initialized for electronUtil.ts');
+  }
+};

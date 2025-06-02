@@ -12,6 +12,7 @@ import unhandled from 'electron-unhandled';
 import { scrubEventData } from '../src/lib/utils/masking';
 import { router } from './api';
 import * as electronUtil from './electronUtil';
+import { initializeSettingStoreForUtil } from './electronUtil';
 import { logger } from './lib/logger';
 import * as sequelizeClient from './lib/sequelize';
 import { getAppUserDataPath } from './lib/wrappedApp';
@@ -19,6 +20,7 @@ import { getBackgroundUsecase } from './module/backGroundUsecase';
 import { initSettingStore } from './module/settingStore';
 
 const settingStore = initSettingStore();
+initializeSettingStoreForUtil();
 
 export let isSentryInitializedMain = false; // Sentry初期化フラグ exportする
 
