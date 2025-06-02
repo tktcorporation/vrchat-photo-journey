@@ -197,11 +197,14 @@ const GalleryContent = memo(
                     onMeasure={(height) => {
                       const previousHeight =
                         groupSizesRef.current.get(key) || 0;
-                      groupSizesRef.current.set(key, height);
 
-                      // Only trigger virtualizer measure if height changed significantly
+                      // Only update if height changed significantly
                       if (Math.abs(height - previousHeight) > 1) {
-                        virtualizer.measure();
+                        groupSizesRef.current.set(key, height);
+                        // Use requestAnimationFrame to avoid layout thrashing
+                        requestAnimationFrame(() => {
+                          virtualizer.measure();
+                        });
                       }
                     }}
                   />

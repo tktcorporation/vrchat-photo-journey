@@ -106,12 +106,17 @@ export function MeasurePhotoGroup({
   }, []);
 
   const compensateScroll = useCallback(() => {
-    if (
-      scrollCompensationRef.current.heightDelta &&
-      containerRef.current?.parentElement?.parentElement
-    ) {
-      const scrollContainer = containerRef.current.parentElement.parentElement;
-      scrollContainer.scrollBy(0, scrollCompensationRef.current.heightDelta);
+    if (scrollCompensationRef.current.heightDelta && containerRef.current) {
+      // Find the scroll container by traversing up the DOM
+      let element = containerRef.current.parentElement;
+      while (element) {
+        const overflowY = window.getComputedStyle(element).overflowY;
+        if (overflowY === 'auto' || overflowY === 'scroll') {
+          element.scrollBy(0, scrollCompensationRef.current.heightDelta);
+          break;
+        }
+        element = element.parentElement;
+      }
       scrollCompensationRef.current = {};
     }
   }, []);

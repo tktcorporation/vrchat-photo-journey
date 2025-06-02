@@ -161,12 +161,12 @@
 
 /* Photo Gallery Performance Optimizations */
 .photo-gallery-container {
-  contain: strict;
+  contain: layout style;
   scrollbar-width: none;
 }
 
 .photo-group {
-  contain: layout size paint;
+  contain: layout paint;
   transform-style: flat;
   backface-visibility: hidden;
   transform-origin: center center;
