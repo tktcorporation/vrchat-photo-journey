@@ -56,5 +56,5 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add CHANGELOG.md
-          git commit -m "Update CHANGELOG.md for $HEAD_REF" -m "[skip ci]"
-          git push origin HEAD:$HEAD_REF 
+          git commit -m "Update CHANGELOG.md for $HEAD_REF"
+          git push origin HEAD:$HEAD_REF
