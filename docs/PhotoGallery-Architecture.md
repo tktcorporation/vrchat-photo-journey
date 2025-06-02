@@ -48,6 +48,13 @@ Raw Photos → Photo Mapping → Session Grouping → Search Filtering → Virtu
 ### Height Calculation Process
 1. **`MeasurePhotoGroup`**: Measures actual group heights
 2. **`PhotoGrid`**: Calculates responsive grid layout (TARGET_ROW_HEIGHT = 200px)
+
+### Scroll Position Management
+- **Initial scroll position**: Automatically reset to top when photo data loads
+- **Scroll compensation**: Maintains position during height re-measurements
+- **Fallback estimation**: Uses 300px as initial height estimate for performance
+- **Reset trigger**: `useEffect` monitors loading state and group population
+
 3. **Virtualizer**: Caches measurements and estimates unmeasured groups
 4. **Scroll compensation**: Prevents jumping during remeasurement
 

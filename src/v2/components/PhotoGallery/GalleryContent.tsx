@@ -1,7 +1,7 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { LoaderCircle } from 'lucide-react';
 import type React from 'react';
-import { memo, useCallback, useMemo, useRef } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import type { UseLoadingStateResult } from '../../hooks/useLoadingState';
 import { LocationGroupHeader } from '../LocationGroupHeader';
 import PhotoGrid from '../PhotoGrid';
@@ -72,6 +72,14 @@ const GalleryContent = memo(
     }, [groupedPhotos, showEmptyGroups]);
 
     const isLoading = isLoadingGrouping || isLoadingStartupSync;
+
+    // Reset scroll position to top when groups change from empty to populated
+    useEffect(() => {
+      if (!isLoading && filteredGroups.length > 0 && containerRef.current) {
+        // Scroll to top when photo data loads
+        containerRef.current.scrollTo({ top: 0, behavior: 'auto' });
+      }
+    }, [isLoading, filteredGroups.length]);
 
     // 仮想スクローラーの設定
     const virtualizer = useVirtualizer({
