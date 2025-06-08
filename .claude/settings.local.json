@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(yarn lint)",
+      "Bash(yarn lint:fix)",
+      "Bash(rg:*)",
+      "Bash(mkdir:*)",
+      "Bash(mv:*)",
+      "Bash(yarn test:web:*)",
+      "Bash(yarn build)"
+    ],
+    "deny": []
+  }
+}

@@ -3,6 +3,7 @@ node_modules
 dist
 dist-ssr
 *.local
+!.claude/settings.local.json
 
 # production
 /main

@@ -14,22 +14,45 @@ export const usePlayerListDisplay = (players: Player[] | null) => {
 
   const playerListRef = useRef<HTMLSpanElement>(null);
   const playerListContainerRef = useRef<HTMLDivElement>(null);
+  // パフォーマンス改善: 幅計算用の一時DOM要素をキャッシュ
+  const measureElementRef = useRef<HTMLDivElement | null>(null);
 
+  // 一時測定要素の初期化とクリーンアップ
   useEffect(() => {
-    const calculateMaxVisiblePlayers = () => {
-      if (!playerListContainerRef.current || !Array.isArray(players)) return;
-
-      const containerWidth = playerListContainerRef.current.offsetWidth;
-      const separatorWidth = 24; // セパレータ（ / ）の幅
-      const moreTextWidth = 48; // "/ +X" テキストの幅
-
-      // 一時的なDOM要素を作成して実際の幅を計算
+    // 測定用DOM要素を一度だけ作成
+    if (!measureElementRef.current) {
       const tempDiv = document.createElement('div');
       tempDiv.style.position = 'absolute';
       tempDiv.style.visibility = 'hidden';
       tempDiv.style.whiteSpace = 'nowrap';
       tempDiv.style.fontSize = '0.875rem'; // text-sm
+      tempDiv.style.pointerEvents = 'none'; // イベントを無効化
       document.body.appendChild(tempDiv);
+      measureElementRef.current = tempDiv;
+    }
+
+    // クリーンアップ時に要素を削除
+    return () => {
+      if (measureElementRef.current) {
+        document.body.removeChild(measureElementRef.current);
+        measureElementRef.current = null;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const calculateMaxVisiblePlayers = () => {
+      if (
+        !playerListContainerRef.current ||
+        !Array.isArray(players) ||
+        !measureElementRef.current
+      )
+        return;
+
+      const containerWidth = playerListContainerRef.current.offsetWidth;
+      const separatorWidth = 24; // セパレータ（ / ）の幅
+      const moreTextWidth = 48; // "/ +X" テキストの幅
+      const tempDiv = measureElementRef.current;
 
       let totalWidth = 0;
       let maxPlayers = 0;
@@ -53,7 +76,6 @@ export const usePlayerListDisplay = (players: Player[] | null) => {
         maxPlayers = i + 1;
       }
 
-      document.body.removeChild(tempDiv);
       setMaxVisiblePlayers(Math.max(3, maxPlayers)); // 最低3人は表示
     };
 
