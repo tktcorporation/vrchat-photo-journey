@@ -92,6 +92,15 @@ export const vrchatPhotoRouter = () =>
         await vrchatPhotoService.clearVRChatPhotoDirPathInSettingStore();
       return result;
     }),
+    setVRChatPhotoDirPathDirectly: procedure
+      .input(z.string().min(1, 'パスを入力してください'))
+      .mutation(async ({ input: photoPath }) => {
+        vrchatPhotoService.setVRChatPhotoDirPathToSettingStore(
+          VRChatPhotoDirPathSchema.parse(photoPath),
+        );
+        eventEmitter.emit('toast', 'VRChatの写真の保存先を設定しました');
+        return true;
+      }),
     getVrchatPhotoPathModelList: procedure
       .input(
         z

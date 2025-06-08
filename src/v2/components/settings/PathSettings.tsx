@@ -43,6 +43,8 @@ const PathSettingsComponent = memo(({ showRefreshAll }: PathSettingsProps) => {
     trpcReact.vrchatPhoto.validateVRChatPhotoPath.useMutation();
   const setPhotoDirectoryMutation =
     trpcReact.vrchatPhoto.setVRChatPhotoDirPathToSettingStore.useMutation();
+  const setPhotoPathDirectlyMutation =
+    trpcReact.vrchatPhoto.setVRChatPhotoDirPathDirectly.useMutation();
   const _clearPhotoDirectoryMutation =
     trpcReact.vrchatPhoto.clearVRChatPhotoDirPathInSettingStore.useMutation();
 
@@ -61,6 +63,11 @@ const PathSettingsComponent = memo(({ showRefreshAll }: PathSettingsProps) => {
   const [isLogPathManuallyChanged, setIsLogPathManuallyChanged] =
     useState(false);
 
+  // 写真ディレクトリの状態管理（ログファイルと同じパターン）
+  const [photoInputValue, setPhotoInputValue] = useState('');
+  const [isPhotoPathManuallyChanged, setIsPhotoPathManuallyChanged] =
+    useState(false);
+
   useEffect(() => {
     if (logFilesDir?.path) {
       setLogInputValue(logFilesDir.path);
@@ -69,6 +76,15 @@ const PathSettingsComponent = memo(({ showRefreshAll }: PathSettingsProps) => {
     }
     setIsLogPathManuallyChanged(false); // 初期読み込み時や参照ボタンでの変更後は手動変更フラグをリセット
   }, [logFilesDir?.path]);
+
+  useEffect(() => {
+    if (photoDir?.value) {
+      setPhotoInputValue(photoDir.value);
+    } else {
+      setPhotoInputValue(''); // パスがない場合は空文字に
+    }
+    setIsPhotoPathManuallyChanged(false); // 初期読み込み時や参照ボタンでの変更後は手動変更フラグをリセット
+  }, [photoDir?.value]);
 
   // 写真パスの検証状態を保持
   const [photoValidationResult, _setPhotoValidationResult] = useState<
@@ -186,6 +202,37 @@ const PathSettingsComponent = memo(({ showRefreshAll }: PathSettingsProps) => {
     }
   };
 
+  // 写真ディレクトリ用のハンドラー関数（ログファイルと同じパターン）
+  const handlePhotoInputChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    setPhotoInputValue(event.target.value);
+    setIsPhotoPathManuallyChanged(
+      event.target.value !== (photoDir?.value || ''),
+    );
+  };
+
+  const handlePhotoPathSave = async () => {
+    try {
+      await setPhotoPathDirectlyMutation.mutateAsync(photoInputValue, {
+        onSuccess: async () => {
+          await refetchPhotoDir();
+          setIsPhotoPathManuallyChanged(false);
+          setValidationError(null);
+        },
+        onError: () => {
+          setValidationError(
+            '写真ディレクトリのパス保存中にエラーが発生しました',
+          );
+        },
+      });
+    } catch (_error) {
+      setValidationError(
+        '写真ディレクトリのパス保存中に予期せぬエラーが発生しました',
+      );
+    }
+  };
+
   /**
    * 全データの再読み込みを行う関数
    *
@@ -232,21 +279,35 @@ const PathSettingsComponent = memo(({ showRefreshAll }: PathSettingsProps) => {
             <div className="flex gap-2">
               <input
                 type="text"
-                value={photoDir?.value || ''}
-                readOnly
+                aria-label={`input-${t('settings.paths.photoDirectory')}`}
+                value={photoInputValue}
+                onChange={handlePhotoInputChange}
                 placeholder="/path/to/photos"
                 className="flex-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
               />
-              <button
-                type="button"
-                aria-label={`${t('settings.paths.browse')}-${t(
-                  'settings.paths.photoDirectory',
-                )}`}
-                className="px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-200"
-                onClick={handleBrowsePhotoDirectory}
-              >
-                <FolderOpen className="h-4 w-4" />
-              </button>
+              {isPhotoPathManuallyChanged ? (
+                <button
+                  type="button"
+                  aria-label={`${t('common.submit')}-${t(
+                    'settings.paths.photoDirectory',
+                  )}`}
+                  className="px-3 py-2 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 rounded-md text-sm text-white"
+                  onClick={handlePhotoPathSave}
+                >
+                  <Save className="h-4 w-4" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  aria-label={`${t('settings.paths.browse')}-${t(
+                    'settings.paths.photoDirectory',
+                  )}`}
+                  className="px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-200"
+                  onClick={handleBrowsePhotoDirectory}
+                >
+                  <FolderOpen className="h-4 w-4" />
+                </button>
+              )}
             </div>
             {photoValidationResult && photoValidationResult !== 'VALID' && (
               <div className="flex items-center text-sm text-red-600 dark:text-red-400">
