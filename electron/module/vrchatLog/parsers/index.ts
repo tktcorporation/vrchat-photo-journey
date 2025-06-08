@@ -30,7 +30,7 @@ export const convertLogLinesToWorldAndPlayerJoinLogInfos = (
 
   for (const [index, l] of logLines.entries()) {
     // ワールド参加ログ
-    if (l.value.includes('Joining wrld')) {
+    if (l.value.includes('Joining wrld_')) {
       const info = extractWorldJoinInfoFromLogs(logLines, index);
       if (info) {
         logInfos.push(info);
