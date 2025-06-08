@@ -2,6 +2,9 @@
 # DBus設定
 eval `dbus-launch --sh-syntax`
 
+# 開発環境のための環境変数設定
+export NODE_ENV=development
+
 # Viteの開発サーバーをバックグラウンドで起動
 yarn dev:vite &
 VITE_PID=$!
