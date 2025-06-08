@@ -13,7 +13,7 @@
       "Bash(yarn test:*)",
       "Bash(npx tsc:*)",
       "Bash(npx vitest run:*)",
-      "Bash(grep:*)"
+      "Bash(find:*)"
     ],
     "deny": []
   }
