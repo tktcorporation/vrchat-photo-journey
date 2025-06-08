@@ -124,10 +124,10 @@ class VRChatWorldInstanceId extends BaseValueObject<
 > {
   /**
    * インスタンスIDが有効な形式かを検証
-   * 数値のみ、または数値~region(region_code)形式を許可
+   * 英数字のみ、または英数字~region(region_code)形式を許可
    */
   public static isValid(value: string): boolean {
-    return /^\d+(\~.+)?$/.test(value);
+    return /^[a-zA-Z0-9]+(\~.+)?$/.test(value);
   }
 }
 
@@ -203,10 +203,9 @@ export const VRChatWorldIdSchema = z
 
 export const VRChatWorldInstanceIdSchema = z
   .string()
-  .refine(VRChatWorldInstanceId.isValid, {
-    message:
-      'Invalid VRChat World Instance ID format. Expected: numeric string or numeric~region(region_code)',
-  })
+  .refine(VRChatWorldInstanceId.isValid, (value) => ({
+    message: `Invalid VRChat World Instance ID format. Expected: alphanumeric string or alphanumeric~region(region_code). received: ${value}`,
+  }))
   .transform((value) => new VRChatWorldInstanceId(value));
 
 export const VRChatPlayerNameSchema = z
