@@ -17,7 +17,7 @@ import * as vrchatLogService from './service';
  * 月ごとのログファイルがサイズ制限（10MB）を超えると、タイムスタンプ付きの新しいファイルが作成されます。
  * このディレクトリはメタデータの保存用ではなく、ログデータ自体の保存用です。
  */
-const appendLoglinesToFileFromLogFilePathList = async (
+export const appendLoglinesToFileFromLogFilePathList = async (
   processAll = false,
 ): Promise<neverthrow.Result<void, Error>> => {
   const vrchatlogFilesDir =

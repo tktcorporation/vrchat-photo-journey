@@ -312,7 +312,7 @@ const setTray = () => {
   return createTray();
 };
 import { match } from 'ts-pattern';
-import { loadLogInfoIndexFromVRChatLog } from './module/logInfo/service';
+import { syncLogsInBackground } from './module/logSync/service';
 /**
  * 一定間隔でログ処理を実行するタイマーイベントを設定する。
  * バックグラウンド処理が有効な場合のみログを読み込み通知を送る。
@@ -336,9 +336,7 @@ const setTimeEventEmitter = (
       return;
     }
 
-    const result = await loadLogInfoIndexFromVRChatLog({
-      excludeOldLogLoad: true,
-    });
+    const result = await syncLogsInBackground();
 
     if (result.isErr()) {
       const error = result.error;
