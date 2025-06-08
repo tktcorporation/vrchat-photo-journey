@@ -315,7 +315,11 @@ export async function loadLogInfoIndexFromVRChatLog({
         worldJoinLogService.createVRChatWorldJoinLogModel(worldJoinLogBatch),
         playerJoinLogService.createVRChatPlayerJoinLogModel(playerJoinLogBatch),
         playerLeaveLogService.createVRChatPlayerLeaveLogModel(
-          playerLeaveLogBatch,
+          playerLeaveLogBatch.map((logInfo) => ({
+            leaveDate: logInfo.leaveDate,
+            playerName: logInfo.playerName.value,
+            playerId: logInfo.playerId?.value ?? null,
+          })),
         ),
       ]);
     const dbInsertEndTime = performance.now();
