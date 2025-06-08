@@ -13,7 +13,9 @@
       "Bash(yarn test:*)",
       "Bash(npx tsc:*)",
       "Bash(npx vitest run:*)",
-      "Bash(grep:*)"
+      "Bash(find:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(yarn tsc:*)"
     ],
     "deny": []
   }

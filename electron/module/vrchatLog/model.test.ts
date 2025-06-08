@@ -73,15 +73,23 @@ describe('VRChatログ関連のvalueObjects', () => {
       expect(instanceId.value).toBe(validId);
     });
 
+    it('16進数のインスタンスIDでvalueObjectを作成できる', () => {
+      const validId = '83c39dd3c3~region(us)';
+      const instanceId = VRChatWorldInstanceIdSchema.parse(validId);
+      expect(instanceId.value).toBe(validId);
+    });
+
     it('無効なインスタンスIDでエラーが発生する', () => {
       expect(() => VRChatWorldInstanceIdSchema.parse('invalid-id')).toThrow();
-      expect(() => VRChatWorldInstanceIdSchema.parse('12345a')).toThrow();
+      expect(() => VRChatWorldInstanceIdSchema.parse('123@45')).toThrow();
       expect(() => VRChatWorldInstanceIdSchema.parse('')).toThrow();
     });
 
     it('isValid静的メソッドが正しく動作する', () => {
       expect(VRChatWorldInstanceId.isValid('12345')).toBe(true);
       expect(VRChatWorldInstanceId.isValid('86676~region(jp)')).toBe(true);
+      expect(VRChatWorldInstanceId.isValid('83c39dd3c3~region(us)')).toBe(true);
+      expect(VRChatWorldInstanceId.isValid('abc123')).toBe(true);
       expect(VRChatWorldInstanceId.isValid('invalid-id')).toBe(false);
     });
   });

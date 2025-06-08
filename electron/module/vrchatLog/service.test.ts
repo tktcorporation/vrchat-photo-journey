@@ -315,7 +315,7 @@ describe('filterLogLinesByDate', () => {
   test('正しくログを日付でフィルタリングする', () => {
     // テスト用のログライン
     const logLines = [
-      '2025.02.22 21:13:56 Debug      -  [Behaviour] Joining wrld6fecf18a-ab96-43f2-82dc-ccf79f17c34f:04307~region(jp)',
+      '2025.02.22 21:13:56 Debug      -  [Behaviour] Joining wrld_6fecf18a-ab96-43f2-82dc-ccf79f17c34f:04307~region(jp)',
       '2025.02.22 21:13:56 Debug      -  [Behaviour] Joining or Creating Room: はじまりタウン ⁄ Dawnville',
       '2025.02.22 21:14:07 Debug      -  [Behaviour] OnPlayerJoined tkt (usr_3ba2a992-724c-4463-bc75-7e9f6674e8e0)',
       '2025.02.22 21:14:48 Debug      -  [Behaviour] OnPlayerLeft tkt (usr_3ba2a992-724c-4463-bc75-7e9f6674e8e0)',
