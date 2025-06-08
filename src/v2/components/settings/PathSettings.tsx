@@ -230,7 +230,7 @@ const PathSettingsComponent = memo(({ showRefreshAll }: PathSettingsProps) => {
     if (!isRefreshing) {
       setIsRefreshing(true);
       // 先に VRChat ログファイルを処理
-      appendLoglines();
+      appendLoglines({ processAll: true });
     }
   };
 
