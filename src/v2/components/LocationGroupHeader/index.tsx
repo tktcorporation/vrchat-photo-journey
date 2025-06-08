@@ -4,37 +4,20 @@ import {
   Calendar,
   CheckIcon,
   Copy,
-  Download,
   ExternalLink,
   ImageIcon,
-  Laptop,
-  LoaderCircle,
   Share2,
   Users,
-  X,
 } from 'lucide-react';
-import React, { memo, useRef, useState, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ReactPortal } from 'react';
 import { createPortal } from 'react-dom';
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-} from '../../components/ui/context-menu';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '../../components/ui/dialog';
-import { Label } from '../../components/ui/label';
-import { Switch } from '../../components/ui/switch';
-import { BoldPreviewSvg } from '../components/BoldPreview';
-import { useI18n } from '../i18n/store';
-import { generatePreviewPng } from '../utils/previewGenerator';
-import { downloadOrCopyImageAsPng } from '../utils/shareUtils';
+import { useI18n } from '../../i18n/store';
+import { PlatformBadge } from './PlatformBadge';
+import { type Player, PlayerList } from './PlayerList';
+import { ShareDialog } from './ShareDialog';
+import { usePlayerListDisplay } from './hooks/usePlayerListDisplay';
+import { useShareActions } from './hooks/useShareActions';
 
 /**
  * LocationGroupHeaderのプロパティ定義
@@ -52,249 +35,6 @@ interface LocationGroupHeaderProps {
   joinDateTime: Date;
 }
 
-interface Player {
-  id: string;
-  playerId: string | null;
-  playerName: string;
-  joinDateTime: Date;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-// プラットフォームのアイコンを表示するコンポーネント
-const PlatformBadge = memo(({ platform }: { platform: string }) => {
-  const platformName =
-    platform === 'standalonewindows'
-      ? 'PC'
-      : platform === 'android'
-        ? 'Quest'
-        : platform;
-  return (
-    <span className="inline-flex items-center px-2 py-0.5 rounded text-sm font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
-      <Laptop className="h-3 w-3 mr-1" />
-      {platformName}
-    </span>
-  );
-});
-
-PlatformBadge.displayName = 'PlatformBadge';
-
-// プレイヤーリストを表示するコンポーネント
-const PlayerList = memo(
-  ({
-    players,
-    maxVisiblePlayers,
-  }: { players: Player[]; maxVisiblePlayers: number }) => {
-    const visiblePlayers = players.slice(
-      0,
-      players.length <= maxVisiblePlayers ? players.length : maxVisiblePlayers,
-    );
-    const remainingCount = players.length - maxVisiblePlayers;
-    const showMoreCount = players.length > maxVisiblePlayers;
-
-    return (
-      <>
-        {visiblePlayers.map((p: Player, index) => (
-          <React.Fragment key={p.id}>
-            <span className="opacity-90">{p.playerName}</span>
-            {index < visiblePlayers.length - 1 && (
-              <span className="opacity-50">/</span>
-            )}
-          </React.Fragment>
-        ))}
-        {showMoreCount && (
-          <>
-            <span className="opacity-50">/</span>
-            <span className="opacity-75">+{remainingCount}</span>
-          </>
-        )}
-      </>
-    );
-  },
-);
-
-PlayerList.displayName = 'PlayerList';
-
-interface ShareModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  worldName: string | null;
-  worldId: string;
-  joinDateTime: Date;
-  imageUrl: string | null;
-  players: Player[] | null;
-}
-
-const ShareModal = ({
-  isOpen,
-  onClose,
-  worldName,
-  worldId,
-  joinDateTime,
-  imageUrl,
-  players,
-}: ShareModalProps) => {
-  const { t } = useI18n();
-  const [showAllPlayers, setShowAllPlayers] = useState(false);
-  const [previewBase64, setPreviewBase64] = useState<string | null>(null);
-  const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
-
-  // 画像のBase64変換をバックエンドに依頼
-  const { data: base64Data, isLoading } =
-    trpcReact.vrchatApi.convertImageToBase64.useQuery(imageUrl || '', {
-      enabled: !!imageUrl && isOpen,
-      staleTime: 1000 * 60 * 5, // 5分間キャッシュ
-      cacheTime: 1000 * 60 * 30, // 30分間キャッシュを保持
-    });
-
-  const copyImageMutation =
-    trpcReact.electronUtil.copyImageDataByBase64.useMutation();
-  const downloadImageMutation =
-    trpcReact.electronUtil.downloadImageAsPhotoLogPng.useMutation();
-
-  // プレビュー画像を生成する関数
-  const generatePreview = async () => {
-    if (!base64Data || !worldName) return;
-    setIsGeneratingPreview(true);
-    try {
-      const pngBase64 = await generatePreviewPng({
-        worldName,
-        imageBase64: base64Data,
-        players,
-        showAllPlayers,
-      });
-      setPreviewBase64(pngBase64);
-    } catch (error) {
-      console.error('Failed to generate preview:', error);
-    } finally {
-      setIsGeneratingPreview(false);
-    }
-  };
-
-  // base64Dataが変更されたら、プレビューを生成
-  useEffect(() => {
-    if (base64Data) {
-      generatePreview();
-    }
-  }, [base64Data, worldName, players, showAllPlayers]);
-
-  const handleCopyShareImageToClipboard = async () => {
-    if (!previewBase64) return;
-    await downloadOrCopyImageAsPng({
-      pngBase64: previewBase64,
-      filenameWithoutExt: worldName || 'image',
-      downloadOrCopyMutation: {
-        mutateAsync: async (params) => {
-          await copyImageMutation.mutateAsync(params);
-          return undefined;
-        },
-      },
-    });
-  };
-
-  const handleDownloadShareImagePng = async () => {
-    if (!previewBase64) return;
-    await downloadImageMutation.mutateAsync({
-      worldId,
-      joinDateTime,
-      imageBase64: previewBase64,
-    });
-  };
-
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="h-[70vh] flex flex-col p-0 backdrop-blur-xl bg-white/80 dark:bg-gray-900/80 border border-white/20 dark:border-gray-700/30 shadow-2xl">
-        <DialogHeader className="px-6 pt-4 pb-2 border-b border-white/10 dark:border-gray-700/20 flex flex-row items-center justify-between">
-          <DialogTitle className="text-lg font-semibold text-gray-800 dark:text-white">
-            {t('locationHeader.share')}
-          </DialogTitle>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleCopyShareImageToClipboard}
-              disabled={isLoading}
-              className="p-2 rounded-lg bg-white/20 dark:bg-gray-800/50 hover:bg-white/30 dark:hover:bg-gray-800/60 border border-white/10 dark:border-gray-700/30 text-gray-700 dark:text-gray-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              title={t('locationHeader.copyToClipboard')}
-            >
-              <Copy className="h-5 w-5" />
-            </button>
-            <button
-              type="button"
-              onClick={handleDownloadShareImagePng}
-              disabled={isLoading}
-              className="p-2 rounded-lg bg-white/20 dark:bg-gray-800/50 hover:bg-white/30 dark:hover:bg-gray-800/60 border border-white/10 dark:border-gray-700/30 text-gray-700 dark:text-gray-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              title={t('locationHeader.downloadImage')}
-            >
-              <Download className="h-5 w-5" />
-            </button>
-          </div>
-        </DialogHeader>
-        <div className="flex flex-col pb-6 px-6 h-[calc(100vh-130px)] items-center justify-center">
-          <div className="h-full aspect-[4/3] overflow-y-auto border border-white/10 dark:border-gray-700/20 rounded-lg">
-            <ContextMenu>
-              <ContextMenuTrigger className="w-full">
-                <div className="h-full rounded-lg overflow-y-auto">
-                  <div className="w-full">
-                    {isLoading || isGeneratingPreview ? (
-                      <div className="flex items-center justify-center">
-                        <LoaderCircle className="h-8 w-8 animate-spin text-blue-500" />
-                      </div>
-                    ) : (
-                      <div className="flex items-center justify-center">
-                        {previewBase64 && (
-                          <img
-                            src={`data:image/png;base64,${previewBase64}`}
-                            alt={worldName || 'Preview'}
-                            className="h-96	 max-h-full w-auto"
-                          />
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </ContextMenuTrigger>
-              <ContextMenuContent className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border border-white/20 dark:border-gray-700/30 shadow-lg">
-                <ContextMenuItem
-                  className="hover:bg-white/50 dark:hover:bg-gray-800/50 focus:bg-white/60 dark:focus:bg-gray-800/60 flex items-center gap-2"
-                  onClick={handleCopyShareImageToClipboard}
-                  disabled={isLoading}
-                >
-                  <Copy className="h-4 w-4" />
-                  <span>{t('locationHeader.copyToClipboard')}</span>
-                </ContextMenuItem>
-                <ContextMenuItem
-                  className="hover:bg-white/50 dark:hover:bg-gray-800/50 focus:bg-white/60 dark:focus:bg-gray-800/60 flex items-center gap-2"
-                  onClick={handleDownloadShareImagePng}
-                  disabled={isLoading}
-                >
-                  <Download className="h-4 w-4" />
-                  <span>{t('locationHeader.downloadImage')}</span>
-                </ContextMenuItem>
-              </ContextMenuContent>
-            </ContextMenu>
-          </div>
-        </div>
-        <DialogFooter className="px-6 py-4 border-t border-white/10 dark:border-gray-700/20">
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="show-all-players"
-              className="data-[state=checked]:bg-primary-500/90 data-[state=unchecked]:bg-white/20 dark:data-[state=unchecked]:bg-gray-800/50"
-              checked={showAllPlayers}
-              onCheckedChange={setShowAllPlayers}
-            />
-            <Label
-              htmlFor="show-all-players"
-              className="text-sm text-gray-800 dark:text-gray-200 cursor-pointer"
-            >
-              {t('locationHeader.showAllPlayers')}
-            </Label>
-          </div>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-};
-
 /**
  * 写真グループのヘッダー部分を表示するコンポーネント。
  * 共有ボタンやプレイヤー一覧モーダルなどを管理する。
@@ -307,24 +47,20 @@ export const LocationGroupHeader = ({
   joinDateTime,
 }: LocationGroupHeaderProps) => {
   const { t } = useI18n();
-  const openUrlMutation =
-    trpcReact.electronUtil.openUrlInDefaultBrowser.useMutation();
-  const copyTextMutation =
-    trpcReact.electronUtil.copyTextToClipboard.useMutation();
+  const {
+    isShareModalOpen,
+    openShareModal,
+    closeShareModal,
+    openWorldLink,
+    copyPlayersToClipboard,
+  } = useShareActions();
 
   // State
-  const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
-  const [isHovered, setIsHovered] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
   const [isImageLoaded, _setIsImageLoaded] = useState(false);
   const [shouldLoadDetails, setShouldLoadDetails] = useState(false);
-  const [maxVisiblePlayers, setMaxVisiblePlayers] = useState(6);
-  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-  const [isCopied, setIsCopied] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
 
   // Refs
-  const playerListRef = useRef<HTMLSpanElement>(null);
-  const playerListContainerRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const visibilityTimeoutRef = useRef<NodeJS.Timeout>();
 
@@ -347,90 +83,32 @@ export const LocationGroupHeader = ({
   const formattedDate = format(joinDateTime, 'yyyy年MM月dd日 HH:mm');
   const players = Array.isArray(playersResult) ? playersResult : null;
 
+  // プレイヤーリスト表示のカスタムフック
+  const {
+    maxVisiblePlayers,
+    isHovered,
+    setIsHovered,
+    tooltipPosition,
+    isCopied,
+    playerListContainerRef,
+    handleMouseMove,
+    handleCopyPlayers: handleCopyPlayersUI,
+  } = usePlayerListDisplay(players);
+
   // ワールドリンク
   const worldLink = worldInstanceId
     ? `https://vrchat.com/home/world/${worldId}?instanceId=${worldInstanceId}`
     : `https://vrchat.com/home/world/${worldId}/info`;
 
   // Event handlers
-  const handleMouseMove = (event: React.MouseEvent) => {
-    setTooltipPosition({
-      top: event.clientY + 16,
-      left: event.clientX,
-    });
-  };
-
-  const handleCopyPlayers = () => {
+  const handleCopyPlayers = async () => {
     if (!players) return;
-
-    const playerNames = players.map((p) => p.playerName).join('\n');
-    copyTextMutation.mutate(playerNames);
-
-    setIsCopied(true);
-    setTimeout(() => setIsCopied(false), 2000);
+    const playerNames = players.map((p) => p.playerName);
+    await copyPlayersToClipboard(playerNames);
+    handleCopyPlayersUI();
   };
 
   // Effects
-  useEffect(() => {
-    const calculateMaxVisiblePlayers = () => {
-      if (!playerListContainerRef.current || !Array.isArray(players)) return;
-
-      const containerWidth = playerListContainerRef.current.offsetWidth;
-      const separatorWidth = 24; // セパレータ（ / ）の幅
-      const moreTextWidth = 48; // "/ +X" テキストの幅
-
-      // 一時的なDOM要素を作成して実際の幅を計算
-      const tempDiv = document.createElement('div');
-      tempDiv.style.position = 'absolute';
-      tempDiv.style.visibility = 'hidden';
-      tempDiv.style.whiteSpace = 'nowrap';
-      tempDiv.style.fontSize = '0.875rem'; // text-sm
-      document.body.appendChild(tempDiv);
-
-      let totalWidth = 0;
-      let maxPlayers = 0;
-
-      for (let i = 0; i < players.length; i++) {
-        tempDiv.textContent = players[i].playerName;
-        const playerNameWidth = tempDiv.getBoundingClientRect().width;
-        const widthWithSeparator =
-          playerNameWidth + (i < players.length - 1 ? separatorWidth : 0);
-
-        if (
-          totalWidth +
-            widthWithSeparator +
-            (i < players.length - 1 ? moreTextWidth : 0) >
-          containerWidth
-        ) {
-          break;
-        }
-
-        totalWidth += widthWithSeparator;
-        maxPlayers = i + 1;
-      }
-
-      document.body.removeChild(tempDiv);
-      setMaxVisiblePlayers(Math.max(3, maxPlayers)); // 最低3人は表示
-    };
-
-    // 初回計算
-    calculateMaxVisiblePlayers();
-
-    // ResizeObserverを使用してコンテナのサイズ変更を監視
-    const resizeObserver = new ResizeObserver(calculateMaxVisiblePlayers);
-    if (playerListContainerRef.current) {
-      resizeObserver.observe(playerListContainerRef.current);
-    }
-
-    // ウィンドウリサイズ時も再計算
-    window.addEventListener('resize', calculateMaxVisiblePlayers);
-
-    return () => {
-      resizeObserver.disconnect();
-      window.removeEventListener('resize', calculateMaxVisiblePlayers);
-    };
-  }, [players]);
-
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -461,27 +139,6 @@ export const LocationGroupHeader = ({
       if (visibilityTimeoutRef.current) {
         clearTimeout(visibilityTimeoutRef.current);
       }
-    };
-  }, []);
-
-  useEffect(() => {
-    const updateTooltipPosition = () => {
-      if (playerListRef.current) {
-        const rect = playerListRef.current.getBoundingClientRect();
-        setTooltipPosition({
-          top: rect.bottom + 8,
-          left: rect.left,
-        });
-      }
-    };
-
-    updateTooltipPosition();
-    window.addEventListener('resize', updateTooltipPosition);
-    window.addEventListener('scroll', updateTooltipPosition);
-
-    return () => {
-      window.removeEventListener('resize', updateTooltipPosition);
-      window.removeEventListener('scroll', updateTooltipPosition);
     };
   }, []);
 
@@ -532,7 +189,6 @@ export const LocationGroupHeader = ({
                 }}
               />
               <div className="absolute inset-0 bg-white/40 dark:bg-gray-900/50 backdrop-blur-[1px] group-hover/card:backdrop-blur-[2px] transition-all duration-500" />
-              {/* <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-90" /> */}
               <div className="absolute inset-0">
                 <div className="absolute inset-0 bg-gradient-to-r from-white/50 to-white/30 dark:from-gray-900/30 dark:to-gray-900/10 mix-blend-overlay" />
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.4),rgba(255,255,255,0.2)_70%)] dark:bg-[radial-gradient(circle_at_50%_120%,rgba(17,24,39,0.4),rgba(17,24,39,0.2)_70%)]" />
@@ -578,7 +234,7 @@ export const LocationGroupHeader = ({
                     className="hover:underline flex items-center transition-all duration-300 hover:text-primary-600 dark:hover:text-primary-300"
                     onClick={(e) => {
                       e.stopPropagation();
-                      openUrlMutation.mutate(worldLink);
+                      openWorldLink(worldLink);
                     }}
                   >
                     <span className="line-clamp-1 text-start">
@@ -606,7 +262,7 @@ export const LocationGroupHeader = ({
                     )}
                   <button
                     type="button"
-                    onClick={() => setIsShareModalOpen(true)}
+                    onClick={openShareModal}
                     className="flex items-center text-sm font-medium text-gray-800 dark:text-white backdrop-blur-sm bg-primary-500/10 hover:bg-primary-500/20 dark:bg-primary-500/30 dark:hover:bg-primary-500/40 px-3 py-1 rounded-full transition-all duration-300 border border-white/20 dark:border-white/10 hover:border-white/30 dark:hover:border-white/20"
                   >
                     <Share2 className="h-4 w-4 mr-1.5" />
@@ -616,19 +272,6 @@ export const LocationGroupHeader = ({
 
               {/* 2行目: 写真枚数とプレイヤーリスト */}
               <div className="flex items-center gap-2 w-full">
-                {/* <div className="flex items-center gap-2 flex-shrink-0">
-                  <div className="flex items-center text-xs text-gray-800 dark:text-white backdrop-blur-sm bg-white/30 dark:bg-black/30 px-3 py-1 rounded-full border border-white/20 dark:border-gray-700/30">
-                    <ImageIcon className="h-4 w-4 mr-1.5 text-primary-600 dark:text-primary-300" />
-                    {photoCount}
-                  </div>
-                  {worldError && (
-                    <span className="text-yellow-400 bg-yellow-500/10 backdrop-blur-sm px-3 py-1 rounded-full border border-yellow-500/20 flex items-center gap-2">
-                      <X className="h-4 w-4" />
-                      {t('locationHeader.worldInfoDeleted')}
-                    </span>
-                  )}
-                </div> */}
-
                 {isPlayersLoading ? (
                   <div className="flex gap-2 items-center text-xs text-gray-800 dark:text-white backdrop-blur-sm bg-white/30 dark:bg-black/30 px-3 py-1 rounded-full border border-white/20 dark:border-gray-700/30 flex-1 min-w-0 animate-pulse">
                     <div className="flex items-center gap-1">
@@ -719,9 +362,9 @@ export const LocationGroupHeader = ({
           </div>
         </div>
       </div>
-      <ShareModal
+      <ShareDialog
         isOpen={isShareModalOpen}
-        onClose={() => setIsShareModalOpen(false)}
+        onClose={closeShareModal}
         worldName={details?.name || worldName}
         worldId={worldId}
         joinDateTime={joinDateTime}
@@ -731,3 +374,6 @@ export const LocationGroupHeader = ({
     </div>
   );
 };
+
+// Re-export for backward compatibility
+export { LocationGroupHeader as default } from './index';
