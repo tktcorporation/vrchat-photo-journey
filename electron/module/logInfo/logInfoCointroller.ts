@@ -3,6 +3,7 @@ import { P, match } from 'ts-pattern';
 import z from 'zod';
 import * as playerJoinLogService from '../VRChatPlayerJoinLogModel/playerJoinLog.service';
 import * as worldJoinLogService from '../vrchatWorldJoinLog/service';
+import { findVRChatWorldJoinLogFromPhotoList } from '../vrchatWorldJoinLogFromPhoto/service';
 import { logger } from './../../lib/logger';
 import { procedure, router as trpcRouter } from './../../trpc';
 import {
@@ -24,6 +25,67 @@ const getVRCWorldJoinLogList = async () => {
       updatedAt: joinLog.updatedAt as Date,
     };
   });
+};
+
+/**
+ * 統合されたワールド参加ログから指定日時直前のログを取得
+ * 通常ログを優先し、PhotoAsLogと統合した結果から検索
+ */
+const findRecentMergedWorldJoinLog = async (datetime: Date) => {
+  // 通常ログとPhotoAsLogを並行取得
+  const [normalLogs, photoLogs] = await Promise.all([
+    worldJoinLogService.findVRChatWorldJoinLogList({
+      ltJoinDateTime: datetime,
+      orderByJoinDateTime: 'desc',
+    }),
+    findVRChatWorldJoinLogFromPhotoList({
+      ltJoinDateTime: datetime,
+      orderByJoinDateTime: 'desc',
+    }),
+  ]);
+
+  // 統合してソート
+  const mergedLogs = worldJoinLogService.mergeVRChatWorldJoinLogs({
+    normalLogs: normalLogs,
+    photoLogs: photoLogs,
+  });
+
+  // 日時でソートして最新のものを取得
+  const sortedLogs = mergedLogs.sort(
+    (a, b) => b.joinDateTime.getTime() - a.joinDateTime.getTime(),
+  );
+
+  return sortedLogs[0] ?? null;
+};
+
+/**
+ * 統合されたワールド参加ログから指定日時以降の次のログを取得
+ */
+const findNextMergedWorldJoinLog = async (datetime: Date) => {
+  // 通常ログとPhotoAsLogを並行取得
+  const [normalLogs, photoLogs] = await Promise.all([
+    worldJoinLogService.findVRChatWorldJoinLogList({
+      gtJoinDateTime: datetime,
+      orderByJoinDateTime: 'asc',
+    }),
+    findVRChatWorldJoinLogFromPhotoList({
+      gtJoinDateTime: datetime,
+      orderByJoinDateTime: 'asc',
+    }),
+  ]);
+
+  // 統合してソート
+  const mergedLogs = worldJoinLogService.mergeVRChatWorldJoinLogs({
+    normalLogs: normalLogs,
+    photoLogs: photoLogs,
+  });
+
+  // 日時でソートして最初のものを取得
+  const sortedLogs = mergedLogs.sort(
+    (a, b) => a.joinDateTime.getTime() - b.joinDateTime.getTime(),
+  );
+
+  return sortedLogs[0] ?? null;
 };
 
 const getRecentVRChatWorldJoinLogByVRChatPhotoName = async (
@@ -89,6 +151,7 @@ const getRecentVRChatWorldJoinLogByVRChatPhotoName = async (
 
 /**
  * 同じワールドにいたプレイヤーのリストを取得
+ * 統合されたワールド参加ログ（通常ログ優先）を使用して正確な範囲を特定
  * @param datetime 参加日時
  * @returns プレイヤーリスト
  */
@@ -107,13 +170,14 @@ export const getPlayerJoinListInSameWorld = async (
     'RECENT_JOIN_LOG_NOT_FOUND'
   >
 > => {
-  const recentWorldJoin =
-    await worldJoinLogService.findRecentVRChatWorldJoinLog(datetime);
+  // 統合されたログから直前のワールド参加ログを取得（通常ログ優先）
+  const recentWorldJoin = await findRecentMergedWorldJoinLog(datetime);
   if (recentWorldJoin === null) {
     return neverthrow.err('RECENT_JOIN_LOG_NOT_FOUND' as const);
   }
 
-  const nextWorldJoin = await worldJoinLogService.findNextVRChatWorldJoinLog(
+  // 統合されたログから次のワールド参加ログを取得
+  const nextWorldJoin = await findNextMergedWorldJoinLog(
     recentWorldJoin.joinDateTime,
   );
 

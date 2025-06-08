@@ -169,22 +169,7 @@ export async function loadLogInfoIndexFromVRChatLog({
   const totalStartTime = performance.now();
   logger.info('loadLogInfoIndexFromVRChatLog start');
 
-  // 1. 写真フォルダからのログインポート
-  const importLogPhotoStartTime = performance.now();
-  const vrChatPhotoDirPath = await vrchatPhotoService.getVRChatPhotoDirPath();
-  if (vrChatPhotoDirPath) {
-    await vrchatLogService.importLogLinesFromLogPhotoDirPath({
-      vrChatPhotoDirPath,
-    });
-  }
-  const importLogPhotoEndTime = performance.now();
-  logger.debug(
-    `Import log lines from photo dir took ${
-      importLogPhotoEndTime - importLogPhotoStartTime
-    } ms`,
-  );
-
-  // 2. 処理対象となるログファイルパスを取得
+  // 1. 処理対象となるログファイルパスを取得
   const getLogPathsStartTime = performance.now();
   const logStoreFilePaths = await _getLogStoreFilePaths(excludeOldLogLoad);
   const getLogPathsEndTime = performance.now();
@@ -363,6 +348,21 @@ export async function loadLogInfoIndexFromVRChatLog({
   logger.debug(
     `Create photo path index took ${
       photoIndexEndTime - photoIndexStartTime
+    } ms`,
+  );
+
+  // 7. 写真フォルダからのログインポート（通常ログ処理後に実行）
+  const importLogPhotoStartTime = performance.now();
+  const vrChatPhotoDirPath = vrchatPhotoService.getVRChatPhotoDirPath();
+  if (vrChatPhotoDirPath) {
+    await vrchatLogService.importLogLinesFromLogPhotoDirPath({
+      vrChatPhotoDirPath,
+    });
+  }
+  const importLogPhotoEndTime = performance.now();
+  logger.debug(
+    `Import log lines from photo dir took ${
+      importLogPhotoEndTime - importLogPhotoStartTime
     } ms`,
   );
 

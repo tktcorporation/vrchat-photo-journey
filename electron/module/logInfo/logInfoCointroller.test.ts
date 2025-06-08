@@ -14,19 +14,32 @@ import {
 } from 'vitest';
 import { initRDBClient } from '../../lib/sequelize';
 import * as playerJoinLogService from '../VRChatPlayerJoinLogModel/playerJoinLog.service';
+import {
+  VRChatPlayerNameSchema,
+  VRChatWorldIdSchema,
+  VRChatWorldInstanceIdSchema,
+  VRChatWorldNameSchema,
+} from '../vrchatLog/model';
 import type { VRChatWorldJoinLog } from '../vrchatLog/service';
-import type { VRChatWorldJoinLogModel } from '../vrchatWorldJoinLog/VRChatWorldJoinLogModel/s_model';
 import * as worldJoinLogService from '../vrchatWorldJoinLog/service';
+import { findVRChatWorldJoinLogFromPhotoList } from '../vrchatWorldJoinLogFromPhoto/service';
 import { getPlayerJoinListInSameWorld } from './logInfoCointroller';
 
 // playerJoinLogServiceとworldJoinLogServiceのモック
 vi.mock('../VRChatPlayerJoinLogModel/playerJoinLog.service');
 vi.mock('../vrchatWorldJoinLog/service');
+vi.mock('../vrchatWorldJoinLogFromPhoto/service');
 
 describe('getPlayerJoinListInSameWorld', () => {
   // テスト前にモックをリセット
   beforeEach(() => {
     vi.resetAllMocks();
+    // 統合処理に必要なモックの共通設定
+    vi.mocked(worldJoinLogService.findVRChatWorldJoinLogList).mockResolvedValue(
+      [],
+    );
+    vi.mocked(worldJoinLogService.mergeVRChatWorldJoinLogs).mockReturnValue([]);
+    vi.mocked(findVRChatWorldJoinLogFromPhotoList).mockResolvedValue([]);
   });
 
   it('正常系: プレイヤー参加ログが取得できる場合', async () => {
@@ -40,16 +53,7 @@ describe('getPlayerJoinListInSameWorld', () => {
       joinDateTime: new Date('2023-01-01T11:30:00Z'),
       createdAt: new Date(),
       updatedAt: new Date(),
-      toJSON: () => ({
-        id: 'world1',
-        worldId: 'wrld_123',
-        worldName: 'Test World',
-        worldInstanceId: 'instance1',
-        joinDateTime: new Date('2023-01-01T11:30:00Z'),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }),
-    } as unknown as VRChatWorldJoinLogModel;
+    };
 
     const mockNextWorldJoin = {
       id: 'world2',
@@ -59,16 +63,7 @@ describe('getPlayerJoinListInSameWorld', () => {
       joinDateTime: new Date('2023-01-01T12:30:00Z'),
       createdAt: new Date(),
       updatedAt: new Date(),
-      toJSON: () => ({
-        id: 'world2',
-        worldId: 'wrld_456',
-        worldName: 'Next World',
-        worldInstanceId: 'instance2',
-        joinDateTime: new Date('2023-01-01T12:30:00Z'),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }),
-    } as unknown as VRChatWorldJoinLogModel;
+    };
 
     const mockPlayerJoinLogList = [
       {
@@ -89,13 +84,11 @@ describe('getPlayerJoinListInSameWorld', () => {
       },
     ];
 
-    // worldJoinLogServiceのモック
-    vi.mocked(
-      worldJoinLogService.findRecentVRChatWorldJoinLog,
-    ).mockResolvedValue(mockRecentWorldJoin);
-    vi.mocked(worldJoinLogService.findNextVRChatWorldJoinLog).mockResolvedValue(
+    // 統合処理で返すログを設定（ソート順: 古い順）
+    vi.mocked(worldJoinLogService.mergeVRChatWorldJoinLogs).mockReturnValue([
       mockNextWorldJoin,
-    );
+      mockRecentWorldJoin,
+    ]);
 
     // playerJoinLogServiceのモック
     vi.mocked(
@@ -111,22 +104,13 @@ describe('getPlayerJoinListInSameWorld', () => {
       expect(result.value).toEqual(mockPlayerJoinLogList);
     }
 
-    // findRecentVRChatWorldJoinLogが正しく呼ばれたか確認
-    expect(
-      worldJoinLogService.findRecentVRChatWorldJoinLog,
-    ).toHaveBeenCalledWith(mockDateTime);
-
-    // findNextVRChatWorldJoinLogが正しく呼ばれたか確認
-    expect(worldJoinLogService.findNextVRChatWorldJoinLog).toHaveBeenCalledWith(
-      mockRecentWorldJoin.joinDateTime,
-    );
-
     // getVRChatPlayerJoinLogListByJoinDateTimeが正しく呼ばれたか確認
+    // findRecentは時刻順でソートされた最初のログ、findNextは2番目のログ
     expect(
       playerJoinLogService.getVRChatPlayerJoinLogListByJoinDateTime,
     ).toHaveBeenCalledWith({
-      startJoinDateTime: mockRecentWorldJoin.joinDateTime,
-      endJoinDateTime: mockNextWorldJoin.joinDateTime,
+      startJoinDateTime: mockNextWorldJoin.joinDateTime, // ソート後の最初（最古）
+      endJoinDateTime: mockRecentWorldJoin.joinDateTime, // ソート後の2番目
     });
   });
 
@@ -134,10 +118,8 @@ describe('getPlayerJoinListInSameWorld', () => {
     // モックデータ
     const mockDateTime = new Date('2023-01-01T12:00:00Z');
 
-    // worldJoinLogServiceのモック
-    vi.mocked(
-      worldJoinLogService.findRecentVRChatWorldJoinLog,
-    ).mockResolvedValue(null);
+    // 統合処理で空の結果を返す（ログが見つからない場合）
+    vi.mocked(worldJoinLogService.mergeVRChatWorldJoinLogs).mockReturnValue([]);
 
     // 関数を実行
     const result = await getPlayerJoinListInSameWorld(mockDateTime);
@@ -147,19 +129,6 @@ describe('getPlayerJoinListInSameWorld', () => {
     if (result.isErr()) {
       expect(result.error).toBe('RECENT_JOIN_LOG_NOT_FOUND');
     }
-
-    // findRecentVRChatWorldJoinLogが正しく呼ばれたか確認
-    expect(
-      worldJoinLogService.findRecentVRChatWorldJoinLog,
-    ).toHaveBeenCalledWith(mockDateTime);
-
-    // 他のサービスが呼ばれていないことを確認
-    expect(
-      worldJoinLogService.findNextVRChatWorldJoinLog,
-    ).not.toHaveBeenCalled();
-    expect(
-      playerJoinLogService.getVRChatPlayerJoinLogListByJoinDateTime,
-    ).not.toHaveBeenCalled();
   });
 
   it('異常系: プレイヤー参加ログの取得に失敗した場合 (DATABASE_ERROR)', async () => {
@@ -173,48 +142,17 @@ describe('getPlayerJoinListInSameWorld', () => {
       joinDateTime: new Date('2023-01-01T11:30:00Z'),
       createdAt: new Date(),
       updatedAt: new Date(),
-      toJSON: () => ({
-        id: 'world1',
-        worldId: 'wrld_123',
-        worldName: 'Test World',
-        worldInstanceId: 'instance1',
-        joinDateTime: new Date('2023-01-01T11:30:00Z'),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }),
-    } as unknown as VRChatWorldJoinLogModel;
-
-    const mockNextWorldJoin = {
-      id: 'world2',
-      worldId: 'wrld_456',
-      worldName: 'Next World',
-      worldInstanceId: 'instance2',
-      joinDateTime: new Date('2023-01-01T12:30:00Z'),
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      toJSON: () => ({
-        id: 'world2',
-        worldId: 'wrld_456',
-        worldName: 'Next World',
-        worldInstanceId: 'instance2',
-        joinDateTime: new Date('2023-01-01T12:30:00Z'),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }),
-    } as unknown as VRChatWorldJoinLogModel;
+    };
 
     const mockError = {
       type: 'DATABASE_ERROR' as const,
       message: 'データベースエラー',
     };
 
-    // worldJoinLogServiceのモック
-    vi.mocked(
-      worldJoinLogService.findRecentVRChatWorldJoinLog,
-    ).mockResolvedValue(mockRecentWorldJoin);
-    vi.mocked(worldJoinLogService.findNextVRChatWorldJoinLog).mockResolvedValue(
-      mockNextWorldJoin,
-    );
+    // 統合処理で1つのログを返す
+    vi.mocked(worldJoinLogService.mergeVRChatWorldJoinLogs).mockReturnValue([
+      mockRecentWorldJoin,
+    ]);
 
     // playerJoinLogServiceのモック
     vi.mocked(
@@ -242,43 +180,12 @@ describe('getPlayerJoinListInSameWorld', () => {
       joinDateTime: new Date('2023-01-01T11:30:00Z'),
       createdAt: new Date(),
       updatedAt: new Date(),
-      toJSON: () => ({
-        id: 'world1',
-        worldId: 'wrld_123',
-        worldName: 'Test World',
-        worldInstanceId: 'instance1',
-        joinDateTime: new Date('2023-01-01T11:30:00Z'),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }),
-    } as unknown as VRChatWorldJoinLogModel;
+    };
 
-    const mockNextWorldJoin = {
-      id: 'world2',
-      worldId: 'wrld_456',
-      worldName: 'Next World',
-      worldInstanceId: 'instance2',
-      joinDateTime: new Date('2023-01-01T12:30:00Z'),
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      toJSON: () => ({
-        id: 'world2',
-        worldId: 'wrld_456',
-        worldName: 'Next World',
-        worldInstanceId: 'instance2',
-        joinDateTime: new Date('2023-01-01T12:30:00Z'),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }),
-    } as unknown as VRChatWorldJoinLogModel;
-
-    // worldJoinLogServiceのモック
-    vi.mocked(
-      worldJoinLogService.findRecentVRChatWorldJoinLog,
-    ).mockResolvedValue(mockRecentWorldJoin);
-    vi.mocked(worldJoinLogService.findNextVRChatWorldJoinLog).mockResolvedValue(
-      mockNextWorldJoin,
-    );
+    // 統合処理で1つのログを返す
+    vi.mocked(worldJoinLogService.mergeVRChatWorldJoinLogs).mockReturnValue([
+      mockRecentWorldJoin,
+    ]);
 
     // playerJoinLogServiceのモック
     vi.mocked(
@@ -306,16 +213,7 @@ describe('getPlayerJoinListInSameWorld', () => {
       joinDateTime: new Date('2023-01-01T11:30:00Z'),
       createdAt: new Date(),
       updatedAt: new Date(),
-      toJSON: () => ({
-        id: 'world1',
-        worldId: 'wrld_123',
-        worldName: 'Test World',
-        worldInstanceId: 'instance1',
-        joinDateTime: new Date('2023-01-01T11:30:00Z'),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }),
-    } as unknown as VRChatWorldJoinLogModel;
+    };
 
     const mockPlayerJoinLogList = [
       {
@@ -328,13 +226,10 @@ describe('getPlayerJoinListInSameWorld', () => {
       },
     ];
 
-    // worldJoinLogServiceのモック
-    vi.mocked(
-      worldJoinLogService.findRecentVRChatWorldJoinLog,
-    ).mockResolvedValue(mockRecentWorldJoin);
-    vi.mocked(worldJoinLogService.findNextVRChatWorldJoinLog).mockResolvedValue(
-      null,
-    );
+    // 統合処理で1つのログのみを返す（次のログなし）
+    vi.mocked(worldJoinLogService.mergeVRChatWorldJoinLogs).mockReturnValue([
+      mockRecentWorldJoin,
+    ]);
 
     // playerJoinLogServiceのモック
     vi.mocked(
@@ -351,11 +246,71 @@ describe('getPlayerJoinListInSameWorld', () => {
     }
 
     // getVRChatPlayerJoinLogListByJoinDateTimeが正しく呼ばれたか確認
+    // 1つのログのみの場合、findNextは同じログを返すため、endJoinDateTimeも同じになる
     expect(
       playerJoinLogService.getVRChatPlayerJoinLogListByJoinDateTime,
     ).toHaveBeenCalledWith({
       startJoinDateTime: mockRecentWorldJoin.joinDateTime,
-      endJoinDateTime: null,
+      endJoinDateTime: mockRecentWorldJoin.joinDateTime, // 同じログ
+    });
+  });
+
+  // 統合処理のテストケース（PhotoAsLogと通常ログの混在）
+  describe('統合処理のテストケース', () => {
+    it('統合ログから正しくプレイヤーリストが取得される', async () => {
+      const mockDateTime = new Date('2023-01-01T12:00:00Z');
+
+      // 統合後の結果（通常ログが優先される）
+      const mockMergedLogs = [
+        {
+          id: 'normal1',
+          worldId: 'wrld_123',
+          worldName: 'Test World',
+          worldInstanceId: 'instance1',
+          joinDateTime: new Date('2023-01-01T11:30:00Z'),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      const mockPlayerJoinLogs = [
+        {
+          id: '1',
+          playerId: 'player1',
+          playerName: 'Player 1',
+          joinDateTime: new Date('2023-01-01T11:45:00Z'),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      // worldJoinLogServiceのモック
+      vi.mocked(
+        worldJoinLogService.findVRChatWorldJoinLogList,
+      ).mockResolvedValue([]);
+      vi.mocked(worldJoinLogService.mergeVRChatWorldJoinLogs).mockReturnValue(
+        mockMergedLogs,
+      );
+
+      // findVRChatWorldJoinLogFromPhotoListのモック
+      vi.mocked(findVRChatWorldJoinLogFromPhotoList).mockResolvedValue([]);
+
+      // playerJoinLogServiceのモック
+      vi.mocked(
+        playerJoinLogService.getVRChatPlayerJoinLogListByJoinDateTime,
+      ).mockResolvedValue(neverthrow.ok(mockPlayerJoinLogs));
+
+      // 関数を実行
+      const result = await getPlayerJoinListInSameWorld(mockDateTime);
+
+      // 期待される結果
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value).toEqual(mockPlayerJoinLogs);
+      }
+
+      // 統合関数が呼ばれたことを確認
+      expect(worldJoinLogService.mergeVRChatWorldJoinLogs).toHaveBeenCalled();
     });
   });
 });
@@ -428,16 +383,20 @@ describe('getPlayerJoinListInSameWorld 統合テスト', () => {
     // ワールド参加ログを作成
     const worldJoinLogs: VRChatWorldJoinLog[] = [
       {
-        worldId: 'wrld_123',
-        worldName: 'Test World',
-        worldInstanceId: 'instance1',
+        worldId: VRChatWorldIdSchema.parse(
+          'wrld_12345678-1234-1234-1234-123456789012',
+        ),
+        worldName: VRChatWorldNameSchema.parse('Test World'),
+        worldInstanceId: VRChatWorldInstanceIdSchema.parse('instance1'),
         joinDate: datefns.subMinutes(baseDate, 30), // 30分前
         logType: 'worldJoin',
       },
       {
-        worldId: 'wrld_456',
-        worldName: 'Next World',
-        worldInstanceId: 'instance2',
+        worldId: VRChatWorldIdSchema.parse(
+          'wrld_87654321-4321-4321-4321-210987654321',
+        ),
+        worldName: VRChatWorldNameSchema.parse('Next World'),
+        worldInstanceId: VRChatWorldInstanceIdSchema.parse('instance2'),
         joinDate: datefns.addMinutes(baseDate, 30), // 30分後
         logType: 'worldJoin',
       },
@@ -454,25 +413,25 @@ describe('getPlayerJoinListInSameWorld 統合テスト', () => {
     const playerJoinLogs = [
       {
         joinDate: datefns.subMinutes(baseDate, 20), // 20分前
-        playerName: 'Player 1',
+        playerName: VRChatPlayerNameSchema.parse('Player 1'),
         logType: 'playerJoin' as const,
         playerId: null,
       },
       {
         joinDate: datefns.subMinutes(baseDate, 10), // 10分前
-        playerName: 'Player 2',
+        playerName: VRChatPlayerNameSchema.parse('Player 2'),
         logType: 'playerJoin' as const,
         playerId: null,
       },
       {
         joinDate: baseDate, // 基準時刻
-        playerName: 'Player 3',
+        playerName: VRChatPlayerNameSchema.parse('Player 3'),
         logType: 'playerJoin' as const,
         playerId: null,
       },
       {
         joinDate: datefns.addMinutes(baseDate, 10), // 10分後
-        playerName: 'Player 4',
+        playerName: VRChatPlayerNameSchema.parse('Player 4'),
         logType: 'playerJoin' as const,
         playerId: null,
       },
