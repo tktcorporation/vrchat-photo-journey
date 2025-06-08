@@ -4,14 +4,20 @@ import { VRChatPlayerLeaveLogModel } from './playerLeaveLog.model';
 export const createVRChatPlayerLeaveLogModel = async (
   leaveLogList: Array<{
     leaveDate: Date;
-    playerName: string;
-    playerId: string | null;
+    playerName: string | { value: string };
+    playerId: string | null | { value: string };
   }>,
 ): Promise<VRChatPlayerLeaveLogModel[]> => {
   const newLogs = leaveLogList.map((logInfo) => ({
     leaveDateTime: logInfo.leaveDate,
-    playerName: logInfo.playerName,
-    playerId: logInfo.playerId,
+    playerName:
+      typeof logInfo.playerName === 'string'
+        ? logInfo.playerName
+        : logInfo.playerName.value,
+    playerId:
+      typeof logInfo.playerId === 'string'
+        ? logInfo.playerId
+        : logInfo.playerId?.value ?? null,
   }));
 
   if (newLogs.length > 0) {

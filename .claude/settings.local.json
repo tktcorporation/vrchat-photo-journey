@@ -7,7 +7,13 @@
       "Bash(mkdir:*)",
       "Bash(mv:*)",
       "Bash(yarn test:web:*)",
-      "Bash(yarn build)"
+      "Bash(yarn build)",
+      "Bash(yarn test:electron:*)",
+      "Bash(node:*)",
+      "Bash(yarn test:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx vitest run:*)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }

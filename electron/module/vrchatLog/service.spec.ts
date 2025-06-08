@@ -275,8 +275,10 @@ describe('extractPlayerJoinInfoFromLog', () => {
     );
     const result = service.extractPlayerJoinInfoFromLog(logLine);
     expect(result.logType).toBe('playerJoin');
-    expect(result.playerName).toBe('プレイヤーA');
-    expect(result.playerId).toBe('usr_8862b082-dbc8-4b6d-8803-e834f833b498');
+    expect(result.playerName.value).toBe('プレイヤーA');
+    expect(result.playerId?.value).toBe(
+      'usr_8862b082-dbc8-4b6d-8803-e834f833b498',
+    );
     expect(result.joinDate).toBeInstanceOf(Date);
   });
 
@@ -286,7 +288,7 @@ describe('extractPlayerJoinInfoFromLog', () => {
     );
     const result = service.extractPlayerJoinInfoFromLog(logLine);
     expect(result.logType).toBe('playerJoin');
-    expect(result.playerName).toBe('プレイヤーB');
+    expect(result.playerName.value).toBe('プレイヤーB');
     expect(result.playerId).toBe(null);
     expect(result.joinDate).toBeInstanceOf(Date);
   });

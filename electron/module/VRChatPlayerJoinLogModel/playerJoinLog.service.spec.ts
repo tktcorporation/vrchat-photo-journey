@@ -2,6 +2,7 @@ import * as service from './playerJoinLog.service';
 
 import * as datefns from 'date-fns';
 import * as client from '../../lib/sequelize';
+import { VRChatPlayerNameSchema } from '../vrchatLog/model';
 
 describe('VRChatPlayerJoinLogModel', () => {
   describe('createVRChatPlayerJoinLogModel', () => {
