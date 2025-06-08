@@ -1,7 +1,7 @@
-import { invalidatePhotoGalleryQueries } from '@/queryClient';
 import { trpcReact } from '@/trpc';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { match } from 'ts-pattern';
+import { LOG_SYNC_MODE, useLogSync } from './useLogSync';
 
 type ProcessStage = 'pending' | 'inProgress' | 'success' | 'error' | 'skipped';
 
@@ -138,89 +138,56 @@ export const useStartupStage = (callbacks?: ProcessStageCallbacks) => {
   });
 
   const { data: logFilesDirData } = trpcReact.getVRChatLogFilesDir.useQuery();
-  const utils = trpcReact.useUtils();
 
-  /**
-   * VRChatのログ情報をデータベースにロードするミューテーション
-   *
-   * 重要: このミューテーションは storeLogsMutation の後に実行する必要があります
-   * - storeLogsMutation により、VRChatのログファイルから抽出されたログ行がアプリ内に保存されます
-   * - excludeOldLogLoad: true を指定すると、最新のログのみが処理されます
-   * - 最新のログのみを処理することで、パフォーマンスが向上します
-   *
-   * 成功するとPhotogalleryのクエリキャッシュが無効化され、UIが更新されます
-   */
-  const loadLogInfoIndexMutation =
-    trpcReact.logInfo.loadLogInfoIndex.useMutation({
-      onMutate: (input) => {
-        console.log('Starting loadLogInfoIndex', { input });
-        updateStage('indexLoaded', 'inProgress');
+  // 既存のログデータがあるかチェック（初回起動判定用）
+  const { data: existingLogCount, isError: isLogCountError } =
+    trpcReact.vrchatWorldJoinLog.getVRChatWorldJoinLogList.useQuery(
+      { orderByJoinDateTime: 'desc' },
+      {
+        staleTime: 0, // アプリ起動ごとに最新状態で判定するためキャッシュなし
+        cacheTime: 1000 * 60 * 1, // 1分後にメモリから削除
+        refetchOnWindowFocus: false, // ウィンドウフォーカス時の再取得なし
+        refetchOnReconnect: false, // 再接続時の再取得なし
+        select: (data) => data?.length || 0,
+        retry: 1, // 1回だけリトライ
       },
-      onSuccess: () => {
-        console.log('loadLogInfoIndex succeeded');
-        updateStage('indexLoaded', 'success');
-        invalidatePhotoGalleryQueries(utils);
-      },
-      onError: (error) => {
-        console.error('loadLogInfoIndex failed:', error);
-        const errorMessage =
-          error instanceof Error
-            ? error.message
-            : 'インデックスの読み込みに失敗しました';
-        updateStage('indexLoaded', 'error', errorMessage);
-      },
-      onSettled: () => {
-        console.log('loadLogInfoIndex settled');
-      },
-    });
+    );
 
-  /**
-   * VRChatログファイルから新しいログ行を読み込むミューテーション
-   *
-   * 重要な機能:
-   * - VRChatのログファイル（output_log.txt）から関連するログ行を抽出します
-   * - 抽出したログ行はアプリ内のログストアファイル（logStore-YYYY-MM.txt）に保存されます
-   * - このプロセスがなければ、新しいワールド参加ログが検出されません
-   *
-   * 成功した場合のみ次のステップ（loadLogInfoIndexMutation）が実行されます
-   * リフレッシュ処理（Header.tsx の handleRefresh）でも同様のプロセスが実行されます
-   */
-  const storeLogsMutation =
-    trpcReact.vrchatLog.appendLoglinesToFileFromLogFilePathList.useMutation({
-      onMutate: () => {
-        console.log('Starting storeLogsMutation');
-        updateStage('logsStored', 'inProgress');
-      },
-      onSuccess: () => {
-        console.log('storeLogsMutation succeeded');
-        updateStage('logsStored', 'success');
-        loadLogInfoIndexMutation.mutate({ excludeOldLogLoad: true });
-      },
-      onError: (error) => {
-        console.error('storeLogsMutation failed:', error);
-        const errorMessage =
-          error instanceof Error ? error.message : 'ログの保存に失敗しました';
-        updateStage('logsStored', 'error', errorMessage);
-      },
-      onSettled: () => {
-        console.log('storeLogsMutation settled');
-      },
-    });
+  // ログ同期フックを使用
+  const { sync: syncLogs } = useLogSync({
+    onSuccess: () => {
+      console.log('Log sync completed successfully');
+      updateStage('logsStored', 'success');
+      updateStage('indexLoaded', 'success');
+    },
+    onError: (error) => {
+      console.error('Log sync failed:', error);
+      const errorMessage =
+        error instanceof Error ? error.message : 'ログ同期に失敗しました';
+      updateStage('logsStored', 'error', errorMessage);
+      updateStage('indexLoaded', 'error', errorMessage);
+    },
+  });
 
   /**
    * ログ処理オペレーションを実行する関数
    *
-   * 処理フロー:
-   * 1. storeLogsMutation: VRChatログファイルからログ行を抽出してアプリ内に保存
-   * 2. loadLogInfoIndexMutation: 保存されたログからログ情報をロードしてDBに保存
-   * 3. invalidatePhotoGalleryQueries: UIを更新
+   * 統一されたログ同期処理：
+   * 1. appendLoglines: VRChatログファイルから新しいログ行を読み込む
+   * 2. loadLogInfo: ログ情報をDBに保存
+   * 3. キャッシュの無効化: UIを更新
    *
-   * この順序が重要な理由:
-   * - 1→2→3の順で処理しないと、新しいワールド参加ログがDBに保存されず、
-   *   新しい写真が古いワールドグループに誤って割り当てられます
+   * 初回起動判定：
+   * - 既存のログデータが0件の場合：初回起動として全件処理（FULL）
+   * - 既存のログデータがある場合：通常起動として差分処理（INCREMENTAL）
    */
-  const executeLogOperations = useCallback(() => {
-    console.log('executeLogOperations called', { logFilesDirData, stages });
+  const executeLogOperations = useCallback(async () => {
+    console.log('executeLogOperations called', {
+      logFilesDirData,
+      stages,
+      existingLogCount,
+      isLogCountError,
+    });
 
     if (stages.logsStored !== 'pending') {
       console.log('Log operations already started or completed');
@@ -229,6 +196,11 @@ export const useStartupStage = (callbacks?: ProcessStageCallbacks) => {
 
     if (!logFilesDirData) {
       console.log('logFilesDirData is not available');
+      return;
+    }
+
+    if (existingLogCount === undefined) {
+      console.log('existingLogCount is not available yet');
       return;
     }
 
@@ -248,15 +220,39 @@ export const useStartupStage = (callbacks?: ProcessStageCallbacks) => {
         console.log('Log operations was started by another call');
         return;
       }
-      console.log('Starting store logs mutation');
-      storeLogsMutation.mutate();
+
+      // 初回起動判定：
+      // - DBエラーの場合は安全のため全件処理
+      // - 既存ログが0件の場合は初回起動として全件処理
+      // - それ以外は通常起動として差分処理
+      const logCount = existingLogCount ?? 0;
+      const isFirstLaunch = isLogCountError || logCount === 0;
+      const syncMode = isFirstLaunch
+        ? LOG_SYNC_MODE.FULL
+        : LOG_SYNC_MODE.INCREMENTAL;
+
+      console.log(
+        `Starting log sync with ${syncMode} mode (isFirstLaunch: ${isFirstLaunch}, logCount: ${logCount})`,
+      );
+      updateStage('logsStored', 'inProgress');
+      updateStage('indexLoaded', 'inProgress');
+
+      await syncLogs(syncMode);
     } catch (error) {
-      console.error('Error during store logs mutation:', error);
+      console.error('Error during log sync:', error);
       const errorMessage =
-        error instanceof Error ? error.message : 'ログの保存に失敗しました';
+        error instanceof Error ? error.message : 'ログ同期に失敗しました';
       updateStage('logsStored', 'error', errorMessage);
+      updateStage('indexLoaded', 'error', errorMessage);
     }
-  }, [logFilesDirData, stages, storeLogsMutation, updateStage]);
+  }, [
+    logFilesDirData,
+    stages,
+    syncLogs,
+    updateStage,
+    existingLogCount,
+    isLogCountError,
+  ]);
 
   const retryProcess = useCallback(() => {
     setStages(initialStages);

@@ -1,4 +1,3 @@
-import { invalidatePhotoGalleryQueries } from '@/queryClient';
 import { trpcReact } from '@/trpc';
 import {
   AlertCircle,
@@ -10,6 +9,7 @@ import {
 } from 'lucide-react';
 import React, { memo, useState, useEffect } from 'react';
 import { match } from 'ts-pattern';
+import { LOG_SYNC_MODE, useLogSync } from '../../hooks/useLogSync';
 import { useVRChatPhotoExtraDirList } from '../../hooks/useVRChatPhotoExtraDirList';
 import { useI18n } from '../../i18n/store';
 
@@ -24,7 +24,17 @@ const PathSettingsComponent = memo(({ showRefreshAll }: PathSettingsProps) => {
   const { t } = useI18n();
   const [_isValidating, setIsValidating] = useState(false);
   const [_validationError, setValidationError] = useState<string | null>(null);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // ログ同期フックを使用
+  const { sync: syncLogs, isLoading: isRefreshing } = useLogSync({
+    onSuccess: () => {
+      // 同期完了時の処理
+      console.log('Log sync completed successfully');
+    },
+    onError: (error) => {
+      console.error('Failed to sync logs:', error);
+    },
+  });
 
   // Photo directory queries and mutations
   const { data: photoDir, refetch: refetchPhotoDir } =
@@ -38,8 +48,6 @@ const PathSettingsComponent = memo(({ showRefreshAll }: PathSettingsProps) => {
 
   const [extraDirs, setExtraDirs] = useVRChatPhotoExtraDirList();
   const showOpenDialogMutation = trpcReact.showOpenDialog.useMutation();
-
-  const utils = trpcReact.useUtils();
 
   // Log file queries and mutations
   const { data: logFilesDir, refetch: refetchLogFilesDir } =
@@ -61,42 +69,6 @@ const PathSettingsComponent = memo(({ showRefreshAll }: PathSettingsProps) => {
     }
     setIsLogPathManuallyChanged(false); // 初期読み込み時や参照ボタンでの変更後は手動変更フラグをリセット
   }, [logFilesDir?.path]);
-
-  /**
-   * VRChatログファイルから新しいログ行を読み込むミューテーション
-   *
-   * このステップは非常に重要です：
-   * - VRChatのログファイル（output_log.txt）から関連するログ行を抽出します
-   * - 抽出したログ行はアプリ内のログストアファイル（logStore-YYYY-MM.txt）に保存されます
-   * - このプロセスがなければ、新しいワールド参加ログが検出されません
-   */
-  const { mutate: appendLoglines } =
-    trpcReact.vrchatLog.appendLoglinesToFileFromLogFilePathList.useMutation({
-      onSuccess: () => {
-        // ログ行の抽出・保存に成功したら、ログ情報をロード
-        // 過去にさかのぼって全ログをロードする
-        loadLogInfo({ excludeOldLogLoad: false });
-      },
-      onError: (error) => {
-        console.error('Failed to append log lines:', error);
-        setIsRefreshing(false);
-      },
-    });
-
-  /**
-   * 保存されたログからデータベースにログ情報をロードするミューテーション
-   *
-   * このステップは appendLoglines の後に実行する必要があります
-   */
-  const { mutate: loadLogInfo } =
-    trpcReact.logInfo.loadLogInfoIndex.useMutation({
-      onSuccess: () => {
-        invalidatePhotoGalleryQueries(utils);
-      },
-      onSettled: () => {
-        setIsRefreshing(false);
-      },
-    });
 
   // 写真パスの検証状態を保持
   const [photoValidationResult, _setPhotoValidationResult] = useState<
@@ -220,7 +192,7 @@ const PathSettingsComponent = memo(({ showRefreshAll }: PathSettingsProps) => {
    * 重要な処理順序：
    * 1. appendLoglines: VRChatログファイルから新しいログ行を読み込む
    * 2. その成功後に loadLogInfo: ログ情報をDBに保存
-   * 3. その成功後に invalidatePhotoGalleryQueries: UIを更新
+   * 3. その成功後に キャッシュの無効化: UIを更新
    *
    * この順序が重要な理由：
    * - この順序で処理しないと、新しいワールド参加ログがDBに保存されず、
@@ -228,9 +200,8 @@ const PathSettingsComponent = memo(({ showRefreshAll }: PathSettingsProps) => {
    */
   const handleRefreshAll = async () => {
     if (!isRefreshing) {
-      setIsRefreshing(true);
-      // 先に VRChat ログファイルを処理
-      appendLoglines({ processAll: true });
+      // 全件処理モードでログを同期
+      await syncLogs(LOG_SYNC_MODE.FULL);
     }
   };
 

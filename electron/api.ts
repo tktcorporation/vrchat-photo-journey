@@ -13,6 +13,7 @@ import { debugRouter } from './module/debug/debugController';
 import { electronUtilRouter } from './module/electronUtil/controller/electronUtilController';
 import { openGetFileDialog } from './module/electronUtil/service';
 import { logInfoRouter } from './module/logInfo/logInfoCointroller';
+import { logSyncRouter } from './module/logSync/logSyncController';
 import * as service from './module/service';
 import { initSettingStore } from './module/settingStore';
 import { settingsRouter } from './module/settings/settingsController';
@@ -37,6 +38,7 @@ export const router = trpcRouter({
   vrchatLog: vrchatLogRouter(),
   vrchatWorldJoinLog: vrchatWorldJoinLogRouter(),
   logInfo: logInfoRouter(),
+  logSync: logSyncRouter(),
   vrchatApi: vrchatApiRouter,
   debug: debugRouter,
   updater: updaterRouter,
