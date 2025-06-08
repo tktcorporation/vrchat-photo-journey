@@ -1,5 +1,6 @@
 import path from 'node:path';
 import { type BrowserWindow, app, ipcMain } from 'electron';
+import isDev from 'electron-is-dev';
 
 import {
   type Event,
@@ -40,24 +41,39 @@ export const initializeMainSentry = () => {
     return;
   }
 
-  logger.info('Sentry initializing in main process via electron/index.ts');
+  logger.info(
+    `Sentry initializing in main process via electron/index.ts: isDev: ${isDev}`,
+  );
   initSentry({
     dsn: process.env.SENTRY_DSN,
-    environment: process.env.NODE_ENV,
-    debug: process.env.NODE_ENV !== 'production',
+    environment: isDev ? 'development' : 'production',
+    debug: isDev,
     beforeSend: (event: ErrorEvent, _hint: EventHint) => {
+      // 開発環境でも規約同意をチェックする
       if (settingStore.getTermsAccepted() !== true) {
-        logger.info('Sentry event dropped due to terms not accepted.');
+        if (isDev) {
+          logger.info(
+            'Sentry event dropped in development mode due to terms not accepted.',
+          );
+        } else {
+          logger.info('Sentry event dropped due to terms not accepted.');
+        }
         return null;
       }
 
       const processedEvent = scrubEventData(event);
 
+      if (isDev) {
+        logger.info('Sentry event sent in development mode.');
+      }
+
       return processedEvent;
     },
   });
   logger.info(
-    'Sentry initialized in main process via electron/index.ts. Event sending depends on terms acceptance.',
+    isDev
+      ? 'Sentry initialized in main process for development (terms check enabled).'
+      : 'Sentry initialized in main process via electron/index.ts. Event sending depends on terms acceptance.',
   );
   isSentryInitializedMain = true;
 };

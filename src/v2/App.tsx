@@ -5,6 +5,9 @@ import TrpcWrapper from '@/trpcWrapper';
 import type { Event, EventHint } from '@sentry/electron/main';
 import { init as initSentry } from '@sentry/electron/renderer';
 import { useEffect, useState } from 'react';
+
+// Electron レンダラープロセスでの開発環境検出
+const isDev = process.env.NODE_ENV === 'development';
 import { AppHeader } from './components/AppHeader';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import PhotoGallery from './components/PhotoGallery';
@@ -45,28 +48,37 @@ function AppContent() {
   const { mutateAsync: initializeSentryMain } =
     trpcReact.initializeSentry.useMutation({
       onSuccess: () => {
-        const isDevelopment = process.env.NODE_ENV !== 'production';
         initSentry({
           dsn: process.env.SENTRY_DSN, // 環境変数からDSNを取得
-          environment: process.env.NODE_ENV,
-          debug: isDevelopment,
+          environment: isDev ? 'development' : 'production',
+          debug: isDev,
           tags: {
             source: 'electron-renderer',
           },
           beforeSend: async (event: ErrorEvent, _hint: EventHint) => {
             try {
-              // 既存の規約同意チェック
+              // 開発環境でも規約同意をチェックする
               const currentTermsStatus =
                 await trpcClient.getTermsAccepted.query();
               if (currentTermsStatus?.accepted !== true) {
-                console.log(
-                  'Sentry event dropped in renderer due to terms not accepted (queried from main).',
-                );
+                if (isDev) {
+                  console.log(
+                    'Sentry event dropped in renderer development mode due to terms not accepted.',
+                  );
+                } else {
+                  console.log(
+                    'Sentry event dropped in renderer due to terms not accepted (queried from main).',
+                  );
+                }
                 return null;
               }
 
               // 個人情報マスク処理を追加
               const processedEvent = scrubEventData(event);
+
+              if (isDev) {
+                console.log('Sentry event sent in renderer development mode.');
+              }
 
               return processedEvent;
             } catch (error) {
