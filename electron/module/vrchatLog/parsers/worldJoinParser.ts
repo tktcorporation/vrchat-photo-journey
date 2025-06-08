@@ -1,14 +1,22 @@
-import type { VRChatLogLine } from '../model';
-import { isValidWorldId, parseLogDateTime } from './baseParser';
-
-type WorldId = `wrld_${string}`;
+import type {
+  VRChatLogLine,
+  VRChatWorldId,
+  VRChatWorldInstanceId,
+  VRChatWorldName,
+} from '../model';
+import {
+  VRChatWorldIdSchema,
+  VRChatWorldInstanceIdSchema,
+  VRChatWorldNameSchema,
+} from '../model';
+import { parseLogDateTime } from './baseParser';
 
 export interface VRChatWorldJoinLog {
   logType: 'worldJoin';
   joinDate: Date;
-  worldId: WorldId;
-  worldInstanceId: string;
-  worldName: string;
+  worldId: VRChatWorldId;
+  worldInstanceId: VRChatWorldInstanceId;
+  worldName: VRChatWorldName;
 }
 
 /**
@@ -39,9 +47,9 @@ export const extractWorldJoinInfoFromLogs = (
   const worldId = matches[3];
   const instanceId = matches[4];
 
-  if (!isValidWorldId(worldId)) {
-    throw new Error('WorldId did not match the expected format');
-  }
+  // valueObjectsを使用して型安全に検証
+  const validatedWorldId = VRChatWorldIdSchema.parse(worldId);
+  const validatedInstanceId = VRChatWorldInstanceIdSchema.parse(instanceId);
 
   let foundWorldName: string | null = null;
 
@@ -56,12 +64,14 @@ export const extractWorldJoinInfoFromLogs = (
 
   if (foundWorldName) {
     const joinDate = parseLogDateTime(date, time);
+    const validatedWorldName = VRChatWorldNameSchema.parse(foundWorldName);
+
     return {
       logType: 'worldJoin',
       joinDate,
-      worldInstanceId: instanceId,
-      worldId: worldId as `wrld_${string}`,
-      worldName: foundWorldName,
+      worldInstanceId: validatedInstanceId,
+      worldId: validatedWorldId,
+      worldName: validatedWorldName,
     };
   }
 

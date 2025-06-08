@@ -26,27 +26,11 @@ export const parseLogDateTime = (dateStr: string, timeStr: string): Date => {
 export const LOG_DATE_TIME_PATTERN =
   /(\d{4}\.\d{2}\.\d{2}) (\d{2}:\d{2}:\d{2})/;
 
-/**
- * ワールドIDの検証
- * @param value 検証する文字列
- * @returns ワールドIDとして有効な場合true
- */
-export const isValidWorldId = (value: string): boolean => {
-  const regex =
-    /^wrld_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
-  return regex.test(value);
-};
+// 注意: ワールドID検証機能はvalueObjectsパターンに移行されました
+// VRChatWorldId.isValid() を使用してください
 
-/**
- * プレイヤーIDの検証
- * @param value 検証する文字列
- * @returns プレイヤーIDとして有効な場合true
- */
-export const isValidPlayerId = (value: string): boolean => {
-  const regex =
-    /^usr_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
-  return regex.test(value);
-};
+// 注意: プレイヤーID検証機能はvalueObjectsパターンに移行されました
+// VRChatPlayerId.isValid() を使用してください
 
 /**
  * ログ行を日付でフィルタリング

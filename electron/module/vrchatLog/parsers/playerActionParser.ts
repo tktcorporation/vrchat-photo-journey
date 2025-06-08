@@ -1,18 +1,19 @@
 import * as datefns from 'date-fns';
-import type { VRChatLogLine } from '../model';
+import type { VRChatLogLine, VRChatPlayerId, VRChatPlayerName } from '../model';
+import { OptionalVRChatPlayerIdSchema, VRChatPlayerNameSchema } from '../model';
 
 export interface VRChatPlayerJoinLog {
   logType: 'playerJoin';
   joinDate: Date;
-  playerName: string;
-  playerId: string | null;
+  playerName: VRChatPlayerName;
+  playerId: VRChatPlayerId | null;
 }
 
 export interface VRChatPlayerLeaveLog {
   logType: 'playerLeave';
   leaveDate: Date;
-  playerName: string;
-  playerId: string | null;
+  playerName: VRChatPlayerName;
+  playerId: VRChatPlayerId | null;
 }
 
 /**
@@ -44,11 +45,17 @@ export const extractPlayerJoinInfoFromLog = (
     new Date(),
   );
 
+  // valueObjectsを使用して型安全に検証
+  const validatedPlayerName = VRChatPlayerNameSchema.parse(playerName);
+  const validatedPlayerId = OptionalVRChatPlayerIdSchema.parse(
+    playerId || null,
+  );
+
   return {
     logType: 'playerJoin',
     joinDate: joinDateTime,
-    playerName,
-    playerId: playerId || null,
+    playerName: validatedPlayerName,
+    playerId: validatedPlayerId,
   };
 };
 
@@ -81,10 +88,16 @@ export const extractPlayerLeaveInfoFromLog = (
     new Date(),
   );
 
+  // valueObjectsを使用して型安全に検証
+  const validatedPlayerName = VRChatPlayerNameSchema.parse(playerName);
+  const validatedPlayerId = OptionalVRChatPlayerIdSchema.parse(
+    playerId || null,
+  );
+
   return {
     logType: 'playerLeave',
     leaveDate: leaveDateTime,
-    playerName,
-    playerId: playerId || null,
+    playerName: validatedPlayerName,
+    playerId: validatedPlayerId,
   };
 };

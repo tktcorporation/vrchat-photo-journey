@@ -15,8 +15,10 @@ describe('playerActionParser', () => {
       const result = extractPlayerJoinInfoFromLog(logLine);
 
       expect(result.logType).toBe('playerJoin');
-      expect(result.playerName).toBe('TestPlayer');
-      expect(result.playerId).toBe('usr_12345678-1234-1234-1234-123456789abc');
+      expect(result.playerName.value).toBe('TestPlayer');
+      expect(result.playerId?.value).toBe(
+        'usr_12345678-1234-1234-1234-123456789abc',
+      );
       expect(result.joinDate).toEqual(new Date('2025-01-07T23:25:34'));
     });
 
@@ -28,7 +30,7 @@ describe('playerActionParser', () => {
       const result = extractPlayerJoinInfoFromLog(logLine);
 
       expect(result.logType).toBe('playerJoin');
-      expect(result.playerName).toBe('TestPlayer');
+      expect(result.playerName.value).toBe('TestPlayer');
       expect(result.playerId).toBeNull();
       expect(result.joinDate).toEqual(new Date('2025-01-07T23:25:34'));
     });
@@ -39,7 +41,7 @@ describe('playerActionParser', () => {
       );
 
       const result = extractPlayerJoinInfoFromLog(logLine);
-      expect(result.playerName).toBe('Test Player Name');
+      expect(result.playerName.value).toBe('Test Player Name');
     });
 
     it('無効な形式の場合はエラーを投げる', () => {
@@ -60,8 +62,10 @@ describe('playerActionParser', () => {
       const result = extractPlayerLeaveInfoFromLog(logLine);
 
       expect(result.logType).toBe('playerLeave');
-      expect(result.playerName).toBe('TestPlayer');
-      expect(result.playerId).toBe('usr_12345678-1234-1234-1234-123456789abc');
+      expect(result.playerName.value).toBe('TestPlayer');
+      expect(result.playerId?.value).toBe(
+        'usr_12345678-1234-1234-1234-123456789abc',
+      );
       expect(result.leaveDate).toEqual(new Date('2025-01-08T00:22:04'));
     });
 
@@ -71,7 +75,7 @@ describe('playerActionParser', () => {
       );
 
       const result = extractPlayerLeaveInfoFromLog(logLine);
-      expect(result.playerName).toBe('プレイヤー ⁄ A');
+      expect(result.playerName.value).toBe('プレイヤー ⁄ A');
     });
 
     it('プレイヤーIDがない退出ログを処理できる', () => {
@@ -80,7 +84,7 @@ describe('playerActionParser', () => {
       );
 
       const result = extractPlayerLeaveInfoFromLog(logLine);
-      expect(result.playerName).toBe('TestPlayer');
+      expect(result.playerName.value).toBe('TestPlayer');
       expect(result.playerId).toBeNull();
     });
 
