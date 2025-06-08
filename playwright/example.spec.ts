@@ -31,7 +31,7 @@ const screenshot = async (page: Page, title: string, suffix: string) => {
   consola.log(`[${now}]: screenshot: ${screenshotPath(title, suffix)}`);
 };
 
-const TIMEOUT = 10000;
+const TIMEOUT = 12000;
 
 test(
   '各画面でスクショ',
@@ -94,12 +94,35 @@ test(
     );
     await submitButton.click();
 
+    // 写真ディレクトリも設定
+    const photoFileInput = await page.waitForSelector(
+      '[aria-label="input-写真ディレクトリ"]',
+    );
+    await photoFileInput.click();
+    // まず全部消す
+    await page.keyboard.press('Control+A');
+    await page.keyboard.press('Delete');
+    // パスを入力
+    await page.keyboard.type(path.join(__dirname, '../debug/photos/VRChat'));
+    const photoSubmitButton = await page.waitForSelector(
+      '[aria-label="送信-写真ディレクトリ"]',
+    );
+    await photoSubmitButton.click();
+
     const 設定を確認して続けるButton = await page.waitForSelector(
       'text=設定を確認して続ける',
     );
     await 設定を確認して続けるButton.click();
 
+    // データ処理完了まで待機（LocationGroupHeaderが表示されるまで）
+    // LocationGroupHeaderまたは写真が表示されるまで待つ
+    await page.waitForSelector(
+      '[data-testid="location-group-header"], .photo-card',
+    );
+    await screenshot(page, title, 'logs-loaded');
+
     // 最後の状態をスクショ
+    await page.waitForTimeout(500);
     await screenshot(page, title, 'finalized');
 
     // Exit app.

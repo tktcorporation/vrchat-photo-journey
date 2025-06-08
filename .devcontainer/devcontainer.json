@@ -35,7 +35,7 @@
     ".devcontainer/devcontainer.env"
   ],
   "updateContentCommand": "",
-  "postCreateCommand": "npm i -g @antfu/ni && sudo apt-get install -y ripgrep",
+  "postCreateCommand": "npm i -g @antfu/ni && sudo apt-get install -y ripgrep bc",
   "containerEnv": {
     "VNC_RESOLUTION": "1920x1080x24"
   }

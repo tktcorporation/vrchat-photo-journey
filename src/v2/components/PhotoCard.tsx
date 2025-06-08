@@ -276,7 +276,7 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
       <div
         ref={elementRef}
         className={clsx(
-          'group relative w-full bg-gray-100 dark:bg-gray-800 overflow-hidden transform transition-all duration-300',
+          'photo-card group relative w-full bg-gray-100 dark:bg-gray-800 overflow-hidden transform transition-all duration-300',
           isMultiSelectMode ? 'cursor-pointer' : 'cursor-pointer',
           isSelected && 'ring-2 ring-blue-500 ring-offset-2',
           !isMultiSelectMode && 'hover:brightness-110',

@@ -144,7 +144,10 @@ export const LocationGroupHeader = ({
 
   if (worldId === null) {
     return (
-      <header className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-t-xl shadow-lg p-6">
+      <header
+        data-testid="location-group-header"
+        className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-t-xl shadow-lg p-6"
+      >
         <div className="flex items-center gap-x-3">
           <h2 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-gray-100 dark:to-gray-300 bg-clip-text text-transparent">
             {t('locationHeader.ungrouped')}
@@ -167,6 +170,7 @@ export const LocationGroupHeader = ({
   return (
     <div
       ref={containerRef}
+      data-testid="location-group-header"
       className="bg-white dark:bg-gray-800 rounded-t-lg shadow-lg overflow-hidden transition-all duration-500 group/card"
     >
       <div className="relative h-24 overflow-hidden flex items-center justify-center">

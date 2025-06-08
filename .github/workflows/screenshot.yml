@@ -30,6 +30,9 @@ jobs:
       - name: Remove old screenshots
         run: rm -rf playwright/previews/*.png
 
+      - name: Setup dummy photos by command
+        run: nr generate:debug-data
+
       - name: Install Playwright Browsers
         run: nr playwright install --with-deps
       - name: Run Playwright tests
