@@ -1,5 +1,6 @@
 import type { UpdateCheckResult } from 'electron-updater';
 import { getWindow } from '../../electronUtil';
+import { UserFacingError } from '../../lib/errors';
 import { logger } from '../../lib/logger';
 import * as sequelizeLib from '../../lib/sequelize';
 import * as electronUtilService from '../electronUtil/service';
@@ -30,7 +31,7 @@ export const settingsRouter = () =>
     installUpdate: procedure.mutation(async () => {
       const updateInfo = await settingService.getElectronUpdaterInfo();
       if (!updateInfo.isUpdateAvailable) {
-        throw new Error('No updates available');
+        throw new UserFacingError('アップデートはありません。');
       }
       await settingService.installUpdate();
       const mainWindow = getWindow();

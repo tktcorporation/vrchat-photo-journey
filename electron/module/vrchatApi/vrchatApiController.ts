@@ -1,5 +1,6 @@
 import { match } from 'ts-pattern';
 import { z } from 'zod';
+import { UserFacingError } from './../../lib/errors';
 import { logger } from './../../lib/logger';
 import { procedure, router as trpcRouter } from './../../trpc';
 import * as vrchatApiService from './service';
@@ -60,7 +61,7 @@ const convertImageToBase64 = async (imageUrl: string): Promise<string> => {
   });
 
   if (!response) {
-    throw new Error('Failed to fetch image');
+    throw new UserFacingError('画像の取得に失敗しました。');
   }
 
   const buffer = Buffer.from(response);

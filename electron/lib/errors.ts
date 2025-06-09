@@ -4,6 +4,11 @@ export class UserFacingError extends Error {
     this.name = 'UserFacingError';
     // TypeScriptのカスタムエラーで instanceof が正しく動作するための設定
     Object.setPrototypeOf(this, UserFacingError.prototype);
+
+    // Stack traceを適切に設定
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, UserFacingError);
+    }
   }
 }
 

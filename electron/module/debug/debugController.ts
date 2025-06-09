@@ -22,6 +22,7 @@ export const debugRouter = router({
         if (result.isErr()) {
           throw new UserFacingError(
             `SQLクエリの実行に失敗しました: ${result.error.message}`,
+            { cause: result.error },
           );
         }
         return result.value;
@@ -29,10 +30,12 @@ export const debugRouter = router({
         if (error instanceof Error) {
           throw new UserFacingError(
             `SQLクエリの実行に失敗しました: ${error.message}`,
+            { cause: error },
           );
         }
         throw new UserFacingError(
           'SQLクエリの実行中に予期しないエラーが発生しました。',
+          { cause: error instanceof Error ? error : new Error(String(error)) },
         );
       }
     }),
@@ -52,7 +55,9 @@ export const debugRouter = router({
           message: 'Failed to set log level',
           stack: error as Error,
         });
-        throw new UserFacingError('ログレベルの設定に失敗しました。');
+        throw new UserFacingError('ログレベルの設定に失敗しました。', {
+          cause: error instanceof Error ? error : new Error(String(error)),
+        });
       }
     }),
   getLogLevel: procedure.query(() => {

@@ -1,4 +1,5 @@
 import z from 'zod';
+import { UserFacingError } from '../../lib/errors';
 import { procedure, router as trpcRouter } from '../../trpc';
 import { LOG_SYNC_MODE, type LogSyncMode, syncLogs } from './service';
 
@@ -27,7 +28,10 @@ export const logSyncRouter = () => {
         const result = await syncLogs(input.mode as LogSyncMode);
 
         if (result.isErr()) {
-          throw new Error(`ログ同期に失敗しました: ${result.error.code}`);
+          throw new UserFacingError(
+            `ログ同期に失敗しました: ${result.error.code}`,
+            { cause: result.error },
+          );
         }
 
         return true;

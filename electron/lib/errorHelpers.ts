@@ -35,11 +35,21 @@ export function handleResultError<T, E>(
   const mapping = errorMappings[errorKey];
 
   if (mapping && typeof mapping === 'function') {
-    throw mapping(error);
+    const userFacingError = mapping(error);
+    // Original errorをcauseとして保持
+    if (error instanceof Error && !userFacingError.cause) {
+      Object.assign(userFacingError, { cause: error });
+    }
+    throw userFacingError;
   }
 
   if (errorMappings.default) {
-    throw errorMappings.default(error);
+    const userFacingError = errorMappings.default(error);
+    // Original errorをcauseとして保持
+    if (error instanceof Error && !userFacingError.cause) {
+      Object.assign(userFacingError, { cause: error });
+    }
+    throw userFacingError;
   }
 
   // マッピングがない場合は元のエラーをthrow（予期しないエラーとして扱われる）
@@ -85,11 +95,21 @@ export function handleResultErrorWithSilent<T, E>(
     const mapping = errorMappings[errorKey];
 
     if (mapping && typeof mapping === 'function') {
-      throw mapping(error);
+      const userFacingError = mapping(error);
+      // Original errorをcauseとして保持
+      if (error instanceof Error && !userFacingError.cause) {
+        Object.assign(userFacingError, { cause: error });
+      }
+      throw userFacingError;
     }
 
     if (errorMappings.default) {
-      throw errorMappings.default(error);
+      const userFacingError = errorMappings.default(error);
+      // Original errorをcauseとして保持
+      if (error instanceof Error && !userFacingError.cause) {
+        Object.assign(userFacingError, { cause: error });
+      }
+      throw userFacingError;
     }
   }
 
@@ -101,24 +121,40 @@ export function handleResultErrorWithSilent<T, E>(
  * ファイル操作系のエラーマッピング
  */
 export const fileOperationErrorMappings = {
-  ENOENT: () =>
-    new UserFacingError('指定されたファイルまたはフォルダが見つかりません。'),
-  canceled: () => new UserFacingError('操作がキャンセルされました。'),
-  Error: () => new UserFacingError('ファイル操作中にエラーが発生しました。'),
-  default: () => new UserFacingError('ファイル操作中にエラーが発生しました。'),
+  ENOENT: (originalError: unknown) =>
+    new UserFacingError('指定されたファイルまたはフォルダが見つかりません。', {
+      cause: originalError,
+    }),
+  canceled: (originalError: unknown) =>
+    new UserFacingError('操作がキャンセルされました。', {
+      cause: originalError,
+    }),
+  Error: (originalError: unknown) =>
+    new UserFacingError('ファイル操作中にエラーが発生しました。', {
+      cause: originalError,
+    }),
+  default: (originalError: unknown) =>
+    new UserFacingError('ファイル操作中にエラーが発生しました。', {
+      cause: originalError,
+    }),
 } as const;
 
 /**
  * 写真操作関連のエラーマッピング
  */
 export const photoOperationErrorMappings = {
-  InputFileIsMissing: () =>
+  InputFileIsMissing: (originalError: unknown) =>
     new UserFacingError(
       '写真ファイルが見つかりません。ファイルが移動または削除された可能性があります。',
+      { cause: originalError },
     ),
-  MODEL_NOT_FOUND: () => new UserFacingError('写真データが見つかりません。'),
-  FILE_NOT_FOUND_MODEL_DELETED: () =>
+  MODEL_NOT_FOUND: (originalError: unknown) =>
+    new UserFacingError('写真データが見つかりません。', {
+      cause: originalError,
+    }),
+  FILE_NOT_FOUND_MODEL_DELETED: (originalError: unknown) =>
     new UserFacingError(
       '写真ファイルが見つからないため、データベースから削除されました。',
+      { cause: originalError },
     ),
 } as const;
