@@ -14,7 +14,8 @@
     "ghcr.io/devcontainers/features/desktop-lite:1": {
       "webPort": "6080",
       "vncPort": "5901"
-    }
+    },
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {}
   },
   "customizations": {
     "vscode": {
