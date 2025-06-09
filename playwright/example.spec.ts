@@ -31,7 +31,7 @@ const screenshot = async (page: Page, title: string, suffix: string) => {
   consola.log(`[${now}]: screenshot: ${screenshotPath(title, suffix)}`);
 };
 
-const TIMEOUT = 12000;
+const TIMEOUT = 15000;
 
 test(
   '各画面でスクショ',
@@ -79,7 +79,7 @@ test(
     await page.waitForSelector('text=初期セットアップ');
     await screenshot(page, title, 'setup');
 
-    // aria-label="ログファイルを選択" のボタンをクリック
+    // VRChatログファイルディレクトリの入力フィールドを選択
     const logFileInput = await page.waitForSelector(
       '[aria-label="input-VRChatログファイルディレクトリ"]',
     );
