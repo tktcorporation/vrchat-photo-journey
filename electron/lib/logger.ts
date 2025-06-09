@@ -34,15 +34,22 @@ const normalizeError = (message: unknown): Error => {
   return message instanceof Error ? message : new Error(String(message));
 };
 
-// エラー情報の構築
+// エラー情報の構築（stack traceを適切に保持）
 const buildErrorInfo = ({ message, stack }: ErrorLogParams): Error => {
-  const baseError = message instanceof Error ? message : null;
-  if (!stack) return baseError || normalizeError(message);
+  const baseError =
+    message instanceof Error ? message : normalizeError(message);
+  if (!stack) return baseError;
 
-  return {
-    ...baseError,
+  // Original errorのプロパティを保持しつつstackを更新
+  const errorInfo = Object.create(Object.getPrototypeOf(baseError));
+  Object.assign(errorInfo, baseError, {
+    name: baseError.name,
+    message: baseError.message,
     stack: stack.stack,
-  } as Error;
+    cause: baseError.cause || stack,
+  });
+
+  return errorInfo;
 };
 
 const info = log.info;
