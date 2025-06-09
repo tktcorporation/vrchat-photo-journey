@@ -15,7 +15,9 @@
       "Bash(npx vitest run:*)",
       "Bash(find:*)",
       "mcp__ide__getDiagnostics",
-      "Bash(yarn tsc:*)"
+      "Bash(yarn tsc:*)",
+      "Bash(grep:*)",
+      "WebFetch(domain:github.com)"
     ],
     "deny": []
   }
