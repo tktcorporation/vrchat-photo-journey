@@ -14,7 +14,9 @@ jobs:
       - uses: tkt-actions/add-issue-links@v1.9.1
         with:
           repo-token: '${{ secrets.GITHUB_TOKEN }}' # required
-          branch-prefix: '^(?=\\d+\\/)' # required
+          # 抽出される: 123/fix/hogehoge -> 123, 456/feat/new-feature -> 456
+          # 抽出されない: 123xyz/hogehoge -> null, hoge/123/hogehoge -> null, feat/123 -> null
+          branch-prefix: '^(\d+)/' # required
           link-style: comment
           # Automatically assign the pull request creator to the related issue
           assign-pr-creator-to-issue: 'true'
