@@ -21,7 +21,6 @@ interface PhotoGalleryProps extends UseLoadingStateResult {
 const PhotoGallery = memo((props: PhotoGalleryProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showSettings, setShowSettings] = useState(false);
-  const [showEmptyGroups, setShowEmptyGroups] = useState(true);
   const { t } = useI18n();
   const { toast } = useToast();
 
@@ -112,8 +111,6 @@ const PhotoGallery = memo((props: PhotoGalleryProps) => {
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         onOpenSettings={() => setShowSettings(true)}
-        showEmptyGroups={showEmptyGroups}
-        onToggleEmptyGroups={() => setShowEmptyGroups((prev) => !prev)}
         selectedPhotoCount={selectedPhotos.size}
         onClearSelection={handleClearSelection}
         isMultiSelectMode={isMultiSelectMode}
@@ -124,7 +121,6 @@ const PhotoGallery = memo((props: PhotoGalleryProps) => {
       />
       <GalleryContent
         searchQuery={searchQuery}
-        showEmptyGroups={showEmptyGroups}
         isLoadingStartupSync={props.isLoadingStartupSync}
         isLoadingGrouping={props.isLoadingGrouping}
         finishLoadingGrouping={props.finishLoadingGrouping}

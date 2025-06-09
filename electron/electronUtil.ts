@@ -85,6 +85,9 @@ function createWindow(): BrowserWindow {
     titleBarStyle: 'hidden',
     show: true,
     fullscreenable: true,
+    transparent: true,
+    vibrancy: 'under-window',
+    visualEffectState: 'active',
     webPreferences: {
       preload: join(__dirname, 'preload.cjs'),
       nodeIntegration: false, // セキュリティのため明示的に無効化

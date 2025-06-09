@@ -96,31 +96,31 @@ const SettingsModal = memo(({ onClose }: SettingsModalProps) => {
 
   return (
     <Dialog open onOpenChange={() => onClose()}>
-      <DialogContent className="h-[90vh] min-w-[600px] p-0 bg-white dark:bg-gray-800 border-none">
-        <DialogHeader className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+      <DialogContent className="h-[90vh] min-w-[600px] p-0 glass-panel border-glass-border animate-glass-morph">
+        <DialogHeader className="px-6 py-4 border-b border-glass-border/50">
           <DialogTitle className="text-xl font-semibold text-gray-900 dark:text-white">
             {t('common.settings')}
           </DialogTitle>
         </DialogHeader>
 
         <div className="flex-1 flex h-[calc(90vh-80px)]">
-          <div className="flex-none w-48 border-r border-gray-200 dark:border-gray-700">
+          <div className="flex-none w-48 border-r border-glass-border/50 backdrop-blur-sm">
             <nav className="flex flex-col py-2" aria-label="Tabs">
               {tabs.map(({ id, label, icon: Icon }) => (
                 <button
                   type="button"
                   key={id}
                   onClick={() => setActiveTab(id)}
-                  className={`relative py-2 px-4 flex items-center text-sm font-medium ${
+                  className={`relative py-2 px-4 flex items-center text-sm font-medium transition-all duration-200 ${
                     activeTab === id
-                      ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20'
-                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700/50'
+                      ? 'text-primary backdrop-blur-sm bg-primary/10 border-r-2 border-primary/50'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 backdrop-blur-sm'
                   }`}
                 >
                   <Icon className="h-5 w-5 mr-2 flex-shrink-0" />
                   <span className="truncate">{label}</span>
                   {activeTab === id && (
-                    <span className="absolute left-0 top-0 bottom-0 w-0.5 bg-indigo-600 dark:bg-indigo-400" />
+                    <span className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-primary/80 to-primary/40 rounded-r" />
                   )}
                 </button>
               ))}
