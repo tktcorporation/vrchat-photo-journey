@@ -9,8 +9,6 @@ const en: Translations = {
     noPhotosFound: 'No photos found',
     photos: 'Photos',
     refresh: 'Refresh',
-    showingEmptyGroups: 'Showing empty groups',
-    hidingEmptyGroups: 'Hiding empty groups',
     search: {
       placeholder: 'Search...',
     },

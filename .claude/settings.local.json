@@ -17,7 +17,8 @@
       "mcp__ide__getDiagnostics",
       "Bash(yarn tsc:*)",
       "Bash(grep:*)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(npm run test:playwright:*)"
     ],
     "deny": []
   }

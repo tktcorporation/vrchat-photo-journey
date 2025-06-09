@@ -46,13 +46,13 @@ export const AppHeader: React.FC = () => {
 
   return (
     <div
-      className="flex h-8 items-center justify-between border-b border-gray-200 dark:border-gray-700 px-4 select-none bg-[hsl(var(--gradient-start))] dark:bg-[hsl(var(--gradient-start))]"
+      className="flex h-8 items-center justify-between px-4 select-none minimal-header"
       style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
     >
       <div className="flex items-center gap-2" />
 
       <div
-        className="flex gap-2"
+        className="flex gap-1"
         style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
       >
         {updateDownloaded && (
@@ -60,7 +60,7 @@ export const AppHeader: React.FC = () => {
             variant="ghost"
             size="sm"
             onClick={() => quitAndInstall.mutate()}
-            className="h-6 w-6 p-0 hover:bg-green-100 dark:hover:bg-green-700 text-green-500"
+            className="h-6 w-6 p-0 hover:bg-green-500/15 text-green-500/70 hover:text-green-500 transition-colors duration-150 rounded-sm"
             title="アップデートをインストール"
           >
             <Download className="h-4 w-4" />
@@ -70,7 +70,7 @@ export const AppHeader: React.FC = () => {
           variant="ghost"
           size="sm"
           onClick={handleMinimize}
-          className="h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400"
+          className="h-6 w-6 p-0 hover:bg-muted/40 text-muted-foreground/60 hover:text-muted-foreground transition-colors duration-150 rounded-sm"
         >
           <Minus className="h-4 w-4" />
         </Button>
@@ -78,7 +78,7 @@ export const AppHeader: React.FC = () => {
           variant="ghost"
           size="sm"
           onClick={handleMaximize}
-          className="h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400"
+          className="h-6 w-6 p-0 hover:bg-muted/40 text-muted-foreground/60 hover:text-muted-foreground transition-colors duration-150 rounded-sm"
         >
           <Square className="h-4 w-4" />
         </Button>
@@ -86,7 +86,7 @@ export const AppHeader: React.FC = () => {
           variant="ghost"
           size="sm"
           onClick={handleClose}
-          className="h-6 w-6 p-0 hover:bg-red-500 hover:text-white text-gray-500 dark:text-gray-400"
+          className="h-6 w-6 p-0 hover:bg-red-500/80 text-muted-foreground/60 hover:text-white transition-colors duration-150 rounded-sm"
         >
           <X className="h-4 w-4" />
         </Button>

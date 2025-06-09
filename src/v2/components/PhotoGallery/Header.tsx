@@ -1,30 +1,11 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
-import { trpcReact } from '@/trpc';
-import {
-  Copy,
-  Eye,
-  EyeOff,
-  ListFilter,
-  RefreshCw,
-  Search,
-  Settings,
-  X,
-} from 'lucide-react';
+import { Copy, RefreshCw, Search, Settings, X } from 'lucide-react';
 import type React from 'react';
 import { memo } from 'react';
 import type { UseLoadingStateResult } from '../../hooks/useLoadingState';
 import { LOG_SYNC_MODE, useLogSync } from '../../hooks/useLogSync';
 import { useI18n } from '../../i18n/store';
-import SearchBar from '../SearchBar';
 // import DarkModeToggle from '../settings/DarkModeToggle'; // ★ コメントアウト
 
 interface HeaderProps
@@ -35,8 +16,6 @@ interface HeaderProps
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   onOpenSettings: () => void;
-  showEmptyGroups: boolean;
-  onToggleEmptyGroups: () => void;
   selectedPhotoCount: number;
   onClearSelection: () => void;
   isMultiSelectMode: boolean;
@@ -55,8 +34,6 @@ const Header = memo(
     searchQuery,
     setSearchQuery,
     onOpenSettings,
-    showEmptyGroups,
-    onToggleEmptyGroups,
     selectedPhotoCount,
     onClearSelection,
     isMultiSelectMode,
@@ -168,35 +145,6 @@ const Header = memo(
               <X className="h-4 w-4" />
             </Button>
           )}
-        </div>
-
-        {/* 右側: フィルターとダークモードトグル (常に表示) */}
-        <div className="flex items-center space-x-2 flex-shrink-0">
-          <Select
-            value={showEmptyGroups ? 'show' : 'hide'}
-            onValueChange={(value: string) => {
-              if (
-                (value === 'show' && !showEmptyGroups) ||
-                (value === 'hide' && showEmptyGroups)
-              ) {
-                onToggleEmptyGroups();
-              }
-            }}
-          >
-            <SelectTrigger className="w-[180px]">
-              <ListFilter className="w-4 h-4 mr-2" />
-              <SelectValue placeholder={t('common.settings')} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="show">
-                {t('common.showingEmptyGroups')}
-              </SelectItem>
-              <SelectItem value="hide">
-                {t('common.hidingEmptyGroups')}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-          <Separator orientation="vertical" className="h-6" />
         </div>
       </header>
     );

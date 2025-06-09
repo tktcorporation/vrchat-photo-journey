@@ -20,8 +20,6 @@ interface GalleryContentProps
   > {
   /** ヘッダーから渡される検索クエリ */
   searchQuery: string;
-  /** 写真がないグループを表示するかどうか */
-  showEmptyGroups: boolean;
 }
 
 const GROUP_SPACING = 52;
@@ -47,7 +45,6 @@ const SkeletonGroup = () => (
 const GalleryContent = memo(
   ({
     searchQuery,
-    showEmptyGroups,
     isLoadingStartupSync,
     isLoadingGrouping,
     finishLoadingGrouping,
@@ -64,12 +61,10 @@ const GalleryContent = memo(
     const containerRef = useRef<HTMLDivElement>(null);
     const groupSizesRef = useRef<Map<string, number>>(new Map());
 
-    // showEmptyGroups に基づいて表示するグループをフィルタリング
+    // 全てのグループを表示（写真があるグループもないグループも）
     const filteredGroups = useMemo(() => {
-      return Object.entries(groupedPhotos).filter(
-        ([_, group]) => showEmptyGroups || group.photos.length > 0,
-      );
-    }, [groupedPhotos, showEmptyGroups]);
+      return Object.entries(groupedPhotos);
+    }, [groupedPhotos]);
 
     const isLoading = isLoadingGrouping || isLoadingStartupSync;
 
