@@ -3,7 +3,9 @@ import { LoaderCircle } from 'lucide-react';
 import type React from 'react';
 import { memo, useCallback, useMemo, useRef } from 'react';
 import type { UseLoadingStateResult } from '../../hooks/useLoadingState';
+import { AppHeader } from '../AppHeader';
 import { LocationGroupHeader } from '../LocationGroupHeader';
+import type { PhotoGalleryData } from '../PhotoGallery';
 import PhotoGrid from '../PhotoGrid';
 import PhotoModal from '../PhotoModal';
 import { GalleryErrorBoundary } from './GalleryErrorBoundary';
@@ -20,6 +22,8 @@ interface GalleryContentProps
   > {
   /** ヘッダーから渡される検索クエリ */
   searchQuery: string;
+  /** ギャラリーデータ（統合AppHeaderに渡す） */
+  galleryData?: PhotoGalleryData;
 }
 
 const GROUP_SPACING = 52;
@@ -78,6 +82,7 @@ const GalleryContent = memo(
     isLoadingStartupSync,
     isLoadingGrouping,
     finishLoadingGrouping,
+    galleryData,
   }: GalleryContentProps) => {
     const {
       groupedPhotos,
@@ -149,6 +154,19 @@ const GalleryContent = memo(
 
     return (
       <GalleryErrorBoundary>
+        {galleryData && (
+          <AppHeader
+            searchQuery={galleryData.searchQuery}
+            setSearchQuery={galleryData.setSearchQuery}
+            onOpenSettings={galleryData.onOpenSettings}
+            selectedPhotoCount={galleryData.selectedPhotoCount}
+            onClearSelection={galleryData.onClearSelection}
+            isMultiSelectMode={galleryData.isMultiSelectMode}
+            onCopySelected={galleryData.onCopySelected}
+            loadingState={galleryData.loadingState}
+            showGalleryControls={true}
+          />
+        )}
         <div
           ref={containerRef}
           className="flex-1 overflow-y-auto p-4"
