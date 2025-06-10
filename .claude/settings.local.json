@@ -18,7 +18,8 @@
       "Bash(yarn tsc:*)",
       "Bash(grep:*)",
       "WebFetch(domain:github.com)",
-      "Bash(npm run test:playwright:*)"
+      "Bash(yarn run test:playwright:*)",
+      "Bash(git add:*)"
     ],
     "deny": []
   }
