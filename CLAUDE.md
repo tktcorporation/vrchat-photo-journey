@@ -127,6 +127,29 @@ This is an Electron desktop application for organizing VRChat photos by automati
 
 ## ⚠️ CRITICAL GUIDELINES - データ整合性必須事項
 
+### 🚨 Task Completion Requirements (品質保証必須)
+**全てのタスク完了時に必ず実行してください - 実行しないとデータ破損やビルド失敗のリスクがあります**
+
+#### 必須実行項目 (MANDATORY BEFORE TASK COMPLETION)
+- ✅ **Testing**: `yarn test` (ALL tests must pass)
+- ✅ **Linting**: `yarn lint` (no remaining issues)
+- ✅ **Type Checking**: included in lint command
+- ✅ **Auto-fix**: `yarn lint:fix` if formatting issues exist
+
+#### タスク完了プロセス (TASK COMPLETION PROCESS)
+```
+1. Code Implementation (コード実装)
+   ↓
+2. yarn lint:fix (自動修正)
+   ↓
+3. yarn lint (検証)
+   ↓
+4. yarn test (テスト実行)
+   ↓
+5. Task Completion (完了宣言)
+```
+**このプロセスを省略するとPRでCI失敗やデータ整合性問題が発生します**
+
 ### 🚨 Log Synchronization Rules (データ破損防止のため厳守)
 **違反するとVRChat写真が間違ったワールドに分類され、データ整合性が破壊されます**
 
