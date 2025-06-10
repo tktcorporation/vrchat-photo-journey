@@ -184,7 +184,7 @@ const GalleryContent = memo(
                     transform: `translateY(${virtualRow.start}px)`,
                   }}
                 >
-                  <div className="space-y-2">
+                  <div className="w-full space-y-0">
                     <LocationGroupHeader
                       worldId={group.worldInfo?.worldId ?? null}
                       worldName={group.worldInfo?.worldName ?? null}
@@ -193,15 +193,17 @@ const GalleryContent = memo(
                       joinDateTime={group.joinDateTime}
                     />
                     {group.photos.length > 0 && (
-                      <PhotoGrid
-                        worldId={group.worldInfo?.worldId ?? null}
-                        photos={group.photos}
-                        onPhotoSelect={setSelectedPhoto}
-                        selectedPhotos={selectedPhotos}
-                        setSelectedPhotos={setSelectedPhotos}
-                        isMultiSelectMode={isMultiSelectMode}
-                        setIsMultiSelectMode={setIsMultiSelectMode}
-                      />
+                      <div className="w-full rounded-b-lg overflow-hidden">
+                        <PhotoGrid
+                          worldId={group.worldInfo?.worldId ?? null}
+                          photos={group.photos}
+                          onPhotoSelect={setSelectedPhoto}
+                          selectedPhotos={selectedPhotos}
+                          setSelectedPhotos={setSelectedPhotos}
+                          isMultiSelectMode={isMultiSelectMode}
+                          setIsMultiSelectMode={setIsMultiSelectMode}
+                        />
+                      </div>
                     )}
                   </div>
                   <MeasurePhotoGroup
