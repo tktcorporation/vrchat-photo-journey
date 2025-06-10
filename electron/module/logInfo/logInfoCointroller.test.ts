@@ -45,12 +45,13 @@ describe('getPlayerJoinListInSameWorld', () => {
   it('正常系: プレイヤー参加ログが取得できる場合', async () => {
     // モックデータ
     const mockDateTime = new Date('2023-01-01T12:00:00Z');
+    // 修正後の動作: 指定時刻（12:00）のログも検索範囲に含まれる
     const mockRecentWorldJoin = {
       id: 'world1',
       worldId: 'wrld_123',
       worldName: 'Test World',
       worldInstanceId: 'instance1',
-      joinDateTime: new Date('2023-01-01T11:30:00Z'),
+      joinDateTime: new Date('2023-01-01T12:00:00Z'), // 指定時刻と同じ
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -60,7 +61,7 @@ describe('getPlayerJoinListInSameWorld', () => {
       worldId: 'wrld_456',
       worldName: 'Next World',
       worldInstanceId: 'instance2',
-      joinDateTime: new Date('2023-01-01T12:30:00Z'),
+      joinDateTime: new Date('2023-01-01T13:00:00Z'), // 1時間後
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -70,7 +71,7 @@ describe('getPlayerJoinListInSameWorld', () => {
         id: '1',
         playerId: 'player1',
         playerName: 'Player 1',
-        joinDateTime: new Date('2023-01-01T11:45:00Z'),
+        joinDateTime: new Date('2023-01-01T12:10:00Z'), // セッション内
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -78,7 +79,7 @@ describe('getPlayerJoinListInSameWorld', () => {
         id: '2',
         playerId: 'player2',
         playerName: 'Player 2',
-        joinDateTime: new Date('2023-01-01T12:15:00Z'),
+        joinDateTime: new Date('2023-01-01T12:30:00Z'), // セッション内
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -105,12 +106,12 @@ describe('getPlayerJoinListInSameWorld', () => {
     }
 
     // getVRChatPlayerJoinLogListByJoinDateTimeが正しく呼ばれたか確認
-    // findRecentは時刻順でソートされた最初のログ、findNextは2番目のログ
+    // 実際の実装: recentは降順ソート後の最初、nextは昇順ソート後の最初
     expect(
       playerJoinLogService.getVRChatPlayerJoinLogListByJoinDateTime,
     ).toHaveBeenCalledWith({
-      startJoinDateTime: mockNextWorldJoin.joinDateTime, // ソート後の最初（最古）
-      endJoinDateTime: mockRecentWorldJoin.joinDateTime, // ソート後の2番目
+      startJoinDateTime: mockNextWorldJoin.joinDateTime, // 降順で最初 = より新しい時刻
+      endJoinDateTime: mockRecentWorldJoin.joinDateTime, // 昇順で最初 = より古い時刻
     });
   });
 
@@ -349,12 +350,12 @@ describe('getPlayerJoinListInSameWorld', () => {
       }
 
       // 正しい期間でプレイヤー情報が取得されたか確認
-      // 実際の実装では、endJoinDateTimeがstartJoinDateTimeになることがテストで判明
+      // 実際の実装: recentは降順ソート後の最初、nextは昇順ソート後の最初
       expect(
         playerJoinLogService.getVRChatPlayerJoinLogListByJoinDateTime,
       ).toHaveBeenCalledWith({
-        startJoinDateTime: mockNextLog.joinDateTime, // 実際の挙動
-        endJoinDateTime: mockRecentLog.joinDateTime, // 実際の挙動
+        startJoinDateTime: mockNextLog.joinDateTime, // 降順で最初 = より新しい時刻
+        endJoinDateTime: mockRecentLog.joinDateTime, // 昇順で最初 = より古い時刻
       });
     });
 
@@ -471,7 +472,7 @@ describe('getPlayerJoinListInSameWorld', () => {
         playerJoinLogService.getVRChatPlayerJoinLogListByJoinDateTime,
       ).toHaveBeenCalledWith({
         startJoinDateTime: mockRecentLog.joinDateTime,
-        endJoinDateTime: mockRecentLog.joinDateTime, // 実際の挙動：nextがnullの場合recentが使われる
+        endJoinDateTime: mockRecentLog.joinDateTime, // 単一ログの場合、recentとnextが同じ
       });
     });
   });

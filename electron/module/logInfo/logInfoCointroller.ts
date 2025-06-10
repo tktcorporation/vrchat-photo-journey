@@ -28,18 +28,20 @@ const getVRCWorldJoinLogList = async () => {
 };
 
 /**
- * 統合されたワールド参加ログから指定日時直前のログを取得
+ * 統合されたワールド参加ログから指定日時以前の最新ログを取得
  * 通常ログを優先し、PhotoAsLogと統合した結果から検索
+ * 指定時刻のログも含めるため、1秒後までの範囲で検索
  */
 const findRecentMergedWorldJoinLog = async (datetime: Date) => {
-  // 通常ログとPhotoAsLogを並行取得
+  // 指定時刻から1秒後までのログを取得（指定時刻のログも含める）
+  const searchEndTime = new Date(datetime.getTime() + 1000);
   const [normalLogs, photoLogs] = await Promise.all([
     worldJoinLogService.findVRChatWorldJoinLogList({
-      ltJoinDateTime: datetime,
+      ltJoinDateTime: searchEndTime,
       orderByJoinDateTime: 'desc',
     }),
     findVRChatWorldJoinLogFromPhotoList({
-      ltJoinDateTime: datetime,
+      ltJoinDateTime: searchEndTime,
       orderByJoinDateTime: 'desc',
     }),
   ]);
