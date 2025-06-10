@@ -4,6 +4,37 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### 🚀 Features
+
+- Remember window size and position (#376)
+- Local 開発で Sentry が dev で送られるように (#384)
+- 原因不明エラーのトレースを調査しやすくする (#387)
+- グラスモーフィズムスタイルの追加とアニメーションの強化 (#392)
+- 写真の右クリックメニューからシェア機能を削除 (#401)
+
+### 🐛 Bug Fixes
+
+- ログ情報のロード設定を修正し、過去のログも含めるように変更 (#373)
+- Log保存時のバリデーション調整、photoAsLogとの動作調整 (#383)
+- LocationGroupHeaderでセッション内全プレイヤーが表示されない問題を修正 (#396)
+- LocationGroupHeaderでrejoinしたプレイヤーの重複表示を防止 + docs更新 (#397)
+- LocationGroupHeaderとPhotoGridの横幅整列問題を修正 (#398)
+
+### 🚜 Refactor
+
+- ログの更新処理をまとめる (#379)
+- LocationGroupHeader.tsxを単一責任原則に従って分割 (#380)
+- VRChatログサービスを分割リファクタ (#381)
+- AppHeaderを統合してUI一貫性を改善し、ボタンサイズを最適化 (#399)
+
+### ⚙️ Miscellaneous Tasks
+
+- Updates tests to cover the new photo directory functionality (#382)
+- Pr-issue-link.ymlのbranch-prefixを修正 (#391)
+- ワールドセッション管理機能をリファクタ (#394)
+
+## [0.13.0] - 2025-06-01
+
 ### ⚙️ Miscellaneous Tasks
 
 - Cleans up unused exports, standardizes logging, and refactors database queue usage across the Electron modules (#360)
