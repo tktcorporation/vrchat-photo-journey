@@ -13,6 +13,7 @@ import {
   type VRChatPlayerJoinLog,
   type VRChatPlayerLeaveLog,
   type VRChatWorldJoinLog,
+  type VRChatWorldLeaveLog,
   convertLogLinesToWorldAndPlayerJoinLogInfos,
   extractPlayerJoinInfoFromLog,
   filterLogLinesByDate,
@@ -42,7 +43,12 @@ export const getVRChaLogInfoFromLogPath = async (
   logFilesDir: VRChatLogFilesDirPath,
 ): Promise<
   neverthrow.Result<
-    (VRChatWorldJoinLog | VRChatPlayerJoinLog | VRChatPlayerLeaveLog)[],
+    (
+      | VRChatWorldJoinLog
+      | VRChatWorldLeaveLog
+      | VRChatPlayerJoinLog
+      | VRChatPlayerLeaveLog
+    )[],
     VRChatLogFileError
   >
 > => {
@@ -74,7 +80,12 @@ export const getVRChaLogInfoByLogFilePathList = async (
   logFilePathList: (VRChatLogFilePath | VRChatLogStoreFilePath)[],
 ): Promise<
   neverthrow.Result<
-    (VRChatWorldJoinLog | VRChatPlayerJoinLog | VRChatPlayerLeaveLog)[],
+    (
+      | VRChatWorldJoinLog
+      | VRChatWorldLeaveLog
+      | VRChatPlayerJoinLog
+      | VRChatPlayerLeaveLog
+    )[],
     VRChatLogFileError
   >
 > => {
@@ -94,6 +105,7 @@ export const getVRChaLogInfoByLogFilePathList = async (
 
   const logInfoList: (
     | VRChatWorldJoinLog
+    | VRChatWorldLeaveLog
     | VRChatPlayerJoinLog
     | VRChatPlayerLeaveLog
   )[] = convertLogLinesToWorldAndPlayerJoinLogInfos(logLineList.value);

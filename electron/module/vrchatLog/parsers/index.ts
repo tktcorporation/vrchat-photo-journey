@@ -9,24 +9,37 @@ import {
   type VRChatWorldJoinLog,
   extractWorldJoinInfoFromLogs,
 } from './worldJoinParser';
+import {
+  type VRChatWorldLeaveLog,
+  extractWorldLeaveInfoFromLog,
+  inferWorldLeaveEvents,
+} from './worldLeaveParser';
 
 /**
  * VRChatログのパース機能をまとめたモジュール
  */
 
 /**
- * ログ行の配列をワールド参加・プレイヤー参加/退出情報に変換
+ * ログ行の配列をワールド参加・退出・プレイヤー参加/退出情報に変換
  * @param logLines パース対象のログ行
  * @returns 抽出されたログ情報の配列
  */
 export const convertLogLinesToWorldAndPlayerJoinLogInfos = (
   logLines: VRChatLogLine[],
-): (VRChatWorldJoinLog | VRChatPlayerJoinLog | VRChatPlayerLeaveLog)[] => {
+): (
+  | VRChatWorldJoinLog
+  | VRChatWorldLeaveLog
+  | VRChatPlayerJoinLog
+  | VRChatPlayerLeaveLog
+)[] => {
   const logInfos: (
     | VRChatWorldJoinLog
+    | VRChatWorldLeaveLog
     | VRChatPlayerJoinLog
     | VRChatPlayerLeaveLog
   )[] = [];
+
+  const worldJoinIndices: number[] = [];
 
   for (const [index, l] of logLines.entries()) {
     // ワールド参加ログ
@@ -34,7 +47,14 @@ export const convertLogLinesToWorldAndPlayerJoinLogInfos = (
       const info = extractWorldJoinInfoFromLogs(logLines, index);
       if (info) {
         logInfos.push(info);
+        worldJoinIndices.push(index);
       }
+    }
+
+    // ワールド退出ログ（明示的なパターン）
+    const leaveInfo = extractWorldLeaveInfoFromLog(l);
+    if (leaveInfo) {
+      logInfos.push(leaveInfo);
     }
 
     // プレイヤー参加ログ
@@ -57,11 +77,16 @@ export const convertLogLinesToWorldAndPlayerJoinLogInfos = (
     }
   }
 
+  // 推測されたワールド退出イベントを追加
+  const inferredLeaves = inferWorldLeaveEvents(logLines, worldJoinIndices);
+  logInfos.push(...inferredLeaves);
+
   return logInfos;
 };
 
 // 型定義の再エクスポート
 export type { VRChatWorldJoinLog } from './worldJoinParser';
+export type { VRChatWorldLeaveLog } from './worldLeaveParser';
 export type {
   VRChatPlayerJoinLog,
   VRChatPlayerLeaveLog,
@@ -69,6 +94,10 @@ export type {
 
 // 個別のパーサー関数も再エクスポート
 export { extractWorldJoinInfoFromLogs } from './worldJoinParser';
+export {
+  extractWorldLeaveInfoFromLog,
+  inferWorldLeaveEvents,
+} from './worldLeaveParser';
 export {
   extractPlayerJoinInfoFromLog,
   extractPlayerLeaveInfoFromLog,
