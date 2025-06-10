@@ -23,8 +23,6 @@ import ProgressiveImage from './ProgressiveImage';
 interface PhotoCardProps {
   /** 表示する写真オブジェクト */
   photo: Photo;
-  /** 写真が属するワールドのID (Nullable) */
-  worldId: string | null;
   /** 画像を優先的に読み込むか (ビューポート内の最初の要素など) */
   priority?: boolean;
   /** 写真本体がクリックされたときに呼び出されるコールバック (通常モード時、モーダル表示用) */
@@ -52,7 +50,6 @@ interface PhotoCardProps {
 const PhotoCard: React.FC<PhotoCardProps> = memo(
   ({
     photo,
-    worldId,
     priority = false,
     onSelect,
     selectedPhotos,
@@ -98,18 +95,6 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
     const openInPhotoAppMutation =
       trpcReact.electronUtil.openPhotoPathWithPhotoApp.useMutation();
     const openDirOnExplorerMutation = trpcReact.openDirOnExplorer.useMutation();
-    const { data: worldInfo } =
-      trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery(worldId ?? '', {
-        enabled: !!worldId,
-      });
-    const { data: players } =
-      trpcReact.logInfo.getPlayerListInSameWorld.useQuery(photo.takenAt);
-    const copyMutation =
-      trpcReact.electronUtil.copyImageDataByBase64.useMutation();
-    const downloadMutation =
-      trpcReact.electronUtil.downloadImageAsPng.useMutation();
-    const getVRChatPhotoItemDataMutation =
-      trpcReact.vrchatPhoto.getVRChatPhotoItemDataMutation.useMutation();
 
     // --- Event Handlers ---
 
@@ -141,65 +126,6 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
       e.stopPropagation();
       openDirOnExplorerMutation.mutate(photo.url);
     };
-
-    /** コンテキストメニュー: シェア画像生成 */
-    const handleShare =
-      (type: 'clipboard' | 'download') => async (e: React.MouseEvent) => {
-        e.stopPropagation();
-        console.log('handleShare', type);
-        const data = await getVRChatPhotoItemDataMutation.mutateAsync({
-          photoPath: photo.url,
-          width: undefined,
-        });
-
-        const cleanBase64 = data.replace(/^data:image\/[^;]+;base64,/, '');
-        if (!cleanBase64.match(/^[A-Za-z0-9+/]*={0,2}$/)) {
-          throw new Error('不正なBase64形式です');
-        }
-
-        const previewImage = await generatePreviewPng({
-          worldName: worldInfo?.name ?? 'Unknown World',
-          imageBase64: cleanBase64,
-          players: match(players)
-            .with(P.nullish, () => [])
-            .with(P.array(), (players) =>
-              players.map((player) => ({
-                playerName: player.playerName,
-              })),
-            )
-            .exhaustive(),
-          showAllPlayers: false,
-        });
-
-        if (!previewImage || typeof previewImage !== 'string') {
-          throw new Error('プレビュー画像の生成に失敗しました');
-        }
-
-        const base64WithPrefix = previewImage.startsWith('data:image/')
-          ? previewImage
-          : `data:image/png;base64,${previewImage}`;
-
-        if (
-          !base64WithPrefix.match(
-            /^data:image\/[^;]+;base64,[A-Za-z0-9+/]*={0,2}$/,
-          )
-        ) {
-          throw new Error('生成された画像が不正なBase64形式です');
-        }
-
-        if (type === 'clipboard') {
-          await copyMutation.mutateAsync({
-            pngBase64: base64WithPrefix,
-            filenameWithoutExt: `${photo.fileNameWithExt.value}_share`,
-          });
-        } else {
-          await downloadMutation.mutateAsync({
-            pngBase64: base64WithPrefix,
-            filenameWithoutExt: `${photo.fileNameWithExt.value}_share`,
-          });
-        }
-        console.log('共有画像の生成とコピーが完了しました');
-      };
 
     /** カード本体のクリックハンドラ */
     const handleClick = useCallback(() => {
@@ -375,16 +301,6 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
               {selectedPhotos.size > 1
                 ? t('common.contextMenu.copyPhotoData')
                 : t('common.contextMenu.copyPhotoData')}
-            </ContextMenuItem>
-            <ContextMenuItem
-              onClick={(e) => handleMenuAction(e, handleShare('clipboard'))}
-            >
-              {t('common.contextMenu.shareImage')}
-            </ContextMenuItem>
-            <ContextMenuItem
-              onClick={(e) => handleMenuAction(e, handleShare('download'))}
-            >
-              {t('common.contextMenu.downloadImage')}
             </ContextMenuItem>
             <ContextMenuItem
               onClick={(e) => handleMenuAction(e, handleOpenInPhotoApp)}

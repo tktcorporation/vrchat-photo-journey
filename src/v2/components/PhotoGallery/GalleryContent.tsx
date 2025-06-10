@@ -213,7 +213,6 @@ const GalleryContent = memo(
                     {group.photos.length > 0 && (
                       <div className="w-full rounded-b-lg overflow-hidden">
                         <PhotoGrid
-                          worldId={group.worldInfo?.worldId ?? null}
                           photos={group.photos}
                           onPhotoSelect={setSelectedPhoto}
                           selectedPhotos={selectedPhotos}

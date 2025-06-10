@@ -11,8 +11,6 @@ import PhotoCard from './PhotoCard';
 interface PhotoGridProps {
   /** 表示する写真オブジェクトの配列 */
   photos: Photo[];
-  /** 写真が属するワールドのID (Nullable) */
-  worldId: string | null;
   /** 写真がクリックされたときに呼び出されるコールバック (モーダル表示用) */
   onPhotoSelect: (photo: Photo) => void;
   /** 現在選択されている写真のIDセット */
@@ -61,7 +59,6 @@ interface PhotoGridProps {
  */
 export default function PhotoGrid({
   photos,
-  worldId,
   onPhotoSelect,
   selectedPhotos,
   setSelectedPhotos,
@@ -103,7 +100,6 @@ export default function PhotoGrid({
                   >
                     <PhotoCard
                       photo={photo}
-                      worldId={worldId}
                       onSelect={onPhotoSelect}
                       priority={index === 0}
                       selectedPhotos={selectedPhotos}
