@@ -150,10 +150,11 @@ const getRecentVRChatWorldJoinLogByVRChatPhotoName = async (
 };
 
 /**
- * 同じワールドにいたプレイヤーのリストを取得
- * 統合されたワールド参加ログ（通常ログ優先）を使用して正確な範囲を特定
+ * 同じセッション内でjoinしたプレイヤー全員のリストを取得
+ * 統合されたワールド参加ログ（通常ログ優先）を使用してセッション範囲を特定
+ * セッション期間内にjoinしたプレイヤー全員を返す（途中でleaveしたプレイヤーも含む）
  * @param datetime 参加日時
- * @returns プレイヤーリスト
+ * @returns プレイヤーリスト（セッション期間内にjoinした全プレイヤー）
  */
 export const getPlayerJoinListInSameWorld = async (
   datetime: Date,
