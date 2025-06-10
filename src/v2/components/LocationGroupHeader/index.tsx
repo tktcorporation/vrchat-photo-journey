@@ -81,7 +81,13 @@ export const LocationGroupHeader = ({
 
   // Derived state
   const formattedDate = format(joinDateTime, 'yyyy年MM月dd日 HH:mm');
-  const players = Array.isArray(playersResult) ? playersResult : null;
+  // プレイヤーリストの重複を除去（rejoinしたプレイヤーが複数回表示されるのを防ぐ）
+  const players = Array.isArray(playersResult)
+    ? playersResult.filter(
+        (player, index, arr) =>
+          arr.findIndex((p) => p.playerName === player.playerName) === index,
+      )
+    : null;
 
   // プレイヤーリスト表示のカスタムフック
   const {
