@@ -5,12 +5,25 @@ import type { UseLoadingStateResult } from '../hooks/useLoadingState';
 import type { ProcessStages } from '../hooks/useStartUpStage';
 import { useI18n } from '../i18n/store';
 import GalleryContent from './PhotoGallery/GalleryContent';
-import Header from './PhotoGallery/Header';
 import { usePhotoGallery } from './PhotoGallery/usePhotoGallery';
 import SettingsModal from './settings/SettingsModal';
 
 interface PhotoGalleryProps extends UseLoadingStateResult {
   startUpStages: ProcessStages;
+}
+
+export interface PhotoGalleryData {
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  onOpenSettings: () => void;
+  selectedPhotoCount: number;
+  onClearSelection: () => void;
+  isMultiSelectMode: boolean;
+  onCopySelected: () => void;
+  loadingState: Pick<
+    UseLoadingStateResult,
+    'isRefreshing' | 'startRefreshing' | 'finishRefreshing'
+  >;
 }
 
 /**
@@ -105,25 +118,30 @@ const PhotoGallery = memo((props: PhotoGalleryProps) => {
     };
   }, [isMultiSelectMode, handleClearSelection]);
 
+  // PhotoGalleryData をエクスポートして AppHeader に渡せるようにする
+  const galleryData: PhotoGalleryData = {
+    searchQuery,
+    setSearchQuery,
+    onOpenSettings: () => setShowSettings(true),
+    selectedPhotoCount: selectedPhotos.size,
+    onClearSelection: handleClearSelection,
+    isMultiSelectMode,
+    onCopySelected: handleCopySelected,
+    loadingState: {
+      isRefreshing: props.isRefreshing,
+      startRefreshing: props.startRefreshing,
+      finishRefreshing: props.finishRefreshing,
+    },
+  };
+
   return (
     <div className="flex flex-col h-full">
-      <Header
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        onOpenSettings={() => setShowSettings(true)}
-        selectedPhotoCount={selectedPhotos.size}
-        onClearSelection={handleClearSelection}
-        isMultiSelectMode={isMultiSelectMode}
-        onCopySelected={handleCopySelected}
-        isRefreshing={props.isRefreshing}
-        startRefreshing={props.startRefreshing}
-        finishRefreshing={props.finishRefreshing}
-      />
       <GalleryContent
         searchQuery={searchQuery}
         isLoadingStartupSync={props.isLoadingStartupSync}
         isLoadingGrouping={props.isLoadingGrouping}
         finishLoadingGrouping={props.finishLoadingGrouping}
+        galleryData={galleryData}
       />
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
     </div>
