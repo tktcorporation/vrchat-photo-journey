@@ -6,13 +6,41 @@ interface MeasurePhotoGroupProps {
   onMeasure: (height: number) => void;
 }
 
-const HEADER_HEIGHT = 40; // LocationGroupHeaderの高さ
+const HEADER_HEIGHT = 96; // LocationGroupHeaderの高さ (h-24 = 96px)
 const GAP = 4; // 写真間のギャップ
 const TARGET_ROW_HEIGHT = 200; // 目標の行の高さ
-const CONTAINER_PADDING = 16; // コンテナのパディング
+const SPACING = 8; // ヘッダーとグリッド間のスペース (space-y-2 = 8px)
 /**
  * 写真グループの高さを計測し `onMeasure` へ渡すコンポーネント。
  * GalleryContent の仮想スクロールで各グループのサイズ計算に使用される。
+ *
+ * ## バーチャルスクロールのための予測的高さ計算
+ *
+ * このコンポーネントは、実際の PhotoGrid がレンダリングされる前に、
+ * バーチャルスクローラーに大まかな高さの推定値を提供します。
+ *
+ * ### 計算ロジック
+ *
+ * 1. **PhotoGrid と同一のアルゴリズムを使用**
+ *    - calculateLayout 関数で PhotoGrid と同じ Justified Layout を計算
+ *    - 各行の高さを累計し、ギャップも含めた総高さを算出
+ *
+ * 2. **コンテナ幅の取得**
+ *    - ResizeObserver で親要素の幅を監視
+ *    - 幅が変化するたびに高さを再計算
+ *
+ * 3. **追加要素の考慮**
+ *    - HEADER_HEIGHT: LocationGroupHeader の高さ (h-24 = 96px)
+ *    - SPACING: ヘッダーとグリッド間のスペース (space-y-2 = 8px)
+ *
+ * ### バーチャルスクロールとの連携
+ *
+ * - **初期推定**: バーチャルスクローラーの estimateSize がこの計算値を使用
+ * - **実測値への更新**: 実際のレンダリング後、measureElement が実測値で上書き
+ * - **スムーズなスクロール**: 予測値と実測値の差が小さいほどスムーズ
+ *
+ * @warning この計算で使用される定数値は実際のレンダリング要素と一致している必要があります。
+ * 不一致があると、バーチャルスクロールでセクションが重なる原因となります。
  */
 export function MeasurePhotoGroup({
   photos,
@@ -27,7 +55,7 @@ export function MeasurePhotoGroup({
     (width: number) => {
       if (width === 0) return 0;
 
-      let totalHeight = HEADER_HEIGHT + CONTAINER_PADDING;
+      let totalHeight = HEADER_HEIGHT + SPACING;
 
       // 写真がない場合は固定の高さを返す
       if (photos.length === 0) {

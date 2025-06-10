@@ -39,6 +39,42 @@ interface LayoutPhoto extends Photo {
 /**
  * 写真をレスポンシブなグリッドレイアウトで表示するコンポーネント。
  * 各写真は PhotoCard としてレンダリングされます。
+ *
+ * ## 動的レイアウトアルゴリズム
+ *
+ * このコンポーネントは「Justified Layout」アルゴリズムを実装しており、
+ * Google Photos のように各行の写真を親要素の幅にぴったり収めます。
+ *
+ * ### レイアウト計算の流れ
+ *
+ * 1. **コンテナ幅の監視**
+ *    - ResizeObserver でコンテナ幅の変化をリアルタイムに検知
+ *    - 幅が変化するたびにレイアウトを再計算
+ *
+ * 2. **行への写真配分**
+ *    - 目標行高さ (TARGET_ROW_HEIGHT: 200px) を基準に初期サイズを計算
+ *    - 写真を順に行に追加し、行幅がコンテナ幅を超えたら次の行へ
+ *
+ * 3. **行内写真のスケーリング**
+ *    - 各行の写真を比例的に拡大/縮小して親幅にフィット
+ *    - アスペクト比を保持しながら、隙間を除いた幅を完全に埋める
+ *    - 最後の行は最大1.5倍までスケールアップして空白を減らす
+ *
+ * ### バーチャルスクロールとの連携
+ *
+ * このコンポーネントは GalleryContent のバーチャルスクロールと密接に連携します：
+ *
+ * - **高さの予測性**: calculateLayout のアルゴリズムは MeasurePhotoGroup でも使用され、
+ *   実際のレンダリング前に高さを予測するために必要
+ *
+ * - **動的リサイズ**: コンテナ幅が変化すると高さも変化するため、
+ *   バーチャルスクローラーに高さの再計測を通知する必要がある
+ *
+ * - **パフォーマンス**: レイアウト計算は useMemo でメモ化され、
+ *   不要な再計算を避けてスムーズなスクロールを実現
+ *
+ * @warning このレイアウトアルゴリズムは MeasurePhotoGroup と完全に一致している必要があります。
+ * 両者の計算がずれると、バーチャルスクロールでセクションが重なる原因となります。
  */
 export default function PhotoGrid({
   photos,
@@ -91,9 +127,16 @@ export default function PhotoGrid({
         const aspectRatio = photo.width / photo.height;
         const photoWidth = TARGET_ROW_HEIGHT * aspectRatio;
 
-        if (rowWidth + photoWidth + GAP > width && currentRow.length > 0) {
-          // 現在の行を確定
-          const scale = (width - (currentRow.length - 1) * GAP) / rowWidth;
+        // 現在の行に追加した場合の合計幅（ギャップを含む）
+        const totalWidthWithPhoto =
+          currentRow.length > 0 ? rowWidth + photoWidth + GAP : photoWidth;
+
+        if (totalWidthWithPhoto > width && currentRow.length > 0) {
+          // 現在の行を確定（行幅を親要素にぴったり合わせる）
+          const totalGaps = (currentRow.length - 1) * GAP;
+          const availableWidth = width - totalGaps;
+          const scale = availableWidth / (rowWidth - currentRow.length * GAP);
+
           for (const p of currentRow) {
             p.displayHeight = TARGET_ROW_HEIGHT * scale;
             p.displayWidth = p.displayHeight * (p.width / p.height);
@@ -108,20 +151,31 @@ export default function PhotoGrid({
           displayWidth: photoWidth,
           displayHeight: TARGET_ROW_HEIGHT,
         });
-        rowWidth += photoWidth + GAP;
+        rowWidth += photoWidth + (currentRow.length > 1 ? GAP : 0);
       }
 
       // 最後の行を処理
       if (currentRow.length > 0) {
-        if (currentRow.length === 1 || rows.length === 0) {
-          // 1枚だけの場合は特別処理
+        if (currentRow.length === 1) {
+          // 1枚だけの場合は幅を制限しつつ中央寄せを考慮
           const photo = currentRow[0];
           const aspectRatio = photo.width / photo.height;
-          photo.displayHeight = TARGET_ROW_HEIGHT;
-          photo.displayWidth = Math.min(TARGET_ROW_HEIGHT * aspectRatio, width);
+          const maxWidth = Math.min(TARGET_ROW_HEIGHT * aspectRatio, width);
+          photo.displayHeight = Math.min(
+            TARGET_ROW_HEIGHT,
+            maxWidth / aspectRatio,
+          );
+          photo.displayWidth = photo.displayHeight * aspectRatio;
         } else {
-          // 最後の行もアスペクト比を調整
-          const scale = (width - (currentRow.length - 1) * GAP) / rowWidth;
+          // 複数枚の場合は他の行と同様に幅をフィット
+          const totalGaps = (currentRow.length - 1) * GAP;
+          const availableWidth = width - totalGaps;
+          const currentTotalWidth = rowWidth - currentRow.length * GAP;
+
+          // 最後の行が短すぎる場合は最大1.5倍までスケールアップ
+          const maxScale = Math.min(availableWidth / currentTotalWidth, 1.5);
+          const scale = maxScale;
+
           for (const p of currentRow) {
             p.displayHeight = TARGET_ROW_HEIGHT * scale;
             p.displayWidth = p.displayHeight * (p.width / p.height);
