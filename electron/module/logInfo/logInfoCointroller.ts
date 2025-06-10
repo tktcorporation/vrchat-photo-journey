@@ -28,18 +28,20 @@ const getVRCWorldJoinLogList = async () => {
 };
 
 /**
- * 統合されたワールド参加ログから指定日時直前のログを取得
+ * 統合されたワールド参加ログから指定日時以前の最新ログを取得
  * 通常ログを優先し、PhotoAsLogと統合した結果から検索
+ * 指定時刻のログも含めるため、1秒後までの範囲で検索
  */
 const findRecentMergedWorldJoinLog = async (datetime: Date) => {
-  // 通常ログとPhotoAsLogを並行取得
+  // 指定時刻から1秒後までのログを取得（指定時刻のログも含める）
+  const searchEndTime = new Date(datetime.getTime() + 1000);
   const [normalLogs, photoLogs] = await Promise.all([
     worldJoinLogService.findVRChatWorldJoinLogList({
-      ltJoinDateTime: datetime,
+      ltJoinDateTime: searchEndTime,
       orderByJoinDateTime: 'desc',
     }),
     findVRChatWorldJoinLogFromPhotoList({
-      ltJoinDateTime: datetime,
+      ltJoinDateTime: searchEndTime,
       orderByJoinDateTime: 'desc',
     }),
   ]);
@@ -150,10 +152,11 @@ const getRecentVRChatWorldJoinLogByVRChatPhotoName = async (
 };
 
 /**
- * 同じワールドにいたプレイヤーのリストを取得
- * 統合されたワールド参加ログ（通常ログ優先）を使用して正確な範囲を特定
+ * 同じセッション内でjoinしたプレイヤー全員のリストを取得
+ * 統合されたワールド参加ログ（通常ログ優先）を使用してセッション範囲を特定
+ * セッション期間内にjoinしたプレイヤー全員を返す（途中でleaveしたプレイヤーも含む）
  * @param datetime 参加日時
- * @returns プレイヤーリスト
+ * @returns プレイヤーリスト（セッション期間内にjoinした全プレイヤー）
  */
 export const getPlayerJoinListInSameWorld = async (
   datetime: Date,
