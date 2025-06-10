@@ -1,6 +1,8 @@
 import clsx from 'clsx';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo } from 'react';
+import { useContainerWidth } from '../hooks/useContainerWidth';
 import type { Photo } from '../types/photo';
+import { JustifiedLayoutCalculator } from '../utils/justifiedLayoutCalculator';
 import PhotoCard from './PhotoCard';
 
 /**
@@ -25,20 +27,37 @@ interface PhotoGridProps {
   setIsMultiSelectMode: (value: boolean) => void;
 }
 
-const TARGET_ROW_HEIGHT = 200; // 目標の行の高さ
-const GAP = 4; // 写真間のギャップ
-
-/** レイアウト計算用の中間的な写真データ型 */
-interface LayoutPhoto extends Photo {
-  width: number;
-  height: number;
-  displayWidth: number;
-  displayHeight: number;
-}
-
 /**
  * 写真をレスポンシブなグリッドレイアウトで表示するコンポーネント。
  * 各写真は PhotoCard としてレンダリングされます。
+ *
+ * ## 統一されたレイアウトアルゴリズム
+ *
+ * このコンポーネントは JustifiedLayoutCalculator を使用して
+ * Google Photos 風の行ベースレイアウトを実装します。
+ *
+ * ### レイアウト計算の流れ
+ *
+ * 1. **コンテナ幅の監視**
+ *    - useContainerWidth フックでコンテナ幅の変化をリアルタイムに検知
+ *    - 幅が変化するたびにレイアウトを再計算
+ *
+ * 2. **統一されたレイアウト計算**
+ *    - JustifiedLayoutCalculator.calculateLayout() で行ベース配置を計算
+ *    - MeasurePhotoGroup と同じアルゴリズムを使用してデータ整合性を保証
+ *
+ * 3. **最適化されたレンダリング**
+ *    - useMemo でレイアウト計算をメモ化
+ *    - 不要な再計算を避けてスムーズなスクロールを実現
+ *
+ * ### バーチャルスクロールとの連携
+ *
+ * - **データ整合性**: MeasurePhotoGroup と同じ JustifiedLayoutCalculator を使用
+ * - **高さの一致**: 予測値と実測値の差を最小化
+ * - **パフォーマンス**: 共通化されたロジックで効率的な計算
+ *
+ * @note レイアウト定数は LAYOUT_CONSTANTS で一元管理され、
+ * 計算ロジックは JustifiedLayoutCalculator で統一されています。
  */
 export default function PhotoGrid({
   photos,
@@ -49,97 +68,14 @@ export default function PhotoGrid({
   isMultiSelectMode,
   setIsMultiSelectMode,
 }: PhotoGridProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [containerWidth, setContainerWidth] = useState(0);
-
-  // コンテナ幅の変更を監視してレイアウトを再計算
-  useEffect(() => {
-    if (!containerRef.current) return;
-    const updateWidth = () => {
-      if (containerRef.current) {
-        setContainerWidth(containerRef.current.clientWidth);
-      }
-    };
-    const resizeObserver = new ResizeObserver(updateWidth);
-    resizeObserver.observe(containerRef.current);
-    updateWidth();
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, []);
-
-  // 写真を行ベースの justify レイアウトで配置計算するロジック
-  const calculateLayout = useCallback(
-    (width: number): LayoutPhoto[][] => {
-      if (width === 0) return [];
-
-      const rows: LayoutPhoto[][] = [];
-      let currentRow: LayoutPhoto[] = [];
-      let rowWidth = 0;
-
-      // 写真をレイアウト用に変換
-      const layoutPhotos: LayoutPhoto[] = photos.map((photo) => ({
-        ...photo,
-        width: photo.width || 1920,
-        height: photo.height || 1080,
-        displayWidth: 0,
-        displayHeight: 0,
-      }));
-
-      // 写真を行に分配
-      for (const photo of layoutPhotos) {
-        const aspectRatio = photo.width / photo.height;
-        const photoWidth = TARGET_ROW_HEIGHT * aspectRatio;
-
-        if (rowWidth + photoWidth + GAP > width && currentRow.length > 0) {
-          // 現在の行を確定
-          const scale = (width - (currentRow.length - 1) * GAP) / rowWidth;
-          for (const p of currentRow) {
-            p.displayHeight = TARGET_ROW_HEIGHT * scale;
-            p.displayWidth = p.displayHeight * (p.width / p.height);
-          }
-          rows.push(currentRow);
-          currentRow = [];
-          rowWidth = 0;
-        }
-
-        currentRow.push({
-          ...photo,
-          displayWidth: photoWidth,
-          displayHeight: TARGET_ROW_HEIGHT,
-        });
-        rowWidth += photoWidth + GAP;
-      }
-
-      // 最後の行を処理
-      if (currentRow.length > 0) {
-        if (currentRow.length === 1 || rows.length === 0) {
-          // 1枚だけの場合は特別処理
-          const photo = currentRow[0];
-          const aspectRatio = photo.width / photo.height;
-          photo.displayHeight = TARGET_ROW_HEIGHT;
-          photo.displayWidth = Math.min(TARGET_ROW_HEIGHT * aspectRatio, width);
-        } else {
-          // 最後の行もアスペクト比を調整
-          const scale = (width - (currentRow.length - 1) * GAP) / rowWidth;
-          for (const p of currentRow) {
-            p.displayHeight = TARGET_ROW_HEIGHT * scale;
-            p.displayWidth = p.displayHeight * (p.width / p.height);
-          }
-        }
-        rows.push(currentRow);
-      }
-
-      return rows;
-    },
-    [photos],
-  );
+  const { containerRef, containerWidth } = useContainerWidth();
+  const calculator = useMemo(() => new JustifiedLayoutCalculator(), []);
 
   // コンテナ幅または写真リストが変わったらレイアウトを再計算
-  const layout = useMemo(
-    () => calculateLayout(containerWidth),
-    [calculateLayout, containerWidth],
-  );
+  const layout = useMemo(() => {
+    const result = calculator.calculateLayout(photos, containerWidth);
+    return result.rows;
+  }, [calculator, photos, containerWidth]);
 
   return (
     <div ref={containerRef} className="w-full">
@@ -151,7 +87,7 @@ export default function PhotoGrid({
               key={rowKey}
               className="flex gap-1"
               style={{
-                height: row[0]?.displayHeight ?? TARGET_ROW_HEIGHT,
+                height: row[0]?.displayHeight ?? 200,
               }}
             >
               {row.map((photo, index) => {
