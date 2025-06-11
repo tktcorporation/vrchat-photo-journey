@@ -1,6 +1,7 @@
 import { trpcReact } from '@/trpc';
 import { memo, useEffect, useState } from 'react';
 import { useToast } from '../hooks/use-toast';
+import { useDebounce } from '../hooks/useDebounce';
 import type { UseLoadingStateResult } from '../hooks/useLoadingState';
 import type { ProcessStages } from '../hooks/useStartUpStage';
 import { useI18n } from '../i18n/store';
@@ -33,6 +34,7 @@ export interface PhotoGalleryData {
  */
 const PhotoGallery = memo((props: PhotoGalleryProps) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery, 300); // 300ms のデバウンス
   const [showSettings, setShowSettings] = useState(false);
   const { t } = useI18n();
   const { toast } = useToast();
@@ -43,7 +45,7 @@ const PhotoGallery = memo((props: PhotoGalleryProps) => {
     isMultiSelectMode,
     setIsMultiSelectMode,
     groupedPhotos,
-  } = usePhotoGallery(searchQuery, {
+  } = usePhotoGallery(debouncedSearchQuery, {
     onGroupingEnd: props.finishLoadingGrouping,
   });
 
