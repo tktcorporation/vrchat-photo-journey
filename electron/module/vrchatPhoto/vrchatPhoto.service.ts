@@ -146,6 +146,10 @@ export const getVRChatPhotoList = async (
   return photoList;
 };
 
+/**
+ * 写真ディレクトリを走査してインデックスを更新する
+ * logSync などから呼び出される
+ */
 export const createVRChatPhotoPathIndex = async (
   lastProcessedDate?: Date | null,
 ) => {
@@ -181,6 +185,10 @@ export const createVRChatPhotoPathIndex = async (
   );
 };
 
+/**
+ * 写真パスモデルを条件付きで取得する
+ * コントローラー経由で一覧表示に利用される
+ */
 export const getVRChatPhotoPathList = async (query?: {
   gtPhotoTakenAt?: Date;
   ltPhotoTakenAt?: Date;
@@ -189,6 +197,10 @@ export const getVRChatPhotoPathList = async (query?: {
   return model.getVRChatPhotoPathList(query);
 };
 
+/**
+ * 月別の写真枚数を取得する
+ * 統計情報としてフロントエンドへ返す
+ */
 export const getCountByYearMonthList = async () => {
   return model.getCountByYearMonthList();
 };
@@ -213,6 +225,10 @@ export const validateVRChatPhotoPathModel = async ({
   return 'VALID';
 };
 
+/**
+ * 画像ファイルを読み込み Base64 文字列で返す
+ * テストやプレビュー生成で利用される
+ */
 export const getVRChatPhotoItemData = async ({
   photoPath,
   width,
@@ -248,6 +264,10 @@ export const getVRChatPhotoItemData = async ({
   }
 };
 
+/**
+ * データベース内で最新の写真日時を取得する
+ * ログ同期の開始位置判定に用いる
+ */
 export const getLatestPhotoDate = async (): Promise<Date | null> => {
   const latestPhoto = await model.getLatestVRChatPhoto();
   return latestPhoto?.photoTakenAt ?? null;

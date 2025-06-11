@@ -6,6 +6,10 @@ import {
   mergeVRChatWorldJoinLogs,
 } from './service';
 
+/**
+ * ワールド参加ログ関連のAPIルーター
+ * フロントエンドからの tRPC 呼び出しに対応
+ */
 export const vrchatWorldJoinLogRouter = () =>
   trpcRouter({
     /**
