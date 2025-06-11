@@ -40,6 +40,7 @@ export default ({ command }: ConfigEnv): UserConfig => {
       define: {
         'process.env.NODE_ENV': JSON.stringify('development'),
         'process.env.SENTRY_DSN': JSON.stringify(process.env.SENTRY_DSN),
+        __SENTRY_RELEASE__: JSON.stringify(process.env.SENTRY_RELEASE),
       },
     };
   }
@@ -83,6 +84,7 @@ export default ({ command }: ConfigEnv): UserConfig => {
     define: {
       'process.env.NODE_ENV': JSON.stringify('production'),
       'process.env.SENTRY_DSN': JSON.stringify(process.env.SENTRY_DSN),
+      __SENTRY_RELEASE__: JSON.stringify(process.env.SENTRY_RELEASE),
     },
   };
 };

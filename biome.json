@@ -31,7 +31,8 @@
       "beforeEach",
       "beforeAll",
       "afterEach",
-      "afterAll"
+      "afterAll",
+      "__SENTRY_RELEASE__"
     ]
   },
   "files": {

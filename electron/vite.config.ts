@@ -14,6 +14,7 @@ export default defineConfig({
   define: {
     'process.env.SENTRY_DSN': JSON.stringify(process.env.SENTRY_DSN),
     'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+    __SENTRY_RELEASE__: JSON.stringify(process.env.SENTRY_RELEASE),
   },
   build: {
     outDir: join(__dirname, '../main'),

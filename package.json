@@ -57,8 +57,8 @@
     "lint:fix": "biome check --apply-unsafe . && nr lint:type-check",
     "lint:fix:tsc": "biome check --apply-unsafe . && nr lint:type-check:tsc",
     "sentry:sourcemaps": "nr sentry:sourcemaps:electron && nr sentry:sourcemaps:vite",
-    "sentry:sourcemaps:electron": "sentry-cli sourcemaps inject --org $SENTRY_ORG --project $SENTRY_PROJECT ./main && sentry-cli sourcemaps upload --org $SENTRY_ORG --project $SENTRY_PROJECT ./main",
-    "sentry:sourcemaps:vite": "sentry-cli sourcemaps inject --org $SENTRY_ORG --project $SENTRY_PROJECT ./src/out && sentry-cli sourcemaps upload --org $SENTRY_ORG --project $SENTRY_PROJECT ./src/out",
+    "sentry:sourcemaps:electron": "sentry-cli sourcemaps inject --org $SENTRY_ORG --project $SENTRY_PROJECT --release $SENTRY_RELEASE ./main && sentry-cli sourcemaps upload --org $SENTRY_ORG --project $SENTRY_PROJECT --release $SENTRY_RELEASE ./main",
+    "sentry:sourcemaps:vite": "sentry-cli sourcemaps inject --org $SENTRY_ORG --project $SENTRY_PROJECT --release $SENTRY_RELEASE ./src/out && sentry-cli sourcemaps upload --org $SENTRY_ORG --project $SENTRY_PROJECT --release $SENTRY_RELEASE ./src/out",
     "knip": "knip --config knip.config.ts"
   },
   "simple-git-hooks": {

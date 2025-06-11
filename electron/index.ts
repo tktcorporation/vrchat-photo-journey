@@ -48,6 +48,9 @@ export const initializeMainSentry = () => {
     dsn: process.env.SENTRY_DSN,
     environment: isDev ? 'development' : 'production',
     debug: isDev,
+    // __SENTRY_RELEASE__ はビルド時に Sentry プラグインによって置換される
+    // リリースバージョンを表す定数
+    release: __SENTRY_RELEASE__,
     beforeSend: (event: ErrorEvent, _hint: EventHint) => {
       // 開発環境でも規約同意をチェックする
       if (settingStore.getTermsAccepted() !== true) {
