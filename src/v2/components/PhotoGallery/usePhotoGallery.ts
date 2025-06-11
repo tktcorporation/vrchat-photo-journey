@@ -4,6 +4,7 @@ import pathe from 'pathe';
 import { useMemo } from 'react';
 import { VRChatPhotoFileNameWithExtSchema } from '../../../valueObjects';
 import type { Photo } from '../../types/photo';
+import type { Player } from '../LocationGroupHeader/PlayerList';
 import type { GroupedPhotos } from './useGroupPhotos';
 import {
   type DebugInfo as GroupingDebugInfo,
@@ -124,6 +125,30 @@ export function usePhotoGallery(
     debug: groupingDebug,
   } = useGroupPhotos(photoList, options?.onGroupingEnd);
 
+  const joinDates = useMemo(
+    () => Object.values(originalGroupedPhotos).map((g) => g.joinDateTime),
+    [originalGroupedPhotos],
+  );
+
+  const playerQueries = trpcReact.useQueries((t) =>
+    joinDates.map((dt) =>
+      t.logInfo.getPlayerListInSameWorld(dt, {
+        enabled: searchQuery.length > 0,
+        staleTime: 1000 * 60 * 5,
+        cacheTime: 1000 * 60 * 30,
+      }),
+    ),
+  );
+
+  const playersMap = useMemo(
+    () =>
+      joinDates.reduce<Record<string, Player[] | undefined>>((acc, dt, idx) => {
+        acc[dt.toISOString()] = playerQueries[idx]?.data;
+        return acc;
+      }, {}),
+    [joinDates, playerQueries],
+  );
+
   const filteredGroupedPhotos = useMemo(() => {
     if (!searchQuery) return originalGroupedPhotos;
 
@@ -135,6 +160,15 @@ export function usePhotoGallery(
         filtered[key] = group;
         continue;
       }
+
+      const players = playersMap[group.joinDateTime.toISOString()];
+      if (
+        players?.some((p: Player) => p.playerName.toLowerCase().includes(query))
+      ) {
+        filtered[key] = group;
+        continue;
+      }
+
       const matchingPhotos = group.photos.filter((photo: Photo) =>
         photo.fileNameWithExt.value.toLowerCase().includes(query),
       );
@@ -143,7 +177,7 @@ export function usePhotoGallery(
       }
     }
     return filtered;
-  }, [originalGroupedPhotos, searchQuery]);
+  }, [originalGroupedPhotos, searchQuery, playersMap]);
 
   const isLoading = isLoadingPhotos || isLoadingGrouping;
 
