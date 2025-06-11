@@ -1,5 +1,5 @@
 import { performance } from 'node:perf_hooks';
-import { Op } from '@sequelize/core';
+import { Op, col, fn, literal } from '@sequelize/core';
 import * as datefns from 'date-fns';
 import * as neverthrow from 'neverthrow';
 import { match } from 'ts-pattern';
@@ -425,4 +425,22 @@ export const getPlayerNameSuggestions = async (
   });
 
   return playerJoinLogs.map((log) => log.playerName);
+};
+
+/**
+ * よく遊ぶプレイヤー名のリストを取得する（頻度順）
+ * @param limit 取得する最大件数
+ * @returns よく遊ぶプレイヤー名の配列
+ */
+export const getFrequentPlayerNames = async (
+  limit: number,
+): Promise<string[]> => {
+  const playerCounts = await VRChatPlayerJoinLogModel.findAll({
+    attributes: ['playerName', [fn('COUNT', col('playerName')), 'count']],
+    group: ['playerName'],
+    order: [[literal('count'), 'DESC']],
+    limit,
+  });
+
+  return playerCounts.map((player) => player.playerName);
 };

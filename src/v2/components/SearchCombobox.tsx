@@ -1,8 +1,7 @@
-import { trpcReact } from '@/trpc';
 import { Search } from 'lucide-react';
-import React, { memo, useCallback, useEffect, useState } from 'react';
-import { Combobox, type ComboboxOption } from '../../components/ui/combobox';
+import React, { memo, useState } from 'react';
 import { useI18n } from '../i18n/store';
+import SearchOverlay from './SearchOverlay';
 
 interface SearchComboboxProps {
   searchQuery: string;
@@ -11,81 +10,57 @@ interface SearchComboboxProps {
 }
 
 /**
- * 検索候補付きのコンボボックス型検索バー
- * 検索ボックスに直接入力でき、候補が表示される
+ * Arc/Slackスタイルの検索トリガーボタン
+ * クリック時にオーバーレイ検索モーダルを開く
  */
 const SearchCombobox = memo(
   ({ searchQuery, onSearch, className }: SearchComboboxProps) => {
     const { t } = useI18n();
-    const [debouncedQuery, setDebouncedQuery] = useState('');
+    const [isOverlayOpen, setIsOverlayOpen] = useState(false);
 
-    // デバウンス処理
-    useEffect(() => {
-      const timer = setTimeout(() => {
-        setDebouncedQuery(searchQuery);
-      }, 300);
+    const handleOpenOverlay = () => {
+      setIsOverlayOpen(true);
+    };
 
-      return () => clearTimeout(timer);
-    }, [searchQuery]);
+    const handleCloseOverlay = () => {
+      setIsOverlayOpen(false);
+    };
 
-    // ワールド名の候補を取得
-    const { data: worldSuggestions = [], isLoading: isLoadingWorlds } =
-      trpcReact.logInfo.getWorldNameSuggestions.useQuery(
-        { query: debouncedQuery, limit: 5 },
-        {
-          enabled: debouncedQuery.length > 0,
-          staleTime: 1000 * 60 * 5, // 5分間キャッシュ
-        },
-      );
-
-    // プレイヤー名の候補を取得
-    const { data: playerSuggestions = [], isLoading: isLoadingPlayers } =
-      trpcReact.logInfo.getPlayerNameSuggestions.useQuery(
-        { query: debouncedQuery, limit: 5 },
-        {
-          enabled: debouncedQuery.length > 0,
-          staleTime: 1000 * 60 * 5, // 5分間キャッシュ
-        },
-      );
-
-    // 候補オプションを統合
-    const options: ComboboxOption[] = [
-      ...worldSuggestions.map((world) => ({
-        value: `world:${world}`,
-        label: `🌍 ${world}`,
-      })),
-      ...playerSuggestions.map((player) => ({
-        value: `player:${player}`,
-        label: `👤 ${player}`,
-      })),
-    ];
-
-    const handleSelect = useCallback((_value: string) => {
-      // 候補選択時は何も追加しない（onSearchChangeで既に更新済み）
-    }, []);
-
-    const isLoading = isLoadingWorlds || isLoadingPlayers;
+    const handleSearch = (query: string) => {
+      onSearch(query);
+      setIsOverlayOpen(false);
+    };
 
     return (
-      <div className={`relative ${className || ''}`}>
-        <div className="absolute inset-0 left-0 pl-4 flex items-center pointer-events-none z-10 bg-white/60 dark:bg-gray-900/40 backdrop-blur-xl rounded-2xl">
-          <Search className="h-4 w-4 text-muted-foreground/30 transition-colors duration-300" />
-        </div>
-        <Combobox
-          options={options}
-          searchQuery={searchQuery}
-          onSearchChange={onSearch}
-          onSelect={handleSelect}
-          placeholder={t('common.search.placeholder')}
-          emptyText={
-            debouncedQuery.length > 0
-              ? '候補が見つかりません'
-              : '検索文字を入力してください'
-          }
-          loading={isLoading}
-          className="pl-12 h-7 min-w-0"
+      <>
+        {/* 検索トリガーボタン */}
+        <button
+          type="button"
+          onClick={handleOpenOverlay}
+          className={`relative flex items-center w-full h-7 bg-white/60 dark:bg-gray-900/40 backdrop-blur-xl rounded-2xl border-0 px-4 py-2 text-sm font-medium transition-all duration-300 hover:bg-white/70 dark:hover:bg-gray-900/50 hover:shadow-md hover:shadow-black/5 dark:hover:shadow-white/5 ${
+            className || ''
+          }`}
+          aria-label="検索を開く"
+        >
+          <Search className="h-4 w-4 text-muted-foreground/30 mr-3 flex-shrink-0" />
+          <span className="flex-1 text-left text-muted-foreground/50 truncate">
+            {searchQuery || t('common.search.placeholder')}
+          </span>
+          {searchQuery && (
+            <div className="ml-2 text-xs text-muted-foreground/60 bg-gray-100/50 dark:bg-gray-800/50 px-2 py-0.5 rounded-md">
+              検索中
+            </div>
+          )}
+        </button>
+
+        {/* 検索オーバーレイ */}
+        <SearchOverlay
+          isOpen={isOverlayOpen}
+          onClose={handleCloseOverlay}
+          onSearch={handleSearch}
+          initialQuery={searchQuery}
         />
-      </div>
+      </>
     );
   },
 );

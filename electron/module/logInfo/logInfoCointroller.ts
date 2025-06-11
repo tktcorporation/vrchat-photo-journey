@@ -11,6 +11,7 @@ import {
   VRChatPhotoFileNameWithExtSchema,
 } from './../../valueObjects';
 import {
+  getFrequentPlayerNames,
   getPlayerNameSuggestions,
   getWorldNameSuggestions,
   loadLogInfoIndexFromVRChatLog,
@@ -242,6 +243,17 @@ export const logInfoRouter = () =>
       const joinLogList = await getVRCWorldJoinLogList();
       return joinLogList;
     }),
+    /**
+     * よく遊ぶプレイヤー名のリストを取得する
+     * @param limit - 最大取得件数（デフォルト: 5）
+     * @returns よく遊ぶプレイヤー名の配列（頻度順）
+     */
+    getFrequentPlayerNames: procedure
+      .input(z.object({ limit: z.number().min(1).max(20).default(5) }))
+      .query(async ({ input }) => {
+        const frequentPlayerNames = await getFrequentPlayerNames(input.limit);
+        return frequentPlayerNames;
+      }),
     getRecentVRChatWorldJoinLogByVRChatPhotoName: procedure
       .input(VRChatPhotoFileNameWithExtSchema)
       .query(async (ctx) => {
