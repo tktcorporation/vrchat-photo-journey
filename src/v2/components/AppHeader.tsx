@@ -174,7 +174,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
       {/* 中央: 検索バー */}
       {showGalleryControls && setSearchQuery && (
         <div
-          className="flex-1 min-w-0 max-w-xs mx-2"
+          className="flex-1 min-w-0 max-w-md mx-4"
           style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
         >
           <SearchCombobox searchQuery={searchQuery} onSearch={setSearchQuery} />

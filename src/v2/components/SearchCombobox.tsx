@@ -68,8 +68,8 @@ const SearchCombobox = memo(
 
     return (
       <div className={`relative ${className || ''}`}>
-        <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none z-10">
-          <Search className="h-3 w-3 text-muted-foreground" />
+        <div className="absolute inset-0 left-0 pl-4 flex items-center pointer-events-none z-10 bg-white/60 dark:bg-gray-900/40 backdrop-blur-xl rounded-2xl">
+          <Search className="h-4 w-4 text-muted-foreground/30 transition-colors duration-300" />
         </div>
         <Combobox
           options={options}
@@ -83,7 +83,7 @@ const SearchCombobox = memo(
               : '検索文字を入力してください'
           }
           loading={isLoading}
-          className="pl-7 h-7 text-xs"
+          className="pl-12 h-7 min-w-0"
         />
       </div>
     );

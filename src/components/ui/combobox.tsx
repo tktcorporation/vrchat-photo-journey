@@ -129,7 +129,7 @@ export function Combobox({
       <input
         ref={inputRef}
         type="search"
-        className="flex h-full w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+        className="flex h-full w-full rounded-2xl border-0 bg-white/60 dark:bg-gray-900/40 backdrop-blur-xl px-4 py-2 text-sm font-medium placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:bg-white/80 dark:focus-visible:bg-gray-900/60 focus-visible:shadow-lg focus-visible:shadow-primary/10 focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-500 ease-out hover:bg-white/70 dark:hover:bg-gray-900/50 hover:shadow-md hover:shadow-black/5 dark:hover:shadow-white/5"
         placeholder={placeholder}
         value={searchQuery}
         onChange={handleInputChange}
@@ -145,29 +145,34 @@ export function Combobox({
       {searchQuery && onClear && (
         <button
           type="button"
-          className="absolute right-1 top-1/2 transform -translate-y-1/2 h-5 w-5 p-0 flex items-center justify-center hover:bg-muted/40 rounded transition-colors z-10"
+          className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 flex items-center justify-center hover:bg-muted/40 rounded-full transition-colors z-10"
           onClick={onClear}
           aria-label="検索をクリア"
         >
-          <X className="h-3 w-3" />
+          <X className="h-3.5 w-3.5" />
         </button>
       )}
 
       {open && (
-        <div className="absolute top-full z-50 mt-1 w-full rounded-md border bg-popover p-0 text-popover-foreground shadow-md outline-none animate-in">
-          <div className="max-h-60 overflow-auto">
+        <div className="absolute top-full z-50 mt-3 w-full bg-white/90 dark:bg-gray-900/90 backdrop-blur-2xl rounded-2xl border-0 p-3 shadow-2xl shadow-black/10 dark:shadow-black/30 outline-none animate-in">
+          <div className="max-h-60 overflow-auto scrollbar-hide">
             {loading ? (
-              <div className="py-6 text-center text-sm">Loading...</div>
+              <div className="py-8 text-center text-sm text-muted-foreground/80 font-medium">
+                検索中...
+              </div>
             ) : options.length === 0 ? (
-              <div className="py-6 text-center text-sm">{emptyText}</div>
+              <div className="py-8 text-center text-sm text-muted-foreground/80 font-medium">
+                {emptyText}
+              </div>
             ) : (
               options.map((option, index) => (
                 <div
                   key={option.value}
                   className={cn(
-                    'relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
-                    index === highlightedIndex &&
-                      'bg-accent text-accent-foreground',
+                    'relative flex cursor-pointer select-none items-center rounded-xl px-4 py-3 text-sm font-medium outline-none transition-colors duration-150 data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+                    index === highlightedIndex
+                      ? 'bg-primary/10 dark:bg-primary/20'
+                      : 'hover:bg-gray-100/50 dark:hover:bg-gray-800/50',
                   )}
                   onClick={() => handleSelect(option.value)}
                   onKeyDown={(e) => {
@@ -183,11 +188,13 @@ export function Combobox({
                 >
                   <Check
                     className={cn(
-                      'mr-2 h-4 w-4',
+                      'mr-3 h-4 w-4 text-primary transition-opacity duration-200',
                       index === highlightedIndex ? 'opacity-100' : 'opacity-0',
                     )}
                   />
-                  {option.label}
+                  <span className="flex-1 text-gray-900 dark:text-gray-100">
+                    {option.label}
+                  </span>
                 </div>
               ))
             )}
