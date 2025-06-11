@@ -103,7 +103,10 @@ export function BoldPreviewSvg({
     setVisiblePlayers(visible);
     setHiddenCount(showAllPlayers ? 0 : players.length - visible.length);
   }, [players, showAllPlayers]);
-
+  /**
+   * プレイヤー表示数に応じてSVG全体の高さを計算するヘルパー。
+   * 同ファイル内でプレビューサイズを決定するためにのみ使用される。
+   */
   const calculatePreviewHeight = () => {
     if (!showAllPlayers) return 600;
     const playerCount = players?.length || 0;

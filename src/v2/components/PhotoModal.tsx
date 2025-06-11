@@ -28,6 +28,10 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose }) => {
   const placeholderUrl = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${photo.width} ${photo.height}'%3E%3Crect width='100%25' height='100%25' fill='%23f3f4f6'/%3E%3C/svg%3E`;
 
   useEffect(() => {
+    /**
+     * ウィンドウサイズとサイドバー表示状態から画像表示領域の寸法を再計算する。
+     * リサイズイベントと初期表示時に呼び出される内部関数。
+     */
     const updateDimensions = () => {
       const modalPadding = 32;
       const sidebarWidth = showInfo ? 320 : 0;

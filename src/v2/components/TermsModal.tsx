@@ -72,6 +72,10 @@ export const TermsModal = ({
 
   const terms = jaTerms;
 
+  /**
+   * 利用規約への同意を記録し、親コンポーネントへ通知する。
+   * TermsModal 内部でのみ使用されるクリックハンドラ。
+   */
   const handleAccept = () => {
     setAccepted(true);
     onAccept();
