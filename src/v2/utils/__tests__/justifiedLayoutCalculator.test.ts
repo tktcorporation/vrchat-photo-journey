@@ -10,6 +10,10 @@ describe('JustifiedLayoutCalculator', () => {
     calculator = new JustifiedLayoutCalculator();
   });
 
+  /**
+   * 指定数のダミー写真データを生成するユーティリティ。
+   * レイアウト計算のテストで一括生成に利用する。
+   */
   const createMockPhotos = (count: number): Photo[] =>
     Array.from({ length: count }, (_, i) => ({
       id: `photo-${i}`,

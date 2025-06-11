@@ -45,6 +45,11 @@ export const router = trpcRouter({
   updater: updaterRouter,
   subscribeToast: procedure.subscription(() => {
     return observable((emit) => {
+      /**
+       * メインプロセスの `toast` イベントを受け取り
+       * サブスクライバーへ文字列を送信する内部関数。
+       * subscribeToast の Observable 内でのみ使用される。
+       */
       function onToast(text: string) {
         emit.next(text);
       }

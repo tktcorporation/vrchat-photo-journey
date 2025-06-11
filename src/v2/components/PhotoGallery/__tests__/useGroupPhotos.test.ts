@@ -4,6 +4,10 @@ import { groupPhotosBySession } from '../useGroupPhotos';
 import type { WorldJoinLog } from '../useGroupPhotos';
 
 // モックデータの作成ヘルパー
+/**
+ * 指定日時の写真オブジェクトを生成するテスト用関数。
+ * groupPhotosBySession の検証で写真一覧を作る際に使用する。
+ */
 const createPhoto = (id: string | number, takenAt: Date): Photo => ({
   id: id.toString(),
   url: `photo-${id}`,
@@ -19,6 +23,10 @@ const createPhoto = (id: string | number, takenAt: Date): Photo => ({
   },
 });
 
+/**
+ * ワールド参加ログのモックを生成するヘルパー。
+ * 参加日時やワールド名を指定してテストデータを作成する。
+ */
 const createWorldJoinLog = (
   id: string | number,
   joinDateTime: Date,

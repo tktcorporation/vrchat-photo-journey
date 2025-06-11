@@ -19,6 +19,10 @@ interface RendererGlobalElectronTRPC {
 
 const ELECTRON_TRPC_CHANNEL = 'electron-trpc';
 
+/**
+ * tRPC 用の IPC チャンネルをレンダラに公開するヘルパー。
+ * preload スクリプトの `loaded` イベントで呼び出される。
+ */
 const exposeElectronTRPC = () => {
   const electronTRPC: RendererGlobalElectronTRPC = {
     sendMessage: (operation) =>

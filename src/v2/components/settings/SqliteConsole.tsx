@@ -65,6 +65,10 @@ const SqliteConsole: React.FC<SqliteConsoleProps> = ({ isOpen, onClose }) => {
     },
   ];
 
+  /**
+   * 入力されたSQLクエリを実行して結果を表示するハンドラー。
+   * 実行ボタンやショートカットキーから呼び出される。
+   */
   const handleExecute = async () => {
     if (!query.trim()) return;
 
@@ -76,6 +80,9 @@ const SqliteConsole: React.FC<SqliteConsoleProps> = ({ isOpen, onClose }) => {
     }
   };
 
+  /**
+   * テキストエリアで Cmd/Ctrl+Enter を押した際にクエリを実行する。
+   */
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
       event.preventDefault();
@@ -83,12 +90,18 @@ const SqliteConsole: React.FC<SqliteConsoleProps> = ({ isOpen, onClose }) => {
     }
   };
 
+  /**
+   * デバッグログ出力の有無を切り替えるチェックボックス用ハンドラー。
+   */
   const handleDebugLogChange = (checked: boolean | 'indeterminate') => {
     const newLevel = checked ? 'debug' : 'info';
     setIsDebugLogEnabled(Boolean(checked));
     setLogLevel({ level: newLevel });
   };
 
+  /**
+   * Sentry 連携をテストするため意図的にエラーを投げる関数。
+   */
   const handleThrowError = async () => {
     try {
       await throwErrorForSentryTest();

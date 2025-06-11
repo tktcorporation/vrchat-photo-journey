@@ -3,6 +3,10 @@ import React from 'react';
 import { describe, expect, it } from 'vitest';
 import { type Player, PlayerList } from '../PlayerList';
 
+/**
+ * PlayerList コンポーネントのテスト用に
+ * シンプルなプレイヤーオブジェクトを生成するヘルパー。
+ */
 const createMockPlayer = (name: string, id: string): Player => ({
   id,
   playerId: `usr_${id}`,

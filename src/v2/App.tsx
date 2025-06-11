@@ -102,6 +102,10 @@ function AppContent() {
     });
 
   useEffect(() => {
+    /**
+     * 規約同意状況を確認した上で Sentry を初期化する内部処理。
+     * termsStatus が取得できたタイミングで useEffect から呼ばれる。
+     */
     const checkTermsAndInitializeSentry = async () => {
       if (!termsStatus) return; // termsStatusが取得できるまで待つ
 
@@ -131,6 +135,10 @@ function AppContent() {
     checkTermsAndInitializeSentry();
   }, [termsStatus, initializeSentryMain]); // initializeSentryMain と termsStatus を依存配列に含める
 
+  /**
+   * 規約同意ボタン押下時に呼び出され、
+   * 同意状態を保存して Sentry 初期化を完了させる。
+   */
   const handleTermsAccept = async () => {
     await setTermsAccepted({
       accepted: true,

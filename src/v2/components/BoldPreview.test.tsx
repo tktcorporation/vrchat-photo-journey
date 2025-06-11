@@ -20,6 +20,10 @@ afterAll(() => {
 });
 
 describe('BoldPreviewSvg', () => {
+  /**
+   * 指定数分のモックプレイヤー配列を生成するヘルパー。
+   * 各テストケースでプレイヤーリストを用意する際に利用する。
+   */
   const generatePlayers = (count: number) => {
     return Array.from({ length: count }, (_, i) => ({
       id: `id-${i}`,
