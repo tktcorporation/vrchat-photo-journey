@@ -52,6 +52,8 @@ function AppContent() {
           dsn: process.env.SENTRY_DSN, // 環境変数からDSNを取得
           environment: isDev ? 'development' : 'production',
           debug: isDev,
+          // Sentryプラグインが注入するリリース識別子
+          release: __SENTRY_RELEASE__,
           tags: {
             source: 'electron-renderer',
           },
