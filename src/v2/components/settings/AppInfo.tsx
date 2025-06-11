@@ -18,10 +18,12 @@ const AppInfo = memo(() => {
   const [_clickCount, setClickCount] = useState(0);
   const [showSqlConsole, setShowSqlConsole] = useState(false);
 
+  /** ログフォルダをエクスプローラーで開く */
   const handleOpenLog = () => {
     openLog();
   };
 
+  /** バージョン番号クリックで隠し機能を起動する */
   const handleVersionClick = () => {
     setClickCount((prev) => {
       const newCount = prev + 1;
@@ -33,6 +35,7 @@ const AppInfo = memo(() => {
     });
   };
 
+  /** バージョン要素のキーボード操作を処理する */
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();

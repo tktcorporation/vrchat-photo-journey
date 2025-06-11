@@ -80,18 +80,22 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
     checkForUpdates.mutate();
   }, []);
 
+  /** ウィンドウを最小化する */
   const handleMinimize = () => {
     window.Main?.Minimize();
   };
 
+  /** ウィンドウを最大化する */
   const handleMaximize = () => {
     window.Main?.Maximize();
   };
 
+  /** アプリケーションを終了する */
   const handleClose = () => {
     window.Main?.Close();
   };
 
+  /** ログ同期をトリガーしてギャラリーを更新する */
   const handleRefresh = async () => {
     if (!loadingState || loadingState.isRefreshing || isSyncing) {
       return;

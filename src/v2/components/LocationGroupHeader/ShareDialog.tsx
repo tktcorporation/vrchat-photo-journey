@@ -71,6 +71,9 @@ export const ShareDialog = ({
     trpcReact.electronUtil.downloadImageAsPhotoLogPng.useMutation();
 
   // プレビュー画像を生成する関数
+  /**
+   * 共有用のプレビュー画像を生成して state に保存する。
+   */
   const generatePreview = async () => {
     if (!base64Data || !worldName) return;
     setIsGeneratingPreview(true);
@@ -96,6 +99,7 @@ export const ShareDialog = ({
     }
   }, [base64Data, worldName, players, showAllPlayers]);
 
+  /** 生成済みの画像をクリップボードへコピーする */
   const handleCopyShareImageToClipboard = async () => {
     if (!previewBase64) return;
     await downloadOrCopyImageAsPng({
@@ -110,6 +114,7 @@ export const ShareDialog = ({
     });
   };
 
+  /** 生成済みの画像をダウンロードする */
   const handleDownloadShareImagePng = async () => {
     if (!previewBase64) return;
     await downloadImageMutation.mutateAsync({

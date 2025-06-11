@@ -82,6 +82,7 @@ const PhotoGallery = memo((props: PhotoGalleryProps) => {
     });
 
   // 選択された写真をクリップボードにコピーするハンドラ
+  /** 選択写真のパスを集めて一括コピーする */
   const handleCopySelected = () => {
     if (selectedPhotos.size === 0) {
       return;
