@@ -1,4 +1,8 @@
 // アスペクト比に基づいて最適なサイズを計算
+/**
+ * 画像の縦横比を維持したまま、指定された最大サイズ内に収める。
+ * @returns 計算後の幅と高さ
+ */
 export function calculateOptimalDimensions(
   originalWidth: number,
   originalHeight: number,

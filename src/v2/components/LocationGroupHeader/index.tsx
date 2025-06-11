@@ -107,6 +107,7 @@ export const LocationGroupHeader = ({
     : `https://vrchat.com/home/world/${worldId}/info`;
 
   // Event handlers
+  /** プレイヤー名一覧をクリップボードへコピーする */
   const handleCopyPlayers = async () => {
     if (!players) return;
     const playerNames = players.map((p) => p.playerName);

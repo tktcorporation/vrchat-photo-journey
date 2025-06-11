@@ -49,6 +49,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose }) => {
     return () => window.removeEventListener('resize', updateDimensions);
   }, [photo, showInfo]);
 
+  /** 日付を日本語表記に整形する */
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat('ja-JP', {
       year: 'numeric',
@@ -57,6 +58,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose }) => {
     }).format(date);
   };
 
+  /** Esc キー押下でモーダルを閉じる */
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === 'Escape') {

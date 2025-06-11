@@ -92,6 +92,7 @@ const PathSettingsComponent = memo(({ showRefreshAll }: PathSettingsProps) => {
   >(null);
 
   // 写真パスの検証を行う関数
+  /** 設定された写真ディレクトリが有効か確認する */
   const validatePhotoPath = async () => {
     // if (!photoDir?.value) return;
     // const result = await validatePhotoPathMutation.mutateAsync(photoDir.value);
@@ -103,6 +104,7 @@ const PathSettingsComponent = memo(({ showRefreshAll }: PathSettingsProps) => {
     validatePhotoPath();
   }, [photoDir?.value]);
 
+  /** 写真パスとログパスをまとめて検証する */
   const _validatePaths = async () => {
     setIsValidating(true);
     setValidationError(null);
@@ -153,6 +155,7 @@ const PathSettingsComponent = memo(({ showRefreshAll }: PathSettingsProps) => {
     }
   };
 
+  /** フォトディレクトリ選択ダイアログを開く */
   const handleBrowsePhotoDirectory = async () => {
     try {
       const result = await setPhotoDirectoryMutation.mutateAsync();
@@ -164,6 +167,7 @@ const PathSettingsComponent = memo(({ showRefreshAll }: PathSettingsProps) => {
     }
   };
 
+  /** ログファイル選択ダイアログを開く */
   const handleBrowseLogFile = async () => {
     try {
       const result = await setLogPathMutation.mutateAsync();
@@ -176,6 +180,7 @@ const PathSettingsComponent = memo(({ showRefreshAll }: PathSettingsProps) => {
     }
   };
 
+  /** ログファイル入力欄の変更を処理する */
   const handleLogInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setLogInputValue(event.target.value);
     setIsLogPathManuallyChanged(
@@ -183,6 +188,7 @@ const PathSettingsComponent = memo(({ showRefreshAll }: PathSettingsProps) => {
     );
   };
 
+  /** ログファイルパスを保存する */
   const handleLogPathSave = async () => {
     try {
       await setLogPathDirectlyMutation.mutateAsync(logInputValue, {
@@ -203,6 +209,7 @@ const PathSettingsComponent = memo(({ showRefreshAll }: PathSettingsProps) => {
   };
 
   // 写真ディレクトリ用のハンドラー関数（ログファイルと同じパターン）
+  /** 写真ディレクトリ入力欄の変更を処理する */
   const handlePhotoInputChange = (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
@@ -212,6 +219,7 @@ const PathSettingsComponent = memo(({ showRefreshAll }: PathSettingsProps) => {
     );
   };
 
+  /** 写真ディレクトリのパスを保存する */
   const handlePhotoPathSave = async () => {
     try {
       await setPhotoPathDirectlyMutation.mutateAsync(photoInputValue, {
@@ -245,6 +253,7 @@ const PathSettingsComponent = memo(({ showRefreshAll }: PathSettingsProps) => {
    * - この順序で処理しないと、新しいワールド参加ログがDBに保存されず、
    *   新しい写真が古いワールドグループに誤って割り当てられます
    */
+  /** すべてのログを再読み込みしてインデックスを再構築する */
   const handleRefreshAll = async () => {
     if (!isRefreshing) {
       // 全件処理モードでログを同期
@@ -252,6 +261,7 @@ const PathSettingsComponent = memo(({ showRefreshAll }: PathSettingsProps) => {
     }
   };
 
+  /** 追加読み込み用フォルダを選択する */
   const handleBrowseExtraDirectory = async () => {
     const result = await showOpenDialogMutation.mutateAsync({
       properties: ['openDirectory'],
@@ -261,6 +271,7 @@ const PathSettingsComponent = memo(({ showRefreshAll }: PathSettingsProps) => {
     }
   };
 
+  /** 追加フォルダリストから指定インデックスを削除する */
   const handleRemoveExtraDirectory = (index: number) => {
     const newDirs = [...extraDirs];
     newDirs.splice(index, 1);
