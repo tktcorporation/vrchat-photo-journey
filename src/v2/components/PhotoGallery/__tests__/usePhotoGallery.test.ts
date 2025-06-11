@@ -69,6 +69,17 @@ const createMockState = () => {
 
 const mockState = createMockState();
 
+const mockPlayers = [
+  {
+    id: 'p1',
+    playerId: 'p1',
+    playerName: 'Test Player',
+    joinDateTime: new Date('2024-01-01T01:00:00Z'),
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+];
+
 // useGroupPhotosのモック
 vi.mock('../useGroupPhotos', () => ({
   useGroupPhotos: (photos: Photo[]) => {
@@ -112,6 +123,14 @@ vi.mock('../useGroupPhotos', () => ({
 
 vi.mock('./../../../../trpc', () => ({
   trpcReact: {
+    useQueries: (cb: (t: Record<string, unknown>) => unknown[]) => {
+      const opts = cb({
+        logInfo: {
+          getPlayerListInSameWorld: (_dt: Date) => ({}),
+        },
+      });
+      return opts.map(() => ({ data: mockPlayers, isLoading: false }));
+    },
     vrchatPhoto: {
       getVrchatPhotoPathModelList: {
         useQuery: () => mockState.getState(),
@@ -125,6 +144,14 @@ vi.mock('./../../../../trpc', () => ({
     },
     vrchatWorldJoinLog: {
       getVRChatWorldJoinLogList: {
+        useQuery: () => ({
+          data: [],
+          isLoading: false,
+        }),
+      },
+    },
+    logInfo: {
+      getPlayerListInSameWorld: {
         useQuery: () => ({
           data: [],
           isLoading: false,
@@ -193,6 +220,26 @@ describe('usePhotoGallery', () => {
     expect(Object.keys(result.current.groupedPhotos).length).toBe(
       initialGroupCount,
     );
+  });
+
+  it('プレイヤー名でグループをフィルタリングできる', () => {
+    const { result, rerender } = renderHook(
+      (props: { searchQuery: string }) => usePhotoGallery(props.searchQuery),
+      {
+        initialProps: { searchQuery: '' },
+      },
+    );
+
+    act(() => {
+      mockState.setState(false, mockPhotos);
+      rerender({ searchQuery: 'Test Player' });
+      vi.runAllTimers();
+    });
+
+    expect(Object.keys(result.current.groupedPhotos).length).toBe(1);
+
+    rerender({ searchQuery: 'Unknown Player' });
+    expect(Object.keys(result.current.groupedPhotos).length).toBe(0);
   });
 
   it('Windows形式とUNIX形式のパスを正しく処理する', () => {
