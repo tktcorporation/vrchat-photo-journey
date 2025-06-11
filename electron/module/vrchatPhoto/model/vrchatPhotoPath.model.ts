@@ -64,6 +64,10 @@ interface VRChatPhotoPathCreationAttributes {
   height: number;
 }
 
+/**
+ * 写真パス一覧を一括で登録・更新する
+ * createVRChatPhotoPathIndex から呼び出される
+ */
 export const createOrUpdateListVRChatPhotoPath = async (
   attributes: VRChatPhotoPathCreationAttributes[],
 ): Promise<VRChatPhotoPathModel[]> => {
@@ -114,12 +118,20 @@ export const getVRChatPhotoPathByPhotoPath = async (
   });
 };
 
+/**
+ * モデルインスタンスを削除する
+ * validateVRChatPhotoPathModel から利用される
+ */
 export const deleteVRChatPhotoPathModel = async (
   photoPathModel: VRChatPhotoPathModel,
 ): Promise<void> => {
   await photoPathModel.destroy();
 };
 
+/**
+ * 写真枚数を年月単位で集計する
+ * vrchatPhotoRouter から統計情報として提供
+ */
 export const getCountByYearMonthList = async (): Promise<
   {
     photoTakenYear: number;
@@ -153,6 +165,7 @@ export const getCountByYearMonthList = async (): Promise<
   });
 };
 
+/** 最新の写真レコードを取得する */
 export const getLatestVRChatPhoto = async () => {
   return VRChatPhotoPathModel.findOne({
     order: [['photoTakenAt', 'DESC']],

@@ -3,12 +3,20 @@ import { logger } from '../../lib/logger';
 import type { VRChatWorldJoinLog } from '../vrchatLog/service';
 import * as model from './VRChatWorldJoinLogModel/s_model';
 
+/**
+ * ワールド参加ログをDBへ保存する
+ * loadLogInfoIndexFromVRChatLog から利用される
+ */
 export const createVRChatWorldJoinLogModel = async (
   vrchatWorldJoinLogList: VRChatWorldJoinLog[],
 ): Promise<model.VRChatWorldJoinLogModel[]> => {
   return model.createVRChatWorldJoinLog(vrchatWorldJoinLogList);
 };
 
+/**
+ * すべてのワールド参加ログを取得する
+ * デバッグ用のAPIから参照される
+ */
 export const findAllVRChatWorldJoinLogList = async (): Promise<
   model.VRChatWorldJoinLogModel[]
 > => {
@@ -78,6 +86,10 @@ export const findNextVRChatWorldJoinLog = async (
   return result.value;
 };
 
+/**
+ * 最も新しいワールド参加ログを取得する
+ * ログ同期処理で基準日時を求める際に使用
+ */
 export const findLatestWorldJoinLog = async () => {
   const result = await enqueueTask(() => model.findLatestWorldJoinLog());
 

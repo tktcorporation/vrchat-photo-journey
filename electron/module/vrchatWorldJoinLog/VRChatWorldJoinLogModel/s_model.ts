@@ -62,6 +62,10 @@ export class VRChatWorldJoinLogModel extends Model<
   declare updatedAt: CreationOptional<Date>;
 }
 
+/**
+ * ワールド参加ログを一括登録する
+ * service 層から呼び出される
+ */
 export const createVRChatWorldJoinLog = async (
   vrchatWorldJoinLogList: VRChatWorldJoinLog[],
 ): Promise<VRChatWorldJoinLogModel[]> => {
@@ -87,6 +91,7 @@ export const createVRChatWorldJoinLog = async (
   return [];
 };
 
+/** すべてのワールド参加ログを返す */
 export const findAllVRChatWorldJoinLogList = async () => {
   const vrchatWorldJoinLogList = await VRChatWorldJoinLogModel.findAll({
     order: [['joinDateTime', 'DESC']],
@@ -149,6 +154,7 @@ export const findNextVRChatWorldJoinLog = async (dateTime: Date) => {
   return vrchatWorldJoinLog;
 };
 
+/** 最新のワールド参加ログを取得する */
 export const findLatestWorldJoinLog = async () => {
   return VRChatWorldJoinLogModel.findOne({
     order: [['joinDateTime', 'DESC']],
