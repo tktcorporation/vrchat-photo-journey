@@ -41,6 +41,7 @@ export const usePlayerListDisplay = (players: Player[] | null) => {
   }, []);
 
   useEffect(() => {
+    /** コンテナ幅から表示可能なプレイヤー数を計算する */
     const calculateMaxVisiblePlayers = () => {
       if (
         !playerListContainerRef.current ||
@@ -98,6 +99,7 @@ export const usePlayerListDisplay = (players: Player[] | null) => {
   }, [players]);
 
   useEffect(() => {
+    /** ツールチップの位置をプレイヤーリストの下に更新する */
     const updateTooltipPosition = () => {
       if (playerListRef.current) {
         const rect = playerListRef.current.getBoundingClientRect();
@@ -118,6 +120,7 @@ export const usePlayerListDisplay = (players: Player[] | null) => {
     };
   }, []);
 
+  /** ツールチップの追従用マウスムーブハンドラ */
   const handleMouseMove = (event: React.MouseEvent) => {
     setTooltipPosition({
       top: event.clientY + 16,
@@ -125,6 +128,7 @@ export const usePlayerListDisplay = (players: Player[] | null) => {
     });
   };
 
+  /** コピー完了を一時的に表示する */
   const handleCopyPlayers = () => {
     setIsCopied(true);
     setTimeout(() => setIsCopied(false), 2000);

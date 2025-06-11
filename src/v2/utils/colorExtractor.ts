@@ -14,6 +14,10 @@ function getPixelData(img: HTMLImageElement): ImageData {
   return ctx.getImageData(0, 0, canvas.width, canvas.height);
 }
 
+/**
+ * RGB 値を HSL 値へ変換するユーティリティ関数。
+ * 色抽出処理の内部計算に使用される。
+ */
 function rgbToHsl(r: number, g: number, b: number): [number, number, number] {
   const rNorm = r / 255;
   const gNorm = g / 255;

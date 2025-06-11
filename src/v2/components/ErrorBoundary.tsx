@@ -6,12 +6,16 @@ interface Props {
   children: React.ReactNode;
 }
 
+/**
+ * エラーバウンダリー発火時に表示するフォールバック UI コンポーネント。
+ */
 const ErrorFallback: React.FC<{
   error: Error;
   resetErrorBoundary: () => void;
 }> = ({ error, resetErrorBoundary }) => {
   const reloadMutation = trpcReact.electronUtil.reloadWindow.useMutation();
 
+  /** エラー発生時にウィンドウをリロードして再試行する */
   const handleRetry = () => {
     reloadMutation.mutate();
     resetErrorBoundary();
@@ -46,6 +50,7 @@ const ErrorFallback: React.FC<{
  * 捕捉したエラーはログに出力されリロードボタンを提供する。
  */
 export const ErrorBoundary: React.FC<Props> = ({ children }) => {
+  /** 捕捉したエラー情報をコンソールに出力する */
   const onError = (error: Error, info: React.ErrorInfo) => {
     console.error('エラーバウンダリーでエラーをキャッチしました:', error, info);
   };
