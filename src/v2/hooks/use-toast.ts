@@ -58,6 +58,10 @@ interface State {
 
 const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>();
 
+/**
+ * 指定したトーストを一定時間後に自動削除するキューへ登録する。
+ * reducer や dispatch から呼び出される内部ユーティリティ。
+ */
 const addToRemoveQueue = (toastId: string) => {
   if (toastTimeouts.has(toastId)) {
     return;
@@ -74,6 +78,10 @@ const addToRemoveQueue = (toastId: string) => {
   toastTimeouts.set(toastId, timeout);
 };
 
+/**
+ * トースト状態を更新するリデューサー関数。
+ * アクションは内部の dispatch から送出される。
+ */
 const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case 'ADD_TOAST':
@@ -133,6 +141,10 @@ const listeners: Array<(state: State) => void> = [];
 
 let memoryState: State = { toasts: [] };
 
+/**
+ * reducer を実行し、登録されたリスナーへ状態変更を通知する。
+ * toast(), useToast() 内部からのみ利用される。
+ */
 function dispatch(action: Action) {
   memoryState = reducer(memoryState, action);
   for (const listener of listeners) {

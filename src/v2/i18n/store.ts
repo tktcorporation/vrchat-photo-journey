@@ -12,6 +12,10 @@ interface I18nState {
   t: (key: TranslationKey) => string;
 }
 
+/**
+ * UI 文言の多言語化を実現する zustand ストア。
+ * 各コンポーネントから useI18n() で呼び出され、翻訳文字列を提供する。
+ */
 export const useI18n = create<I18nState>()(
   persist<I18nState>(
     (set, get) => ({

@@ -395,6 +395,10 @@ const setTimeEventEmitter = (
 
 export { setTray, createOrGetWindow, setTimeEventEmitter };
 
+/**
+ * 他モジュールから設定ストアを利用できるよう初期化する。
+ * main プロセス起動時に一度だけ呼び出されることを想定。
+ */
 export const initializeSettingStoreForUtil = (): void => {
   if (settingStore === null) {
     settingStore = getSettingStore();

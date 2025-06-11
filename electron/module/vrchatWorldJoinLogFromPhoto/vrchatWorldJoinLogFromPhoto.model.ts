@@ -62,6 +62,10 @@ export class VRChatWorldJoinLogFromPhotoModel extends Model<
   declare updatedAt: CreationOptional<Date>;
 }
 
+/**
+ * 写真から抽出したワールド入室情報をデータベースに保存する。
+ * サービス層から呼び出される実体モデル操作関数。
+ */
 export const createVRChatWorldJoinLogFromPhoto = async (
   vrchatWorldJoinLogFromPhotoList: VRChatWorldJoinLogFromPhoto[],
 ): Promise<VRChatWorldJoinLogFromPhotoModel[]> => {
@@ -85,6 +89,10 @@ export const createVRChatWorldJoinLogFromPhoto = async (
   return vrchatWorldJoinLog;
 };
 
+/**
+ * 保存済みの写真由来ワールド入室ログを取得するモデル関数。
+ * controller 層やテストから利用される。
+ */
 export const findVRChatWorldJoinLogFromPhotoList = async (query?: {
   gtJoinDateTime?: Date;
   ltJoinDateTime?: Date;

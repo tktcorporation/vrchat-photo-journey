@@ -12,6 +12,10 @@ export const ThemeContext = createContext<ThemeContextType | undefined>(
   undefined,
 );
 
+/**
+ * アプリ全体のテーマ状態を提供するコンテキストプロバイダー。
+ * App.tsx で使用され、useTheme フックから参照される。
+ */
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
     return (localStorage.getItem('theme') as Theme) || 'system';

@@ -1,6 +1,10 @@
 import * as Model from './vrchatWorldJoinLogFromPhoto.model';
 import type { VRChatWorldJoinLogFromPhoto } from './vrchatWorldJoinLogFromPhoto.model';
 
+/**
+ * モデル層の createVRChatWorldJoinLogFromPhoto を呼び出し、
+ * 引数ログ情報を保存するサービス関数。
+ */
 export const createVRChatWorldJoinLogFromPhoto = async (
   logs: VRChatWorldJoinLogFromPhoto[],
 ) => {
@@ -14,6 +18,10 @@ export const createVRChatWorldJoinLogFromPhoto = async (
   return createdLogs;
 };
 
+/**
+ * 写真由来のワールド参加ログを取得するサービス関数。
+ * コントローラから利用され、モデルの検索結果を整形して返す。
+ */
 export const findVRChatWorldJoinLogFromPhotoList = async (query?: {
   gtJoinDateTime?: Date;
   ltJoinDateTime?: Date;
