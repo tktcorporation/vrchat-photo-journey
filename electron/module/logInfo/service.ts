@@ -1,9 +1,10 @@
 import { performance } from 'node:perf_hooks';
+import { Op } from '@sequelize/core';
 import * as datefns from 'date-fns';
 import * as neverthrow from 'neverthrow';
 import { match } from 'ts-pattern';
 import { logger } from '../../lib/logger';
-import type { VRChatPlayerJoinLogModel } from '../VRChatPlayerJoinLogModel/playerJoinInfoLog.model';
+import { VRChatPlayerJoinLogModel } from '../VRChatPlayerJoinLogModel/playerJoinInfoLog.model';
 import * as playerJoinLogService from '../VRChatPlayerJoinLogModel/playerJoinLog.service';
 import type { VRChatPlayerLeaveLogModel } from '../VRChatPlayerLeaveLogModel/playerLeaveLog.model';
 import * as playerLeaveLogService from '../VRChatPlayerLeaveLogModel/playerLeaveLog.service';
@@ -17,7 +18,7 @@ import type {
 } from '../vrchatLog/service';
 import type { VRChatPhotoPathModel } from '../vrchatPhoto/model/vrchatPhotoPath.model';
 import * as vrchatPhotoService from '../vrchatPhoto/vrchatPhoto.service';
-import type { VRChatWorldJoinLogModel } from '../vrchatWorldJoinLog/VRChatWorldJoinLogModel/s_model';
+import { VRChatWorldJoinLogModel } from '../vrchatWorldJoinLog/VRChatWorldJoinLogModel/s_model';
 import * as worldJoinLogService from '../vrchatWorldJoinLog/service';
 
 interface LogProcessingResults {
@@ -375,3 +376,53 @@ export async function loadLogInfoIndexFromVRChatLog({
 
   return neverthrow.ok(results);
 }
+
+/**
+ * 検索候補として利用可能なワールド名の一覧を取得する
+ * @param query 検索クエリ（部分一致）
+ * @param limit 最大件数
+ * @returns 検索クエリに一致するワールド名の配列
+ */
+export const getWorldNameSuggestions = async (
+  query: string,
+  limit: number,
+): Promise<string[]> => {
+  const worldJoinLogs = await VRChatWorldJoinLogModel.findAll({
+    attributes: ['worldName'],
+    where: {
+      worldName: {
+        [Op.like]: `%${query}%`,
+      },
+    },
+    group: ['worldName'],
+    order: [['worldName', 'ASC']],
+    limit,
+  });
+
+  return worldJoinLogs.map((log) => log.worldName);
+};
+
+/**
+ * 検索候補として利用可能なプレイヤー名の一覧を取得する
+ * @param query 検索クエリ（部分一致）
+ * @param limit 最大件数
+ * @returns 検索クエリに一致するプレイヤー名の配列
+ */
+export const getPlayerNameSuggestions = async (
+  query: string,
+  limit: number,
+): Promise<string[]> => {
+  const playerJoinLogs = await VRChatPlayerJoinLogModel.findAll({
+    attributes: ['playerName'],
+    where: {
+      playerName: {
+        [Op.like]: `%${query}%`,
+      },
+    },
+    group: ['playerName'],
+    order: [['playerName', 'ASC']],
+    limit,
+  });
+
+  return playerJoinLogs.map((log) => log.playerName);
+};
