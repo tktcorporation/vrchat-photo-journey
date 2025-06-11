@@ -38,15 +38,27 @@ const mockPhotos = [
 type MockPhotoType = (typeof mockPhotos)[number];
 
 // モックの設定
+/**
+ * テスト用の状態管理オブジェクトを生成するヘルパー関数。
+ * setState と getState を通じて疑似的なクエリ結果を制御する。
+ */
 const createMockState = () => {
   let isLoading = true;
   let photoData: MockPhotoType[] | undefined = undefined;
 
+  /**
+   * モックの読み込み状態とデータを更新する補助関数。
+   * 各テストケースから状態変更をシミュレートするために利用する。
+   */
   const setState = (loading: boolean, data: typeof photoData) => {
     isLoading = loading;
     photoData = data;
   };
 
+  /**
+   * useQuery の戻り値を模したオブジェクトを返す関数。
+   * renderHook 内で現在のモック状態を参照するのに使用する。
+   */
   const getState = () => ({
     data: photoData,
     isLoading,

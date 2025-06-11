@@ -13,6 +13,11 @@ import { trpcReact } from './trpc';
  * `App.tsx` のルートで使用され、API 通信とキャッシュ管理を行う環境を整える。
  */
 export default ({ children }: { children: React.ReactNode }) => {
+  /**
+   * tRPC や React Query のエラーをメインプロセスへ送り
+   * ユーザーへトースト表示するための共通ハンドラー。
+   * QueryClient の onError から呼び出される。
+   */
   const handleError = (error: Error) => {
     window.Main.sendErrorMessage(
       `Error caught by TrpcWrapper: ${error.toString()}. Stack trace: ${

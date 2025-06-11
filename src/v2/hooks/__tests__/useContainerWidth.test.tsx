@@ -54,6 +54,10 @@ class MockResizeObserver {
 global.ResizeObserver = MockResizeObserver as typeof ResizeObserver;
 
 // テスト用コンポーネント
+/**
+ * useContainerWidth フックの挙動を検証するための簡易コンポーネント。
+ * 各テストケースからレンダリングされる。
+ */
 function TestComponent({ debounceMs }: { debounceMs?: number }) {
   const { containerRef, containerWidth } = useContainerWidth(debounceMs);
 
@@ -127,6 +131,10 @@ describe('useContainerWidth', () => {
   });
 
   it('containerRef が null の場合はエラーが発生しない', () => {
+    /**
+     * ref を保持しない特殊ケース用のテストコンポーネント。
+     * containerRef が null の状況を再現するために使用する。
+     */
     function TestComponentWithNullRef() {
       const { containerWidth } = useContainerWidth();
 
