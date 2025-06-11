@@ -16,6 +16,7 @@ import { trpcReact as trpc } from '../../trpc';
 import type { UseLoadingStateResult } from '../hooks/useLoadingState';
 import { LOG_SYNC_MODE, useLogSync } from '../hooks/useLogSync';
 import { useI18n } from '../i18n/store';
+import SearchCombobox from './SearchCombobox';
 
 interface AppHeaderProps {
   searchQuery?: string;
@@ -173,29 +174,10 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
       {/* 中央: 検索バー */}
       {showGalleryControls && setSearchQuery && (
         <div
-          className="relative flex-1 min-w-0 max-w-xs mx-2"
+          className="flex-1 min-w-0 max-w-md mx-4"
           style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
         >
-          <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder={t('common.search.placeholder')}
-            className="pl-7 pr-8 h-7 text-xs"
-            value={searchQuery}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setSearchQuery(e.target.value)
-            }
-          />
-          {searchQuery && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="absolute right-0.5 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
-              onClick={() => setSearchQuery('')}
-            >
-              <X className="h-3 w-3" />
-            </Button>
-          )}
+          <SearchCombobox searchQuery={searchQuery} onSearch={setSearchQuery} />
         </div>
       )}
 

@@ -130,6 +130,7 @@ export function usePhotoGallery(
     [originalGroupedPhotos],
   );
 
+  // デバウンスされた検索クエリでのみプレイヤーデータを取得
   const playerQueries = trpcReact.useQueries((t) =>
     joinDates.map((dt) =>
       t.logInfo.getPlayerListInSameWorld(dt, {

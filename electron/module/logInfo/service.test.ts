@@ -561,3 +561,125 @@ describe('_getLogStoreFilePaths behavior within loadLogInfoIndexFromVRChatLog', 
     }
   });
 });
+
+// getFrequentPlayerNames のテストは実際のデータベース接続が必要なため、
+// 統合テストとして logInfoCointroller.test.ts に移動しました。
+// ここではコメントアウトしておきます。
+
+// describe('getFrequentPlayerNames', () => {
+//   beforeEach(async () => {
+//     // データベースをクリア
+//     const { VRChatPlayerJoinLogModel } = await import('../VRChatPlayerJoinLogModel/playerJoinInfoLog.model');
+//     await VRChatPlayerJoinLogModel.destroy({ where: {} });
+//   });
+//
+//   it('プレイヤー参加ログから頻度順に上位プレイヤー名を取得する', async () => {
+//     // テストデータの準備
+//     const { VRChatPlayerJoinLogModel } = await import('../VRChatPlayerJoinLogModel/playerJoinInfoLog.model');
+//     await VRChatPlayerJoinLogModel.bulkCreate([
+//       {
+//         playerName: 'Player1',
+//         joinDateTime: new Date('2024-01-01'),
+//         playerId: 'id1',
+//       },
+//       {
+//         playerName: 'Player1',
+//         joinDateTime: new Date('2024-01-02'),
+//         playerId: 'id1',
+//       },
+//       {
+//         playerName: 'Player1',
+//         joinDateTime: new Date('2024-01-03'),
+//         playerId: 'id1',
+//       },
+//       {
+//         playerName: 'Player2',
+//         joinDateTime: new Date('2024-01-01'),
+//         playerId: 'id2',
+//       },
+//       {
+//         playerName: 'Player2',
+//         joinDateTime: new Date('2024-01-02'),
+//         playerId: 'id2',
+//       },
+//       {
+//         playerName: 'Player3',
+//         joinDateTime: new Date('2024-01-01'),
+//         playerId: 'id3',
+//       },
+//     ]);
+//
+//     // getFrequentPlayerNames をインポートしてテスト
+//     const { getFrequentPlayerNames } = await import('./service');
+//     const result = await getFrequentPlayerNames(3);
+//
+//     // 頻度順（Player1: 3回, Player2: 2回, Player3: 1回）で返されることを確認
+//     expect(result).toEqual(['Player1', 'Player2', 'Player3']);
+//   });
+//
+//   it('limitパラメータが機能することを確認', async () => {
+//     // 5人のプレイヤーデータを作成
+//     const { VRChatPlayerJoinLogModel } = await import('../VRChatPlayerJoinLogModel/playerJoinInfoLog.model');
+//     await VRChatPlayerJoinLogModel.bulkCreate([
+//       { playerName: 'Player1', joinDateTime: new Date('2024-01-01'), playerId: 'id1' },
+//       { playerName: 'Player1', joinDateTime: new Date('2024-01-02'), playerId: 'id1' },
+//       { playerName: 'Player1', joinDateTime: new Date('2024-01-03'), playerId: 'id1' },
+//       { playerName: 'Player1', joinDateTime: new Date('2024-01-04'), playerId: 'id1' },
+//       { playerName: 'Player1', joinDateTime: new Date('2024-01-05'), playerId: 'id1' },
+//
+//       { playerName: 'Player2', joinDateTime: new Date('2024-01-01'), playerId: 'id2' },
+//       { playerName: 'Player2', joinDateTime: new Date('2024-01-02'), playerId: 'id2' },
+//       { playerName: 'Player2', joinDateTime: new Date('2024-01-03'), playerId: 'id2' },
+//       { playerName: 'Player2', joinDateTime: new Date('2024-01-04'), playerId: 'id2' },
+//
+//       { playerName: 'Player3', joinDateTime: new Date('2024-01-01'), playerId: 'id3' },
+//       { playerName: 'Player3', joinDateTime: new Date('2024-01-02'), playerId: 'id3' },
+//       { playerName: 'Player3', joinDateTime: new Date('2024-01-03'), playerId: 'id3' },
+//
+//       { playerName: 'Player4', joinDateTime: new Date('2024-01-01'), playerId: 'id4' },
+//       { playerName: 'Player4', joinDateTime: new Date('2024-01-02'), playerId: 'id4' },
+//
+//       { playerName: 'Player5', joinDateTime: new Date('2024-01-01'), playerId: 'id5' },
+//     ]);
+//
+//     const { getFrequentPlayerNames } = await import('./service');
+//
+//     // 上位2名のみ取得
+//     const result = await getFrequentPlayerNames(2);
+//
+//     expect(result).toHaveLength(2);
+//     expect(result).toEqual(['Player1', 'Player2']);
+//   });
+//
+//   it('プレイヤーログが存在しない場合は空配列を返す', async () => {
+//     const { getFrequentPlayerNames } = await import('./service');
+//     const result = await getFrequentPlayerNames(5);
+//
+//     expect(result).toEqual([]);
+//   });
+//
+//   it('同じ頻度のプレイヤーがいる場合でも正しく処理される', async () => {
+//     // 同じ頻度のプレイヤーデータを作成
+//     const { VRChatPlayerJoinLogModel } = await import('../VRChatPlayerJoinLogModel/playerJoinInfoLog.model');
+//     await VRChatPlayerJoinLogModel.bulkCreate([
+//       { playerName: 'PlayerA', joinDateTime: new Date('2024-01-01'), playerId: 'idA' },
+//       { playerName: 'PlayerA', joinDateTime: new Date('2024-01-02'), playerId: 'idA' },
+//
+//       { playerName: 'PlayerB', joinDateTime: new Date('2024-01-01'), playerId: 'idB' },
+//       { playerName: 'PlayerB', joinDateTime: new Date('2024-01-02'), playerId: 'idB' },
+//
+//       { playerName: 'PlayerC', joinDateTime: new Date('2024-01-01'), playerId: 'idC' },
+//     ]);
+//
+//     const { getFrequentPlayerNames } = await import('./service');
+//     const result = await getFrequentPlayerNames(3);
+//
+//     expect(result).toHaveLength(3);
+//     expect(result).toContain('PlayerA');
+//     expect(result).toContain('PlayerB');
+//     expect(result).toContain('PlayerC');
+//     // PlayerAとPlayerBは同じ頻度なので順序は不定だが、両方含まれている
+//     expect(result.slice(0, 2)).toEqual(expect.arrayContaining(['PlayerA', 'PlayerB']));
+//     expect(result[2]).toBe('PlayerC');
+//   });
+// });

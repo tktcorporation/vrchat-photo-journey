@@ -720,4 +720,218 @@ describe('getPlayerJoinListInSameWorld 統合テスト', () => {
       vi.mock('../vrchatWorldJoinLog/service');
     }
   });
+
+  describe('getFrequentPlayerNames tRPC endpoint', () => {
+    beforeEach(async () => {
+      // データベースをクリア
+      await client.__client.query('DELETE FROM VRChatPlayerJoinLogModels');
+    });
+
+    it('tRPCエンドポイント経由でよく遊ぶプレイヤー名を取得できる', async () => {
+      // モックを無効化して実際のサービスを使用
+      vi.unmock('../logInfo/service');
+
+      // テストデータの準備
+      await client.VRChatPlayerJoinLogModel.bulkCreate([
+        {
+          playerName: 'PopularPlayer',
+          joinDateTime: new Date('2024-01-01'),
+          playerId: 'id1',
+        },
+        {
+          playerName: 'PopularPlayer',
+          joinDateTime: new Date('2024-01-02'),
+          playerId: 'id1',
+        },
+        {
+          playerName: 'PopularPlayer',
+          joinDateTime: new Date('2024-01-03'),
+          playerId: 'id1',
+        },
+        {
+          playerName: 'PopularPlayer',
+          joinDateTime: new Date('2024-01-04'),
+          playerId: 'id1',
+        },
+
+        {
+          playerName: 'RegularPlayer',
+          joinDateTime: new Date('2024-01-01'),
+          playerId: 'id2',
+        },
+        {
+          playerName: 'RegularPlayer',
+          joinDateTime: new Date('2024-01-02'),
+          playerId: 'id2',
+        },
+        {
+          playerName: 'RegularPlayer',
+          joinDateTime: new Date('2024-01-03'),
+          playerId: 'id2',
+        },
+
+        {
+          playerName: 'CasualPlayer',
+          joinDateTime: new Date('2024-01-01'),
+          playerId: 'id3',
+        },
+        {
+          playerName: 'CasualPlayer',
+          joinDateTime: new Date('2024-01-02'),
+          playerId: 'id3',
+        },
+
+        {
+          playerName: 'NewPlayer',
+          joinDateTime: new Date('2024-01-01'),
+          playerId: 'id4',
+        },
+      ]);
+
+      // logInfoRouter をインポートしてテスト
+      const { logInfoRouter } = await import('./logInfoCointroller');
+      const router = logInfoRouter();
+
+      // tRPCエンドポイントを直接呼び出し
+      const result = await router.getFrequentPlayerNames({
+        input: { limit: 3 },
+      });
+
+      // 頻度順で返されることを確認
+      expect(result).toEqual([
+        'PopularPlayer',
+        'RegularPlayer',
+        'CasualPlayer',
+      ]);
+    });
+
+    it('limitパラメータが正しく機能する', async () => {
+      // モックを無効化
+      vi.unmock('../logInfo/service');
+
+      // テストデータの準備
+      await client.VRChatPlayerJoinLogModel.bulkCreate([
+        {
+          playerName: 'Player1',
+          joinDateTime: new Date('2024-01-01'),
+          playerId: 'id1',
+        },
+        {
+          playerName: 'Player1',
+          joinDateTime: new Date('2024-01-02'),
+          playerId: 'id1',
+        },
+        {
+          playerName: 'Player1',
+          joinDateTime: new Date('2024-01-03'),
+          playerId: 'id1',
+        },
+
+        {
+          playerName: 'Player2',
+          joinDateTime: new Date('2024-01-01'),
+          playerId: 'id2',
+        },
+        {
+          playerName: 'Player2',
+          joinDateTime: new Date('2024-01-02'),
+          playerId: 'id2',
+        },
+
+        {
+          playerName: 'Player3',
+          joinDateTime: new Date('2024-01-01'),
+          playerId: 'id3',
+        },
+
+        {
+          playerName: 'Player4',
+          joinDateTime: new Date('2024-01-01'),
+          playerId: 'id4',
+        },
+        {
+          playerName: 'Player5',
+          joinDateTime: new Date('2024-01-01'),
+          playerId: 'id5',
+        },
+      ]);
+
+      const { logInfoRouter } = await import('./logInfoCointroller');
+      const router = logInfoRouter();
+
+      // limit=2で取得
+      const result = await router.getFrequentPlayerNames({
+        input: { limit: 2 },
+      });
+
+      expect(result).toHaveLength(2);
+      expect(result).toEqual(['Player1', 'Player2']);
+    });
+
+    it('データが存在しない場合は空配列を返す', async () => {
+      vi.unmock('../logInfo/service');
+
+      const { logInfoRouter } = await import('./logInfoCointroller');
+      const router = logInfoRouter();
+
+      const result = await router.getFrequentPlayerNames({
+        input: { limit: 5 },
+      });
+
+      expect(result).toEqual([]);
+    });
+
+    it('デフォルトのlimit値が適用される', async () => {
+      vi.unmock('../logInfo/service');
+
+      // 6人のプレイヤーデータを作成（デフォルトlimit=5より多く）
+      await client.VRChatPlayerJoinLogModel.bulkCreate([
+        {
+          playerName: 'Player1',
+          joinDateTime: new Date('2024-01-01'),
+          playerId: 'id1',
+        },
+        {
+          playerName: 'Player2',
+          joinDateTime: new Date('2024-01-01'),
+          playerId: 'id2',
+        },
+        {
+          playerName: 'Player3',
+          joinDateTime: new Date('2024-01-01'),
+          playerId: 'id3',
+        },
+        {
+          playerName: 'Player4',
+          joinDateTime: new Date('2024-01-01'),
+          playerId: 'id4',
+        },
+        {
+          playerName: 'Player5',
+          joinDateTime: new Date('2024-01-01'),
+          playerId: 'id5',
+        },
+        {
+          playerName: 'Player6',
+          joinDateTime: new Date('2024-01-01'),
+          playerId: 'id6',
+        },
+      ]);
+
+      const { logInfoRouter } = await import('./logInfoCointroller');
+      const router = logInfoRouter();
+
+      // limitを指定せずに呼び出し（デフォルト=5が適用されるはず）
+      const result = await router.getFrequentPlayerNames({ input: {} });
+
+      expect(result).toHaveLength(5); // デフォルトの5件
+      expect(result).toEqual([
+        'Player1',
+        'Player2',
+        'Player3',
+        'Player4',
+        'Player5',
+      ]);
+    });
+  });
 });

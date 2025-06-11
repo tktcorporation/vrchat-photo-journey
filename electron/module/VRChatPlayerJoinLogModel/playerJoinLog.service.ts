@@ -41,6 +41,7 @@ type PlayerJoinLogData = {
  * @param props.endJoinDateTime 終了日時（nullの場合は開始日時から7日間）
  * @returns プレイヤー参加ログのリスト
  */
+
 export const getVRChatPlayerJoinLogListByJoinDateTime = async (props: {
   startJoinDateTime: Date;
   endJoinDateTime: Date | null;

@@ -10,7 +10,12 @@ import {
   type VRChatPhotoFileNameWithExt,
   VRChatPhotoFileNameWithExtSchema,
 } from './../../valueObjects';
-import { loadLogInfoIndexFromVRChatLog } from './service';
+import {
+  getFrequentPlayerNames,
+  getPlayerNameSuggestions,
+  getWorldNameSuggestions,
+  loadLogInfoIndexFromVRChatLog,
+} from './service';
 
 const getVRCWorldJoinLogList = async () => {
   const joinLogList = await worldJoinLogService.findAllVRChatWorldJoinLogList();
@@ -238,6 +243,17 @@ export const logInfoRouter = () =>
       const joinLogList = await getVRCWorldJoinLogList();
       return joinLogList;
     }),
+    /**
+     * よく遊ぶプレイヤー名のリストを取得する
+     * @param limit - 最大取得件数（デフォルト: 5）
+     * @returns よく遊ぶプレイヤー名の配列（頻度順）
+     */
+    getFrequentPlayerNames: procedure
+      .input(z.object({ limit: z.number().min(1).max(20).default(5) }))
+      .query(async ({ input }) => {
+        const frequentPlayerNames = await getFrequentPlayerNames(input.limit);
+        return frequentPlayerNames;
+      }),
     getRecentVRChatWorldJoinLogByVRChatPhotoName: procedure
       .input(VRChatPhotoFileNameWithExtSchema)
       .query(async (ctx) => {
@@ -272,4 +288,46 @@ export const logInfoRouter = () =>
       }
       return playerJoinLogListResult.value;
     }),
+
+    /**
+     * 検索候補として利用可能なワールド名の一覧を取得する
+     * @param query - 検索クエリ（部分一致）
+     * @param limit - 最大件数（デフォルト: 10）
+     * @returns 検索クエリに一致するワールド名の配列
+     */
+    getWorldNameSuggestions: procedure
+      .input(
+        z.object({
+          query: z.string().min(1),
+          limit: z.number().min(1).max(50).default(10),
+        }),
+      )
+      .query(async ({ input }) => {
+        const suggestions = await getWorldNameSuggestions(
+          input.query,
+          input.limit,
+        );
+        return suggestions;
+      }),
+
+    /**
+     * 検索候補として利用可能なプレイヤー名の一覧を取得する
+     * @param query - 検索クエリ（部分一致）
+     * @param limit - 最大件数（デフォルト: 10）
+     * @returns 検索クエリに一致するプレイヤー名の配列
+     */
+    getPlayerNameSuggestions: procedure
+      .input(
+        z.object({
+          query: z.string().min(1),
+          limit: z.number().min(1).max(50).default(10),
+        }),
+      )
+      .query(async ({ input }) => {
+        const suggestions = await getPlayerNameSuggestions(
+          input.query,
+          input.limit,
+        );
+        return suggestions;
+      }),
   });
