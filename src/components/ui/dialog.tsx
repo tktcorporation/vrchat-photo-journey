@@ -12,6 +12,10 @@ const DialogPortal = DialogPrimitive.Portal;
 
 const DialogClose = DialogPrimitive.Close;
 
+/**
+ * ダイアログ表示時に背面を覆うオーバーレイ。
+ * モーダルを際立たせるために使用される。
+ */
 const DialogOverlay = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Overlay>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
@@ -27,6 +31,10 @@ const DialogOverlay = React.forwardRef<
 ));
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
+/**
+ * ダイアログ本体の内容を包むコンテナ。
+ * DialogOverlay と共に Portal 内でレンダリングされる。
+ */
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
@@ -51,6 +59,10 @@ const DialogContent = React.forwardRef<
 ));
 DialogContent.displayName = DialogPrimitive.Content.displayName;
 
+/**
+ * ダイアログ上部のヘッダー要素。
+ * タイトルなどを配置するためのコンテナ。
+ */
 const DialogHeader = ({
   className,
   ...props
@@ -65,6 +77,10 @@ const DialogHeader = ({
 );
 DialogHeader.displayName = 'DialogHeader';
 
+/**
+ * ダイアログ下部のフッター要素。
+ * 操作ボタンをまとめて配置する。
+ */
 const DialogFooter = ({
   className,
   ...props
@@ -79,6 +95,9 @@ const DialogFooter = ({
 );
 DialogFooter.displayName = 'DialogFooter';
 
+/**
+ * ダイアログのタイトルを表示するコンポーネント。
+ */
 const DialogTitle = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Title>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
@@ -94,6 +113,9 @@ const DialogTitle = React.forwardRef<
 ));
 DialogTitle.displayName = DialogPrimitive.Title.displayName;
 
+/**
+ * ダイアログ内で補足説明を表示するコンポーネント。
+ */
 const DialogDescription = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Description>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>

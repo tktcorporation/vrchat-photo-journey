@@ -5,6 +5,10 @@ import * as React from 'react';
 
 import { cn } from '../lib/utils';
 
+/**
+ * UI 内で水平・垂直の区切り線を描画するコンポーネント。
+ * メニューやダイアログの中で項目を分ける際に使用する。
+ */
 const Separator = React.forwardRef<
   React.ElementRef<typeof SeparatorPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof SeparatorPrimitive.Root>

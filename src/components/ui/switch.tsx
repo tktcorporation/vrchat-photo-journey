@@ -3,6 +3,10 @@ import * as React from 'react';
 
 import { cn } from '../lib/utils';
 
+/**
+ * ON/OFF を切り替えるトグルスイッチ。
+ * 設定画面などで使用される基本コンポーネント。
+ */
 const Switch = React.forwardRef<
   React.ElementRef<typeof SwitchPrimitives.Root>,
   React.ComponentPropsWithoutRef<typeof SwitchPrimitives.Root>

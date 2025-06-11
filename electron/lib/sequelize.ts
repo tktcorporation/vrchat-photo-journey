@@ -18,6 +18,10 @@ let migrationProgeress = false;
 type SequelizeOptions = ConstructorParameters<typeof Sequelize>[0] & {
   storage: string;
 };
+/**
+ * Sequelize クライアントを生成する内部関数。
+ * 返り値は接続情報を保持したオブジェクト。
+ */
 const _newRDBClient = (props: { db_url: string }) => {
   const sequelizeOptions: SequelizeOptions = {
     dialect: SqliteDialect,
@@ -43,12 +47,20 @@ const _newRDBClient = (props: { db_url: string }) => {
   };
 };
 
+/**
+ * 外部から呼び出される初期化関数。
+ * `_initRDBClient` をラップしている。
+ */
 export const initRDBClient = (props: { db_url: string }) => {
   return _initRDBClient({
     db_url: props.db_url,
   });
 };
 
+/**
+ * グローバルな `rdbClient` を初期化する内部関数。
+ * 既に初期化されている場合はエラーを投げる。
+ */
 const _initRDBClient = (props: { db_url: string }) => {
   if (rdbClient !== null) {
     if (rdbClient.__db_url !== props.db_url) {
@@ -80,6 +92,9 @@ export const __initTestRDBClient = () => {
     db_url: dbPath,
   });
 };
+/**
+ * テスト用に生成した RDBClient を破棄しリセットする。
+ */
 export const __cleanupTestRDBClient = async () => {
   if (rdbClient === null) {
     return;
@@ -88,6 +103,10 @@ export const __cleanupTestRDBClient = async () => {
   rdbClient = null;
 };
 
+/**
+ * 初期化済みの RDBClient を取得する。
+ * 未初期化の場合は例外を送出する。
+ */
 export const getRDBClient = () => {
   if (rdbClient === null) {
     throw new Error('rdbClient is not initialized');
@@ -96,6 +115,10 @@ export const getRDBClient = () => {
 };
 
 // 共通の sync 処理を抽出した関数
+/**
+ * Sequelize の sync を実行する共通処理。
+ * マイグレーション情報の記録も行う。
+ */
 const executeSyncRDB = async (options: { force: boolean }) => {
   // 実行中は何もしない
   if (migrationProgeress) {
@@ -124,6 +147,9 @@ const executeSyncRDB = async (options: { force: boolean }) => {
   }
 };
 
+/**
+ * 必要に応じてデータベースを同期するラッパー関数。
+ */
 export const syncRDBClient = async (options?: { checkRequired: boolean }) => {
   // デフォルトは確認してから実行
   const checkRequired = options?.checkRequired ?? true;
@@ -180,6 +206,9 @@ export const checkMigrationRDBClient = async (appVersion: string) => {
   return true;
 };
 
+/**
+ * `Migrations` テーブルが存在するか確認する内部関数。
+ */
 const isExistsMigrationTable = async () => {
   try {
     await Migrations.findAll();
