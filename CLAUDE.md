@@ -238,3 +238,69 @@ yarn test  # Verify all tests pass
 - **Photos in wrong worlds**: Check log sync execution order
 - **Cache not updating**: Use unified `useLogSync` pattern
 - **Initial startup issues**: Verify database log count detection
+
+## Database Testing Patterns
+
+### 🔧 Database Test Setup (必須パターン)
+**データベーステストを書く際は以下のパターンに従ってください**
+
+#### 基本テンプレート
+```typescript
+import * as datefns from 'date-fns';
+import * as client from '../../lib/sequelize';
+import * as service from '../VRChatPlayerJoinLogModel/playerJoinLog.service';
+
+describe('service with database', () => {
+  describe('functionName', () => {
+    beforeAll(async () => {
+      client.__initTestRDBClient();
+    }, 10000);
+    
+    beforeEach(async () => {
+      await client.__forceSyncRDBClient();
+    });
+    
+    afterAll(async () => {
+      await client.__cleanupTestRDBClient();
+    });
+
+    it('test case description', async () => {
+      // テストデータの準備
+      const testData = [
+        {
+          joinDate: datefns.parseISO('2024-01-01T00:00:00Z'),
+          playerName: 'TestPlayer',
+          logType: 'playerJoin' as const,
+          playerId: 'id1',
+        },
+      ];
+      
+      await service.createVRChatPlayerJoinLogModel(testData);
+      
+      // テスト対象関数の実行
+      const result = await yourFunction();
+      
+      // 期待値の検証
+      expect(result).toEqual(expectedValue);
+    });
+  });
+});
+```
+
+#### 重要なポイント
+- **Setup/Teardown**: `__initTestRDBClient`, `__forceSyncRDBClient`, `__cleanupTestRDBClient` を必ず使用
+- **Timeout**: `beforeAll` に 10000ms のタイムアウトを設定
+- **Data Cleanup**: `beforeEach` で `__forceSyncRDBClient` を呼び出してデータベースを初期化
+- **Test Data**: `datefns.parseISO` を使用して一貫したISO形式の日時を作成
+- **Service Usage**: 既存のサービス関数を使ってテストデータを作成
+
+#### 参考ファイル
+- **基本パターン**: `electron/module/VRChatPlayerJoinLogModel/playerJoinLog.service.spec.ts`
+- **実装例**: `electron/module/logInfo/service.spec.ts`
+
+#### 🚨 テスト作成時の注意点
+- ❌ 直接SQLを書かない（既存のサービス関数を使用）
+- ❌ テストごとの独立性を保つ（前のテストの影響を受けないよう初期化）
+- ❌ ハードコードされた期待値ではなく、ロジックベースの検証を行う
+- ✅ 実際のデータベースを使用したintegrationテストを書く
+- ✅ エッジケースやエラーケースもテストに含める
