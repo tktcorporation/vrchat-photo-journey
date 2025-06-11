@@ -114,6 +114,10 @@ export const mkdirSyncSafe = async (
   }
 };
 
+/**
+ * fs.existsSync の薄いラッパー
+ * ログ保存処理などでファイルの存在確認に利用される
+ */
 export const existsSyncSafe = (path: string): boolean => {
   return fs.existsSync(path);
 };

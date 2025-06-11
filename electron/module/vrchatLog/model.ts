@@ -12,7 +12,10 @@ export abstract class BaseValueObject<T extends string, K> {
   constructor(value: K) {
     this.value = value;
   }
-
+  /**
+   * 値オブジェクト同士の等価性を比較する
+   * ログ解析処理で識別子比較に使用される
+   */
   equals(other: BaseValueObject<T, K>): boolean {
     return this === other || this.value === other.value;
   }

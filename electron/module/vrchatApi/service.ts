@@ -92,6 +92,10 @@ const VRChatWorldInfoFromApiSchema = z.object({
   created_at: z.string(),
   updated_at: z.string(),
 });
+/**
+ * VRChat API からワールド情報を取得する
+ * ワールドプレビュー生成などで使用される
+ */
 export const getVrcWorldInfoByWorldId = async (
   worldId: VRChatWorldId,
 ): Promise<
@@ -140,7 +144,10 @@ const UsersSchema = z.array(UserSchema);
 
 const requestQueue: (() => Promise<void>)[] = [];
 let isProcessingQueue = false;
-
+/**
+ * API へのリクエストを順番に処理するための内部キュー
+ * 連続リクエストによる制限回避目的で getVrcUserInfoByUserName から使用
+ */
 const processQueue = async () => {
   if (isProcessingQueue) return;
   isProcessingQueue = true;
@@ -156,7 +163,8 @@ const processQueue = async () => {
 };
 
 /**
- * Auth してからじゃないと使えなさそう
+ * ユーザー名からVRChatユーザー情報を取得する
+ * 非公開APIのため一定間隔で processQueue 経由でリクエストされる
  */
 export const getVrcUserInfoByUserName = async (
   userName: string,

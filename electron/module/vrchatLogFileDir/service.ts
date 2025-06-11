@@ -14,6 +14,10 @@ import {
   VRChatLogFilesDirPathSchema,
 } from './model';
 
+/**
+ * 設定ストアに保存されているログディレクトリパスを取得する
+ * getValidVRChatLogFileDir から呼び出される内部処理
+ */
 const getStoredVRChatLogFilesDirPath =
   async (): Promise<NotValidatedVRChatLogFilesDirPath | null> => {
     const settingStore = getSettingStore();
@@ -27,6 +31,10 @@ const getStoredVRChatLogFilesDirPath =
       .exhaustive();
   };
 
+/**
+ * 実際に存在するVRChatログディレクトリを検証して返す
+ * getVRChatLogFileDir でエラーハンドリング付きの結果を生成するために使用
+ */
 export const getValidVRChatLogFileDir = async (): Promise<
   neverthrow.Result<
     {
@@ -73,6 +81,10 @@ export const getValidVRChatLogFileDir = async (): Promise<
   });
 };
 
+/**
+ * ログディレクトリ検証結果をシンプルなオブジェクトに整形して返す
+ * 設定画面や初期化処理から直接呼び出される
+ */
 export const getVRChatLogFileDir = async (): Promise<{
   storedPath: NotValidatedVRChatLogFilesDirPath | null;
   path: NotValidatedVRChatLogFilesDirPath | VRChatLogFilesDirPath;
@@ -93,6 +105,10 @@ export const getVRChatLogFileDir = async (): Promise<{
   };
 };
 
+/**
+ * OSごとのデフォルトVRChatログフォルダを返す
+ * getValidVRChatLogFileDir のフォールバックとして利用
+ */
 const getDefaultVRChatVRChatLogFilesDir =
   (): NotValidatedVRChatLogFilesDirPath => {
     let VRChatlogFilesDir = '';

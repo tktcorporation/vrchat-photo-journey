@@ -40,7 +40,10 @@ export class FetchError extends Error {
   }
 }
 
-// fetchWithResult 関数
+/**
+ * ofetch を利用して HTTP リクエストを行うユーティリティ
+ * getData からのみ呼ばれ、成功可否を Result 型で返す
+ */
 const fetchWithResult = async <T = unknown>(
   url: string,
   options?: RequestInit & { query?: QueryObject },
@@ -74,7 +77,10 @@ const fetchWithResult = async <T = unknown>(
   }
 };
 
-// getData 関数の実装
+/**
+ * fetchWithResult のラッパー関数
+ * API サービス層から共通利用される
+ */
 export const getData = async <T>(
   url: string,
   options?: RequestInit & { query?: QueryObject },

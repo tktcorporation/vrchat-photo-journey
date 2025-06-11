@@ -59,6 +59,10 @@ export class VRChatPlayerJoinLogModel extends Model<
   declare updatedAt: CreationOptional<Date>;
 }
 
+/**
+ * 重複を除外しつつプレイヤー参加ログを一括登録する
+ * サービス層の createVRChatPlayerJoinLogModel から利用される
+ */
 export const createVRChatPlayerJoinLog = async (
   playerJoinLogList: VRChatPlayerJoinLog[],
 ): Promise<VRChatPlayerJoinLogModel[]> => {
@@ -144,6 +148,10 @@ export const getVRChatPlayerJoinLogListByJoinDateTime = async (
   return playerJoinLogList;
 };
 
+/**
+ * 最後に検出されたプレイヤー参加ログを取得する
+ * ログ同期の進捗確認に使用される
+ */
 export const findLatestPlayerJoinLog = async () => {
   return VRChatPlayerJoinLogModel.findOne({
     order: [['joinDateTime', 'DESC']],
