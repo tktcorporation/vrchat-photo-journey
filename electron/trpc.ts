@@ -42,6 +42,10 @@ const t = initTRPC.context<{ eventEmitter: EventEmitter }>().create({
   },
 });
 
+/**
+ * tRPC ミドルウェアから呼び出されるエラーログ用関数
+ * バージョン情報とリクエスト内容を付加して Sentry へ送信する
+ */
 const logError = (
   err: Error | string,
   requestInfo?: string,
