@@ -18,6 +18,10 @@ import { ScrollArea } from '../../components/ui/scroll-area';
 import { terms as jaTerms } from '../constants/terms/ja';
 import { useI18n } from '../i18n/store';
 
+/**
+ * 規約表示用ダイアログの本体コンポーネント。
+ * 閉じるボタンの表示を制御できる。
+ */
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
@@ -53,6 +57,10 @@ interface TermsModalProps {
   canClose?: boolean;
 }
 
+/**
+ * 利用規約とプライバシーポリシーを提示するモーダル。
+ * アプリ初回起動時や更新時に表示される。
+ */
 export const TermsModal = ({
   open,
   onAccept,
