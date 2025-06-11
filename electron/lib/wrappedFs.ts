@@ -4,6 +4,10 @@ import type { Result } from 'neverthrow';
 import { err, ok } from 'neverthrow';
 import { P, match } from 'ts-pattern';
 
+/**
+ * 同期的にファイルを読み込み、存在しない場合はエラー情報を返す。
+ * ログ処理など複数のサービスから利用される。
+ */
 export const readFileSyncSafe = (
   filePath: string,
   options?: { encoding?: null; flag?: string } | null,
@@ -34,6 +38,10 @@ export type FSError = 'ENOENT';
 
 const readdirPromisified = promisify(fs.readdir);
 type ReaddirReturn = PromiseType<ReturnType<typeof readdirPromisified>>;
+/**
+ * 非同期でディレクトリを読み込み、存在しない場合はエラーを返す。
+ * VRChat ログ検索処理などで使用される。
+ */
 export const readdirAsync = async (
   ...args: Parameters<typeof readdirPromisified>
 ): Promise<
@@ -56,6 +64,10 @@ export const readdirAsync = async (
   }
 };
 
+/**
+ * ファイルを書き込み、失敗時には Error を Result として返す同期版ヘルパー。
+ * ログ保存処理など複数箇所から利用される。
+ */
 export const writeFileSyncSafe = (
   path: string,
   data: string | Uint8Array,
@@ -70,10 +82,18 @@ export const writeFileSyncSafe = (
 
 import typeUtils from 'node:util/types';
 
+/**
+ * Node.js のエラーオブジェクトかどうかを判定するユーティリティ。
+ * ファイル操作ヘルパー群から内部的に利用される。
+ */
 function isNodeError(error: unknown): error is NodeJS.ErrnoException {
   return typeUtils.isNativeError(error);
 }
 
+/**
+ * ディレクトリを作成し、既に存在する場合はエラー情報を返す非同期関数。
+ * VRChat 写真保存処理などで使用される。
+ */
 export const mkdirSyncSafe = async (
   dirPath: string,
 ): Promise<Result<void, { code: 'EEXIST'; error: NodeJS.ErrnoException }>> => {
@@ -106,6 +126,10 @@ type PromiseType<T extends PromiseLike<unknown>> = T extends PromiseLike<
 
 const appendFilePromisified = promisify(fs.appendFile);
 type AppendFileReturn = PromiseType<ReturnType<typeof appendFilePromisified>>;
+/**
+ * ファイル末尾にデータを追記する非同期関数。
+ * ログファイル更新処理で利用される。
+ */
 export const appendFileAsync = async (
   ...args: Parameters<typeof appendFilePromisified>
 ): Promise<
@@ -126,7 +150,10 @@ export const appendFileAsync = async (
   }
 };
 
-// delete file
+/**
+ * 指定したファイルを削除する非同期関数。
+ * 一時ファイルのクリーンアップ処理などで使用される。
+ */
 export const unlinkAsync = async (
   path: string,
 ): Promise<Result<void, Error>> => {
@@ -138,6 +165,10 @@ export const unlinkAsync = async (
   }
 };
 
+/**
+ * fs.createReadStream をラップしたユーティリティ。
+ * 大きなファイルをストリームとして処理する際に利用される。
+ */
 export const createReadStream = (
   filePath: string,
   options?: Parameters<typeof fs.createReadStream>[1],

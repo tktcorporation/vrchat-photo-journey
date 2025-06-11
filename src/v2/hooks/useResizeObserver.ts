@@ -6,6 +6,11 @@ interface Size {
   height: number;
 }
 
+/**
+ * DOM 要素のサイズ変化を監視し、最新の幅と高さを返すフック。
+ * 現状このリポジトリ内では使用されていないが、
+ * コンポーネントの動的レイアウト調整に利用できる。
+ */
 export function useResizeObserver<T extends HTMLElement>(): [
   RefObject<T>,
   Size,

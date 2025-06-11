@@ -4,6 +4,10 @@ import { UserFacingError } from './../../../lib/errors';
 import { procedure, router as trpcRouter } from './../../../trpc';
 import type { getSettingStore } from './../../settingStore';
 
+/**
+ * バックグラウンド用ファイル生成設定を取得するヘルパー。
+ * Router 内から呼び出される。
+ */
 const getIsBackgroundFileCreationEnabled =
   (settingStore: ReturnType<typeof getSettingStore>) =>
   async (): Promise<boolean> => {
@@ -12,6 +16,10 @@ const getIsBackgroundFileCreationEnabled =
     return flag ?? false;
   };
 
+/**
+ * バックグラウンド用ファイル生成設定を更新するヘルパー。
+ * Router 内から呼び出される。
+ */
 const setIsBackgroundFileCreationEnabled =
   (settingStore: ReturnType<typeof getSettingStore>) =>
   async (isEnabled: boolean) => {
@@ -22,12 +30,20 @@ const setIsBackgroundFileCreationEnabled =
     );
   };
 
+/**
+ * アプリの自動起動設定が有効かを取得するユーティリティ。
+ * SystemSettings コンポーネントから利用される。
+ */
 const getIsAppAutoStartEnabled = async (): Promise<boolean> => {
   const loginItemSettings = app.getLoginItemSettings();
   console.log('loginItemSettings', loginItemSettings);
   return loginItemSettings.openAtLogin;
 };
 
+/**
+ * アプリの自動起動設定を変更するユーティリティ。
+ * SystemSettings からの更新操作に用いられる。
+ */
 const setIsAppAutoStartEnabled = async (isEnabled: boolean) => {
   console.log('setIsAppAutoStartEnabled: before', app.getLoginItemSettings());
 

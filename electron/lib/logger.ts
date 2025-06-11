@@ -29,12 +29,18 @@ interface ErrorLogParams {
   stack?: Error;
 }
 
-// エラーオブジェクトの正規化
+/**
+ * 受け取ったメッセージを Error オブジェクトに変換するユーティリティ。
+ * buildErrorInfo や error 関数から利用される。
+ */
 const normalizeError = (message: unknown): Error => {
   return message instanceof Error ? message : new Error(String(message));
 };
 
-// エラー情報の構築（stack traceを適切に保持）
+/**
+ * stack 情報を含めたエラーオブジェクトを生成するヘルパー。
+ * Sentry 送信前の整形処理で使用される。
+ */
 const buildErrorInfo = ({ message, stack }: ErrorLogParams): Error => {
   const baseError =
     message instanceof Error ? message : normalizeError(message);
@@ -55,6 +61,9 @@ const buildErrorInfo = ({ message, stack }: ErrorLogParams): Error => {
 const info = log.info;
 const debug = log.debug;
 const warn = log.warn;
+/**
+ * Sentry への送信も行うエラー出力用ラッパー関数。
+ */
 const error = ({ message, stack }: ErrorLogParams): void => {
   const normalizedError = normalizeError(message);
   const errorInfo = buildErrorInfo({ message, stack });

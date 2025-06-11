@@ -6,6 +6,10 @@ import { app, clipboard, dialog, nativeImage, shell } from 'electron';
 import * as neverthrow from 'neverthrow';
 import sharp from 'sharp';
 
+/**
+ * OS のエクスプローラーで指定パスを開くユーティリティ。
+ * main プロセスの service モジュール各所から利用される。
+ */
 const openPathInExplorer = async (
   path: string,
 ): Promise<neverthrow.Result<string, Error>> => {
@@ -21,10 +25,18 @@ const openPathInExplorer = async (
   }
 };
 
+/**
+ * アプリケーションのログ保存ディレクトリを取得する。
+ * エラーログ閲覧メニューなどで参照される。
+ */
 export const getApplicationLogPath = (): string => {
   return app.getPath('logs');
 };
 
+/**
+ * ディレクトリ選択ダイアログを表示し、選択されたパスを返す。
+ * 設定画面からフォルダ指定する際に使用される。
+ */
 const openGetDirDialog = async (): Promise<
   neverthrow.Result<string, 'canceled'>
 > => {
@@ -37,6 +49,10 @@ const openGetDirDialog = async (): Promise<
   return neverthrow.ok(result.filePaths[0]);
 };
 
+/**
+ * ファイル/ディレクトリ選択ダイアログを表示する汎用関数。
+ * VRChat ログフォルダなどの設定入力で利用される。
+ */
 const openGetFileDialog = async (
   properties: Array<'openDirectory' | 'openFile' | 'multiSelections'>,
 ): Promise<neverthrow.Result<string[], 'canceled'>> => {
@@ -49,10 +65,18 @@ const openGetFileDialog = async (
   return neverthrow.ok(result.filePaths);
 };
 
+/**
+ * 既定のブラウザで URL を開くシンプルなヘルパー。
+ * ShareDialog などからリンクを開く際に使用される。
+ */
 const openUrlInDefaultBrowser = (url: string) => {
   return shell.openExternal(url);
 };
 
+/**
+ * 写真ファイルを OS 標準のフォトビューアで開く関数。
+ * PhotoCard の"画像で開く"操作などから利用される。
+ */
 const openPhotoPathWithPhotoApp = async (
   filePath: string,
 ): Promise<neverthrow.Result<string, Error>> => {
@@ -69,6 +93,10 @@ const openPhotoPathWithPhotoApp = async (
   }
 };
 
+/**
+ * 拡張子に関連付けられたアプリケーションでファイルを開く関数。
+ * エクスプローラーから開く機能などで利用される。
+ */
 const openPathWithAssociatedApp = async (
   filePath: string,
 ): Promise<neverthrow.Result<string, Error>> => {
@@ -86,6 +114,10 @@ const openPathWithAssociatedApp = async (
   }
 };
 
+/**
+ * 画像ファイルを読み込み、クリップボードへ転送する。
+ * ShareDialog からのコピー処理で利用される。
+ */
 const copyImageDataByPath = async (
   filePath: string,
 ): Promise<neverthrow.Result<void, Error>> => {
@@ -102,6 +134,10 @@ const copyImageDataByPath = async (
   }
 };
 
+/**
+ * Base64 形式の画像を一時保存してからクリップボードへコピーする。
+ * ShareDialog の画像コピー機能で利用される。
+ */
 const copyImageByBase64 = async (options: {
   pngBase64: string;
 }): Promise<neverthrow.Result<void, Error>> => {
@@ -125,6 +161,10 @@ const copyImageByBase64 = async (options: {
   }
 };
 
+/**
+ * Base64 画像を一時ファイル化して PNG として保存する処理。
+ * プレビュー画像のダウンロード機能から呼び出される。
+ */
 const downloadImageAsPng = async (options: {
   pngBase64: string;
   filenameWithoutExt: string;
@@ -179,6 +219,10 @@ interface SavePngFileOptions {
   filenameWithoutExt: string;
 }
 
+/**
+ * Base64 PNG を一時ファイルとして保存し、指定コールバックへパスを渡す。
+ * 画像コピーやダウンロード処理の共通部分として利用される。
+ */
 export const handlePngBase64WithCallback = async (
   options: SavePngFileOptions,
   callback: (tempPngPath: string) => Promise<void>,
@@ -211,6 +255,10 @@ export const handlePngBase64WithCallback = async (
   }
 };
 
+/**
+ * PNG ファイル保存用のダイアログを表示する。
+ * downloadImageAsPng から呼び出される。
+ */
 export const showSavePngDialog = async (filenameWithoutExt: string) => {
   return dialog.showSaveDialog({
     defaultPath: path.join(
@@ -225,6 +273,10 @@ export const showSavePngDialog = async (filenameWithoutExt: string) => {
   });
 };
 
+/**
+ * 一時ファイルから指定パスへファイルを保存する単純なヘルパー。
+ * downloadImageAsPng 内部で利用される。
+ */
 export const saveFileToPath = async (
   sourcePath: string,
   destinationPath: string,
@@ -233,6 +285,10 @@ export const saveFileToPath = async (
 };
 
 // 複数ファイルをクリップボードにコピーする (クロスプラットフォーム対応)
+/**
+ * 複数ファイルのパスをクリップボードにコピーするクロスプラットフォーム対応関数。
+ * ファイル共有機能などで利用される。
+ */
 const copyMultipleFilesToClipboard = async (
   filePaths: string[],
 ): Promise<neverthrow.Result<void, Error>> => {
