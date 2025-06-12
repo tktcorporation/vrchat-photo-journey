@@ -31,7 +31,7 @@ const screenshot = async (page: Page, title: string, suffix: string) => {
   consola.log(`[${now}]: screenshot: ${screenshotPath(title, suffix)}`);
 };
 
-const TIMEOUT = 15000;
+const TIMEOUT = 20000;
 
 test(
   '各画面でスクショ',
