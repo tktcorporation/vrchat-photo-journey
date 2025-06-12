@@ -19,7 +19,12 @@
   },
   "customizations": {
     "vscode": {
-      "extensions": ["WakaTime.vscode-wakatime", "YoavBls.pretty-ts-errors"]
+      "extensions": [
+        "WakaTime.vscode-wakatime",
+        "YoavBls.pretty-ts-errors",
+        "mhutchie.git-graph",
+        "github.vscode-github-actions"
+      ]
     }
   },
   "forwardPorts": [6080],

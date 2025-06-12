@@ -19,7 +19,8 @@
       "Bash(grep:*)",
       "WebFetch(domain:github.com)",
       "Bash(yarn run test:playwright:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(yarn install)"
     ],
     "deny": []
   }
