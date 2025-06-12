@@ -201,13 +201,7 @@ export const useStartupStage = (callbacks?: ProcessStageCallbacks) => {
       return;
     }
 
-    // データベース同期が必要な場合（初回起動）はログカウントが取得できないため、
-    // existingLogCountがundefinedでも処理を続行する
-    if (existingLogCount === undefined && migrateRequirement === false) {
-      console.log('existingLogCount is not available yet (non-migration case)');
-      return;
-    }
-
+    // logFilesDirData.error がある場合は、ログ数に関係なく初期設定画面を表示
     if (logFilesDirData.error) {
       console.log('logFilesDirData has error:', logFilesDirData.error);
       const message = match(logFilesDirData.error)
@@ -216,6 +210,13 @@ export const useStartupStage = (callbacks?: ProcessStageCallbacks) => {
         .otherwise(() => '不明なエラーが発生しました');
 
       updateStage('logsStored', 'error', message);
+      return;
+    }
+
+    // データベース同期が必要な場合（初回起動）はログカウントが取得できないため、
+    // existingLogCountがundefinedでも処理を続行する
+    if (existingLogCount === undefined && migrateRequirement === false) {
+      console.log('existingLogCount is not available yet (non-migration case)');
       return;
     }
 
