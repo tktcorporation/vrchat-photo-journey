@@ -1,5 +1,5 @@
 import { trpcReact } from '@/trpc';
-import { Search, X } from 'lucide-react';
+import { Globe, Search, User, X } from 'lucide-react';
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useI18n } from '../i18n/store';
 
@@ -15,7 +15,6 @@ interface SearchSuggestion {
   type: 'world' | 'player' | 'recent';
   value: string;
   label: string;
-  icon: string;
 }
 
 /**
@@ -101,14 +100,12 @@ const SearchOverlay = memo(
             type: 'world' as const,
             value: world,
             label: world,
-            icon: '🏠',
           })),
           ...frequentPlayers.map((player, index) => ({
             id: `frequent-player-${index}`,
             type: 'player' as const,
             value: player,
             label: player,
-            icon: '👤',
           })),
         ];
       }
@@ -120,7 +117,6 @@ const SearchOverlay = memo(
           type: 'world' as const,
           value: world,
           label: world,
-          icon: '🌍',
         })),
         ...playerSuggestions.map((player, index) => ({
           id: `player-${index}`,
@@ -245,14 +241,16 @@ const SearchOverlay = memo(
                 onKeyDown={handleKeyDown}
                 autoComplete="off"
               />
-              <button
-                type="button"
-                onClick={handleClose}
-                className="ml-3 p-1.5 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 rounded-lg transition-colors"
-                aria-label="検索を閉じる"
-              >
-                <X className="h-4 w-4 text-muted-foreground/60" />
-              </button>
+              {query && (
+                <button
+                  type="button"
+                  onClick={() => setQuery('')}
+                  className="ml-3 p-1.5 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 rounded-lg transition-colors"
+                  aria-label="検索をクリア"
+                >
+                  <X className="h-4 w-4 text-muted-foreground/60" />
+                </button>
+              )}
             </div>
 
             {/* 検索候補部分 */}
@@ -294,7 +292,11 @@ const SearchOverlay = memo(
                       aria-selected={index === highlightedIndex}
                       tabIndex={0}
                     >
-                      <span className="text-lg mr-3">{suggestion.icon}</span>
+                      {suggestion.type === 'world' ? (
+                        <Globe className="h-4 w-4 mr-3 text-muted-foreground" />
+                      ) : (
+                        <User className="h-4 w-4 mr-3 text-muted-foreground" />
+                      )}
                       <span className="flex-1 font-medium text-gray-900 dark:text-gray-100">
                         {suggestion.label}
                       </span>
