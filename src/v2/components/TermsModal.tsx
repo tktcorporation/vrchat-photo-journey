@@ -84,11 +84,11 @@ export const TermsModal = ({
   return (
     <Dialog open={open} onOpenChange={canClose ? () => {} : undefined}>
       <DialogContent
-        className="max-w-[800px] h-[80vh]"
+        className="max-w-[800px] h-[80vh] bg-white dark:bg-gray-900"
         showCloseButton={canClose}
       >
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">
             {isUpdate ? t('terms.updateTitle') : t('terms.title')}
           </DialogTitle>
         </DialogHeader>
@@ -96,21 +96,21 @@ export const TermsModal = ({
         <ScrollArea className="h-full pr-4">
           <div className="space-y-8">
             <section>
-              <h3 className="text-lg font-medium mb-4">
+              <h3 className="text-lg font-semibold text-foreground mb-4">
                 {terms.sections.termsOfService.title}
               </h3>
-              <DialogDescription className="whitespace-pre-wrap">
+              <div className="whitespace-pre-wrap text-sm leading-relaxed text-gray-700 dark:text-gray-300">
                 {terms.sections.termsOfService.content}
-              </DialogDescription>
+              </div>
             </section>
 
             <section>
-              <h3 className="text-lg font-medium mb-4">
+              <h3 className="text-lg font-semibold text-foreground mb-4">
                 {terms.sections.privacyPolicy.title}
               </h3>
-              <DialogDescription className="whitespace-pre-wrap">
+              <div className="whitespace-pre-wrap text-sm leading-relaxed text-gray-700 dark:text-gray-300">
                 {terms.sections.privacyPolicy.content}
-              </DialogDescription>
+              </div>
             </section>
           </div>
         </ScrollArea>
