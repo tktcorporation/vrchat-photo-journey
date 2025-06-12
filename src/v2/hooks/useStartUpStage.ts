@@ -140,12 +140,12 @@ export const useStartupStage = (callbacks?: ProcessStageCallbacks) => {
   const { data: logFilesDirData } = trpcReact.getVRChatLogFilesDir.useQuery();
 
   // 既存のログデータがあるかチェック（初回起動判定用）
-  // データベースが準備完了後にのみクエリを実行
+  // データベースが利用可能な場合にクエリを実行
   const { data: existingLogCount, isError: isLogCountError } =
     trpcReact.vrchatWorldJoinLog.getVRChatWorldJoinLogList.useQuery(
       { orderByJoinDateTime: 'desc' },
       {
-        enabled: migrateRequirement === false, // データベースが準備済みの場合のみ実行
+        enabled: migrateRequirement !== undefined, // データベース状態が確定している場合に実行
         staleTime: 0, // アプリ起動ごとに最新状態で判定するためキャッシュなし
         cacheTime: 1000 * 60 * 1, // 1分後にメモリから削除
         refetchOnWindowFocus: false, // ウィンドウフォーカス時の再取得なし
@@ -201,8 +201,10 @@ export const useStartupStage = (callbacks?: ProcessStageCallbacks) => {
       return;
     }
 
-    if (existingLogCount === undefined) {
-      console.log('existingLogCount is not available yet');
+    // データベース同期が必要な場合（初回起動）はログカウントが取得できないため、
+    // existingLogCountがundefinedでも処理を続行する
+    if (existingLogCount === undefined && migrateRequirement === false) {
+      console.log('existingLogCount is not available yet (non-migration case)');
       return;
     }
 
@@ -226,10 +228,15 @@ export const useStartupStage = (callbacks?: ProcessStageCallbacks) => {
       // 初回起動判定：
       // - データベース同期が必要だった場合は初回起動として全件処理
       // - 既存ログが0件の場合は初回起動として全件処理
+      // - existingLogCountがundefinedの場合（DB同期中）は初回起動として処理
       // - それ以外は通常起動として差分処理
       const logCount = existingLogCount ?? 0;
       const wasFirstTime = migrateRequirement === true; // データベース同期が実行された場合
-      const isFirstLaunch = wasFirstTime || isLogCountError || logCount === 0;
+      const isFirstLaunch =
+        wasFirstTime ||
+        isLogCountError ||
+        logCount === 0 ||
+        existingLogCount === undefined;
       const syncMode = isFirstLaunch
         ? LOG_SYNC_MODE.FULL
         : LOG_SYNC_MODE.INCREMENTAL;
