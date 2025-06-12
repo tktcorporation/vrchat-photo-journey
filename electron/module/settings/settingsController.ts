@@ -2,10 +2,15 @@ import type { UpdateCheckResult } from 'electron-updater';
 import { getWindow } from '../../electronUtil';
 import { UserFacingError } from '../../lib/errors';
 import { logger } from '../../lib/logger';
-import * as sequelizeLib from '../../lib/sequelize';
+import * as sequelizeClient from '../../lib/sequelize';
 import * as electronUtilService from '../electronUtil/service';
+import { LOG_SYNC_MODE, type LogSyncMode, syncLogs } from '../logSync/service';
+import * as vrchatWorldJoinLogService from '../vrchatWorldJoinLog/service';
 import { procedure, router as trpcRouter } from './../../trpc';
 import * as settingService from './service';
+
+// 初期化処理の重複実行を防ぐためのフラグ
+let isInitializing = false;
 
 export const settingsRouter = () =>
   trpcRouter({
@@ -14,16 +19,16 @@ export const settingsRouter = () =>
       return version;
     }),
     forceResetDatabase: procedure.mutation(async () => {
-      await sequelizeLib.syncRDBClient({
+      await sequelizeClient.syncRDBClient({
         checkRequired: false,
       });
     }),
     syncDatabase: procedure.mutation(async () => {
-      await sequelizeLib.syncRDBClient();
+      await sequelizeClient.syncRDBClient();
     }),
     isDatabaseReady: procedure.query(async () => {
       const appVersion = await settingService.getAppVersion();
-      return sequelizeLib.checkMigrationRDBClient(appVersion);
+      return sequelizeClient.checkMigrationRDBClient(appVersion);
     }),
     getAppUpdateInfo: procedure.query(async () => {
       return await settingService.getElectronUpdaterInfo();
@@ -88,5 +93,109 @@ export const settingsRouter = () =>
         },
       });
       throw sentryTestError;
+    }),
+
+    /**
+     * アプリケーション起動時の完全な初期化処理を実行する。
+     * データベース初期化、同期、ログ同期まで順次実行される。
+     */
+    initializeAppData: procedure.mutation(async () => {
+      // 重複実行をチェック
+      if (isInitializing) {
+        logger.debug(
+          'Initialization already in progress, skipping duplicate request',
+        );
+        // Sentryに送信しないよう、debugレベルでログ記録
+        return { success: false, message: '初期化処理が既に実行中です' };
+      }
+
+      isInitializing = true;
+
+      try {
+        logger.info('=== Starting application data initialization ===');
+
+        // Step 1: データベース同期
+        logger.info('Step 1: Syncing database schema...');
+        await sequelizeClient.syncRDBClient();
+
+        // Step 2: ディレクトリチェック
+        logger.info('Step 2: Checking VRChat directories...');
+
+        // VRChatログディレクトリの存在確認は、ログ同期時のエラーで判定する
+        // 事前チェックは省略し、ログ同期エラーで詳細なエラーを提供
+
+        // Step 3: 初回起動判定
+        logger.info('Step 3: Checking if this is first launch...');
+        let isFirstLaunch = true;
+        let syncMode: LogSyncMode = LOG_SYNC_MODE.FULL;
+
+        try {
+          const existingLogs =
+            await vrchatWorldJoinLogService.findVRChatWorldJoinLogList({
+              orderByJoinDateTime: 'desc',
+            });
+          isFirstLaunch = existingLogs.length === 0;
+          syncMode = isFirstLaunch
+            ? LOG_SYNC_MODE.FULL
+            : LOG_SYNC_MODE.INCREMENTAL;
+
+          logger.info(`Found ${existingLogs.length} existing logs`);
+        } catch (error) {
+          // データベースエラー（テーブル未作成など）の場合は初回起動として扱う
+          logger.info(
+            'Database error detected, treating as first launch:',
+            error,
+          );
+          isFirstLaunch = true;
+          syncMode = LOG_SYNC_MODE.FULL;
+        }
+
+        logger.info(
+          `Detected ${
+            isFirstLaunch ? 'first launch' : 'regular launch'
+          }, using ${syncMode} sync mode`,
+        );
+
+        // Step 4: ログ同期実行
+        logger.info('Step 4: Starting log sync...');
+        const logSyncResult = await syncLogs(syncMode);
+
+        if (logSyncResult.isErr()) {
+          // ログ同期エラーの場合、詳細なエラータイプを特定
+          const errorCode = logSyncResult.error.code;
+
+          if (errorCode === 'APPEND_LOGS_FAILED') {
+            // VRChatログファイル関連のエラー（初期セットアップが必要）
+            throw new UserFacingError(
+              'LOG_DIRECTORY_ERROR: VRChatのログフォルダが見つからないか、アクセスできません。初期セットアップが必要です。',
+            );
+          }
+
+          // 開発環境ではwarnレベルでログ記録（Sentryに送信されない）
+          logger.warn(
+            `Log sync failed: ${
+              logSyncResult.error.message || 'Unknown error'
+            }. This is normal in development environments without VRChat logs.`,
+          );
+        } else {
+          logger.info('Log sync completed successfully');
+        }
+
+        logger.info('=== Application data initialization completed ===');
+        return { success: true };
+      } catch (error) {
+        logger.error({
+          message: 'Application data initialization failed',
+          stack: error instanceof Error ? error : undefined,
+        });
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : 'Unknown initialization error';
+        throw new UserFacingError(`初期化に失敗しました: ${errorMessage}`);
+      } finally {
+        // 処理完了後にフラグをリセット
+        isInitializing = false;
+      }
     }),
   });

@@ -3,15 +3,12 @@ import { memo, useEffect, useState } from 'react';
 import { useToast } from '../hooks/use-toast';
 import { useDebounce } from '../hooks/useDebounce';
 import type { UseLoadingStateResult } from '../hooks/useLoadingState';
-import type { ProcessStages } from '../hooks/useStartUpStage';
 import { useI18n } from '../i18n/store';
 import GalleryContent from './PhotoGallery/GalleryContent';
 import { usePhotoGallery } from './PhotoGallery/usePhotoGallery';
 import SettingsModal from './settings/SettingsModal';
 
-interface PhotoGalleryProps extends UseLoadingStateResult {
-  startUpStages: ProcessStages;
-}
+interface PhotoGalleryProps extends UseLoadingStateResult {}
 
 export interface PhotoGalleryData {
   searchQuery: string;
