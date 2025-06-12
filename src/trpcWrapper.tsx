@@ -19,12 +19,32 @@ export default ({ children }: { children: React.ReactNode }) => {
    * QueryClient の onError から呼び出される。
    */
   const handleError = (error: Error) => {
-    window.Main.sendErrorMessage(
-      `Error caught by TrpcWrapper: ${error.toString()}. Stack trace: ${
-        error.stack
-      }`,
-    );
-    toast(error.toString());
+    // tRPCエラーの場合、詳細な情報を抽出
+    const errorDetails = error.toString();
+    let logMessage = `Error caught by TrpcWrapper: ${errorDetails}`;
+
+    // tRPCClientErrorの場合、data.originalErrorから詳細を取得
+    if (error.name === 'TRPCClientError' && 'data' in error) {
+      const errorWithData = error as Error & {
+        data?: {
+          originalError?: { name: string; message: string; stack?: string };
+        };
+      };
+      if (errorWithData.data?.originalError) {
+        const originalError = errorWithData.data.originalError;
+        logMessage += `\nOriginal Error: ${originalError.name}: ${originalError.message}`;
+        if (originalError.stack) {
+          logMessage += `\nOriginal Stack: ${originalError.stack}`;
+        }
+      }
+    }
+
+    if (error.stack) {
+      logMessage += `\nStack trace: ${error.stack}`;
+    }
+
+    window.Main.sendErrorMessage(logMessage);
+    toast(errorDetails);
   };
   const [queryClient] = useState(
     () =>
