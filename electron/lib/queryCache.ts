@@ -167,3 +167,25 @@ export const worldInfoCache = new QueryCache({
   maxSize: 200,
   onEvict: (key) => logger.debug(`World info cache evicted: ${key}`),
 });
+
+/**
+ * すべてのキャッシュをクリアする
+ */
+export const clearAllCaches = (): void => {
+  playerListCache.clear();
+  worldInfoCache.clear();
+  logger.debug('All caches cleared');
+};
+
+/**
+ * 特定のパターンにマッチするキャッシュエントリを無効化
+ */
+export const invalidateCachePattern = (pattern: RegExp): number => {
+  const playerListCount = playerListCache.invalidatePattern(pattern);
+  const worldInfoCount = worldInfoCache.invalidatePattern(pattern);
+  const totalCount = playerListCount + worldInfoCount;
+  logger.debug(
+    `Invalidated ${totalCount} cache entries matching pattern: ${pattern}`,
+  );
+  return totalCount;
+};

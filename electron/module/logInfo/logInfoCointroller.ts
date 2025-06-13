@@ -183,53 +183,7 @@ export const getPlayerJoinListInSameWorld = async (
   const cacheKey = `playerList:${Math.floor(datetime.getTime() / 60000)}`;
 
   const cacheResult = await playerListCache.getOrFetch(cacheKey, async () => {
-    // 統合されたログから直前のワールド参加ログを取得（通常ログ優先）
-    const recentWorldJoin = await findRecentMergedWorldJoinLog(datetime);
-    if (recentWorldJoin === null) {
-      return neverthrow.err('RECENT_JOIN_LOG_NOT_FOUND' as const);
-    }
-
-    // 統合されたログから次のワールド参加ログを取得
-    const nextWorldJoin = await findNextMergedWorldJoinLog(
-      recentWorldJoin.joinDateTime,
-    );
-
-    // デフォルト7日間ではなく、1日間に制限
-    const endDateTime =
-      nextWorldJoin?.joinDateTime ??
-      new Date(recentWorldJoin.joinDateTime.getTime() + 24 * 60 * 60 * 1000);
-
-    const playerJoinLogResult =
-      await playerJoinLogService.getVRChatPlayerJoinLogListByJoinDateTime({
-        startJoinDateTime: recentWorldJoin.joinDateTime,
-        endJoinDateTime: endDateTime,
-      });
-
-    if (playerJoinLogResult.isErr()) {
-      // エラータイプに基づいて適切な処理を行う
-      const error = playerJoinLogResult.error;
-      logger.error({
-        message: `プレイヤー参加ログの取得に失敗しました: ${error.message}`,
-        stack: new Error(`プレイヤー参加ログエラー: ${error.type}`),
-      });
-
-      switch (error.type) {
-        case 'DATABASE_ERROR':
-        case 'INVALID_DATE_RANGE':
-        case 'NOT_FOUND':
-          return neverthrow.err('RECENT_JOIN_LOG_NOT_FOUND');
-        default:
-          // 型安全のためのケース（実際には到達しない）
-          throw new Error(`未知のエラータイプ: ${JSON.stringify(error)}`);
-      }
-    }
-
-    const playerJoinLogList = playerJoinLogResult.value;
-    if (playerJoinLogList.length === 0) {
-      return neverthrow.err('RECENT_JOIN_LOG_NOT_FOUND');
-    }
-
-    return neverthrow.ok(playerJoinLogList);
+    return getPlayerJoinListInSameWorldCore(datetime);
   });
 
   // キャッシュエラーはログノットファウンドとして処理
@@ -254,6 +208,73 @@ export const getPlayerJoinListInSameWorld = async (
     }[],
     'RECENT_JOIN_LOG_NOT_FOUND'
   >;
+};
+
+/**
+ * キャッシュなしのコア実装
+ */
+const getPlayerJoinListInSameWorldCore = async (
+  datetime: Date,
+): Promise<
+  neverthrow.Result<
+    {
+      id: string;
+      playerId: string | null;
+      playerName: string;
+      joinDateTime: Date;
+      createdAt: Date;
+      updatedAt: Date;
+    }[],
+    'RECENT_JOIN_LOG_NOT_FOUND'
+  >
+> => {
+  // 統合されたログから直前のワールド参加ログを取得（通常ログ優先）
+  const recentWorldJoin = await findRecentMergedWorldJoinLog(datetime);
+  if (recentWorldJoin === null) {
+    return neverthrow.err('RECENT_JOIN_LOG_NOT_FOUND' as const);
+  }
+
+  // 統合されたログから次のワールド参加ログを取得
+  const nextWorldJoin = await findNextMergedWorldJoinLog(
+    recentWorldJoin.joinDateTime,
+  );
+
+  // デフォルト7日間ではなく、1日間に制限
+  const endDateTime =
+    nextWorldJoin?.joinDateTime ??
+    new Date(recentWorldJoin.joinDateTime.getTime() + 24 * 60 * 60 * 1000);
+
+  const playerJoinLogResult =
+    await playerJoinLogService.getVRChatPlayerJoinLogListByJoinDateTime({
+      startJoinDateTime: recentWorldJoin.joinDateTime,
+      endJoinDateTime: endDateTime,
+    });
+
+  if (playerJoinLogResult.isErr()) {
+    // エラータイプに基づいて適切な処理を行う
+    const error = playerJoinLogResult.error;
+    logger.error({
+      message: `プレイヤー参加ログの取得に失敗しました: ${error.message}`,
+      stack: new Error(`プレイヤー参加ログエラー: ${error.type}`),
+    });
+
+    switch (error.type) {
+      case 'DATABASE_ERROR':
+      case 'INVALID_DATE_RANGE':
+      case 'NOT_FOUND':
+        return neverthrow.err('RECENT_JOIN_LOG_NOT_FOUND');
+      default:
+        // 型安全のためのケース（実際には到達しない）
+        throw new Error(`未知のエラータイプ: ${JSON.stringify(error)}`);
+    }
+  }
+
+  const playerJoinLogList = playerJoinLogResult.value;
+  if (playerJoinLogList.length === 0) {
+    return neverthrow.err('RECENT_JOIN_LOG_NOT_FOUND');
+  }
+
+  return neverthrow.ok(playerJoinLogList);
 };
 
 export const logInfoRouter = () =>
