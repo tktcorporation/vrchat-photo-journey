@@ -14,11 +14,10 @@ import PhotoGallery from './components/PhotoGallery';
 import { TermsModal } from './components/TermsModal';
 import PathSettings from './components/settings/PathSettings';
 import { terms } from './constants/terms/ja';
+import { StartupProvider, useStartup } from './contexts/StartupContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { useToast } from './hooks/use-toast';
 import { useLoadingState } from './hooks/useLoadingState';
-import { useStartupStage } from './hooks/useStartUpStage';
-import type { ProcessError } from './hooks/useStartUpStage';
 
 interface ErrorEvent extends Event {
   type: undefined;
@@ -183,7 +182,9 @@ function App() {
     <ErrorBoundary>
       <TrpcWrapper>
         <ThemeProvider>
-          <AppContent />
+          <StartupProvider>
+            <AppContent />
+          </StartupProvider>
         </ThemeProvider>
       </TrpcWrapper>
     </ErrorBoundary>
@@ -223,36 +224,35 @@ const ToasterWrapper = () => {
  */
 const Contents = () => {
   const { toast } = useToast();
-  const { stages, retryProcess } = useStartupStage({
-    onError: (error: ProcessError) => {
-      toast({
-        variant: 'destructive',
-        title: 'スタートアップエラー',
-        description: error.message,
-      });
-    },
-  });
+  const { stage, error, retry } = useStartup();
   const loadingState = useLoadingState();
 
   useEffect(() => {
-    if (
-      stages.startingSync === 'inProgress' ||
-      stages.syncDone === 'inProgress'
-    ) {
+    if (stage === 'syncing') {
       loadingState.startLoadingStartupSync();
     } else {
       loadingState.finishLoadingStartupSync();
     }
-  }, [stages.startingSync, stages.syncDone, loadingState]);
+  }, [stage, loadingState]);
 
-  if (
-    stages.startingSync === 'error' ||
-    stages.syncDone === 'error' ||
-    stages.logsStored === 'error' ||
-    stages.indexLoaded === 'error'
-  ) {
+  // エラー表示時にtoast表示
+  useEffect(() => {
+    if (error) {
+      toast({
+        variant: 'destructive',
+        title: 'スタートアップエラー',
+        description: error,
+      });
+    }
+  }, [error, toast]);
+
+  if (stage === 'error') {
+    // より精密なエラータイプ判定
     const isDataError =
-      stages.logsStored === 'error' || stages.indexLoaded === 'error';
+      error?.includes('LOG_DIRECTORY_ERROR') ||
+      error?.includes('ログフォルダ') ||
+      error?.includes('フォルダ') ||
+      error?.includes('初期セットアップが必要');
 
     return (
       <div className="h-screen flex flex-col overflow-hidden">
@@ -308,7 +308,7 @@ const Contents = () => {
               <div className="mt-6 text-right">
                 <button
                   type="button"
-                  onClick={retryProcess}
+                  onClick={retry}
                   className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
                 >
                   設定を確認して続ける
@@ -334,7 +334,7 @@ const Contents = () => {
               </p>
               <button
                 type="button"
-                onClick={retryProcess}
+                onClick={retry}
                 className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
               >
                 再試行
@@ -346,21 +346,8 @@ const Contents = () => {
     );
   }
 
-  if (
-    stages.startingSync === 'inProgress' ||
-    stages.startingSync === 'pending' ||
-    stages.syncDone === 'inProgress' ||
-    stages.syncDone === 'pending'
-  ) {
-    const currentStage = (() => {
-      if (stages.indexLoaded === 'inProgress')
-        return 'インデックスを読み込み中...';
-      if (stages.logsStored === 'inProgress') return 'ログを保存中...';
-      if (stages.syncDone === 'inProgress') return 'データベースを同期中...';
-      if (stages.startingSync === 'inProgress')
-        return 'データベースの初期化を開始中...';
-      return '初期化中...';
-    })();
+  if (stage === 'syncing') {
+    const currentStage = 'アプリケーションを初期化中...';
 
     return (
       <div className="h-screen flex flex-col overflow-hidden">
@@ -377,7 +364,7 @@ const Contents = () => {
     );
   }
 
-  return <PhotoGallery {...loadingState} startUpStages={stages} />;
+  return <PhotoGallery {...loadingState} />;
 };
 
 export default App;

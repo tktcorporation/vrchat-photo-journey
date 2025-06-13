@@ -1,38 +1,23 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// useLogSyncのモック
-const mockUseLogSync = {
-  sync: vi.fn(),
-};
-
+// trpcReactのモック
 vi.mock('@/trpc', () => ({
   trpcReact: {
     settings: {
-      isDatabaseReady: {
-        useQuery: vi.fn(),
-      },
-      syncDatabase: {
+      initializeAppData: {
         useMutation: vi.fn(),
       },
     },
-    getVRChatLogFilesDir: {
-      useQuery: vi.fn(),
-    },
-    vrchatWorldJoinLog: {
-      getVRChatWorldJoinLogList: {
-        useQuery: vi.fn(),
-      },
-    },
+    useUtils: vi.fn(() => ({
+      // useUtilsのモック実装
+    })),
   },
 }));
 
-vi.mock('../useLogSync', () => ({
-  useLogSync: vi.fn(() => mockUseLogSync),
-  LOG_SYNC_MODE: {
-    FULL: 'FULL',
-    INCREMENTAL: 'INCREMENTAL',
-  },
+// queryClientのモック
+vi.mock('@/queryClient', () => ({
+  invalidatePhotoGalleryQueries: vi.fn(),
 }));
 
 // テスト内でのtRPCモックのアクセス
@@ -42,53 +27,48 @@ import { useStartupStage } from '../useStartUpStage';
 // モック型の定義
 interface MockTrpcReact {
   settings: {
-    isDatabaseReady: {
-      useQuery: ReturnType<typeof vi.fn>;
-    };
-    syncDatabase: {
+    initializeAppData: {
       useMutation: ReturnType<typeof vi.fn>;
     };
   };
-  getVRChatLogFilesDir: {
-    useQuery: ReturnType<typeof vi.fn>;
-  };
-  vrchatWorldJoinLog: {
-    getVRChatWorldJoinLogList: {
-      useQuery: ReturnType<typeof vi.fn>;
-    };
-  };
+  useUtils: ReturnType<typeof vi.fn>;
 }
 
 const mockTrpcReact = trpcReact as unknown as MockTrpcReact;
 
-describe('useStartupStage - logFilesDirData.error handling', () => {
+describe('useStartupStage - simplified implementation', () => {
   const mockCallbacks = {
     onError: vi.fn(),
     onComplete: vi.fn(),
   };
 
+  let mockMutate: ReturnType<typeof vi.fn>;
+  let mockReset: ReturnType<typeof vi.fn>;
+  let mockMutation: {
+    mutate: ReturnType<typeof vi.fn>;
+    reset: ReturnType<typeof vi.fn>;
+    isLoading: boolean;
+    isSuccess: boolean;
+    isError: boolean;
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
 
+    mockMutate = vi.fn();
+    mockReset = vi.fn();
+
+    mockMutation = {
+      mutate: mockMutate,
+      reset: mockReset,
+      isLoading: false,
+      isSuccess: false,
+      isError: false,
+    };
+
     // デフォルトのモック設定
-    mockTrpcReact.settings.isDatabaseReady.useQuery.mockReturnValue({
-      data: false, // マイグレーション不要
-      refetch: vi.fn(),
-    });
-
-    mockTrpcReact.settings.syncDatabase.useMutation.mockReturnValue({
-      mutate: vi.fn(),
-    });
-
-    mockTrpcReact.getVRChatLogFilesDir.useQuery.mockReturnValue({
-      data: { error: null },
-    });
-
-    mockTrpcReact.vrchatWorldJoinLog.getVRChatWorldJoinLogList.useQuery.mockReturnValue(
-      {
-        data: [],
-        isError: false,
-      },
+    mockTrpcReact.settings.initializeAppData.useMutation.mockReturnValue(
+      mockMutation,
     );
   });
 
@@ -96,176 +76,226 @@ describe('useStartupStage - logFilesDirData.error handling', () => {
     vi.restoreAllMocks();
   });
 
-  it('logFileDirNotFound エラーの場合、ログ数に関係なく logsStored を error にする', async () => {
-    // 既存ログがある状態をモック (selectで長さが返される)
-    mockTrpcReact.vrchatWorldJoinLog.getVRChatWorldJoinLogList.useQuery.mockReturnValue(
-      {
-        data: 2, // select: (data) => data?.length || 0 の結果
-        isError: false,
-      },
-    );
-
-    // logFilesDirData にエラーを設定
-    mockTrpcReact.getVRChatLogFilesDir.useQuery.mockReturnValue({
-      data: { error: 'logFileDirNotFound' },
-    });
-
+  it('初期状態では initialization が pending になる', () => {
     const { result } = renderHook(() => useStartupStage(mockCallbacks));
 
-    // executeLogOperations が実行されるまで待機
-    await waitFor(
-      () => {
-        expect(result.current.stages.logsStored).toBe('error');
-      },
-      { timeout: 3000 },
-    );
+    expect(result.current.stages.initialization).toBe('pending');
+    expect(result.current.completed).toBe(false);
+    expect(result.current.finished).toBe(false);
+  });
 
-    // エラーコールバックが呼ばれることを確認
-    expect(mockCallbacks.onError).toHaveBeenCalledWith({
-      stage: 'logsStored',
-      message: 'フォルダの読み取りに失敗しました',
+  it('自動的に初期化ミューテーションが実行される', async () => {
+    renderHook(() => useStartupStage(mockCallbacks));
+
+    await waitFor(() => {
+      expect(mockMutate).toHaveBeenCalledTimes(1);
     });
   });
 
-  it('logFilesNotFound エラーの場合、ログ数に関係なく logsStored を error にする', async () => {
-    // 既存ログがある状態をモック
-    mockTrpcReact.vrchatWorldJoinLog.getVRChatWorldJoinLogList.useQuery.mockReturnValue(
-      {
-        data: 3, // select: (data) => data?.length || 0 の結果
-        isError: false,
-      },
-    );
-
-    // logFilesDirData にエラーを設定
-    mockTrpcReact.getVRChatLogFilesDir.useQuery.mockReturnValue({
-      data: { error: 'logFilesNotFound' },
-    });
-
+  it('ミューテーション実行中は inProgress になる', async () => {
     const { result } = renderHook(() => useStartupStage(mockCallbacks));
 
-    await waitFor(
-      () => {
-        expect(result.current.stages.logsStored).toBe('error');
-      },
-      { timeout: 3000 },
+    // onMutateコールバックを手動で実行
+    const mutationOptions =
+      mockTrpcReact.settings.initializeAppData.useMutation.mock.calls[0][0];
+
+    act(() => {
+      mutationOptions.onMutate();
+    });
+
+    expect(result.current.stages.initialization).toBe('inProgress');
+    expect(result.current.completed).toBe(false);
+    expect(result.current.finished).toBe(false);
+  });
+
+  it('ミューテーション成功時は success になる', async () => {
+    const { result } = renderHook(() => useStartupStage(mockCallbacks));
+
+    const mutationOptions =
+      mockTrpcReact.settings.initializeAppData.useMutation.mock.calls[0][0];
+
+    act(() => {
+      mutationOptions.onMutate();
+    });
+
+    act(() => {
+      mutationOptions.onSuccess();
+    });
+
+    expect(result.current.stages.initialization).toBe('success');
+    expect(result.current.completed).toBe(true);
+    expect(result.current.finished).toBe(true);
+  });
+
+  it('ミューテーション失敗時は error になる', async () => {
+    const { result } = renderHook(() => useStartupStage(mockCallbacks));
+
+    const mutationOptions =
+      mockTrpcReact.settings.initializeAppData.useMutation.mock.calls[0][0];
+    const testError = new Error('Test initialization error');
+
+    act(() => {
+      mutationOptions.onMutate();
+    });
+
+    act(() => {
+      mutationOptions.onError(testError);
+    });
+
+    expect(result.current.stages.initialization).toBe('error');
+    expect(result.current.completed).toBe(false);
+    expect(result.current.finished).toBe(true);
+    expect(result.current.errorMessage).toBe('Test initialization error');
+  });
+
+  it('重複実行エラーの場合は無視される', async () => {
+    const { result } = renderHook(() => useStartupStage(mockCallbacks));
+
+    const mutationOptions =
+      mockTrpcReact.settings.initializeAppData.useMutation.mock.calls[0][0];
+    const duplicateError = new Error('初期化処理が既に実行中です');
+
+    act(() => {
+      mutationOptions.onMutate();
+    });
+
+    act(() => {
+      mutationOptions.onError(duplicateError);
+    });
+
+    // エラー状態にならないことを確認
+    expect(result.current.stages.initialization).toBe('inProgress');
+    expect(result.current.errorMessage).toBe('');
+  });
+
+  it('LOG_DIRECTORY_ERROR エラーは適切にハンドリングされる', async () => {
+    const { result } = renderHook(() => useStartupStage(mockCallbacks));
+
+    const mutationOptions =
+      mockTrpcReact.settings.initializeAppData.useMutation.mock.calls[0][0];
+    const directoryError = new Error(
+      'LOG_DIRECTORY_ERROR: VRChatのログフォルダが見つかりません',
     );
 
-    // エラーコールバックが呼ばれることを確認
-    expect(mockCallbacks.onError).toHaveBeenCalledWith({
-      stage: 'logsStored',
-      message: 'ログファイルが見つかりませんでした',
+    act(() => {
+      mutationOptions.onMutate();
+    });
+
+    act(() => {
+      mutationOptions.onError(directoryError);
+    });
+
+    expect(result.current.stages.initialization).toBe('error');
+    expect(result.current.errorMessage).toBe(
+      'LOG_DIRECTORY_ERROR: VRChatのログフォルダが見つかりません',
+    );
+  });
+
+  it('retryProcess実行時にリセットされる', async () => {
+    const { result } = renderHook(() => useStartupStage(mockCallbacks));
+
+    // エラー状態にする
+    const mutationOptions =
+      mockTrpcReact.settings.initializeAppData.useMutation.mock.calls[0][0];
+    const testError = new Error('Test error');
+
+    act(() => {
+      mutationOptions.onMutate();
+    });
+
+    act(() => {
+      mutationOptions.onError(testError);
+    });
+
+    expect(result.current.stages.initialization).toBe('error');
+
+    // リトライ実行
+    act(() => {
+      result.current.retryProcess();
+    });
+
+    expect(result.current.stages.initialization).toBe('pending');
+    expect(result.current.errorMessage).toBe('');
+    expect(mockReset).toHaveBeenCalled();
+  });
+
+  it('重複実行防止が機能する', async () => {
+    // isLoading = true の状態をモック
+    const loadingMutation = {
+      ...mockMutation,
+      isLoading: true,
+    };
+
+    mockTrpcReact.settings.initializeAppData.useMutation.mockReturnValue(
+      loadingMutation,
+    );
+
+    renderHook(() => useStartupStage(mockCallbacks));
+
+    // 少し待ってからmutateが呼ばれていないことを確認
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    expect(mockMutate).not.toHaveBeenCalled();
+  });
+
+  it('成功完了後は再実行されない', async () => {
+    // isSuccess = true の状態をモック
+    const successMutation = {
+      ...mockMutation,
+      isSuccess: true,
+    };
+
+    mockTrpcReact.settings.initializeAppData.useMutation.mockReturnValue(
+      successMutation,
+    );
+
+    renderHook(() => useStartupStage(mockCallbacks));
+
+    // 少し待ってからmutateが呼ばれていないことを確認
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    expect(mockMutate).not.toHaveBeenCalled();
+  });
+
+  it('完了時にコールバックが実行される', async () => {
+    renderHook(() => useStartupStage(mockCallbacks));
+
+    const mutationOptions =
+      mockTrpcReact.settings.initializeAppData.useMutation.mock.calls[0][0];
+
+    act(() => {
+      mutationOptions.onMutate();
+    });
+
+    act(() => {
+      mutationOptions.onSuccess();
+    });
+
+    await waitFor(() => {
+      expect(mockCallbacks.onComplete).toHaveBeenCalled();
     });
   });
 
-  it('未知のエラーの場合、汎用エラーメッセージを表示する', async () => {
-    mockTrpcReact.vrchatWorldJoinLog.getVRChatWorldJoinLogList.useQuery.mockReturnValue(
-      {
-        data: 1,
-        isError: false,
-      },
-    );
+  it('エラー時にコールバックが実行される', async () => {
+    renderHook(() => useStartupStage(mockCallbacks));
 
-    mockTrpcReact.getVRChatLogFilesDir.useQuery.mockReturnValue({
-      data: { error: 'unknownError' },
+    const mutationOptions =
+      mockTrpcReact.settings.initializeAppData.useMutation.mock.calls[0][0];
+    const testError = new Error('Test error');
+
+    act(() => {
+      mutationOptions.onMutate();
     });
 
-    const { result } = renderHook(() => useStartupStage(mockCallbacks));
-
-    await waitFor(
-      () => {
-        expect(result.current.stages.logsStored).toBe('error');
-      },
-      { timeout: 3000 },
-    );
-
-    // エラーコールバックが呼ばれることを確認
-    expect(mockCallbacks.onError).toHaveBeenCalledWith({
-      stage: 'logsStored',
-      message: '不明なエラーが発生しました',
-    });
-  });
-
-  it('logFilesDirData.error は existingLogCount の確認より優先される', async () => {
-    // existingLogCount が undefined でも logFilesDirData.error があれば処理される
-    mockTrpcReact.vrchatWorldJoinLog.getVRChatWorldJoinLogList.useQuery.mockReturnValue(
-      {
-        data: undefined, // ログカウント未取得
-        isError: false,
-      },
-    );
-
-    mockTrpcReact.getVRChatLogFilesDir.useQuery.mockReturnValue({
-      data: { error: 'logFileDirNotFound' },
+    act(() => {
+      mutationOptions.onError(testError);
     });
 
-    const { result } = renderHook(() => useStartupStage(mockCallbacks));
-
-    await waitFor(
-      () => {
-        expect(result.current.stages.logsStored).toBe('error');
-      },
-      { timeout: 3000 },
-    );
-
-    // エラーコールバックが呼ばれることを確認
-    expect(mockCallbacks.onError).toHaveBeenCalledWith({
-      stage: 'logsStored',
-      message: 'フォルダの読み取りに失敗しました',
+    await waitFor(() => {
+      expect(mockCallbacks.onError).toHaveBeenCalledWith({
+        stage: 'initialization',
+        message: 'Test error',
+      });
     });
-    // ログ同期は実行されない
-    expect(mockUseLogSync.sync).not.toHaveBeenCalled();
-  });
-
-  it('logFilesDirData.error がない場合は通常処理が継続される', async () => {
-    // 既存ログがある状態をモック（INCREMENTAL モードになる）
-    mockTrpcReact.vrchatWorldJoinLog.getVRChatWorldJoinLogList.useQuery.mockReturnValue(
-      {
-        data: 2, // select: (data) => data?.length || 0 の結果
-        isError: false,
-      },
-    );
-
-    // logFilesDirData にエラーなし
-    mockTrpcReact.getVRChatLogFilesDir.useQuery.mockReturnValue({
-      data: { error: null },
-    });
-
-    const { result } = renderHook(() => useStartupStage(mockCallbacks));
-
-    // logsStored が inProgress になることを確認（エラーにならない）
-    await waitFor(
-      () => {
-        expect(result.current.stages.logsStored).toBe('inProgress');
-      },
-      { timeout: 3000 },
-    );
-
-    // INCREMENTAL モードでログ同期が呼ばれることを確認
-    expect(mockUseLogSync.sync).toHaveBeenCalledWith('INCREMENTAL');
-  });
-
-  it('初回起動時は FULL モードでログ同期を実行する', async () => {
-    mockTrpcReact.vrchatWorldJoinLog.getVRChatWorldJoinLogList.useQuery.mockReturnValue(
-      {
-        data: 0, // select: (data) => data?.length || 0 の結果でログなし
-        isError: false,
-      },
-    );
-
-    mockTrpcReact.getVRChatLogFilesDir.useQuery.mockReturnValue({
-      data: { error: null },
-    });
-
-    const { result } = renderHook(() => useStartupStage(mockCallbacks));
-
-    await waitFor(
-      () => {
-        expect(result.current.stages.logsStored).toBe('inProgress');
-      },
-      { timeout: 3000 },
-    );
-
-    // FULL モードでログ同期が呼ばれることを確認
-    expect(mockUseLogSync.sync).toHaveBeenCalledWith('FULL');
   });
 });

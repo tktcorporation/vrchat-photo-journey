@@ -32,11 +32,29 @@ const t = initTRPC.context<{ eventEmitter: EventEmitter }>().create({
       userMessage = 'Sentryテスト用のエラーが発生しました。';
     }
 
+    // 詳細なエラー情報を含める（本番環境でもstacktraceを表示）
+    let debugInfo = '';
+    if (cause instanceof Error) {
+      debugInfo = ` [詳細: ${cause.message}${
+        cause.stack
+          ? `\nStack: ${cause.stack.split('\n').slice(0, 3).join('\n')}`
+          : ''
+      }]`;
+    }
+
     return {
       ...shape,
-      message: userMessage,
+      message: userMessage + debugInfo,
       data: {
         ...shape.data,
+        // 原因エラーの詳細も含める
+        ...(cause instanceof Error && {
+          originalError: {
+            name: cause.name,
+            message: cause.message,
+            stack: cause.stack,
+          },
+        }),
       },
     };
   },

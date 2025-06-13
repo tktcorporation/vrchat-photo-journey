@@ -162,7 +162,9 @@ const initializeApp = async () => {
     return;
   }
 
+  // データベースクライアント初期化
   await initializeRDBClient();
+
   registerIpcMainListeners();
   const mainWindow = await createOrGetMainWindow();
   createIPCHandler({ router, windows: [mainWindow] });
