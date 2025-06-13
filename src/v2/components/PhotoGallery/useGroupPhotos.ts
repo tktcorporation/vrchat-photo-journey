@@ -166,9 +166,6 @@ export function groupPhotosBySession(
   photos: Photo[],
   joinLogs: WorldJoinLog[],
 ): GroupedPhoto[] {
-  if (photos.length === 0) {
-    return [];
-  }
   if (joinLogs.length === 0) {
     console.warn('No join logs found, unable to group photos by session.');
     return [];
@@ -195,19 +192,17 @@ export function groupPhotosBySession(
   }
 
   // セッションからGroupedPhoto形式に変換
-  const groups: GroupedPhoto[] = sessions
-    .filter((session) => session.photos.length > 0)
-    .map((session) => ({
-      photos: session.photos.sort(
-        (a, b) => b.takenAt.getTime() - a.takenAt.getTime(),
-      ),
-      worldInfo: {
-        worldId: session.worldId,
-        worldName: session.worldName,
-        worldInstanceId: session.worldInstanceId,
-      },
-      joinDateTime: session.joinTime,
-    }));
+  const groups: GroupedPhoto[] = sessions.map((session) => ({
+    photos: session.photos.sort(
+      (a, b) => b.takenAt.getTime() - a.takenAt.getTime(),
+    ),
+    worldInfo: {
+      worldId: session.worldId,
+      worldName: session.worldName,
+      worldInstanceId: session.worldInstanceId,
+    },
+    joinDateTime: session.joinTime,
+  }));
 
   return groups;
 }

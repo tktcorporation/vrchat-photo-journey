@@ -73,6 +73,22 @@ describe('groupPhotosBySession', () => {
     expect(groups).toHaveLength(0);
   });
 
+  it('写真がないがjoinLogがある場合、空の写真でセッションを表示', () => {
+    const now = new Date();
+    const joinLogs = [
+      createWorldJoinLog('world1', new Date(now.getTime() - 1000)),
+      createWorldJoinLog('world2', new Date(now.getTime() - 2000)),
+    ];
+
+    const groups = groupPhotosBySession([], joinLogs);
+
+    expect(groups).toHaveLength(2);
+    expect(groups[0].photos).toHaveLength(0);
+    expect(groups[0].worldInfo?.worldId).toBe('world1');
+    expect(groups[1].photos).toHaveLength(0);
+    expect(groups[1].worldInfo?.worldId).toBe('world2');
+  });
+
   it('同じワールドの複数セッションを正しく処理', () => {
     const now = new Date();
     const photos = [
