@@ -5,12 +5,41 @@ import { logger } from '../../lib/logger';
 import * as sequelizeClient from '../../lib/sequelize';
 import * as electronUtilService from '../electronUtil/service';
 import { LOG_SYNC_MODE, type LogSyncMode, syncLogs } from '../logSync/service';
+import { getSettingStore } from '../settingStore';
 import * as vrchatWorldJoinLogService from '../vrchatWorldJoinLog/service';
 import { procedure, router as trpcRouter } from './../../trpc';
 import * as settingService from './service';
 
 // 初期化処理の重複実行を防ぐためのフラグ
 let isInitializing = false;
+
+// 前回の PhotoPath を記録しておくための変数
+let lastKnownPhotoPath: string | null = null;
+
+/**
+ * PhotoPath の設定が変更されたかどうかを確認する
+ * 変更されている場合は写真の再インデックスが必要
+ */
+const hasPhotoPathChanged = (): boolean => {
+  const settingStore = getSettingStore();
+  const currentPhotoPath = settingStore.getVRChatPhotoDir();
+
+  if (lastKnownPhotoPath === null) {
+    // 初回起動時は記録して変更なしとする
+    lastKnownPhotoPath = currentPhotoPath;
+    return false;
+  }
+
+  const hasChanged = lastKnownPhotoPath !== currentPhotoPath;
+  if (hasChanged) {
+    logger.info(
+      `PhotoPath changed from "${lastKnownPhotoPath}" to "${currentPhotoPath}"`,
+    );
+    lastKnownPhotoPath = currentPhotoPath;
+  }
+
+  return hasChanged;
+};
 
 export const settingsRouter = () =>
   trpcRouter({
@@ -124,7 +153,7 @@ export const settingsRouter = () =>
         // VRChatログディレクトリの存在確認は、ログ同期時のエラーで判定する
         // 事前チェックは省略し、ログ同期エラーで詳細なエラーを提供
 
-        // Step 3: 初回起動判定
+        // Step 3: 初回起動判定とPhotoPath変更確認
         logger.info('Step 3: Checking if this is first launch...');
         let isFirstLaunch = true;
         let syncMode: LogSyncMode = LOG_SYNC_MODE.FULL;
@@ -135,11 +164,22 @@ export const settingsRouter = () =>
               orderByJoinDateTime: 'desc',
             });
           isFirstLaunch = existingLogs.length === 0;
-          syncMode = isFirstLaunch
-            ? LOG_SYNC_MODE.FULL
-            : LOG_SYNC_MODE.INCREMENTAL;
+
+          // PhotoPath変更の確認
+          const photoPathChanged = hasPhotoPathChanged();
+
+          // 同期モード決定: 初回起動 OR PhotoPath変更時は FULL モード
+          syncMode =
+            isFirstLaunch || photoPathChanged
+              ? LOG_SYNC_MODE.FULL
+              : LOG_SYNC_MODE.INCREMENTAL;
 
           logger.info(`Found ${existingLogs.length} existing logs`);
+          if (photoPathChanged) {
+            logger.info(
+              'PhotoPath change detected, forcing FULL sync mode for photo re-indexing',
+            );
+          }
         } catch (error) {
           // データベースエラー（テーブル未作成など）の場合は初回起動として扱う
           logger.info(

@@ -1,6 +1,8 @@
 import { trpcReact } from '@/trpc';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { invalidatePhotoGalleryQueries } from '@/queryClient';
+
 type ProcessStage = 'pending' | 'inProgress' | 'success' | 'error' | 'skipped';
 
 export interface ProcessStages {
@@ -41,6 +43,9 @@ export const useStartupStage = (callbacks?: ProcessStageCallbacks) => {
   const [hasTriggeredInitialization, setHasTriggeredInitialization] =
     useState(false);
 
+  // tRPC utils for query invalidation
+  const utils = trpcReact.useUtils();
+
   // ステージ更新のヘルパー関数
   const updateStage = useCallback(
     (stage: keyof ProcessStages, status: ProcessStage, errorMsg?: string) => {
@@ -72,9 +77,16 @@ export const useStartupStage = (callbacks?: ProcessStageCallbacks) => {
         console.log('Starting application initialization');
         updateStage('initialization', 'inProgress');
       },
-      onSuccess: () => {
+      onSuccess: async () => {
         console.log('Application initialization completed successfully');
         updateStage('initialization', 'success');
+
+        // ログ同期完了後、ログ関連のクエリキャッシュを無効化
+        try {
+          invalidatePhotoGalleryQueries(utils);
+        } catch (error) {
+          console.warn('Failed to invalidate query cache:', error);
+        }
       },
       onError: (error) => {
         console.error('Application initialization failed:', error);
