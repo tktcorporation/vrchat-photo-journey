@@ -77,6 +77,9 @@ export const LocationGroupHeader = ({
     100,
   );
 
+  // Query enablement state for cancellation control
+  const [queryEnabled, setQueryEnabled] = useState(false);
+
   // Data fetching with query queue management
   const { data: details } =
     trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery(worldId ?? '', {
@@ -89,7 +92,7 @@ export const LocationGroupHeader = ({
 
   const { data: playersResult, isLoading: isPlayersLoading } =
     trpcReact.logInfo.getPlayerListInSameWorld.useQuery(joinDateTime, {
-      enabled: worldId !== null && canExecuteQuery,
+      enabled: worldId !== null && canExecuteQuery && queryEnabled,
       staleTime: 1000 * 60 * 5,
       cacheTime: 1000 * 60 * 30,
       refetchOnWindowFocus: false, // Prevent refetch on window focus
@@ -149,6 +152,7 @@ export const LocationGroupHeader = ({
             // Debounce query enabling to prevent rapid toggling during scroll
             visibilityTimeoutRef.current = setTimeout(() => {
               setShouldLoadDetails(true);
+              setQueryEnabled(true);
             }, 150); // Slightly longer debounce for query execution
           } else {
             // Clear timeout if element becomes invisible before timeout
@@ -156,11 +160,13 @@ export const LocationGroupHeader = ({
               clearTimeout(visibilityTimeoutRef.current);
             }
             setIsVisible(false);
-            // Add longer delay before disabling queries to allow for smooth scrolling
+            // Disable queries immediately when leaving viewport
+            setQueryEnabled(false);
+            // Add longer delay before disabling details loading to allow for smooth scrolling
             // This prevents queries from being cancelled and restarted rapidly
             visibilityTimeoutRef.current = setTimeout(() => {
               setShouldLoadDetails(false);
-            }, 500); // Keep queries enabled for a bit after leaving viewport
+            }, 500); // Keep details loading enabled for a bit after leaving viewport
           }
         }
       },
@@ -182,6 +188,13 @@ export const LocationGroupHeader = ({
       }
     };
   }, []);
+
+  // Reset query enabled state when component unmounts or becomes invisible
+  useEffect(() => {
+    if (!isVisible) {
+      setQueryEnabled(false);
+    }
+  }, [isVisible]);
 
   if (worldId === null) {
     return (

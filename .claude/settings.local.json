@@ -24,7 +24,8 @@
       "Bash(cp:*)",
       "Bash(gh issue view:*)",
       "Bash(git checkout:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(gh issue list:*)"
     ],
     "deny": []
   }

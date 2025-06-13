@@ -28,6 +28,11 @@ const WorldInstanceIdJoinDateTimeIndex = createIndexDecorator(
   },
 );
 
+const JoinDateTimeIndex = createIndexDecorator('WorldJoinDateTimeIndex', {
+  name: 'world-joinDateTime-idx',
+  concurrently: true,
+});
+
 @Table({ tableName: 'VRChatWorldJoinLogModels' })
 export class VRChatWorldJoinLogModel extends Model<
   InferAttributes<VRChatWorldJoinLogModel>,
@@ -54,6 +59,7 @@ export class VRChatWorldJoinLogModel extends Model<
   @Attribute(DataTypes.DATE)
   @NotNull
   @WorldInstanceIdJoinDateTimeIndex
+  @JoinDateTimeIndex
   declare joinDateTime: Date;
 
   @Attribute(DataTypes.DATE)
