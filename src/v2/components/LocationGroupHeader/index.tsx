@@ -17,6 +17,7 @@ import { PlatformBadge } from './PlatformBadge';
 import { type Player, PlayerList } from './PlayerList';
 import { ShareDialog } from './ShareDialog';
 import { usePlayerListDisplay } from './hooks/usePlayerListDisplay';
+import { useQueryQueue } from './hooks/useQueryQueue';
 import { useShareActions } from './hooks/useShareActions';
 
 /**
@@ -64,19 +65,37 @@ export const LocationGroupHeader = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const visibilityTimeoutRef = useRef<NodeJS.Timeout>();
 
-  // Data fetching
+  // Query queueing to prevent too many simultaneous requests
+  // Priority based on scroll position - elements higher up get higher priority
+  const queryPriority = Math.max(
+    0,
+    10 - Math.floor((containerRef.current?.offsetTop || 0) / 500),
+  );
+  const canExecuteQuery = useQueryQueue(
+    isVisible && shouldLoadDetails,
+    queryPriority,
+    100,
+  );
+
+  // Data fetching with query queue management
   const { data: details } =
     trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery(worldId ?? '', {
-      enabled: worldId !== null && shouldLoadDetails,
+      enabled: worldId !== null && canExecuteQuery,
       staleTime: 1000 * 60 * 5,
       cacheTime: 1000 * 60 * 30,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
     });
 
   const { data: playersResult, isLoading: isPlayersLoading } =
     trpcReact.logInfo.getPlayerListInSameWorld.useQuery(joinDateTime, {
-      enabled: worldId !== null && shouldLoadDetails,
+      enabled: worldId !== null && canExecuteQuery,
       staleTime: 1000 * 60 * 5,
       cacheTime: 1000 * 60 * 30,
+      refetchOnWindowFocus: false, // Prevent refetch on window focus
+      refetchOnReconnect: false, // Prevent refetch on reconnect
+      retry: 1, // Reduce retry attempts to prevent timeout cascade
+      retryDelay: 1000, // Add delay between retries
     });
 
   // Derived state
@@ -119,21 +138,36 @@ export const LocationGroupHeader = ({
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          setIsVisible(true);
-          visibilityTimeoutRef.current = setTimeout(() => {
-            setShouldLoadDetails(true);
-          }, 100);
-        } else {
-          setIsVisible(false);
-          if (visibilityTimeoutRef.current) {
-            clearTimeout(visibilityTimeoutRef.current);
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            // Clear any existing timeout
+            if (visibilityTimeoutRef.current) {
+              clearTimeout(visibilityTimeoutRef.current);
+            }
+            // Set visible immediately for UI updates
+            setIsVisible(true);
+            // Debounce query enabling to prevent rapid toggling during scroll
+            visibilityTimeoutRef.current = setTimeout(() => {
+              setShouldLoadDetails(true);
+            }, 150); // Slightly longer debounce for query execution
+          } else {
+            // Clear timeout if element becomes invisible before timeout
+            if (visibilityTimeoutRef.current) {
+              clearTimeout(visibilityTimeoutRef.current);
+            }
+            setIsVisible(false);
+            // Add longer delay before disabling queries to allow for smooth scrolling
+            // This prevents queries from being cancelled and restarted rapidly
+            visibilityTimeoutRef.current = setTimeout(() => {
+              setShouldLoadDetails(false);
+            }, 500); // Keep queries enabled for a bit after leaving viewport
           }
         }
       },
       {
-        rootMargin: '100px',
-        threshold: 0,
+        root: null, // Use viewport as root
+        rootMargin: '50px', // Start loading 50px before entering viewport
+        threshold: 0.1, // Trigger when 10% of the element is visible
       },
     );
 

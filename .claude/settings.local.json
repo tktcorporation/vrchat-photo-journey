@@ -21,7 +21,10 @@
       "Bash(yarn run test:playwright:*)",
       "Bash(git add:*)",
       "Bash(yarn install)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "Bash(gh issue view:*)",
+      "Bash(git checkout:*)",
+      "Bash(ls:*)"
     ],
     "deny": []
   }
