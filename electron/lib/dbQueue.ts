@@ -12,7 +12,8 @@ export type DBQueueError =
   | { type: 'QUEUE_FULL'; message: string }
   | { type: 'TASK_TIMEOUT'; message: string }
   | { type: 'QUERY_ERROR'; message: string }
-  | { type: 'TRANSACTION_ERROR'; message: string };
+  | { type: 'TRANSACTION_ERROR'; message: string }
+  | { type: 'TASK_CANCELLED'; message: string };
 
 /**
  * データベースアクセスのためのキュー設定
@@ -43,6 +44,15 @@ interface DBQueueOptions {
 }
 
 /**
+ * 優先度付きタスクのインターフェース
+ */
+interface PriorityTask<T> {
+  priority?: number; // 0-10, 10が最高優先度
+  signal?: AbortSignal; // キャンセル用シグナル
+  task: () => Promise<T>;
+}
+
+/**
  * データベースアクセスのためのキュー
  * - 同時実行数を制限してデータベースアクセスをキューイングする
  * - トランザクション処理をサポート
@@ -50,6 +60,8 @@ interface DBQueueOptions {
 class DBQueue {
   private queue: PQueue;
   private options: Required<DBQueueOptions>;
+  private runningTasks = new Map<string, AbortController>();
+  private taskIdCounter = 0;
 
   constructor(options: DBQueueOptions = {}) {
     this.options = {
@@ -148,6 +160,108 @@ class DBQueue {
         stack: error instanceof Error ? error : new Error(String(error)),
       });
       throw error; // 予期せぬエラーはそのままスロー
+    }
+  }
+
+  /**
+   * 優先度とキャンセル機能付きでタスクを追加
+   * @param priorityTask 優先度付きタスク
+   * @returns タスクの実行結果をResult型でラップ
+   */
+  async addPriorityTask<T>(
+    priorityTask: PriorityTask<T>,
+  ): Promise<Result<T, DBQueueError>> {
+    const taskId = String(this.taskIdCounter++);
+    const abortController = new AbortController();
+
+    // 外部シグナルがある場合は連携
+    if (priorityTask.signal) {
+      priorityTask.signal.addEventListener('abort', () => {
+        abortController.abort();
+      });
+    }
+
+    try {
+      if (this.queue.size >= this.options.maxSize) {
+        if (this.options.onFull === 'throw') {
+          return err({
+            type: 'QUEUE_FULL',
+            message: 'DBQueue: キューが一杯です',
+          });
+        }
+        await this.waitForSpace();
+      }
+
+      // キャンセルされているかチェック
+      if (abortController.signal.aborted) {
+        return err({
+          type: 'TASK_CANCELLED',
+          message: 'DBQueue: タスクがキャンセルされました',
+        });
+      }
+
+      this.runningTasks.set(taskId, abortController);
+
+      const result = await this.queue.add(
+        async () => {
+          // 実行前に再度キャンセルチェック
+          if (abortController.signal.aborted) {
+            throw new Error('Task cancelled');
+          }
+
+          try {
+            // キャンセルチェック用の関数（将来的に定期チェックで使用予定）
+            // const checkCancellation = () => {
+            //   if (abortController.signal.aborted) {
+            //     throw new Error('Task cancelled during execution');
+            //   }
+            // };
+
+            // タスクの実行をPromise.raceでラップ
+            const taskPromise = priorityTask.task();
+            const cancellationPromise = new Promise<never>((_, reject) => {
+              abortController.signal.addEventListener('abort', () => {
+                reject(new Error('Task cancelled'));
+              });
+            });
+
+            return await Promise.race([taskPromise, cancellationPromise]);
+          } finally {
+            this.runningTasks.delete(taskId);
+          }
+        },
+        { priority: priorityTask.priority ?? 5 },
+      );
+
+      return ok(result as T);
+    } catch (error) {
+      this.runningTasks.delete(taskId);
+
+      if (error instanceof Error) {
+        if (error.message.includes('cancelled')) {
+          logger.debug(`DBQueue: タスク ${taskId} がキャンセルされました`);
+          return err({
+            type: 'TASK_CANCELLED',
+            message: 'DBQueue: タスクがキャンセルされました',
+          });
+        }
+        if (error.name === 'TimeoutError') {
+          logger.error({
+            message: 'DBQueue: タスクがタイムアウトしました',
+            stack: error,
+          });
+          return err({
+            type: 'TASK_TIMEOUT',
+            message: `DBQueue: タスクがタイムアウトしました: ${error.message}`,
+          });
+        }
+      }
+
+      logger.error({
+        message: 'DBQueue: タスク実行中に予期せぬエラーが発生しました',
+        stack: error instanceof Error ? error : new Error(String(error)),
+      });
+      throw error;
     }
   }
 
@@ -283,7 +397,29 @@ class DBQueue {
    * キューをクリアする
    */
   clear(): void {
+    // 実行中のタスクをすべてキャンセル
+    for (const [taskId, controller] of this.runningTasks) {
+      controller.abort();
+      logger.debug(`DBQueue: タスク ${taskId} をキャンセルしました`);
+    }
+    this.runningTasks.clear();
     this.queue.clear();
+  }
+
+  /**
+   * 特定の条件に一致するタスクをキャンセル
+   * @param predicate キャンセル条件
+   */
+  cancelTasks(predicate?: (taskId: string) => boolean): number {
+    let cancelledCount = 0;
+    for (const [taskId, controller] of this.runningTasks) {
+      if (!predicate || predicate(taskId)) {
+        controller.abort();
+        cancelledCount++;
+        logger.debug(`DBQueue: タスク ${taskId} をキャンセルしました`);
+      }
+    }
+    return cancelledCount;
   }
 
   /**

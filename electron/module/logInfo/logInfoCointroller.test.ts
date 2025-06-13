@@ -12,6 +12,7 @@ import {
   it,
   vi,
 } from 'vitest';
+import { clearAllCaches } from '../../lib/queryCache';
 import { initRDBClient } from '../../lib/sequelize';
 import * as playerJoinLogService from '../VRChatPlayerJoinLogModel/playerJoinLog.service';
 import {
@@ -31,9 +32,10 @@ vi.mock('../vrchatWorldJoinLog/service');
 vi.mock('../vrchatWorldJoinLogFromPhoto/service');
 
 describe('getPlayerJoinListInSameWorld', () => {
-  // テスト前にモックをリセット
+  // テスト前にモックとキャッシュをリセット
   beforeEach(() => {
     vi.resetAllMocks();
+    clearAllCaches(); // キャッシュをクリア
     // 統合処理に必要なモックの共通設定
     vi.mocked(worldJoinLogService.findVRChatWorldJoinLogList).mockResolvedValue(
       [],

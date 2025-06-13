@@ -5,6 +5,7 @@ import * as playerJoinLogService from '../VRChatPlayerJoinLogModel/playerJoinLog
 import * as worldJoinLogService from '../vrchatWorldJoinLog/service';
 import { findVRChatWorldJoinLogFromPhotoList } from '../vrchatWorldJoinLogFromPhoto/service';
 import { logger } from './../../lib/logger';
+import { playerListCache } from './../../lib/queryCache';
 import { procedure, router as trpcRouter } from './../../trpc';
 import {
   type VRChatPhotoFileNameWithExt,
@@ -178,6 +179,55 @@ export const getPlayerJoinListInSameWorld = async (
     'RECENT_JOIN_LOG_NOT_FOUND'
   >
 > => {
+  // キャッシュキーを生成（分単位で丸める）
+  const cacheKey = `playerList:${Math.floor(datetime.getTime() / 60000)}`;
+
+  const cacheResult = await playerListCache.getOrFetch(cacheKey, async () => {
+    return getPlayerJoinListInSameWorldCore(datetime);
+  });
+
+  // キャッシュエラーはログノットファウンドとして処理
+  if (
+    cacheResult.isErr() &&
+    typeof cacheResult.error === 'object' &&
+    'code' in cacheResult.error &&
+    cacheResult.error.code === 'CACHE_ERROR'
+  ) {
+    return neverthrow.err('RECENT_JOIN_LOG_NOT_FOUND' as const);
+  }
+
+  // キャッシュ結果の型を適切にキャストして返す
+  return cacheResult as neverthrow.Result<
+    {
+      id: string;
+      playerId: string | null;
+      playerName: string;
+      joinDateTime: Date;
+      createdAt: Date;
+      updatedAt: Date;
+    }[],
+    'RECENT_JOIN_LOG_NOT_FOUND'
+  >;
+};
+
+/**
+ * キャッシュなしのコア実装
+ */
+const getPlayerJoinListInSameWorldCore = async (
+  datetime: Date,
+): Promise<
+  neverthrow.Result<
+    {
+      id: string;
+      playerId: string | null;
+      playerName: string;
+      joinDateTime: Date;
+      createdAt: Date;
+      updatedAt: Date;
+    }[],
+    'RECENT_JOIN_LOG_NOT_FOUND'
+  >
+> => {
   // 統合されたログから直前のワールド参加ログを取得（通常ログ優先）
   const recentWorldJoin = await findRecentMergedWorldJoinLog(datetime);
   if (recentWorldJoin === null) {
@@ -189,10 +239,15 @@ export const getPlayerJoinListInSameWorld = async (
     recentWorldJoin.joinDateTime,
   );
 
+  // デフォルト7日間ではなく、1日間に制限
+  const endDateTime =
+    nextWorldJoin?.joinDateTime ??
+    new Date(recentWorldJoin.joinDateTime.getTime() + 24 * 60 * 60 * 1000);
+
   const playerJoinLogResult =
     await playerJoinLogService.getVRChatPlayerJoinLogListByJoinDateTime({
       startJoinDateTime: recentWorldJoin.joinDateTime,
-      endJoinDateTime: nextWorldJoin?.joinDateTime ?? null,
+      endJoinDateTime: endDateTime,
     });
 
   if (playerJoinLogResult.isErr()) {

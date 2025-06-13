@@ -29,6 +29,11 @@ const PlayerNameJoinDateTimeIndex = createIndexDecorator(
   },
 );
 
+const JoinDateTimeIndex = createIndexDecorator('JoinDateTimeIndex', {
+  name: 'joinDateTime-idx',
+  concurrently: true,
+});
+
 @Table({ tableName: 'VRChatPlayerJoinLogModels' })
 export class VRChatPlayerJoinLogModel extends Model<
   InferAttributes<VRChatPlayerJoinLogModel>,
@@ -51,6 +56,7 @@ export class VRChatPlayerJoinLogModel extends Model<
   @Attribute(DataTypes.DATE)
   @NotNull
   @PlayerNameJoinDateTimeIndex
+  @JoinDateTimeIndex
   declare joinDateTime: Date;
 
   @Attribute(DataTypes.DATE)

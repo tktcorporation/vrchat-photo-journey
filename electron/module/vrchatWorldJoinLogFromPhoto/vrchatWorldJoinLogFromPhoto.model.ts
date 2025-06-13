@@ -33,6 +33,14 @@ const WorldInstanceIdJoinDateTimeFromPhotoIndex = createIndexDecorator(
   },
 );
 
+const JoinDateTimeFromPhotoIndex = createIndexDecorator(
+  'JoinDateTimeFromPhotoIndex',
+  {
+    name: 'photo-joinDateTime-idx',
+    concurrently: true,
+  },
+);
+
 @Table({ tableName: 'VRChatWorldJoinLogFromPhotoModels' })
 export class VRChatWorldJoinLogFromPhotoModel extends Model<
   InferAttributes<VRChatWorldJoinLogFromPhotoModel>,
@@ -51,6 +59,7 @@ export class VRChatWorldJoinLogFromPhotoModel extends Model<
   @Attribute(DataTypes.DATE)
   @NotNull
   @WorldInstanceIdJoinDateTimeFromPhotoIndex
+  @JoinDateTimeFromPhotoIndex
   declare joinDateTime: Date;
 
   @Attribute(DataTypes.DATE)
