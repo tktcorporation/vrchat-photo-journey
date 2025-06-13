@@ -1,6 +1,6 @@
-import path from 'node:path';
 import * as datefns from 'date-fns';
 import { glob } from 'glob';
+import path from 'pathe';
 import type { VRChatPhotoDirPath } from '../../vrchatPhoto/valueObjects';
 import { createVRChatWorldJoinLogFromPhoto } from '../../vrchatWorldJoinLogFromPhoto/service';
 import type { VRChatWorldJoinLogFromPhoto } from '../../vrchatWorldJoinLogFromPhoto/vrchatWorldJoinLogFromPhoto.model';
@@ -22,11 +22,7 @@ const getLogLinesFromLogPhotoDirPath = async ({
 }: { vrChatPhotoDirPath: VRChatPhotoDirPath }): Promise<
   VRChatWorldJoinLogFromPhoto[]
 > => {
-  const globPath = path.posix.join(
-    vrChatPhotoDirPath.value,
-    '**',
-    'VRChat_*_wrld_*',
-  );
+  const globPath = path.join(vrChatPhotoDirPath.value, '**', 'VRChat_*_wrld_*');
   // 正規表現にマッチするファイルを再帰的に取得
   const logPhotoFilePathList = await glob(globPath);
 

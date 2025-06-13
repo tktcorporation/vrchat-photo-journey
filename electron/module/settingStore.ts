@@ -150,8 +150,8 @@ const clearStoredSetting =
     }
   };
 
-import path from 'node:path';
 import consola from 'consola';
+import path from 'pathe';
 import { logger } from './../lib/logger';
 import {
   type VRChatPhotoDirPath,

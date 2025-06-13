@@ -1,7 +1,7 @@
 import * as nodeFs from 'node:fs';
-import path from 'node:path';
 import * as datefns from 'date-fns';
 import * as neverthrow from 'neverthrow';
+import path from 'pathe';
 import { getAppUserDataPath } from '../../../lib/wrappedApp';
 import * as fs from '../../../lib/wrappedFs';
 import type { VRChatLogLine, VRChatLogStoreFilePath } from '../model';

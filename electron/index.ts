@@ -1,6 +1,6 @@
-import path from 'node:path';
 import { type BrowserWindow, app, ipcMain } from 'electron';
 import isDev from 'electron-is-dev';
+import path from 'pathe';
 
 import {
   type Event,
@@ -142,10 +142,7 @@ const createOrGetMainWindow = async (): Promise<BrowserWindow> => {
  * ファイルパスはユーザーデータディレクトリ配下に生成される。
  */
 const initializeRDBClient = async () => {
-  const filePath = path
-    .join(getAppUserDataPath(), 'db.sqlite')
-    .split(path.sep)
-    .join(path.posix.sep);
+  const filePath = path.join(getAppUserDataPath(), 'db.sqlite');
   sequelizeClient.initRDBClient({
     db_url: filePath,
   });

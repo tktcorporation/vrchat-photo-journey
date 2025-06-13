@@ -1,9 +1,9 @@
 import * as fs from 'node:fs/promises';
 import * as os from 'node:os';
-import * as path from 'node:path';
 import { writeClipboardFilePaths } from 'clip-filepaths';
 import { app, clipboard, dialog, nativeImage, shell } from 'electron';
 import * as neverthrow from 'neverthrow';
+import * as path from 'pathe';
 import sharp from 'sharp';
 
 /**

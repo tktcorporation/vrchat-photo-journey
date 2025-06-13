@@ -1,7 +1,7 @@
 // Native
 import EventEmitter from 'node:events';
 import { promises as fs } from 'node:fs';
-import { join } from 'node:path';
+import { join } from 'pathe';
 
 // Packages
 import {

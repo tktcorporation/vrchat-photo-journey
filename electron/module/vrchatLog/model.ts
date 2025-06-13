@@ -1,7 +1,7 @@
 const opaqueSymbol: unique symbol = Symbol('opaqueSymbol');
 
-import * as path from 'node:path';
 import * as datefns from 'date-fns';
+import * as path from 'pathe';
 import { z } from 'zod';
 
 export abstract class BaseValueObject<T extends string, K> {

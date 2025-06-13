@@ -1,5 +1,5 @@
-import path from 'node:path';
 import * as neverthrow from 'neverthrow';
+import path from 'pathe';
 import { P, match } from 'ts-pattern';
 // import type * as vrchatLogService from '../service/vrchatLog/vrchatLog';
 import * as fs from '../../lib/wrappedFs';
