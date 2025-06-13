@@ -152,7 +152,7 @@ const SearchOverlay = memo(
             e.preventDefault();
             if (suggestions[highlightedIndex]) {
               handleSelect(suggestions[highlightedIndex].value);
-            } else if (query.trim()) {
+            } else {
               handleSearch();
             }
             break;
@@ -176,28 +176,29 @@ const SearchOverlay = memo(
 
     // 直接検索
     const handleSearch = useCallback(() => {
-      if (query.trim()) {
-        onSearch(query.trim());
-        onClose();
-      }
+      onSearch(query.trim());
+      onClose();
     }, [query, onSearch, onClose]);
+
+    // モーダルを閉じる
+    const handleClose = useCallback(() => {
+      if (!query.trim()) {
+        onSearch('');
+      }
+      setQuery('');
+      setHighlightedIndex(0);
+      onClose();
+    }, [query, onClose, onSearch]);
 
     // モーダル外クリックで閉じる
     const handleBackdropClick = useCallback(
       (e: React.MouseEvent) => {
         if (e.target === e.currentTarget) {
-          onClose();
+          handleClose();
         }
       },
-      [onClose],
+      [handleClose],
     );
-
-    // モーダルを閉じる
-    const handleClose = useCallback(() => {
-      setQuery('');
-      setHighlightedIndex(0);
-      onClose();
-    }, [onClose]);
 
     // フォーカス管理
     useEffect(() => {
