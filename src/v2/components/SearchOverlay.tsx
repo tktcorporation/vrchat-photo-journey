@@ -176,23 +176,22 @@ const SearchOverlay = memo(
 
     // 直接検索
     const handleSearch = useCallback(() => {
-      onSearch(query.trim());
+      const trimmedQuery = query.trim();
+      onSearch(trimmedQuery);
       onClose();
     }, [query, onSearch, onClose]);
 
     // モーダルを閉じる
     const handleClose = useCallback(() => {
-      if (!query.trim()) {
-        onSearch('');
-      }
       setQuery('');
       setHighlightedIndex(0);
       onClose();
-    }, [query, onClose, onSearch]);
+    }, [onClose]);
 
     // モーダル外クリックで閉じる
     const handleBackdropClick = useCallback(
       (e: React.MouseEvent) => {
+        // クリックされた要素が背景（backdrop）自体の場合のみ閉じる
         if (e.target === e.currentTarget) {
           handleClose();
         }
@@ -223,12 +222,19 @@ const SearchOverlay = memo(
       <div
         className="fixed inset-0 z-50 bg-black/20 dark:bg-black/40 backdrop-blur-sm"
         onClick={handleBackdropClick}
-        onKeyDown={(e) => e.key === 'Escape' && handleClose()}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') handleClose();
+        }}
         role="dialog"
         aria-modal="true"
+        tabIndex={-1}
       >
-        <div className="absolute top-0 left-0 right-0 p-4">
-          <div className="max-w-2xl mx-auto bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl rounded-2xl border border-gray-200/20 dark:border-gray-700/30 shadow-2xl">
+        <div className="absolute top-0 left-0 right-0 p-4 pointer-events-none">
+          <div
+            className="max-w-2xl mx-auto bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl rounded-2xl border border-gray-200/20 dark:border-gray-700/30 shadow-2xl pointer-events-auto"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+          >
             {/* 検索入力部分 */}
             <div className="flex items-center p-4 border-b border-gray-200/30 dark:border-gray-700/30">
               <Search className="h-5 w-5 text-muted-foreground/40 mr-3 flex-shrink-0" />
@@ -245,7 +251,10 @@ const SearchOverlay = memo(
               {query && (
                 <button
                   type="button"
-                  onClick={() => setQuery('')}
+                  onClick={() => {
+                    setQuery('');
+                    onSearch('');
+                  }}
                   className="ml-3 p-1.5 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 rounded-lg transition-colors"
                   aria-label="検索をクリア"
                 >
