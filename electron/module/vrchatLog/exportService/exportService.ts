@@ -1,6 +1,7 @@
 import { promises as fs } from 'node:fs';
 import * as path from 'node:path';
 import * as datefns from 'date-fns';
+import { app } from 'electron';
 import { match } from 'ts-pattern';
 import {
   type LogRecord,
@@ -34,9 +35,14 @@ export type DBLogProvider = (
  * デフォルトのlogStoreディレクトリパスを取得
  */
 const getDefaultLogStorePath = (): string => {
-  // 実際のプロジェクトでは設定ファイルから取得するべき
-  // 現在はテスト用のパスを返す
-  return path.join(process.cwd(), 'logStore');
+  try {
+    // ダウンロードフォルダ内にlogStoreフォルダを作成
+    const downloadsPath = app.getPath('downloads');
+    return path.join(downloadsPath, 'logStore');
+  } catch (_error) {
+    // テスト環境などでappが利用できない場合のフォールバック
+    return path.join(process.cwd(), 'logStore');
+  }
 };
 
 /**
