@@ -1,4 +1,3 @@
-import * as datefns from 'date-fns';
 import { type Result, err, ok } from 'neverthrow';
 import { enqueueTask } from '../../lib/dbHelper';
 import type { VRChatPlayerJoinLog } from '../vrchatLog/service';
@@ -59,13 +58,12 @@ export const getVRChatPlayerJoinLogListByJoinDateTime = async (props: {
 
   let modelList: model.VRChatPlayerJoinLogModel[];
 
-  // 終了日時が指定されていない場合は開始日時から7日間のログを取得
+  // 終了日時が指定されていない場合は無制限に取得
   if (!props.endJoinDateTime) {
-    const endDate = datefns.addDays(props.startJoinDateTime, 7);
     const result = await enqueueTask(() =>
       model.getVRChatPlayerJoinLogListByJoinDateTime({
         gteJoinDateTime: props.startJoinDateTime,
-        ltJoinDateTime: endDate,
+        ltJoinDateTime: null,
         getUntilDays: null,
       }),
     );
@@ -139,15 +137,21 @@ export const getLatestDetectedDate = async (): Promise<
  * @returns 日時範囲ごとのプレイヤー参加ログのマップ
  */
 export const getVRChatPlayerJoinLogListByMultipleDateRanges = async (
-  dateRanges: Array<{ start: Date; end: Date; key: string }>,
+  dateRanges: Array<{ start: Date; end: Date | undefined; key: string }>,
 ): Promise<Result<Record<string, PlayerJoinLogData[]>, PlayerJoinLogError>> => {
   if (dateRanges.length === 0) {
     return ok({});
   }
 
+  // endがundefinedの場合はnullとしてそのまま渡す
+  const normalizedDateRanges = dateRanges.map((range) => ({
+    ...range,
+    end: range.end ?? null,
+  }));
+
   // 複数の日時範囲を一つのクエリで処理するためのUNIONクエリを構築
   const result = await enqueueTask(() =>
-    model.getVRChatPlayerJoinLogListByMultipleDateRanges(dateRanges),
+    model.getVRChatPlayerJoinLogListByMultipleDateRanges(normalizedDateRanges),
   );
 
   if (result.isErr()) {

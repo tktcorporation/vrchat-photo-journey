@@ -333,15 +333,12 @@ const getPlayerJoinListInSameWorldCore = async (
       worldJoinLog.joinDateTime,
     );
 
-    // デフォルト7日間ではなく、1日間に制限
-    const endDateTime =
-      nextWorldJoin?.joinDateTime ??
-      new Date(worldJoinLog.joinDateTime.getTime() + 24 * 60 * 60 * 1000);
+    const endDateTime = nextWorldJoin?.joinDateTime;
 
     logger.debug({
       message: 'Query time range determined',
       startDateTime: worldJoinLog.joinDateTime.toISOString(),
-      endDateTime: endDateTime.toISOString(),
+      endDateTime: endDateTime?.toISOString() ?? 'unlimited',
       hasNextWorldJoin: nextWorldJoin !== null,
     });
 
@@ -349,7 +346,7 @@ const getPlayerJoinListInSameWorldCore = async (
     const playerJoinLogResult =
       await playerJoinLogService.getVRChatPlayerJoinLogListByJoinDateTime({
         startJoinDateTime: worldJoinLog.joinDateTime,
-        endJoinDateTime: endDateTime,
+        endJoinDateTime: endDateTime ?? null,
       });
 
     if (playerJoinLogResult.isErr()) {
@@ -550,7 +547,7 @@ export const logInfoRouter = () =>
         const sessionRanges: Array<{
           dateKey: string;
           start: Date;
-          end: Date;
+          end: Date | undefined;
           worldId: string;
           worldName: string;
           worldInstanceId: string;
@@ -609,12 +606,7 @@ export const logInfoRouter = () =>
               (log) => log.joinDateTime > recentWorldJoin.joinDateTime,
             );
 
-            // 24時間制限（元のロジックと同じ）
-            const endDateTime =
-              nextWorldJoin?.joinDateTime ??
-              new Date(
-                recentWorldJoin.joinDateTime.getTime() + 24 * 60 * 60 * 1000,
-              );
+            const endDateTime = nextWorldJoin?.joinDateTime;
 
             sessionRanges.push({
               dateKey,
