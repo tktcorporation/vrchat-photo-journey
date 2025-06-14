@@ -157,6 +157,21 @@ vi.mock('./../../../../trpc', () => ({
           isLoading: false,
         }),
       },
+      getSessionInfoBatch: {
+        useQuery: (joinDates: Date[]) => {
+          // 検索クエリが存在する場合のみプレイヤーデータを返す
+          const data: Record<string, { players: typeof mockPlayers }> = {};
+          for (const date of joinDates) {
+            data[date.toISOString()] = {
+              players: mockPlayers,
+            };
+          }
+          return {
+            data,
+            isLoading: false,
+          };
+        },
+      },
     },
   },
 }));
