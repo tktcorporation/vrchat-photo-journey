@@ -1,6 +1,7 @@
 import { promises as fs } from 'node:fs';
 import * as path from 'node:path';
 import * as datefns from 'date-fns';
+import { match } from 'ts-pattern';
 import {
   type LogRecord,
   exportLogsToLogStore,
@@ -66,24 +67,20 @@ const groupLogRecordsByMonth = (
   const groupedRecords = new Map<string, LogRecord[]>();
 
   for (const logRecord of logRecords) {
-    let recordDate: Date;
-
-    switch (logRecord.type) {
-      case 'worldJoin':
-        recordDate = (logRecord.record as { joinDateTime: Date }).joinDateTime;
-        break;
-      case 'playerJoin':
-        recordDate = (logRecord.record as { joinDateTime: Date }).joinDateTime;
-        break;
-      case 'playerLeave':
-        recordDate = (logRecord.record as { leaveDateTime: Date })
-          .leaveDateTime;
-        break;
-      default:
-        throw new Error(
-          `Unknown log record type: ${(logRecord as LogRecord).type}`,
-        );
-    }
+    const recordDate = match(logRecord)
+      .with(
+        { type: 'worldJoin' },
+        (record) => (record.record as { joinDateTime: Date }).joinDateTime,
+      )
+      .with(
+        { type: 'playerJoin' },
+        (record) => (record.record as { joinDateTime: Date }).joinDateTime,
+      )
+      .with(
+        { type: 'playerLeave' },
+        (record) => (record.record as { leaveDateTime: Date }).leaveDateTime,
+      )
+      .exhaustive();
 
     const yearMonth = datefns.format(recordDate, 'yyyy-MM');
 

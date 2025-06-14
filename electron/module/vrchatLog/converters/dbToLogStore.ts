@@ -1,4 +1,5 @@
 import * as datefns from 'date-fns';
+import { match } from 'ts-pattern';
 import type { VRChatLogLine } from '../model';
 import { VRChatLogLineSchema } from '../model';
 
@@ -118,18 +119,20 @@ export const convertPlayerLeaveLogToLogLine = (
  * 各ログレコードから対応する日時を取得
  */
 const getLogDateTime = (logRecord: LogRecord): Date => {
-  switch (logRecord.type) {
-    case 'worldJoin':
-      return (logRecord.record as DBLogRecord).joinDateTime;
-    case 'playerJoin':
-      return (logRecord.record as PlayerJoinLogRecord).joinDateTime;
-    case 'playerLeave':
-      return (logRecord.record as PlayerLeaveLogRecord).leaveDateTime;
-    default:
-      throw new Error(
-        `Unknown log record type: ${(logRecord as LogRecord).type}`,
-      );
-  }
+  return match(logRecord)
+    .with(
+      { type: 'worldJoin' },
+      (record) => (record.record as DBLogRecord).joinDateTime,
+    )
+    .with(
+      { type: 'playerJoin' },
+      (record) => (record.record as PlayerJoinLogRecord).joinDateTime,
+    )
+    .with(
+      { type: 'playerLeave' },
+      (record) => (record.record as PlayerLeaveLogRecord).leaveDateTime,
+    )
+    .exhaustive();
 };
 
 /**
@@ -150,33 +153,28 @@ export const exportLogsToLogStore = (
   const logLines: VRChatLogLine[] = [];
 
   for (const logRecord of sortedRecords) {
-    switch (logRecord.type) {
-      case 'worldJoin': {
+    const newLines = match(logRecord)
+      .with({ type: 'worldJoin' }, (record) => {
         const worldJoinLines = convertWorldJoinLogToLogLines(
-          logRecord.record as DBLogRecord,
+          record.record as DBLogRecord,
         );
-        logLines.push(...worldJoinLines);
-        break;
-      }
-      case 'playerJoin': {
+        return worldJoinLines;
+      })
+      .with({ type: 'playerJoin' }, (record) => {
         const playerJoinLine = convertPlayerJoinLogToLogLine(
-          logRecord.record as PlayerJoinLogRecord,
+          record.record as PlayerJoinLogRecord,
         );
-        logLines.push(playerJoinLine);
-        break;
-      }
-      case 'playerLeave': {
+        return [playerJoinLine];
+      })
+      .with({ type: 'playerLeave' }, (record) => {
         const playerLeaveLine = convertPlayerLeaveLogToLogLine(
-          logRecord.record as PlayerLeaveLogRecord,
+          record.record as PlayerLeaveLogRecord,
         );
-        logLines.push(playerLeaveLine);
-        break;
-      }
-      default:
-        throw new Error(
-          `Unknown log record type: ${(logRecord as LogRecord).type}`,
-        );
-    }
+        return [playerLeaveLine];
+      })
+      .exhaustive();
+
+    logLines.push(...newLines);
   }
 
   return logLines;
