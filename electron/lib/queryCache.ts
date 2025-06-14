@@ -4,6 +4,9 @@ import { logger } from './logger';
 export type CacheError = {
   code: 'CACHE_ERROR';
   message: string;
+  originalError: unknown;
+  cacheKey: string;
+  operation: string;
 };
 
 interface CacheEntry<T> {
@@ -63,10 +66,16 @@ export class QueryCache {
 
       return result;
     } catch (error) {
-      logger.error({ message: `Cache error: ${String(error)}` });
+      logger.error({
+        message: `Cache error for key "${key}": ${error}`,
+        stack: error instanceof Error ? error : new Error(String(error)),
+      });
       return err({
         code: 'CACHE_ERROR',
-        message: `Cache operation failed: ${error}`,
+        message: `Cache operation failed for key "${key}": ${error}`,
+        originalError: error,
+        cacheKey: key,
+        operation: 'getOrFetch',
       });
     }
   }

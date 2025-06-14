@@ -132,25 +132,32 @@ export function usePhotoGallery(
     [originalGroupedPhotos],
   );
 
-  // 検索時のみプレイヤーデータを取得（UIでのプレイヤー表示は別途最適化）
-  const playerQueries = trpcReact.useQueries((t) =>
-    joinDates.map((dt) =>
-      t.logInfo.getPlayerListInSameWorld(dt, {
-        enabled: searchQuery.length > 0, // 検索時のみ有効
-        staleTime: 1000 * 60 * 5,
-        cacheTime: 1000 * 60 * 30,
-      }),
-    ),
-  );
+  // バッチクエリで全セッション情報を効率的に取得
+  const { data: sessionBatchData, isLoading: isLoadingSessionBatch } =
+    trpcReact.logInfo.getSessionInfoBatch.useQuery(joinDates, {
+      enabled: searchQuery.length > 0 && joinDates.length > 0, // 検索時のみ有効
+      staleTime: 1000 * 60 * 5,
+      cacheTime: 1000 * 60 * 30,
+    });
 
-  const playersMap = useMemo(
-    () =>
-      joinDates.reduce<Record<string, Player[] | undefined>>((acc, dt, idx) => {
-        acc[dt.toISOString()] = playerQueries[idx]?.data;
-        return acc;
-      }, {}),
-    [joinDates, playerQueries],
-  );
+  const playersMap = useMemo(() => {
+    if (!sessionBatchData) {
+      return joinDates.reduce<Record<string, Player[] | undefined>>(
+        (acc, dt) => {
+          acc[dt.toISOString()] = undefined;
+          return acc;
+        },
+        {},
+      );
+    }
+
+    return joinDates.reduce<Record<string, Player[] | undefined>>((acc, dt) => {
+      const isoString = dt.toISOString();
+      const sessionData = sessionBatchData[isoString];
+      acc[isoString] = sessionData?.players;
+      return acc;
+    }, {});
+  }, [joinDates, sessionBatchData]);
 
   const filteredGroupedPhotos = useMemo(() => {
     if (!searchQuery) return originalGroupedPhotos;
@@ -182,7 +189,8 @@ export function usePhotoGallery(
     return filtered;
   }, [originalGroupedPhotos, searchQuery, playersMap]);
 
-  const isLoading = isLoadingPhotos || isLoadingGrouping;
+  const isLoading =
+    isLoadingPhotos || isLoadingGrouping || isLoadingSessionBatch;
 
   const filteredPhotosCount = useMemo(() => {
     return Object.values(filteredGroupedPhotos).reduce(
