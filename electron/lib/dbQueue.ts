@@ -30,7 +30,7 @@ interface DBQueueOptions {
   maxSize?: number;
   /**
    * タスクのタイムアウト時間（ミリ秒）
-   * @default 30000 (30秒)
+   * @default 60000 (60秒)
    */
   timeout?: number;
   /**
@@ -55,7 +55,7 @@ class DBQueue {
     this.options = {
       concurrency: options.concurrency ?? 1,
       maxSize: options.maxSize ?? Number.POSITIVE_INFINITY,
-      timeout: options.timeout ?? 30000,
+      timeout: options.timeout ?? 60000, // 60秒に延長
       onFull: options.onFull ?? 'wait',
     };
 

@@ -1,5 +1,6 @@
 import { trpcClient } from '@/trpc';
 import { useEffect, useRef, useState } from 'react';
+import { BATCH_CONFIG } from '../../../constants/batchConfig';
 
 /**
  * プレイヤー情報の型定義
@@ -22,14 +23,14 @@ interface BatchRequest {
 
 /**
  * プレイヤー情報バッチマネージャー
- * 500msのウィンドウで複数のリクエストをまとめて一つのDBクエリで処理
+ * 設定されたウィンドウ時間で複数のリクエストをまとめて一つのDBクエリで処理
  */
 class PlayerInfoBatchManager {
   private pendingRequests: BatchRequest[] = [];
   private batchTimeout: NodeJS.Timeout | null = null;
-  private readonly batchDelay = 500; // 500msでバッチ処理
-  private readonly maxBatchSize = 50; // 最大50セッション
-  private readonly duplicateThresholdMs = 1000; // 1秒以内は重複とみなす
+  private readonly batchDelay = BATCH_CONFIG.BATCH_DELAY_MS;
+  private readonly maxBatchSize = BATCH_CONFIG.MAX_SESSION_BATCH_SIZE;
+  private readonly duplicateThresholdMs = BATCH_CONFIG.DUPLICATE_THRESHOLD_MS;
   private batchCount = 0; // バッチ実行回数のカウンター
 
   private executeBatch: (() => Promise<void>) | null = null;
@@ -114,6 +115,53 @@ class PlayerInfoBatchManager {
     const currentBatchCount = this.batchCount;
     const requestCount = this.pendingRequests.length;
 
+    // バッチサイズ制限を確実に守る
+    if (requestCount > this.maxBatchSize) {
+      console.warn(
+        `[PlayerInfoBatch] Batch size (${requestCount}) exceeds limit (${this.maxBatchSize}). Splitting batch.`,
+      );
+
+      // 最大サイズずつに分割して処理
+      const firstBatch = this.pendingRequests.slice(0, this.maxBatchSize);
+      const remainingRequests = this.pendingRequests.slice(this.maxBatchSize);
+
+      // 現在のリクエストを最大サイズに制限
+      this.pendingRequests = firstBatch;
+
+      console.debug(
+        `[PlayerInfoBatch] Executing split batch #${currentBatchCount} with ${firstBatch.length} requests (${remainingRequests.length} remaining)`,
+      );
+
+      this.isExecuting = true;
+      const startTime = performance.now();
+
+      if (this.executeBatch) {
+        this.executeBatch().finally(() => {
+          const executionTime = performance.now() - startTime;
+          console.debug(
+            `[PlayerInfoBatch] Split batch #${currentBatchCount} completed in ${executionTime.toFixed(
+              2,
+            )}ms`,
+          );
+
+          this.isExecuting = false;
+          // 残りのリクエストを次の処理用に設定
+          this.pendingRequests = remainingRequests;
+
+          // 残りのリクエストがある場合は次のバッチをスケジュール
+          if (this.pendingRequests.length > 0) {
+            console.debug(
+              `[PlayerInfoBatch] ${this.pendingRequests.length} requests remaining, scheduling next batch`,
+            );
+            this.batchTimeout = setTimeout(() => {
+              this.flushBatch();
+            }, this.batchDelay);
+          }
+        });
+      }
+      return;
+    }
+
     console.debug(
       `[PlayerInfoBatch] Executing batch #${currentBatchCount} with ${requestCount} requests`,
     );
@@ -158,7 +206,7 @@ const globalPlayerBatchManager = new PlayerInfoBatchManager();
 
 /**
  * プレイヤー情報を効率的にバッチ取得するフック
- * 500msのウィンドウで複数のリクエストをまとめて一つのDBクエリで処理
+ * 設定されたウィンドウ時間で複数のリクエストをまとめて一つのDBクエリで処理
  */
 export const useSessionInfoBatch = (joinDateTime: Date, enabled = true) => {
   const [players, setPlayers] = useState<PlayerInfo[] | null>(null);
@@ -180,6 +228,17 @@ export const useSessionInfoBatch = (joinDateTime: Date, enabled = true) => {
         console.debug(
           `[PlayerInfoBatch] API call started for ${joinDateTimes.length} sessions`,
         );
+
+        // バッチサイズをログ出力してチェック
+        console.warn(
+          `[PlayerInfoBatch] About to send ${joinDateTimes.length} items to API (max allowed: ${BATCH_CONFIG.MAX_SESSION_BATCH_SIZE})`,
+        );
+
+        if (joinDateTimes.length > BATCH_CONFIG.MAX_SESSION_BATCH_SIZE) {
+          console.error(
+            `[PlayerInfoBatch] CRITICAL: Batch size exceeds limit! Sending ${joinDateTimes.length} items`,
+          );
+        }
 
         // セッション情報のバッチAPIを呼び出し（プレイヤー情報のみ使用）
         const result =

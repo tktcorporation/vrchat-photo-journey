@@ -1,6 +1,7 @@
 import * as neverthrow from 'neverthrow';
 import { P, match } from 'ts-pattern';
 import z from 'zod';
+import { BATCH_CONFIG } from '../../constants/batchConfig';
 import * as playerJoinLogService from '../VRChatPlayerJoinLogModel/playerJoinLog.service';
 import * as worldJoinLogService from '../vrchatWorldJoinLog/service';
 import { findVRChatWorldJoinLogFromPhotoList } from '../vrchatWorldJoinLogFromPhoto/service';
@@ -487,12 +488,16 @@ export const logInfoRouter = () =>
 
     /**
      * セッション情報（ワールド情報+プレイヤー情報）を効率的にバッチ取得
-     * 500msのウィンドウで複数のリクエストをまとめて一つのDBクエリで処理
+     * フロントエンドのバッチマネージャーからの複数リクエストを一つのDBクエリで処理
      * @param joinDateTimes - 参加日時の配列
      * @returns 日時ごとのセッション情報のマップ
      */
     getSessionInfoBatch: procedure
-      .input(z.array(z.date()).max(50))
+      .input(
+        z.array(z.date()).max(BATCH_CONFIG.MAX_SESSION_BATCH_SIZE, {
+          message: `セッション情報のバッチ取得は最大${BATCH_CONFIG.MAX_SESSION_BATCH_SIZE}件までです。現在の件数を確認してください。`,
+        }),
+      )
       .query(async (ctx) => {
         const results: Record<
           string,
