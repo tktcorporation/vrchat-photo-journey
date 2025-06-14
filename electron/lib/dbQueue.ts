@@ -247,12 +247,12 @@ class DBQueue {
         }
         if (error.name === 'TimeoutError') {
           logger.error({
-            message: 'DBQueue: タスクがタイムアウトしました',
+            message: `DBQueue: タスクがタイムアウトしました (taskId: ${taskId}, timeout: ${this.options.timeout}ms, queueSize: ${this.queue.size}, pending: ${this.queue.pending}, running: ${this.runningTasks.size}, concurrency: ${this.options.concurrency})`,
             stack: error,
           });
           return err({
             type: 'TASK_TIMEOUT',
-            message: `DBQueue: タスクがタイムアウトしました: ${error.message}`,
+            message: `DBQueue: タスクがタイムアウトしました (${this.options.timeout}ms): ${error.message}`,
           });
         }
       }

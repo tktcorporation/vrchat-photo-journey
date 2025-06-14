@@ -155,6 +155,49 @@ export const getVRChatPlayerJoinLogListByJoinDateTime = async (
 };
 
 /**
+ * 複数の日時範囲のプレイヤー参加ログを一度のクエリで取得する
+ * @param dateRanges 日時範囲の配列 { start: Date, end: Date, key: string }
+ * @returns 各日時範囲のキーが含まれたプレイヤー参加ログの配列
+ */
+export const getVRChatPlayerJoinLogListByMultipleDateRanges = async (
+  dateRanges: Array<{ start: Date; end: Date; key: string }>,
+): Promise<Array<VRChatPlayerJoinLogModel & { range_key: string }>> => {
+  if (dateRanges.length === 0) {
+    return [];
+  }
+
+  // 複数の範囲を OR 条件で結合したクエリを作成
+  const whereConditions = dateRanges.map(({ start, end }) => ({
+    joinDateTime: {
+      [Op.gte]: start,
+      [Op.lt]: end,
+    },
+  }));
+
+  const playerJoinLogList = await VRChatPlayerJoinLogModel.findAll({
+    where: {
+      [Op.or]: whereConditions,
+    },
+    order: [['joinDateTime', 'ASC']],
+  });
+
+  // 各レコードにどの範囲に属するかのキーを追加
+  const resultsWithKeys = playerJoinLogList.map((log) => {
+    // このレコードがどの範囲に属するかを特定
+    const matchingRange = dateRanges.find(
+      ({ start, end }) => log.joinDateTime >= start && log.joinDateTime < end,
+    );
+
+    return {
+      ...log.dataValues,
+      range_key: matchingRange?.key || 'unknown',
+    } as VRChatPlayerJoinLogModel & { range_key: string };
+  });
+
+  return resultsWithKeys;
+};
+
+/**
  * 最後に検出されたプレイヤー参加ログを取得する
  * ログ同期の進捗確認に使用される
  */

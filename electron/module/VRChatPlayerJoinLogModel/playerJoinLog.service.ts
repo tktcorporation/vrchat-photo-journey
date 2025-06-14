@@ -134,6 +134,62 @@ export const getLatestDetectedDate = async (): Promise<
 };
 
 /**
+ * 複数の日時範囲のプレイヤー参加ログを一度に取得する（効率的なバッチクエリ）
+ * @param dateRanges 日時範囲の配列 { start: Date, end: Date, key: string }
+ * @returns 日時範囲ごとのプレイヤー参加ログのマップ
+ */
+export const getVRChatPlayerJoinLogListByMultipleDateRanges = async (
+  dateRanges: Array<{ start: Date; end: Date; key: string }>,
+): Promise<Result<Record<string, PlayerJoinLogData[]>, PlayerJoinLogError>> => {
+  if (dateRanges.length === 0) {
+    return ok({});
+  }
+
+  // 複数の日時範囲を一つのクエリで処理するためのUNIONクエリを構築
+  const result = await enqueueTask(() =>
+    model.getVRChatPlayerJoinLogListByMultipleDateRanges(dateRanges),
+  );
+
+  if (result.isErr()) {
+    return err({
+      type: 'DATABASE_ERROR',
+      message: `複数範囲のプレイヤー参加ログの取得に失敗しました: ${result.error.message}`,
+    });
+  }
+
+  const modelList = result.value as Array<
+    model.VRChatPlayerJoinLogModel & { range_key: string }
+  >;
+
+  // 結果をキーごとにグループ化
+  const groupedResults: Record<string, PlayerJoinLogData[]> = {};
+
+  for (const model of modelList) {
+    const key = model.range_key;
+    if (!groupedResults[key]) {
+      groupedResults[key] = [];
+    }
+    groupedResults[key].push({
+      id: model.id,
+      playerId: model.playerId,
+      playerName: model.playerName,
+      joinDateTime: model.joinDateTime,
+      createdAt: model.createdAt,
+      updatedAt: model.updatedAt,
+    });
+  }
+
+  // 空の結果の場合、各キーに空配列を設定
+  for (const { key } of dateRanges) {
+    if (!groupedResults[key]) {
+      groupedResults[key] = [];
+    }
+  }
+
+  return ok(groupedResults);
+};
+
+/**
  * 最新のプレイヤー参加ログを取得する
  * @returns 最新のプレイヤー参加ログ
  */

@@ -42,6 +42,13 @@ vi.mock('@/trpc', () => ({
       },
     },
   },
+  trpcClient: {
+    logInfo: {
+      getSessionInfoBatch: {
+        query: vi.fn(),
+      },
+    },
+  },
 }));
 
 // IntersectionObserverのモック
@@ -68,6 +75,11 @@ vi.mock('react-dom', () => ({
   createPortal: vi.fn((element) => element),
 }));
 
+// useSessionInfoBatchフックのモック
+vi.mock('../hooks/useSessionInfoBatch', () => ({
+  useSessionInfoBatch: vi.fn(),
+}));
+
 const mockProps = {
   worldId: 'wrld_12345',
   worldName: 'Test World',
@@ -83,6 +95,9 @@ describe('LocationGroupHeader - Player Uniqueness', () => {
 
   it('rejoinしたプレイヤーの重複を除去する', async () => {
     const { trpcReact } = await import('@/trpc');
+    const { useSessionInfoBatch } = await import(
+      '../hooks/useSessionInfoBatch'
+    );
 
     // 同じプレイヤーが複数回joinしたデータをモック
     const duplicatePlayersData = [
@@ -116,12 +131,12 @@ describe('LocationGroupHeader - Player Uniqueness', () => {
     vi.mocked(
       trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery,
     ).mockReturnValue({ data: null });
-    // プレイヤーリストのモック
-    vi.mocked(
-      trpcReact.logInfo.getPlayerListInSameWorld.useQuery,
-    ).mockReturnValue({
-      data: duplicatePlayersData,
+
+    // プレイヤー情報のモック
+    vi.mocked(useSessionInfoBatch).mockReturnValue({
+      players: duplicatePlayersData,
       isLoading: false,
+      error: null,
     });
 
     render(<LocationGroupHeader {...mockProps} />);
@@ -139,6 +154,9 @@ describe('LocationGroupHeader - Player Uniqueness', () => {
 
   it('異なるプレイヤー名は正常に表示される', async () => {
     const { trpcReact } = await import('@/trpc');
+    const { useSessionInfoBatch } = await import(
+      '../hooks/useSessionInfoBatch'
+    );
 
     const uniquePlayersData = [
       {
@@ -171,12 +189,12 @@ describe('LocationGroupHeader - Player Uniqueness', () => {
     vi.mocked(
       trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery,
     ).mockReturnValue({ data: null });
-    // プレイヤーリストのモック
-    vi.mocked(
-      trpcReact.logInfo.getPlayerListInSameWorld.useQuery,
-    ).mockReturnValue({
-      data: uniquePlayersData,
+
+    // プレイヤー情報のモック
+    vi.mocked(useSessionInfoBatch).mockReturnValue({
+      players: uniquePlayersData,
       isLoading: false,
+      error: null,
     });
 
     render(<LocationGroupHeader {...mockProps} />);
@@ -190,17 +208,20 @@ describe('LocationGroupHeader - Player Uniqueness', () => {
 
   it('空のプレイヤーリストを正しく処理する', async () => {
     const { trpcReact } = await import('@/trpc');
+    const { useSessionInfoBatch } = await import(
+      '../hooks/useSessionInfoBatch'
+    );
 
     // VRChatワールド情報のモック
     vi.mocked(
       trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery,
     ).mockReturnValue({ data: null });
-    // プレイヤーリストのモック（空）
-    vi.mocked(
-      trpcReact.logInfo.getPlayerListInSameWorld.useQuery,
-    ).mockReturnValue({
-      data: [],
+
+    // 空のプレイヤー情報のモック
+    vi.mocked(useSessionInfoBatch).mockReturnValue({
+      players: [],
       isLoading: false,
+      error: null,
     });
 
     render(<LocationGroupHeader {...mockProps} />);
@@ -227,17 +248,19 @@ describe('LocationGroupHeader - Query Optimization', () => {
 
   it('should setup IntersectionObserver on mount', async () => {
     const { trpcReact } = await import('@/trpc');
+    const { useSessionInfoBatch } = await import(
+      '../hooks/useSessionInfoBatch'
+    );
 
     vi.mocked(
       trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery,
     ).mockReturnValue({
       data: null,
     });
-    vi.mocked(
-      trpcReact.logInfo.getPlayerListInSameWorld.useQuery,
-    ).mockReturnValue({
-      data: [],
+    vi.mocked(useSessionInfoBatch).mockReturnValue({
+      players: null,
       isLoading: false,
+      error: null,
     });
 
     render(<LocationGroupHeader {...mockProps} />);
@@ -255,28 +278,26 @@ describe('LocationGroupHeader - Query Optimization', () => {
 
   it('should enable queries when element becomes visible', async () => {
     const { trpcReact } = await import('@/trpc');
+    const { useSessionInfoBatch } = await import(
+      '../hooks/useSessionInfoBatch'
+    );
 
     const mockWorldQuery = vi.fn().mockReturnValue({ data: null });
-    const mockPlayerQuery = vi
-      .fn()
-      .mockReturnValue({ data: [], isLoading: false });
 
     vi.mocked(
       trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery,
     ).mockImplementation(mockWorldQuery);
-    vi.mocked(
-      trpcReact.logInfo.getPlayerListInSameWorld.useQuery,
-    ).mockImplementation(mockPlayerQuery);
+    vi.mocked(useSessionInfoBatch).mockReturnValue({
+      players: null,
+      isLoading: false,
+      error: null,
+    });
 
     render(<LocationGroupHeader {...mockProps} />);
 
-    // Initially queries should be disabled
+    // Initially queries should be disabled, with fallback to prop worldId
     expect(mockWorldQuery).toHaveBeenCalledWith(
-      mockProps.worldId,
-      expect.objectContaining({ enabled: false }),
-    );
-    expect(mockPlayerQuery).toHaveBeenCalledWith(
-      mockProps.joinDateTime,
+      'wrld_12345', // Uses prop worldId directly
       expect.objectContaining({ enabled: false }),
     );
 
@@ -286,30 +307,30 @@ describe('LocationGroupHeader - Query Optimization', () => {
       callback([{ isIntersecting: true }]);
 
       // Fast-forward through debounce delay
-      vi.advanceTimersByTime(150);
+      vi.advanceTimersByTime(250);
 
       // Re-render to trigger useEffect
       vi.runAllTimers();
     }
 
-    // After visibility, queries should eventually be enabled
-    // Note: In real testing, we'd need to wait for state updates and re-renders
+    // After visibility, intersection observer should be properly set up
+    expect(global.IntersectionObserver).toHaveBeenCalled();
   });
 
   it('should disable queries when element becomes invisible', async () => {
     const { trpcReact } = await import('@/trpc');
-
-    const mockWorldQuery = vi.fn().mockReturnValue({ data: null });
-    const mockPlayerQuery = vi
-      .fn()
-      .mockReturnValue({ data: [], isLoading: false });
+    const { useSessionInfoBatch } = await import(
+      '../hooks/useSessionInfoBatch'
+    );
 
     vi.mocked(
       trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery,
-    ).mockImplementation(mockWorldQuery);
-    vi.mocked(
-      trpcReact.logInfo.getPlayerListInSameWorld.useQuery,
-    ).mockImplementation(mockPlayerQuery);
+    ).mockReturnValue({ data: null });
+    vi.mocked(useSessionInfoBatch).mockReturnValue({
+      players: null,
+      isLoading: false,
+      error: null,
+    });
 
     render(<LocationGroupHeader {...mockProps} />);
 
@@ -317,27 +338,32 @@ describe('LocationGroupHeader - Query Optimization', () => {
     const [callback] = mockIntersectionObserver.mock.calls[0] || [];
     if (callback) {
       callback([{ isIntersecting: true }]);
-      vi.advanceTimersByTime(150);
+      vi.advanceTimersByTime(250);
 
       // Then becoming invisible
       callback([{ isIntersecting: false }]);
       vi.advanceTimersByTime(500);
     }
+
+    // Verify that intersection observer was set up
+    expect(global.IntersectionObserver).toHaveBeenCalled();
   });
 
   it('should cleanup IntersectionObserver on unmount', async () => {
     const { trpcReact } = await import('@/trpc');
+    const { useSessionInfoBatch } = await import(
+      '../hooks/useSessionInfoBatch'
+    );
 
     vi.mocked(
       trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery,
     ).mockReturnValue({
       data: null,
     });
-    vi.mocked(
-      trpcReact.logInfo.getPlayerListInSameWorld.useQuery,
-    ).mockReturnValue({
-      data: [],
+    vi.mocked(useSessionInfoBatch).mockReturnValue({
+      players: null,
       isLoading: false,
+      error: null,
     });
 
     const { unmount } = render(<LocationGroupHeader {...mockProps} />);
@@ -349,26 +375,28 @@ describe('LocationGroupHeader - Query Optimization', () => {
 
   it('should apply query optimization settings', async () => {
     const { trpcReact } = await import('@/trpc');
+    const { useSessionInfoBatch } = await import(
+      '../hooks/useSessionInfoBatch'
+    );
 
-    const mockPlayerQuery = vi
-      .fn()
-      .mockReturnValue({ data: [], isLoading: false });
-    vi.mocked(
-      trpcReact.logInfo.getPlayerListInSameWorld.useQuery,
-    ).mockImplementation(mockPlayerQuery);
+    const mockWorldQuery = vi.fn().mockReturnValue({ data: null });
     vi.mocked(
       trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery,
-    ).mockReturnValue({ data: null });
+    ).mockImplementation(mockWorldQuery);
+    vi.mocked(useSessionInfoBatch).mockReturnValue({
+      players: null,
+      isLoading: false,
+      error: null,
+    });
 
     render(<LocationGroupHeader {...mockProps} />);
 
-    expect(mockPlayerQuery).toHaveBeenCalledWith(
-      mockProps.joinDateTime,
+    // VRChatワールド詳細クエリの最適化設定を確認
+    expect(mockWorldQuery).toHaveBeenCalledWith(
+      'wrld_12345', // Uses prop worldId directly
       expect.objectContaining({
         refetchOnWindowFocus: false,
         refetchOnReconnect: false,
-        retry: 1,
-        retryDelay: 1000,
         staleTime: 1000 * 60 * 5,
         cacheTime: 1000 * 60 * 30,
       }),

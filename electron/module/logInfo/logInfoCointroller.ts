@@ -254,7 +254,16 @@ const getPlayerJoinListInSameWorldCore = async (
     // エラータイプに基づいて適切な処理を行う
     const error = playerJoinLogResult.error;
     logger.error({
-      message: `プレイヤー参加ログの取得に失敗しました: ${error.message}`,
+      message: `プレイヤー参加ログの取得に失敗しました: ${
+        error.message
+      } (errorType: ${
+        error.type
+      }, startDateTime: ${recentWorldJoin.joinDateTime.toISOString()}, endDateTime: ${endDateTime.toISOString()}, searchRange: ${Math.round(
+        (endDateTime.getTime() - recentWorldJoin.joinDateTime.getTime()) /
+          (1000 * 60 * 60),
+      )} hours, worldId: ${recentWorldJoin.worldId}, worldName: ${
+        recentWorldJoin.worldName
+      })`,
       stack: new Error(`プレイヤー参加ログエラー: ${error.type}`),
     });
 
@@ -384,5 +393,206 @@ export const logInfoRouter = () =>
           input.limit,
         );
         return suggestions;
+      }),
+
+    /**
+     * セッション情報（ワールド情報+プレイヤー情報）を効率的にバッチ取得
+     * 500msのウィンドウで複数のリクエストをまとめて一つのDBクエリで処理
+     * @param joinDateTimes - 参加日時の配列
+     * @returns 日時ごとのセッション情報のマップ
+     */
+    getSessionInfoBatch: procedure
+      .input(z.array(z.date()).max(50))
+      .query(async (ctx) => {
+        const results: Record<
+          string,
+          {
+            worldId: string | null;
+            worldName: string | null;
+            worldInstanceId: string | null;
+            players: Array<{
+              id: string;
+              playerId: string | null;
+              playerName: string;
+              joinDateTime: Date;
+              createdAt: Date;
+              updatedAt: Date;
+            }>;
+          }
+        > = {};
+
+        if (ctx.input.length === 0) {
+          return results;
+        }
+
+        // 効率的なワールド参加ログの一括取得
+        const sessionRanges: Array<{
+          dateKey: string;
+          start: Date;
+          end: Date;
+          worldId: string;
+          worldName: string;
+          worldInstanceId: string;
+        }> = [];
+
+        try {
+          const startTime = performance.now();
+          logger.debug(
+            `[SessionInfoBatch] Processing batch request for ${ctx.input.length} sessions`,
+          );
+
+          // 全ての日時に対して効率的にワールド参加ログを取得
+          const worldLogStartTime = performance.now();
+          const allWorldJoinLogs =
+            await worldJoinLogService.findVRChatWorldJoinLogList({
+              ltJoinDateTime: new Date(
+                Math.max(...ctx.input.map((d) => d.getTime())) + 1000,
+              ),
+              orderByJoinDateTime: 'desc',
+            });
+
+          const worldLogTime = performance.now() - worldLogStartTime;
+          logger.debug(
+            `[SessionInfoBatch] World join logs retrieved in ${worldLogTime.toFixed(
+              2,
+            )}ms (${allWorldJoinLogs.length} logs)`,
+          );
+
+          // 各日時に対する最適なワールド参加ログを効率的に見つける
+          const sessionMappingStartTime = performance.now();
+          for (const joinDateTime of ctx.input) {
+            const dateKey = joinDateTime.toISOString();
+            const searchEndTime = new Date(joinDateTime.getTime() + 1000);
+
+            // 指定時刻以前の最新ログを検索（メモリ内で効率的に処理）
+            const recentWorldJoin = allWorldJoinLogs.find(
+              (log) => log.joinDateTime <= searchEndTime,
+            );
+
+            if (!recentWorldJoin) {
+              results[dateKey] = {
+                worldId: null,
+                worldName: null,
+                worldInstanceId: null,
+                players: [],
+              };
+              continue;
+            }
+
+            // 次のワールド参加ログを検索（メモリ内で効率的に処理）
+            const nextWorldJoin = allWorldJoinLogs.find(
+              (log) => log.joinDateTime > recentWorldJoin.joinDateTime,
+            );
+
+            // 24時間制限
+            const endDateTime =
+              nextWorldJoin?.joinDateTime ??
+              new Date(
+                recentWorldJoin.joinDateTime.getTime() + 24 * 60 * 60 * 1000,
+              );
+
+            sessionRanges.push({
+              dateKey,
+              start: recentWorldJoin.joinDateTime,
+              end: endDateTime,
+              worldId: recentWorldJoin.worldId,
+              worldName: recentWorldJoin.worldName,
+              worldInstanceId: recentWorldJoin.worldInstanceId,
+            });
+
+            // 初期化（プレイヤー情報は後で追加）
+            results[dateKey] = {
+              worldId: recentWorldJoin.worldId,
+              worldName: recentWorldJoin.worldName,
+              worldInstanceId: recentWorldJoin.worldInstanceId,
+              players: [],
+            };
+          }
+
+          const sessionMappingTime =
+            performance.now() - sessionMappingStartTime;
+          logger.debug(
+            `[SessionInfoBatch] Session mapping completed in ${sessionMappingTime.toFixed(
+              2,
+            )}ms (${sessionRanges.length} valid sessions)`,
+          );
+
+          // プレイヤー情報を効率的に一括取得
+          if (sessionRanges.length > 0) {
+            const playerQueryStartTime = performance.now();
+            const dateRanges = sessionRanges.map((range) => ({
+              start: range.start,
+              end: range.end,
+              key: range.dateKey,
+            }));
+
+            logger.debug(
+              `[SessionInfoBatch] Fetching player data for ${dateRanges.length} session ranges`,
+            );
+
+            const playerBatchResult =
+              await playerJoinLogService.getVRChatPlayerJoinLogListByMultipleDateRanges(
+                dateRanges,
+              );
+
+            const playerQueryTime = performance.now() - playerQueryStartTime;
+
+            if (playerBatchResult.isOk()) {
+              const playersBySession = playerBatchResult.value;
+              let totalPlayersFound = 0;
+
+              // 各セッションにプレイヤー情報を設定
+              for (const range of sessionRanges) {
+                const players = playersBySession[range.dateKey] || [];
+                totalPlayersFound += players.length;
+                if (results[range.dateKey]) {
+                  results[range.dateKey].players = players;
+                }
+              }
+
+              logger.debug(
+                `[SessionInfoBatch] Player data retrieved in ${playerQueryTime.toFixed(
+                  2,
+                )}ms (${totalPlayersFound} total players)`,
+              );
+            } else {
+              logger.warn({
+                message: `プレイヤー情報の取得に失敗しましたが、ワールド情報は返します: ${playerBatchResult.error.message}`,
+              });
+              logger.debug(
+                `[SessionInfoBatch] Player query failed in ${playerQueryTime.toFixed(
+                  2,
+                )}ms`,
+              );
+            }
+          }
+
+          const totalTime = performance.now() - startTime;
+          logger.debug(
+            `[SessionInfoBatch] Batch processing completed in ${totalTime.toFixed(
+              2,
+            )}ms for ${ctx.input.length} sessions`,
+          );
+
+          return results;
+        } catch (error) {
+          logger.error({
+            message: `[SessionInfoBatch] バッチ処理でエラーが発生しました: ${
+              error instanceof Error ? error.message : String(error)
+            } (requested sessions: ${ctx.input.length})`,
+            stack: error instanceof Error ? error : undefined,
+          });
+
+          // エラーの場合は空の結果を返す
+          for (const datetime of ctx.input) {
+            results[datetime.toISOString()] = {
+              worldId: null,
+              worldName: null,
+              worldInstanceId: null,
+              players: [],
+            };
+          }
+          return results;
+        }
       }),
   });

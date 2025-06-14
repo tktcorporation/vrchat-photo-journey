@@ -70,6 +70,8 @@ export function usePhotoGallery(
   isMultiSelectMode: boolean;
   /** 複数選択モードの有効/無効を設定する関数 */
   setIsMultiSelectMode: (value: boolean) => void;
+  /** 各日時のプレイヤー情報マップ (ISO文字列 -> Player[]) */
+  playersMap: Record<string, Player[] | undefined>;
   /** デバッグ情報 */
   debug: GalleryDebugInfo;
 } {
@@ -130,11 +132,11 @@ export function usePhotoGallery(
     [originalGroupedPhotos],
   );
 
-  // デバウンスされた検索クエリでのみプレイヤーデータを取得
+  // 検索時のみプレイヤーデータを取得（UIでのプレイヤー表示は別途最適化）
   const playerQueries = trpcReact.useQueries((t) =>
     joinDates.map((dt) =>
       t.logInfo.getPlayerListInSameWorld(dt, {
-        enabled: searchQuery.length > 0,
+        enabled: searchQuery.length > 0, // 検索時のみ有効
         staleTime: 1000 * 60 * 5,
         cacheTime: 1000 * 60 * 30,
       }),
@@ -215,6 +217,7 @@ export function usePhotoGallery(
     setSelectedPhotos,
     isMultiSelectMode,
     setIsMultiSelectMode,
+    playersMap,
     debug,
   };
 }
