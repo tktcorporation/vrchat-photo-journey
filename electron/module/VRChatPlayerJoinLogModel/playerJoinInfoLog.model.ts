@@ -130,9 +130,27 @@ export const getVRChatPlayerJoinLogListByJoinDateTime = async (
         ltJoinDateTime: null;
         // endJoinDateTime がない場合は以降のデータを最大n日分取得する
         getUntilDays: number;
+      }
+    | {
+        gteJoinDateTime: Date;
+        ltJoinDateTime: null;
+        // getUntilDaysもnullの場合は無制限に取得する
+        getUntilDays: null;
       },
 ): Promise<VRChatPlayerJoinLogModel[]> => {
   if (props.ltJoinDateTime === null) {
+    if (props.getUntilDays === null) {
+      // 無制限に取得
+      const playerJoinLogList = await VRChatPlayerJoinLogModel.findAll({
+        where: {
+          joinDateTime: {
+            [Op.gte]: props.gteJoinDateTime,
+          },
+        },
+      });
+      return playerJoinLogList;
+    }
+    // 指定された日数分取得
     const playerJoinLogList = await VRChatPlayerJoinLogModel.findAll({
       where: {
         joinDateTime: {
@@ -160,19 +178,28 @@ export const getVRChatPlayerJoinLogListByJoinDateTime = async (
  * @returns 各日時範囲のキーが含まれたプレイヤー参加ログの配列
  */
 export const getVRChatPlayerJoinLogListByMultipleDateRanges = async (
-  dateRanges: Array<{ start: Date; end: Date; key: string }>,
+  dateRanges: Array<{ start: Date; end: Date | null; key: string }>,
 ): Promise<Array<VRChatPlayerJoinLogModel & { range_key: string }>> => {
   if (dateRanges.length === 0) {
     return [];
   }
 
   // 複数の範囲を OR 条件で結合したクエリを作成
-  const whereConditions = dateRanges.map(({ start, end }) => ({
-    joinDateTime: {
-      [Op.gte]: start,
-      [Op.lt]: end,
-    },
-  }));
+  const whereConditions = dateRanges.map(({ start, end }) => {
+    if (end === null) {
+      return {
+        joinDateTime: {
+          [Op.gte]: start,
+        },
+      };
+    }
+    return {
+      joinDateTime: {
+        [Op.gte]: start,
+        [Op.lt]: end,
+      },
+    };
+  });
 
   const playerJoinLogList = await VRChatPlayerJoinLogModel.findAll({
     where: {
@@ -184,9 +211,12 @@ export const getVRChatPlayerJoinLogListByMultipleDateRanges = async (
   // 各レコードにどの範囲に属するかのキーを追加
   const resultsWithKeys = playerJoinLogList.map((log) => {
     // このレコードがどの範囲に属するかを特定
-    const matchingRange = dateRanges.find(
-      ({ start, end }) => log.joinDateTime >= start && log.joinDateTime < end,
-    );
+    const matchingRange = dateRanges.find(({ start, end }) => {
+      if (end === null) {
+        return log.joinDateTime >= start;
+      }
+      return log.joinDateTime >= start && log.joinDateTime < end;
+    });
 
     return {
       ...log.dataValues,
