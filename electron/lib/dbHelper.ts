@@ -34,6 +34,12 @@ type DBHelperError =
 //   return result as Result<T, DBHelperError>;
 // }
 
+// 読み取り用のキュー設定
+const READ_QUEUE_CONFIG = {
+  concurrency: 3, // 読み取り専用クエリなので並行実行可能
+  timeout: 20000, // 20秒に短縮
+};
+
 /**
  * 読み取り専用のSQLクエリを実行する
  * @param query 実行するSQLクエリ
@@ -42,10 +48,7 @@ type DBHelperError =
 export async function executeQuery(
   query: string,
 ): Promise<Result<unknown[], DBHelperError>> {
-  const dbQueue = getDBQueue({
-    concurrency: 3, // 読み取り専用クエリなので並行実行可能
-    timeout: 20000, // 20秒に短縮
-  });
+  const dbQueue = getDBQueue(READ_QUEUE_CONFIG);
 
   return dbQueue.queryWithResult(query) as Promise<
     Result<unknown[], DBHelperError>
@@ -150,12 +153,8 @@ export async function executeQuery(
 export async function enqueueTask<T>(
   operation: () => Promise<T>,
 ): Promise<Result<T, DBHelperError>> {
-  // SQLiteでは読み取り専用クエリは並行実行可能
-  // 書き込みは制限するが、読み取りは3並行で実行
-  const dbQueue = getDBQueue({
-    concurrency: 3, // 読み取り中心なので3並行
-    timeout: 20000, // 20秒に短縮
-  });
+  // 読み取り操作は同じ設定で並行実行
+  const dbQueue = getDBQueue(READ_QUEUE_CONFIG);
 
   const result = await dbQueue.addWithResult(operation);
   if (result.isErr()) {
