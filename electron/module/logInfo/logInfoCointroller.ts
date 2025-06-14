@@ -224,11 +224,21 @@ export const getPlayerJoinListInSameWorld = async (
     'RECENT_JOIN_LOG_NOT_FOUND'
   >
 > => {
-  // キャッシュキーを生成（分単位で丸める）
-  const cacheKey = `playerList:${Math.floor(datetime.getTime() / 60000)}`;
+  // ワールド情報を先に取得してキャッシュキーに含める（データ整合性のため）
+  const recentWorldJoin = await findRecentMergedWorldJoinLog(datetime);
+  if (recentWorldJoin === null) {
+    return neverthrow.err('RECENT_JOIN_LOG_NOT_FOUND' as const);
+  }
+
+  // ワールドコンテキストを含むキャッシュキーを生成
+  // セッション開始時刻とワールド情報を含めることで、異なるワールド/セッションの混同を防ぐ
+  const sessionStartTime = Math.floor(
+    recentWorldJoin.joinDateTime.getTime() / 1000,
+  );
+  const cacheKey = `playerList:${sessionStartTime}:${recentWorldJoin.worldId}:${recentWorldJoin.worldInstanceId}`;
 
   const cacheResult = await playerListCache.getOrFetch(cacheKey, async () => {
-    return getPlayerJoinListInSameWorldCore(datetime);
+    return getPlayerJoinListInSameWorldCore(datetime, recentWorldJoin);
   });
 
   // キャッシュエラーの詳細情報をログに出力してからログノットファウンドとして処理
@@ -271,6 +281,15 @@ export const getPlayerJoinListInSameWorld = async (
  */
 const getPlayerJoinListInSameWorldCore = async (
   datetime: Date,
+  recentWorldJoin?: {
+    id: string;
+    worldId: string;
+    worldName: string;
+    worldInstanceId: string;
+    joinDateTime: Date;
+    createdAt: Date;
+    updatedAt: Date | null;
+  },
 ): Promise<
   neverthrow.Result<
     {
@@ -290,34 +309,38 @@ const getPlayerJoinListInSameWorldCore = async (
       datetime: datetime.toISOString(),
     });
 
-    // 統合されたログから直前のワールド参加ログを取得（通常ログ優先）
-    logger.debug('Finding recent merged world join log');
-    const recentWorldJoin = await findRecentMergedWorldJoinLog(datetime);
-    if (recentWorldJoin === null) {
-      logger.debug('No recent world join log found');
-      return neverthrow.err('RECENT_JOIN_LOG_NOT_FOUND' as const);
+    // ワールド情報が渡されていない場合は取得する（後方互換性のため）
+    let worldJoinLog = recentWorldJoin;
+    if (!worldJoinLog) {
+      logger.debug('Finding recent merged world join log');
+      const foundWorldJoinLog = await findRecentMergedWorldJoinLog(datetime);
+      if (foundWorldJoinLog === null) {
+        logger.debug('No recent world join log found');
+        return neverthrow.err('RECENT_JOIN_LOG_NOT_FOUND' as const);
+      }
+      worldJoinLog = foundWorldJoinLog;
     }
 
     logger.debug({
       message: 'Found recent world join log',
-      recentJoinDateTime: recentWorldJoin.joinDateTime.toISOString(),
-      worldName: recentWorldJoin.worldName,
+      recentJoinDateTime: worldJoinLog.joinDateTime.toISOString(),
+      worldName: worldJoinLog.worldName,
     });
 
     // 統合されたログから次のワールド参加ログを取得
     logger.debug('Finding next merged world join log');
     const nextWorldJoin = await findNextMergedWorldJoinLog(
-      recentWorldJoin.joinDateTime,
+      worldJoinLog.joinDateTime,
     );
 
     // デフォルト7日間ではなく、1日間に制限
     const endDateTime =
       nextWorldJoin?.joinDateTime ??
-      new Date(recentWorldJoin.joinDateTime.getTime() + 24 * 60 * 60 * 1000);
+      new Date(worldJoinLog.joinDateTime.getTime() + 24 * 60 * 60 * 1000);
 
     logger.debug({
       message: 'Query time range determined',
-      startDateTime: recentWorldJoin.joinDateTime.toISOString(),
+      startDateTime: worldJoinLog.joinDateTime.toISOString(),
       endDateTime: endDateTime.toISOString(),
       hasNextWorldJoin: nextWorldJoin !== null,
     });
@@ -325,7 +348,7 @@ const getPlayerJoinListInSameWorldCore = async (
     logger.debug('Querying player join logs');
     const playerJoinLogResult =
       await playerJoinLogService.getVRChatPlayerJoinLogListByJoinDateTime({
-        startJoinDateTime: recentWorldJoin.joinDateTime,
+        startJoinDateTime: worldJoinLog.joinDateTime,
         endJoinDateTime: endDateTime,
       });
 
@@ -337,11 +360,11 @@ const getPlayerJoinListInSameWorldCore = async (
           error.message
         } (errorType: ${
           error.type
-        }, startDateTime: ${recentWorldJoin.joinDateTime.toISOString()}, endDateTime: ${endDateTime.toISOString()}, searchRange: ${Math.round(
-          (endDateTime.getTime() - recentWorldJoin.joinDateTime.getTime()) /
+        }, startDateTime: ${worldJoinLog.joinDateTime.toISOString()}, endDateTime: ${endDateTime.toISOString()}, searchRange: ${Math.round(
+          (endDateTime.getTime() - worldJoinLog.joinDateTime.getTime()) /
             (1000 * 60 * 60),
-        )} hours, worldId: ${recentWorldJoin.worldId}, worldName: ${
-          recentWorldJoin.worldName
+        )} hours, worldId: ${worldJoinLog.worldId}, worldName: ${
+          worldJoinLog.worldName
         })`,
         stack: new Error(`プレイヤー参加ログエラー: ${error.type}`),
       });
