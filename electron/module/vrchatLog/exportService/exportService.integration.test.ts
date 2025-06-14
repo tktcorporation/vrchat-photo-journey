@@ -83,7 +83,9 @@ describe('exportService integration', () => {
       expect(result.totalLogLines).toBe(4); // worldJoin=2行 + playerJoin=1行 + playerLeave=1行
 
       const exportedFilePath = result.exportedFiles[0];
-      expect(exportedFilePath).toContain('2023-10/logStore-2023-10.txt');
+      // クロスプラットフォーム対応: パス区切り文字を正規化
+      const expectedPathPart = path.join('2023-10', 'logStore-2023-10.txt');
+      expect(exportedFilePath).toContain(expectedPathPart);
 
       // ファイルが実際に作成されていることを確認
       const fileExists = await fs

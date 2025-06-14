@@ -26,21 +26,39 @@ describe('exportService', () => {
       const date = new Date('2023-10-08T15:30:45');
       const result = getLogStoreExportPath(date, '/path/to/logStore');
 
-      expect(result).toBe('/path/to/logStore/2023-10/logStore-2023-10.txt');
+      // クロスプラットフォーム対応: パス区切り文字を正規化
+      const expectedPath = path.join(
+        '/path/to/logStore',
+        '2023-10',
+        'logStore-2023-10.txt',
+      );
+      expect(result).toBe(expectedPath);
     });
 
     it('異なる年月でも正しいパスを生成できる', () => {
       const date = new Date('2024-01-15T09:15:30');
       const result = getLogStoreExportPath(date, '/exports');
 
-      expect(result).toBe('/exports/2024-01/logStore-2024-01.txt');
+      // クロスプラットフォーム対応: パス区切り文字を正規化
+      const expectedPath = path.join(
+        '/exports',
+        '2024-01',
+        'logStore-2024-01.txt',
+      );
+      expect(result).toBe(expectedPath);
     });
 
     it('デフォルトパスが使用される', () => {
       const date = new Date('2023-10-08T15:30:45');
       const result = getLogStoreExportPath(date);
 
-      expect(result).toContain('logStore/2023-10/logStore-2023-10.txt');
+      // クロスプラットフォーム対応: パス区切り文字を正規化して確認
+      const expectedPathPart = path.join(
+        'logStore',
+        '2023-10',
+        'logStore-2023-10.txt',
+      );
+      expect(result).toContain(expectedPathPart);
     });
   });
 
@@ -82,14 +100,19 @@ describe('exportService', () => {
       const result = await exportLogStoreFromDB(options, mockGetDBLogs);
 
       expect(result.exportedFiles).toHaveLength(1);
-      expect(result.exportedFiles[0]).toBe(
-        '/test/exports/2023-10/logStore-2023-10.txt',
+      // クロスプラットフォーム対応: パス区切り文字を正規化
+      const expectedPath = path.join(
+        '/test/exports',
+        '2023-10',
+        'logStore-2023-10.txt',
       );
+      expect(result.exportedFiles[0]).toBe(expectedPath);
       expect(result.totalLogLines).toBe(3); // worldJoin=2行 + playerJoin=1行
 
       // ファイル書き込みが呼ばれたことを確認
       expect(fs.writeFile).toHaveBeenCalledTimes(1);
-      expect(fs.mkdir).toHaveBeenCalledWith('/test/exports/2023-10', {
+      const expectedDirPath = path.join('/test/exports', '2023-10');
+      expect(fs.mkdir).toHaveBeenCalledWith(expectedDirPath, {
         recursive: true,
       });
     });
@@ -131,20 +154,29 @@ describe('exportService', () => {
       const result = await exportLogStoreFromDB(options, mockGetDBLogs);
 
       expect(result.exportedFiles).toHaveLength(2);
-      expect(result.exportedFiles).toContain(
-        '/test/exports/2023-09/logStore-2023-09.txt',
+      // クロスプラットフォーム対応: パス区切り文字を正規化
+      const expectedPath1 = path.join(
+        '/test/exports',
+        '2023-09',
+        'logStore-2023-09.txt',
       );
-      expect(result.exportedFiles).toContain(
-        '/test/exports/2023-10/logStore-2023-10.txt',
+      const expectedPath2 = path.join(
+        '/test/exports',
+        '2023-10',
+        'logStore-2023-10.txt',
       );
+      expect(result.exportedFiles).toContain(expectedPath1);
+      expect(result.exportedFiles).toContain(expectedPath2);
       expect(result.totalLogLines).toBe(4); // 各worldJoin=2行ずつ
 
       // 2つのファイルが作成されたことを確認
       expect(fs.writeFile).toHaveBeenCalledTimes(2);
-      expect(fs.mkdir).toHaveBeenCalledWith('/test/exports/2023-09', {
+      const expectedDir1 = path.join('/test/exports', '2023-09');
+      const expectedDir2 = path.join('/test/exports', '2023-10');
+      expect(fs.mkdir).toHaveBeenCalledWith(expectedDir1, {
         recursive: true,
       });
-      expect(fs.mkdir).toHaveBeenCalledWith('/test/exports/2023-10', {
+      expect(fs.mkdir).toHaveBeenCalledWith(expectedDir2, {
         recursive: true,
       });
     });
