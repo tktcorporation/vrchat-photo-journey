@@ -34,6 +34,12 @@ type DBHelperError =
 //   return result as Result<T, DBHelperError>;
 // }
 
+// 読み取り用のキュー設定
+const READ_QUEUE_CONFIG = {
+  concurrency: 3, // 読み取り専用クエリなので並行実行可能
+  timeout: 20000, // 20秒に短縮
+};
+
 /**
  * 読み取り専用のSQLクエリを実行する
  * @param query 実行するSQLクエリ
@@ -42,7 +48,9 @@ type DBHelperError =
 export async function executeQuery(
   query: string,
 ): Promise<Result<unknown[], DBHelperError>> {
-  return getDBQueue().queryWithResult(query) as Promise<
+  const dbQueue = getDBQueue(READ_QUEUE_CONFIG);
+
+  return dbQueue.queryWithResult(query) as Promise<
     Result<unknown[], DBHelperError>
   >;
 }
@@ -145,7 +153,10 @@ export async function executeQuery(
 export async function enqueueTask<T>(
   operation: () => Promise<T>,
 ): Promise<Result<T, DBHelperError>> {
-  const result = await getDBQueue().addWithResult(operation);
+  // 読み取り操作は同じ設定で並行実行
+  const dbQueue = getDBQueue(READ_QUEUE_CONFIG);
+
+  const result = await dbQueue.addWithResult(operation);
   if (result.isErr()) {
     // DBQueueErrorをDBHelperErrorに変換する必要があるか確認
     // 今回はDBHelperErrorがDBQueueErrorを包含しているのでそのままキャスト

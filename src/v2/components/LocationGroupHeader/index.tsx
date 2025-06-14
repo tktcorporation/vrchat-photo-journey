@@ -18,6 +18,7 @@ import { type Player, PlayerList } from './PlayerList';
 import { ShareDialog } from './ShareDialog';
 import { usePlayerListDisplay } from './hooks/usePlayerListDisplay';
 import { useQueryQueue } from './hooks/useQueryQueue';
+import { useSessionInfoBatch } from './hooks/useSessionInfoBatch';
 import { useShareActions } from './hooks/useShareActions';
 
 /**
@@ -80,26 +81,19 @@ export const LocationGroupHeader = ({
   // Query enablement state for cancellation control
   const [queryEnabled, setQueryEnabled] = useState(false);
 
-  // Data fetching with query queue management
+  // VRChat API からワールドの詳細情報を取得（サムネイルなど）
   const { data: details } =
     trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery(worldId ?? '', {
-      enabled: worldId !== null && canExecuteQuery,
+      enabled: worldId !== null && worldId !== '' && canExecuteQuery,
       staleTime: 1000 * 60 * 5,
       cacheTime: 1000 * 60 * 30,
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
     });
 
-  const { data: playersResult, isLoading: isPlayersLoading } =
-    trpcReact.logInfo.getPlayerListInSameWorld.useQuery(joinDateTime, {
-      enabled: worldId !== null && canExecuteQuery && queryEnabled,
-      staleTime: 1000 * 60 * 5,
-      cacheTime: 1000 * 60 * 30,
-      refetchOnWindowFocus: false, // Prevent refetch on window focus
-      refetchOnReconnect: false, // Prevent refetch on reconnect
-      retry: 1, // Reduce retry attempts to prevent timeout cascade
-      retryDelay: 1000, // Add delay between retries
-    });
+  // プレイヤー情報のみバッチ取得で効率化（500msのウィンドウ）
+  const { players: playersResult, isLoading: isPlayersLoading } =
+    useSessionInfoBatch(joinDateTime, canExecuteQuery && queryEnabled);
 
   // Derived state
   const formattedDate = format(joinDateTime, 'yyyy年MM月dd日 HH:mm');
@@ -123,11 +117,6 @@ export const LocationGroupHeader = ({
     handleCopyPlayers: handleCopyPlayersUI,
   } = usePlayerListDisplay(players);
 
-  // ワールドリンク
-  const worldLink = worldInstanceId
-    ? `https://vrchat.com/home/world/${worldId}?instanceId=${worldInstanceId}`
-    : `https://vrchat.com/home/world/${worldId}/info`;
-
   // Event handlers
   /** プレイヤー名一覧をクリップボードへコピーする */
   const handleCopyPlayers = async () => {
@@ -149,11 +138,11 @@ export const LocationGroupHeader = ({
             }
             // Set visible immediately for UI updates
             setIsVisible(true);
-            // Debounce query enabling to prevent rapid toggling during scroll
+            // 適度なデバウンス時間でクエリ実行を制限
             visibilityTimeoutRef.current = setTimeout(() => {
               setShouldLoadDetails(true);
               setQueryEnabled(true);
-            }, 150); // Slightly longer debounce for query execution
+            }, 200); // 適度なデバウンス時間
           } else {
             // Clear timeout if element becomes invisible before timeout
             if (visibilityTimeoutRef.current) {
@@ -172,8 +161,8 @@ export const LocationGroupHeader = ({
       },
       {
         root: null, // Use viewport as root
-        rootMargin: '50px', // Start loading 50px before entering viewport
-        threshold: 0.1, // Trigger when 10% of the element is visible
+        rootMargin: '50px', // 適度なプリロード
+        threshold: 0.1, // 10%表示で反応
       },
     );
 
@@ -195,6 +184,11 @@ export const LocationGroupHeader = ({
       setQueryEnabled(false);
     }
   }, [isVisible]);
+
+  // ワールドリンク
+  const worldLink = worldInstanceId
+    ? `https://vrchat.com/home/world/${worldId}?instanceId=${worldInstanceId}`
+    : `https://vrchat.com/home/world/${worldId}/info`;
 
   if (worldId === null) {
     return (

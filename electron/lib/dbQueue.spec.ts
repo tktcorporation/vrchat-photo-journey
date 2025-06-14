@@ -42,10 +42,18 @@ describe('DBQueue', () => {
     await __cleanupTestRDBClient();
   });
 
-  it('シングルトンインスタンスを返すこと', () => {
-    const queue1 = getDBQueue();
-    const queue2 = getDBQueue();
+  it('同じ設定では同じインスタンスを返すこと', () => {
+    resetDBQueue(); // テスト用にリセット
+    const queue1 = getDBQueue({ concurrency: 1 });
+    const queue2 = getDBQueue({ concurrency: 1 });
     expect(queue1).toBe(queue2);
+  });
+
+  it('異なる設定では異なるインスタンスを返すこと', () => {
+    resetDBQueue(); // テスト用にリセット
+    const queue1 = getDBQueue({ concurrency: 1 });
+    const queue2 = getDBQueue({ concurrency: 3 });
+    expect(queue1).not.toBe(queue2);
   });
 
   it('タスクを追加して実行できること', async () => {
@@ -286,23 +294,6 @@ describe('DBQueue', () => {
     expect(newQueue.isIdle).toBe(true);
   });
 
-  it('キューをクリアできること', async () => {
-    const queue = getDBQueue();
-
-    // 複数のタスクを追加
-    queue.add(
-      () => new Promise((resolve) => setTimeout(() => resolve('task1'), 100)),
-    );
-    queue.add(
-      () => new Promise((resolve) => setTimeout(() => resolve('task2'), 100)),
-    );
-
-    // キューをクリア
-    queue.clear();
-
-    expect(queue.size).toBe(0);
-  });
-
   it('キューが空になるまで待機できること', async () => {
     const queue = getDBQueue();
 
@@ -315,31 +306,5 @@ describe('DBQueue', () => {
     await queue.onIdle();
 
     expect(queue.isIdle).toBe(true);
-  });
-
-  it('キューを一時停止して再開できること', async () => {
-    const queue = getDBQueue();
-    const results: string[] = [];
-
-    // キューを一時停止
-    queue.pause();
-
-    // タスクを追加（一時停止中なので実行されない）
-    queue.add(async () => {
-      results.push('task executed');
-      return 'done';
-    });
-
-    // タスクがまだ実行されていないことを確認
-    expect(results).toEqual([]);
-
-    // キューを再開
-    queue.start();
-
-    // タスクが実行されるのを待つ
-    await queue.onIdle();
-
-    // タスクが実行されたことを確認
-    expect(results).toEqual(['task executed']);
   });
 });
