@@ -1,6 +1,7 @@
 import * as neverthrow from 'neverthrow';
 import { P, match } from 'ts-pattern';
 import z from 'zod';
+import { BATCH_CONFIG } from '../../constants/batchConfig';
 import * as playerJoinLogService from '../VRChatPlayerJoinLogModel/playerJoinLog.service';
 import * as worldJoinLogService from '../vrchatWorldJoinLog/service';
 import { findVRChatWorldJoinLogFromPhotoList } from '../vrchatWorldJoinLogFromPhoto/service';
@@ -17,6 +18,48 @@ import {
   getWorldNameSuggestions,
   loadLogInfoIndexFromVRChatLog,
 } from './service';
+
+/**
+ * 統合されたワールド参加ログを取得・マージ・ソートする共通関数
+ * @param searchParams - ログ検索パラメーター
+ * @param sortOrder - ソート順序（'desc' = 降順、'asc' = 昇順）
+ * @returns ソート済みの統合ログ配列
+ */
+const fetchAndMergeSortedWorldJoinLogs = async (
+  searchParams: {
+    ltJoinDateTime?: Date;
+    gtJoinDateTime?: Date;
+    orderByJoinDateTime: 'asc' | 'desc';
+  },
+  sortOrder: 'desc' | 'asc' = 'desc',
+) => {
+  // 通常ログとPhotoAsLogを並行取得
+  const [normalLogs, photoLogs] = await Promise.all([
+    worldJoinLogService.findVRChatWorldJoinLogList(searchParams),
+    findVRChatWorldJoinLogFromPhotoList(searchParams),
+  ]);
+
+  logger.debug({
+    message: 'World join logs retrieved',
+    normalLogsCount: normalLogs.length,
+    photoLogsCount: photoLogs.length,
+  });
+
+  // 統合してソート
+  const mergedLogs = worldJoinLogService.mergeVRChatWorldJoinLogs({
+    normalLogs: normalLogs,
+    photoLogs: photoLogs,
+  });
+
+  // 指定された順序でソート
+  const sortedLogs = mergedLogs.sort((a, b) =>
+    sortOrder === 'desc'
+      ? b.joinDateTime.getTime() - a.joinDateTime.getTime()
+      : a.joinDateTime.getTime() - b.joinDateTime.getTime(),
+  );
+
+  return sortedLogs;
+};
 
 const getVRCWorldJoinLogList = async () => {
   const joinLogList = await worldJoinLogService.findAllVRChatWorldJoinLogList();
@@ -49,32 +92,13 @@ const findRecentMergedWorldJoinLog = async (datetime: Date) => {
       searchEndTime: searchEndTime.toISOString(),
     });
 
-    const [normalLogs, photoLogs] = await Promise.all([
-      worldJoinLogService.findVRChatWorldJoinLogList({
+    // 共通関数を使用して統合・ソート済みログを取得
+    const sortedLogs = await fetchAndMergeSortedWorldJoinLogs(
+      {
         ltJoinDateTime: searchEndTime,
         orderByJoinDateTime: 'desc',
-      }),
-      findVRChatWorldJoinLogFromPhotoList({
-        ltJoinDateTime: searchEndTime,
-        orderByJoinDateTime: 'desc',
-      }),
-    ]);
-
-    logger.debug({
-      message: 'World join logs retrieved',
-      normalLogsCount: normalLogs.length,
-      photoLogsCount: photoLogs.length,
-    });
-
-    // 統合してソート
-    const mergedLogs = worldJoinLogService.mergeVRChatWorldJoinLogs({
-      normalLogs: normalLogs,
-      photoLogs: photoLogs,
-    });
-
-    // 日時でソートして最新のものを取得
-    const sortedLogs = mergedLogs.sort(
-      (a, b) => b.joinDateTime.getTime() - a.joinDateTime.getTime(),
+      },
+      'desc',
     );
 
     return sortedLogs[0] ?? null;
@@ -98,33 +122,13 @@ const findNextMergedWorldJoinLog = async (datetime: Date) => {
       startDateTime: datetime.toISOString(),
     });
 
-    // 通常ログとPhotoAsLogを並行取得
-    const [normalLogs, photoLogs] = await Promise.all([
-      worldJoinLogService.findVRChatWorldJoinLogList({
+    // 共通関数を使用して統合・ソート済みログを取得
+    const sortedLogs = await fetchAndMergeSortedWorldJoinLogs(
+      {
         gtJoinDateTime: datetime,
         orderByJoinDateTime: 'asc',
-      }),
-      findVRChatWorldJoinLogFromPhotoList({
-        gtJoinDateTime: datetime,
-        orderByJoinDateTime: 'asc',
-      }),
-    ]);
-
-    logger.debug({
-      message: 'Next world join logs retrieved',
-      normalLogsCount: normalLogs.length,
-      photoLogsCount: photoLogs.length,
-    });
-
-    // 統合してソート
-    const mergedLogs = worldJoinLogService.mergeVRChatWorldJoinLogs({
-      normalLogs: normalLogs,
-      photoLogs: photoLogs,
-    });
-
-    // 日時でソートして最初のものを取得
-    const sortedLogs = mergedLogs.sort(
-      (a, b) => a.joinDateTime.getTime() - b.joinDateTime.getTime(),
+      },
+      'asc',
     );
 
     return sortedLogs[0] ?? null;
@@ -487,12 +491,16 @@ export const logInfoRouter = () =>
 
     /**
      * セッション情報（ワールド情報+プレイヤー情報）を効率的にバッチ取得
-     * 500msのウィンドウで複数のリクエストをまとめて一つのDBクエリで処理
+     * フロントエンドのバッチマネージャーからの複数リクエストを一つのDBクエリで処理
      * @param joinDateTimes - 参加日時の配列
      * @returns 日時ごとのセッション情報のマップ
      */
     getSessionInfoBatch: procedure
-      .input(z.array(z.date()).max(50))
+      .input(
+        z.array(z.date()).max(BATCH_CONFIG.MAX_SESSION_BATCH_SIZE, {
+          message: `セッション情報のバッチ取得は最大${BATCH_CONFIG.MAX_SESSION_BATCH_SIZE}件までです。現在の件数を確認してください。`,
+        }),
+      )
       .query(async (ctx) => {
         const results: Record<
           string,
@@ -531,31 +539,35 @@ export const logInfoRouter = () =>
             `[SessionInfoBatch] Processing batch request for ${ctx.input.length} sessions`,
           );
 
-          // 全ての日時に対して効率的にワールド参加ログを取得
+          // 統合されたワールド参加ログを取得（PhotoAsLogを含む）
           const worldLogStartTime = performance.now();
-          const allWorldJoinLogs =
-            await worldJoinLogService.findVRChatWorldJoinLogList({
-              ltJoinDateTime: new Date(
-                Math.max(...ctx.input.map((d) => d.getTime())) + 1000,
-              ),
+          const maxDateTime = Math.max(...ctx.input.map((d) => d.getTime()));
+          const searchEndTime = new Date(maxDateTime + 1000);
+
+          // 共通関数を使用して統合・ソート済みログを取得
+          const sortedLogs = await fetchAndMergeSortedWorldJoinLogs(
+            {
+              ltJoinDateTime: searchEndTime,
               orderByJoinDateTime: 'desc',
-            });
+            },
+            'desc',
+          );
 
           const worldLogTime = performance.now() - worldLogStartTime;
           logger.debug(
-            `[SessionInfoBatch] World join logs retrieved in ${worldLogTime.toFixed(
+            `[SessionInfoBatch] Merged world join logs retrieved in ${worldLogTime.toFixed(
               2,
-            )}ms (${allWorldJoinLogs.length} logs)`,
+            )}ms (${sortedLogs.length} merged logs)`,
           );
 
-          // 各日時に対する最適なワールド参加ログを効率的に見つける
+          // 各日時に対する最適なワールド参加ログを効率的に見つける（元のロジックと同じ）
           const sessionMappingStartTime = performance.now();
           for (const joinDateTime of ctx.input) {
             const dateKey = joinDateTime.toISOString();
             const searchEndTime = new Date(joinDateTime.getTime() + 1000);
 
-            // 指定時刻以前の最新ログを検索（メモリ内で効率的に処理）
-            const recentWorldJoin = allWorldJoinLogs.find(
+            // 指定時刻以前の最新ログを検索（元のfindRecentMergedWorldJoinLogと同じロジック）
+            const recentWorldJoin = sortedLogs.find(
               (log) => log.joinDateTime <= searchEndTime,
             );
 
@@ -569,12 +581,12 @@ export const logInfoRouter = () =>
               continue;
             }
 
-            // 次のワールド参加ログを検索（メモリ内で効率的に処理）
-            const nextWorldJoin = allWorldJoinLogs.find(
+            // 次のワールド参加ログを検索（元のfindNextMergedWorldJoinLogと同じロジック）
+            const nextWorldJoin = sortedLogs.find(
               (log) => log.joinDateTime > recentWorldJoin.joinDateTime,
             );
 
-            // 24時間制限
+            // 24時間制限（元のロジックと同じ）
             const endDateTime =
               nextWorldJoin?.joinDateTime ??
               new Date(
