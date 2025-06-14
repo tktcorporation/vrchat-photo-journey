@@ -39,61 +39,102 @@ const getVRCWorldJoinLogList = async () => {
  * 指定時刻のログも含めるため、1秒後までの範囲で検索
  */
 const findRecentMergedWorldJoinLog = async (datetime: Date) => {
-  // 指定時刻から1秒後までのログを取得（指定時刻のログも含める）
-  const searchEndTime = new Date(datetime.getTime() + 1000);
-  const [normalLogs, photoLogs] = await Promise.all([
-    worldJoinLogService.findVRChatWorldJoinLogList({
-      ltJoinDateTime: searchEndTime,
-      orderByJoinDateTime: 'desc',
-    }),
-    findVRChatWorldJoinLogFromPhotoList({
-      ltJoinDateTime: searchEndTime,
-      orderByJoinDateTime: 'desc',
-    }),
-  ]);
+  try {
+    // 指定時刻から1秒後までのログを取得（指定時刻のログも含める）
+    const searchEndTime = new Date(datetime.getTime() + 1000);
 
-  // 統合してソート
-  const mergedLogs = worldJoinLogService.mergeVRChatWorldJoinLogs({
-    normalLogs: normalLogs,
-    photoLogs: photoLogs,
-  });
+    logger.debug({
+      message: 'Querying world join logs',
+      operation: 'findRecentMergedWorldJoinLog',
+      searchEndTime: searchEndTime.toISOString(),
+    });
 
-  // 日時でソートして最新のものを取得
-  const sortedLogs = mergedLogs.sort(
-    (a, b) => b.joinDateTime.getTime() - a.joinDateTime.getTime(),
-  );
+    const [normalLogs, photoLogs] = await Promise.all([
+      worldJoinLogService.findVRChatWorldJoinLogList({
+        ltJoinDateTime: searchEndTime,
+        orderByJoinDateTime: 'desc',
+      }),
+      findVRChatWorldJoinLogFromPhotoList({
+        ltJoinDateTime: searchEndTime,
+        orderByJoinDateTime: 'desc',
+      }),
+    ]);
 
-  return sortedLogs[0] ?? null;
+    logger.debug({
+      message: 'World join logs retrieved',
+      normalLogsCount: normalLogs.length,
+      photoLogsCount: photoLogs.length,
+    });
+
+    // 統合してソート
+    const mergedLogs = worldJoinLogService.mergeVRChatWorldJoinLogs({
+      normalLogs: normalLogs,
+      photoLogs: photoLogs,
+    });
+
+    // 日時でソートして最新のものを取得
+    const sortedLogs = mergedLogs.sort(
+      (a, b) => b.joinDateTime.getTime() - a.joinDateTime.getTime(),
+    );
+
+    return sortedLogs[0] ?? null;
+  } catch (error) {
+    logger.error({
+      message: `Error in findRecentMergedWorldJoinLog for datetime ${datetime.toISOString()}: ${error}`,
+      stack: error instanceof Error ? error : new Error(String(error)),
+    });
+    throw error;
+  }
 };
 
 /**
  * 統合されたワールド参加ログから指定日時以降の次のログを取得
  */
 const findNextMergedWorldJoinLog = async (datetime: Date) => {
-  // 通常ログとPhotoAsLogを並行取得
-  const [normalLogs, photoLogs] = await Promise.all([
-    worldJoinLogService.findVRChatWorldJoinLogList({
-      gtJoinDateTime: datetime,
-      orderByJoinDateTime: 'asc',
-    }),
-    findVRChatWorldJoinLogFromPhotoList({
-      gtJoinDateTime: datetime,
-      orderByJoinDateTime: 'asc',
-    }),
-  ]);
+  try {
+    logger.debug({
+      message: 'Querying next world join logs',
+      operation: 'findNextMergedWorldJoinLog',
+      startDateTime: datetime.toISOString(),
+    });
 
-  // 統合してソート
-  const mergedLogs = worldJoinLogService.mergeVRChatWorldJoinLogs({
-    normalLogs: normalLogs,
-    photoLogs: photoLogs,
-  });
+    // 通常ログとPhotoAsLogを並行取得
+    const [normalLogs, photoLogs] = await Promise.all([
+      worldJoinLogService.findVRChatWorldJoinLogList({
+        gtJoinDateTime: datetime,
+        orderByJoinDateTime: 'asc',
+      }),
+      findVRChatWorldJoinLogFromPhotoList({
+        gtJoinDateTime: datetime,
+        orderByJoinDateTime: 'asc',
+      }),
+    ]);
 
-  // 日時でソートして最初のものを取得
-  const sortedLogs = mergedLogs.sort(
-    (a, b) => a.joinDateTime.getTime() - b.joinDateTime.getTime(),
-  );
+    logger.debug({
+      message: 'Next world join logs retrieved',
+      normalLogsCount: normalLogs.length,
+      photoLogsCount: photoLogs.length,
+    });
 
-  return sortedLogs[0] ?? null;
+    // 統合してソート
+    const mergedLogs = worldJoinLogService.mergeVRChatWorldJoinLogs({
+      normalLogs: normalLogs,
+      photoLogs: photoLogs,
+    });
+
+    // 日時でソートして最初のものを取得
+    const sortedLogs = mergedLogs.sort(
+      (a, b) => a.joinDateTime.getTime() - b.joinDateTime.getTime(),
+    );
+
+    return sortedLogs[0] ?? null;
+  } catch (error) {
+    logger.error({
+      message: `Error in findNextMergedWorldJoinLog for datetime ${datetime.toISOString()}: ${error}`,
+      stack: error instanceof Error ? error : new Error(String(error)),
+    });
+    throw error;
+  }
 };
 
 const getRecentVRChatWorldJoinLogByVRChatPhotoName = async (
@@ -186,13 +227,24 @@ export const getPlayerJoinListInSameWorld = async (
     return getPlayerJoinListInSameWorldCore(datetime);
   });
 
-  // キャッシュエラーはログノットファウンドとして処理
+  // キャッシュエラーの詳細情報をログに出力してからログノットファウンドとして処理
   if (
     cacheResult.isErr() &&
     typeof cacheResult.error === 'object' &&
     'code' in cacheResult.error &&
     cacheResult.error.code === 'CACHE_ERROR'
   ) {
+    logger.error({
+      message: `Cache error in getPlayerJoinListInSameWorld: ${
+        cacheResult.error.message
+      } (cacheKey: ${cacheResult.error.cacheKey}, operation: ${
+        cacheResult.error.operation
+      }, datetime: ${datetime.toISOString()})`,
+      stack:
+        cacheResult.error.originalError instanceof Error
+          ? cacheResult.error.originalError
+          : new Error(String(cacheResult.error.originalError)),
+    });
     return neverthrow.err('RECENT_JOIN_LOG_NOT_FOUND' as const);
   }
 
@@ -228,62 +280,100 @@ const getPlayerJoinListInSameWorldCore = async (
     'RECENT_JOIN_LOG_NOT_FOUND'
   >
 > => {
-  // 統合されたログから直前のワールド参加ログを取得（通常ログ優先）
-  const recentWorldJoin = await findRecentMergedWorldJoinLog(datetime);
-  if (recentWorldJoin === null) {
-    return neverthrow.err('RECENT_JOIN_LOG_NOT_FOUND' as const);
-  }
-
-  // 統合されたログから次のワールド参加ログを取得
-  const nextWorldJoin = await findNextMergedWorldJoinLog(
-    recentWorldJoin.joinDateTime,
-  );
-
-  // デフォルト7日間ではなく、1日間に制限
-  const endDateTime =
-    nextWorldJoin?.joinDateTime ??
-    new Date(recentWorldJoin.joinDateTime.getTime() + 24 * 60 * 60 * 1000);
-
-  const playerJoinLogResult =
-    await playerJoinLogService.getVRChatPlayerJoinLogListByJoinDateTime({
-      startJoinDateTime: recentWorldJoin.joinDateTime,
-      endJoinDateTime: endDateTime,
+  try {
+    logger.debug({
+      message: 'Starting getPlayerJoinListInSameWorldCore',
+      datetime: datetime.toISOString(),
     });
 
-  if (playerJoinLogResult.isErr()) {
-    // エラータイプに基づいて適切な処理を行う
-    const error = playerJoinLogResult.error;
-    logger.error({
-      message: `プレイヤー参加ログの取得に失敗しました: ${
-        error.message
-      } (errorType: ${
-        error.type
-      }, startDateTime: ${recentWorldJoin.joinDateTime.toISOString()}, endDateTime: ${endDateTime.toISOString()}, searchRange: ${Math.round(
-        (endDateTime.getTime() - recentWorldJoin.joinDateTime.getTime()) /
-          (1000 * 60 * 60),
-      )} hours, worldId: ${recentWorldJoin.worldId}, worldName: ${
-        recentWorldJoin.worldName
-      })`,
-      stack: new Error(`プレイヤー参加ログエラー: ${error.type}`),
-    });
-
-    switch (error.type) {
-      case 'DATABASE_ERROR':
-      case 'INVALID_DATE_RANGE':
-      case 'NOT_FOUND':
-        return neverthrow.err('RECENT_JOIN_LOG_NOT_FOUND');
-      default:
-        // 型安全のためのケース（実際には到達しない）
-        throw new Error(`未知のエラータイプ: ${JSON.stringify(error)}`);
+    // 統合されたログから直前のワールド参加ログを取得（通常ログ優先）
+    logger.debug('Finding recent merged world join log');
+    const recentWorldJoin = await findRecentMergedWorldJoinLog(datetime);
+    if (recentWorldJoin === null) {
+      logger.debug('No recent world join log found');
+      return neverthrow.err('RECENT_JOIN_LOG_NOT_FOUND' as const);
     }
-  }
 
-  const playerJoinLogList = playerJoinLogResult.value;
-  if (playerJoinLogList.length === 0) {
-    return neverthrow.err('RECENT_JOIN_LOG_NOT_FOUND');
-  }
+    logger.debug({
+      message: 'Found recent world join log',
+      recentJoinDateTime: recentWorldJoin.joinDateTime.toISOString(),
+      worldName: recentWorldJoin.worldName,
+    });
 
-  return neverthrow.ok(playerJoinLogList);
+    // 統合されたログから次のワールド参加ログを取得
+    logger.debug('Finding next merged world join log');
+    const nextWorldJoin = await findNextMergedWorldJoinLog(
+      recentWorldJoin.joinDateTime,
+    );
+
+    // デフォルト7日間ではなく、1日間に制限
+    const endDateTime =
+      nextWorldJoin?.joinDateTime ??
+      new Date(recentWorldJoin.joinDateTime.getTime() + 24 * 60 * 60 * 1000);
+
+    logger.debug({
+      message: 'Query time range determined',
+      startDateTime: recentWorldJoin.joinDateTime.toISOString(),
+      endDateTime: endDateTime.toISOString(),
+      hasNextWorldJoin: nextWorldJoin !== null,
+    });
+
+    logger.debug('Querying player join logs');
+    const playerJoinLogResult =
+      await playerJoinLogService.getVRChatPlayerJoinLogListByJoinDateTime({
+        startJoinDateTime: recentWorldJoin.joinDateTime,
+        endJoinDateTime: endDateTime,
+      });
+
+    if (playerJoinLogResult.isErr()) {
+      // エラータイプに基づいて適切な処理を行う
+      const error = playerJoinLogResult.error;
+      logger.error({
+        message: `プレイヤー参加ログの取得に失敗しました: ${
+          error.message
+        } (errorType: ${
+          error.type
+        }, startDateTime: ${recentWorldJoin.joinDateTime.toISOString()}, endDateTime: ${endDateTime.toISOString()}, searchRange: ${Math.round(
+          (endDateTime.getTime() - recentWorldJoin.joinDateTime.getTime()) /
+            (1000 * 60 * 60),
+        )} hours, worldId: ${recentWorldJoin.worldId}, worldName: ${
+          recentWorldJoin.worldName
+        })`,
+        stack: new Error(`プレイヤー参加ログエラー: ${error.type}`),
+      });
+
+      switch (error.type) {
+        case 'DATABASE_ERROR':
+        case 'INVALID_DATE_RANGE':
+        case 'NOT_FOUND':
+          return neverthrow.err('RECENT_JOIN_LOG_NOT_FOUND');
+        default:
+          // 型安全のためのケース（実際には到達しない）
+          throw new Error(`未知のエラータイプ: ${JSON.stringify(error)}`);
+      }
+    }
+
+    const playerJoinLogList = playerJoinLogResult.value;
+    if (playerJoinLogList.length === 0) {
+      logger.debug('No player join logs found in time range');
+      return neverthrow.err('RECENT_JOIN_LOG_NOT_FOUND');
+    }
+
+    logger.debug({
+      message: 'Successfully retrieved player join logs',
+      count: playerJoinLogList.length,
+    });
+
+    return neverthrow.ok(playerJoinLogList);
+  } catch (error) {
+    logger.error({
+      message: `Unexpected error in getPlayerJoinListInSameWorldCore for datetime ${datetime.toISOString()}: ${error}`,
+      stack: error instanceof Error ? error : new Error(String(error)),
+    });
+
+    // Re-throw the error to be caught by the cache layer
+    throw error;
+  }
 };
 
 export const logInfoRouter = () =>
