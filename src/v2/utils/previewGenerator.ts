@@ -13,43 +13,7 @@ interface ColorBucket {
   hsl: [number, number, number];
 }
 
-/**
- * RGB 値を HSL 値に変換するヘルパー関数。
- * dominant color 抽出処理から利用される。
- */
-function rgbToHsl(r: number, g: number, b: number): [number, number, number] {
-  const normalizedR = r / 255;
-  const normalizedG = g / 255;
-  const normalizedB = b / 255;
-
-  const max = Math.max(normalizedR, normalizedG, normalizedB);
-  const min = Math.min(normalizedR, normalizedG, normalizedB);
-  let h = 0;
-  let s = 0;
-  const l = (max + min) / 2;
-
-  if (max !== min) {
-    const d = max - min;
-    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-
-    switch (max) {
-      case normalizedR:
-        h =
-          (normalizedG - normalizedB) / d + (normalizedG < normalizedB ? 6 : 0);
-        break;
-      case normalizedG:
-        h = (normalizedB - normalizedR) / d + 2;
-        break;
-      case normalizedB:
-        h = (normalizedR - normalizedG) / d + 4;
-        break;
-    }
-
-    h /= 6;
-  }
-
-  return [h * 360, s * 100, l * 100];
-}
+import { rgbToHsl } from './colorUtils';
 
 /**
  * 画像データから支配色を抽出する。
