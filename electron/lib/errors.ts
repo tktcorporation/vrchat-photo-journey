@@ -25,12 +25,16 @@ export const ERROR_CODES = {
   // ファイル/ディレクトリアクセス関連
   VRCHAT_LOGS_ACCESS_DENIED: 'VRCHAT_LOGS_ACCESS_DENIED',
   PHOTO_DIRECTORY_ACCESS_DENIED: 'PHOTO_DIRECTORY_ACCESS_DENIED',
+  PERMISSION_DENIED: 'PERMISSION_DENIED',
   FILE_NOT_FOUND: 'FILE_NOT_FOUND',
 
   // データベース関連
   DATABASE_CONNECTION_FAILED: 'DATABASE_CONNECTION_FAILED',
   DATABASE_MIGRATION_FAILED: 'DATABASE_MIGRATION_FAILED',
   DATABASE_ERROR: 'DATABASE_ERROR',
+
+  // バリデーション関連
+  VALIDATION_ERROR: 'VALIDATION_ERROR',
 
   // 一般的なエラー
   INITIALIZATION_FAILED: 'INITIALIZATION_FAILED',
@@ -70,6 +74,19 @@ export class UserFacingError extends Error {
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, UserFacingError);
     }
+  }
+
+  // 構造化エラー情報へのアクセサー
+  get code(): ErrorCode | undefined {
+    return this.errorInfo?.code;
+  }
+
+  get category(): ErrorCategory | undefined {
+    return this.errorInfo?.category;
+  }
+
+  get userMessage(): string | undefined {
+    return this.errorInfo?.userMessage;
   }
 
   /**

@@ -295,6 +295,7 @@ describe('useStartupStage - simplified implementation', () => {
       expect(mockCallbacks.onError).toHaveBeenCalledWith({
         stage: 'initialization',
         message: 'Test error',
+        originalError: testError,
       });
     });
   });

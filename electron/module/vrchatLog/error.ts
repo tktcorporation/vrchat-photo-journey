@@ -1,3 +1,5 @@
+import { P, match } from 'ts-pattern';
+
 type Code =
   | 'LOG_FILE_NOT_FOUND'
   | 'LOG_FILE_DIR_NOT_FOUND'
@@ -10,16 +12,27 @@ export class VRChatLogFileError extends Error {
   code: Code | string;
 
   constructor(codeOrError: Code | (Error & { code: string })) {
-    if (typeof codeOrError === 'string') {
-      super(codeOrError);
-      this.code = codeOrError;
-    } else if (codeOrError instanceof Error) {
-      super(codeOrError.message);
-      this.stack = codeOrError.stack;
-      this.code = codeOrError.code;
-    } else {
-      super('UNKNOWN');
-      this.code = 'UNKNOWN';
+    const result = match(codeOrError)
+      .with(P.string, (code) => ({
+        message: code,
+        code: code,
+        stack: undefined,
+      }))
+      .with(P.instanceOf(Error), (error) => ({
+        message: error.message,
+        code: error.code,
+        stack: error.stack,
+      }))
+      .otherwise(() => ({
+        message: 'UNKNOWN',
+        code: 'UNKNOWN',
+        stack: undefined,
+      }));
+
+    super(result.message);
+    this.code = result.code;
+    if (result.stack) {
+      this.stack = result.stack;
     }
     this.name = this.constructor.name;
   }

@@ -1,5 +1,5 @@
 import * as neverthrow from 'neverthrow';
-import { match } from 'ts-pattern';
+import { P, match } from 'ts-pattern';
 import z from 'zod';
 import { logger } from './../../lib/logger';
 import { eventEmitter, procedure, router as trpcRouter } from './../../trpc';
@@ -293,8 +293,9 @@ export const vrchatLogRouter = () =>
           logger.error({
             message: `Export failed: ${String(error)}`,
           });
-          const errorMessage =
-            error instanceof Error ? error.message : String(error);
+          const errorMessage = match(error)
+            .with(P.instanceOf(Error), (err) => err.message)
+            .otherwise((err) => String(err));
           eventEmitter.emit(
             'toast',
             `エクスポートに失敗しました: ${errorMessage}`,

@@ -6,7 +6,11 @@ import type { Event, EventHint } from '@sentry/electron/main';
 import { init as initSentry } from '@sentry/electron/renderer';
 import { useEffect, useState } from 'react';
 import { match } from 'ts-pattern';
-import { ERROR_CATEGORIES, parseErrorMessage } from './types/errors';
+import {
+  ERROR_CATEGORIES,
+  parseErrorFromTRPC,
+  parseErrorMessage,
+} from './types/errors';
 
 // Electron レンダラープロセスでの開発環境検出
 const isDev = process.env.NODE_ENV === 'development';
@@ -194,19 +198,86 @@ function App() {
 }
 
 /**
+ * 構造化エラー情報を持つトーストメッセージの型定義
+ */
+interface StructuredToastMessage {
+  message: string;
+  errorInfo?: {
+    code: string;
+    category: string;
+    userMessage: string;
+  };
+}
+
+/**
+ * エラーカテゴリーに基づいてトーストのvariantを決定
+ */
+function getToastVariant(
+  category?: string,
+): 'default' | 'destructive' | 'warning' {
+  if (!category) return 'default';
+
+  return match(category)
+    .with(ERROR_CATEGORIES.FILE_NOT_FOUND, () => 'warning' as const)
+    .with(ERROR_CATEGORIES.VALIDATION_ERROR, () => 'warning' as const)
+    .with(ERROR_CATEGORIES.SETUP_REQUIRED, () => 'default' as const)
+    .with(ERROR_CATEGORIES.PERMISSION_DENIED, () => 'destructive' as const)
+    .with(ERROR_CATEGORIES.DATABASE_ERROR, () => 'destructive' as const)
+    .with(ERROR_CATEGORIES.NETWORK_ERROR, () => 'destructive' as const)
+    .otherwise(() => 'destructive' as const);
+}
+
+/**
  * トーストイベントを購読して `Toaster` コンポーネントを表示するラッパー。
+ * 構造化エラー情報に基づいて適切なトーストvariantを選択する。
  */
 const ToasterWrapper = () => {
   const { toast } = useToast();
   trpcReact.subscribeToast.useSubscription(undefined, {
     onData: (content: unknown) => {
-      if (typeof content === 'string') {
-        console.log('toast', content);
+      // 構造化トーストメッセージの処理
+      if (
+        typeof content === 'object' &&
+        content !== null &&
+        'message' in content
+      ) {
+        const structuredMessage = content as StructuredToastMessage;
+        const variant = getToastVariant(structuredMessage.errorInfo?.category);
+
+        console.log('structured toast', structuredMessage);
         toast({
-          description: content,
+          variant,
+          description:
+            structuredMessage.errorInfo?.userMessage ||
+            structuredMessage.message,
+          title:
+            variant === 'destructive'
+              ? 'エラー'
+              : variant === 'warning'
+                ? '警告'
+                : undefined,
         });
         return;
       }
+
+      // 従来の文字列メッセージの処理
+      if (typeof content === 'string') {
+        console.log('toast', content);
+
+        // 「予期しないエラー」以外は通常のトーストとして表示
+        const isUnexpectedError = content.includes(
+          '予期しないエラーが発生しました',
+        );
+
+        toast({
+          variant: isUnexpectedError ? 'destructive' : 'default',
+          description: content,
+          title: isUnexpectedError ? 'エラー' : undefined,
+        });
+        return;
+      }
+
+      // その他の場合
       console.log('toast', JSON.stringify(content));
       toast({
         description: JSON.stringify(content),
@@ -225,8 +296,8 @@ const ToasterWrapper = () => {
  * 初期同期やエラー状態を監視しながら各画面を表示する。
  */
 const Contents = () => {
-  const { toast } = useToast();
-  const { stage, error, retry } = useStartup();
+  // const { toast } = useToast(); // スタートアップエラーはbackendから送信されるため不要
+  const { stage, error, originalError, retry } = useStartup();
   const loadingState = useLoadingState();
 
   useEffect(() => {
@@ -237,20 +308,36 @@ const Contents = () => {
     }
   }, [stage, loadingState]);
 
-  // エラー表示時にtoast表示
-  useEffect(() => {
-    if (error) {
-      toast({
-        variant: 'destructive',
-        title: 'スタートアップエラー',
-        description: error,
-      });
-    }
-  }, [error, toast]);
+  // スタートアップエラーは backend の logError 関数からトースト送信されるため
+  // ここでの重複toast表示は無効化
+  // useEffect(() => {
+  //   if (error) {
+  //     // 構造化エラー情報がある場合は適切に処理
+  //     const errorInfo = originalError
+  //       ? parseErrorFromTRPC(originalError)
+  //       : parseErrorMessage(error);
+
+  //     const variant = getToastVariant(errorInfo?.category);
+
+  //     toast({
+  //       variant,
+  //       title: variant === 'destructive'
+  //         ? 'スタートアップエラー'
+  //         : variant === 'warning'
+  //           ? 'スタートアップ警告'
+  //           : 'スタートアップ',
+  //       description: errorInfo?.userMessage || error,
+  //     });
+  //   }
+  // }, [error, originalError, toast]);
 
   if (stage === 'error') {
-    // 型安全なエラー解析
-    const errorInfo = error ? parseErrorMessage(error) : null;
+    // 型安全なエラー解析 - tRPCエラーオブジェクトがある場合は優先的に使用
+    const errorInfo = originalError
+      ? parseErrorFromTRPC(originalError)
+      : error
+        ? parseErrorMessage(error)
+        : null;
 
     // ts-patternを使用した型安全なエラー判定
     const errorDisplayType = match(errorInfo?.category)
