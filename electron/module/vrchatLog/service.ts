@@ -54,6 +54,7 @@ export const getVRChaLogInfoFromLogPath = async (
 > => {
   const logFilePathList =
     await vrchatLogFileDirService.getVRChatLogFilePathList(logFilesDir);
+
   if (logFilePathList.isErr()) {
     return neverthrow.err(
       match(logFilePathList.error)
@@ -65,9 +66,11 @@ export const getVRChaLogInfoFromLogPath = async (
   const logInfoList = await getVRChaLogInfoByLogFilePathList(
     logFilePathList.value,
   );
+
   if (logInfoList.isErr()) {
     return neverthrow.err(logInfoList.error);
   }
+
   return neverthrow.ok(logInfoList.value);
 };
 
@@ -99,6 +102,7 @@ export const getVRChaLogInfoByLogFilePathList = async (
       'VRCApplication: HandleApplicationQuit',
     ],
   });
+
   if (logLineList.isErr()) {
     return neverthrow.err(logLineList.error);
   }
@@ -124,7 +128,12 @@ export {
 };
 
 // 型定義の再エクスポート
-export type { VRChatWorldJoinLog, VRChatPlayerJoinLog, VRChatPlayerLeaveLog };
+export type {
+  VRChatWorldJoinLog,
+  VRChatWorldLeaveLog,
+  VRChatPlayerJoinLog,
+  VRChatPlayerLeaveLog,
+};
 
 // パーサー機能の再エクスポート
 export { extractPlayerJoinInfoFromLog, filterLogLinesByDate };

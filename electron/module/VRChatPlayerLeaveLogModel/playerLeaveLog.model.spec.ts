@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import * as client from '../../lib/sequelize';
 import { type getSettingStore, initSettingStoreForTest } from '../settingStore';
 import {

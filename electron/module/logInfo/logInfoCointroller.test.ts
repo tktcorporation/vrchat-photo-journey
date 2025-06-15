@@ -1,24 +1,8 @@
-import * as datefns from 'date-fns';
 import * as neverthrow from 'neverthrow';
-import {
-  afterAll,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi,
-} from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { clearAllCaches } from '../../lib/queryCache';
-import * as initRDBClient from '../../lib/sequelize';
 import * as playerJoinLogService from '../VRChatPlayerJoinLogModel/playerJoinLog.service';
-import {
-  VRChatPlayerNameSchema,
-  VRChatWorldIdSchema,
-  VRChatWorldInstanceIdSchema,
-  VRChatWorldNameSchema,
-} from '../vrchatLog/model';
-import type { VRChatWorldJoinLog } from '../vrchatLog/service';
+// import { VRChatPlayerNameSchema } from '../vrchatLog/model';
 import * as worldJoinLogService from '../vrchatWorldJoinLog/service';
 import { findVRChatWorldJoinLogFromPhotoList } from '../vrchatWorldJoinLogFromPhoto/service';
 import { getPlayerJoinListInSameWorld } from './logInfoCointroller';

@@ -1,3 +1,4 @@
+import { createQueryStub } from '@/v2/helpers/testing/createQueryStub';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -130,7 +131,15 @@ describe('LocationGroupHeader - Player Uniqueness', () => {
     // VRChatワールド情報のモック
     vi.mocked(
       trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery,
-    ).mockReturnValue({ data: null });
+    ).mockReturnValue(
+      createQueryStub({
+        data: null,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+        isFetching: false,
+      }),
+    );
 
     // プレイヤー情報のモック
     vi.mocked(useSessionInfoBatch).mockReturnValue({
@@ -188,7 +197,15 @@ describe('LocationGroupHeader - Player Uniqueness', () => {
     // VRChatワールド情報のモック
     vi.mocked(
       trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery,
-    ).mockReturnValue({ data: null });
+    ).mockReturnValue(
+      createQueryStub({
+        data: null,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+        isFetching: false,
+      }),
+    );
 
     // プレイヤー情報のモック
     vi.mocked(useSessionInfoBatch).mockReturnValue({
@@ -215,7 +232,15 @@ describe('LocationGroupHeader - Player Uniqueness', () => {
     // VRChatワールド情報のモック
     vi.mocked(
       trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery,
-    ).mockReturnValue({ data: null });
+    ).mockReturnValue(
+      createQueryStub({
+        data: null,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+        isFetching: false,
+      }),
+    );
 
     // 空のプレイヤー情報のモック
     vi.mocked(useSessionInfoBatch).mockReturnValue({
@@ -254,9 +279,15 @@ describe('LocationGroupHeader - Query Optimization', () => {
 
     vi.mocked(
       trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery,
-    ).mockReturnValue({
-      data: null,
-    });
+    ).mockReturnValue(
+      createQueryStub({
+        data: null,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+        isFetching: false,
+      }),
+    );
     vi.mocked(useSessionInfoBatch).mockReturnValue({
       players: null,
       isLoading: false,
@@ -282,7 +313,15 @@ describe('LocationGroupHeader - Query Optimization', () => {
       '../hooks/useSessionInfoBatch'
     );
 
-    const mockWorldQuery = vi.fn().mockReturnValue({ data: null });
+    const mockWorldQuery = vi.fn().mockReturnValue(
+      createQueryStub({
+        data: null,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+        isFetching: false,
+      }),
+    );
 
     vi.mocked(
       trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery,
@@ -325,7 +364,15 @@ describe('LocationGroupHeader - Query Optimization', () => {
 
     vi.mocked(
       trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery,
-    ).mockReturnValue({ data: null });
+    ).mockReturnValue(
+      createQueryStub({
+        data: null,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+        isFetching: false,
+      }),
+    );
     vi.mocked(useSessionInfoBatch).mockReturnValue({
       players: null,
       isLoading: false,
@@ -357,9 +404,15 @@ describe('LocationGroupHeader - Query Optimization', () => {
 
     vi.mocked(
       trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery,
-    ).mockReturnValue({
-      data: null,
-    });
+    ).mockReturnValue(
+      createQueryStub({
+        data: null,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+        isFetching: false,
+      }),
+    );
     vi.mocked(useSessionInfoBatch).mockReturnValue({
       players: null,
       isLoading: false,
@@ -379,7 +432,15 @@ describe('LocationGroupHeader - Query Optimization', () => {
       '../hooks/useSessionInfoBatch'
     );
 
-    const mockWorldQuery = vi.fn().mockReturnValue({ data: null });
+    const mockWorldQuery = vi.fn().mockReturnValue(
+      createQueryStub({
+        data: null,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+        isFetching: false,
+      }),
+    );
     vi.mocked(
       trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery,
     ).mockImplementation(mockWorldQuery);

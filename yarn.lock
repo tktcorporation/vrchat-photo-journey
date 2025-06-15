@@ -3649,6 +3649,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/uuid@npm:^10.0.0":
+  version: 10.0.0
+  resolution: "@types/uuid@npm:10.0.0"
+  checksum: 10c0/9a1404bf287164481cb9b97f6bb638f78f955be57c40c6513b7655160beb29df6f84c915aaf4089a1559c216557dc4d2f79b48d978742d3ae10b937420ddac60
+  languageName: node
+  linkType: hard
+
 "@types/validator@npm:^13.11.9":
   version: 13.15.0
   resolution: "@types/validator@npm:13.15.0"
@@ -10958,6 +10965,7 @@ __metadata:
     "@types/react": "npm:18.2.33"
     "@types/react-dom": "npm:18.2.14"
     "@types/sharp": "npm:0.32.0"
+    "@types/uuid": "npm:^10.0.0"
     "@typescript/native-preview": "npm:^7.0.0-dev.20250523.1"
     "@vitejs/plugin-react": "npm:4.2.1"
     "@vitest/coverage-v8": "npm:^2.1.8"

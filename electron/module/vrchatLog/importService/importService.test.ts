@@ -1,5 +1,5 @@
 import { promises as fs } from 'node:fs';
-import * as path from 'node:path';
+import type { Dirent, Stats } from 'node:fs';
 import * as neverthrow from 'neverthrow';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as logSyncModule from '../../logSync/service';
@@ -7,7 +7,6 @@ import type { DBLogProvider } from '../backupService/backupService';
 import * as backupServiceModule from '../backupService/backupService';
 import type { LogRecord } from '../converters/dbToLogStore';
 import * as logStorageManagerModule from '../fileHandlers/logStorageManager';
-import { VRChatLogLineSchema } from '../model';
 import { importService } from './importService';
 
 // モックの設定
@@ -71,7 +70,7 @@ describe('importService', () => {
       vi.mocked(fs.stat).mockResolvedValue({
         isFile: () => true,
         isDirectory: () => false,
-      } as fs.Stats);
+      } as Stats);
       vi.mocked(fs.readFile).mockResolvedValue(
         '2023-10-08 18:57:27 Log        -  [Behaviour] Joining or Creating Room: Test World',
       );
@@ -83,15 +82,14 @@ describe('importService', () => {
         backupServiceModule.backupService.updateBackupMetadata,
       ).mockResolvedValue(neverthrow.ok(undefined));
       vi.mocked(logStorageManagerModule.appendLoglinesToFile).mockResolvedValue(
-        neverthrow.ok({ logStoreFilePath: '/path/to/logStore.txt' }),
+        neverthrow.ok(undefined),
       );
       vi.mocked(logSyncModule.syncLogs).mockResolvedValue(
         neverthrow.ok({
-          worldJoinLogs: 1,
-          playerJoinLogs: 0,
-          playerLeaveLogs: 0,
-          sessionDuration: 0,
-          photoCount: 0,
+          createdWorldJoinLogModelList: [],
+          createdPlayerJoinLogModelList: [],
+          createdPlayerLeaveLogModelList: [],
+          createdVRChatPhotoPathModelList: [],
         }),
       );
 
@@ -134,18 +132,36 @@ describe('importService', () => {
       vi.mocked(fs.access).mockResolvedValue(undefined);
       vi.mocked(fs.stat).mockImplementation(async (p) => {
         if (p === dirPath) {
-          return { isFile: () => false, isDirectory: () => true } as fs.Stats;
+          return { isFile: () => false, isDirectory: () => true } as Stats;
         }
-        return { isFile: () => true, isDirectory: () => false } as fs.Stats;
+        return { isFile: () => true, isDirectory: () => false } as Stats;
       });
       vi.mocked(fs.readdir).mockResolvedValue([
         {
           name: 'logStore-2023-11.txt',
           isFile: () => true,
           isDirectory: () => false,
+          isBlockDevice: () => false,
+          isCharacterDevice: () => false,
+          isFIFO: () => false,
+          isSocket: () => false,
+          isSymbolicLink: () => false,
+          path: '',
+          parentPath: '',
         },
-        { name: 'other.txt', isFile: () => true, isDirectory: () => false },
-      ] as fs.Dirent[]);
+        {
+          name: 'other.txt',
+          isFile: () => true,
+          isDirectory: () => false,
+          isBlockDevice: () => false,
+          isCharacterDevice: () => false,
+          isFIFO: () => false,
+          isSocket: () => false,
+          isSymbolicLink: () => false,
+          path: '',
+          parentPath: '',
+        },
+      ] as unknown as Dirent<Buffer>[]);
       vi.mocked(fs.readFile).mockResolvedValue(
         '2023-10-08 18:57:27 Log        -  [Behaviour] Joining or Creating Room: Test World',
       );
@@ -157,15 +173,14 @@ describe('importService', () => {
         backupServiceModule.backupService.updateBackupMetadata,
       ).mockResolvedValue(neverthrow.ok(undefined));
       vi.mocked(logStorageManagerModule.appendLoglinesToFile).mockResolvedValue(
-        neverthrow.ok({ logStoreFilePath: '/path/to/logStore.txt' }),
+        neverthrow.ok(undefined),
       );
       vi.mocked(logSyncModule.syncLogs).mockResolvedValue(
         neverthrow.ok({
-          worldJoinLogs: 1,
-          playerJoinLogs: 0,
-          playerLeaveLogs: 0,
-          sessionDuration: 0,
-          photoCount: 0,
+          createdWorldJoinLogModelList: [],
+          createdPlayerJoinLogModelList: [],
+          createdPlayerLeaveLogModelList: [],
+          createdVRChatPhotoPathModelList: [],
         }),
       );
 
@@ -210,7 +225,7 @@ describe('importService', () => {
       vi.mocked(fs.stat).mockResolvedValue({
         isFile: () => true,
         isDirectory: () => false,
-      } as fs.Stats);
+      } as Stats);
       vi.mocked(
         backupServiceModule.backupService.createPreImportBackup,
       ).mockResolvedValue(neverthrow.err(new Error('Backup failed')));
@@ -247,10 +262,10 @@ describe('importService', () => {
       vi.mocked(fs.access).mockResolvedValue(undefined);
       vi.mocked(fs.stat).mockImplementation(async (p) => {
         if (p === '/path/to/dir' || p.toString().includes('subdir')) {
-          return { isFile: () => false, isDirectory: () => true } as fs.Stats;
+          return { isFile: () => false, isDirectory: () => true } as Stats;
         }
         // file.txtはファイルだがlogStoreファイルではないのでスキップされる
-        return { isFile: () => true, isDirectory: () => false } as fs.Stats;
+        return { isFile: () => true, isDirectory: () => false } as Stats;
       });
       vi.mocked(fs.readdir).mockImplementation(async (dir) => {
         if (dir === '/path/to/dir') {
@@ -261,7 +276,7 @@ describe('importService', () => {
               isDirectory: () => false,
             },
             { name: 'subdir', isFile: () => false, isDirectory: () => true },
-          ] as fs.Dirent[];
+          ] as unknown as Dirent<Buffer>[];
         }
         if (dir.toString().includes('subdir')) {
           return [
@@ -270,7 +285,7 @@ describe('importService', () => {
               isFile: () => true,
               isDirectory: () => false,
             },
-          ] as fs.Dirent[];
+          ] as unknown as Dirent<Buffer>[];
         }
         return [];
       });
@@ -285,15 +300,14 @@ describe('importService', () => {
         backupServiceModule.backupService.updateBackupMetadata,
       ).mockResolvedValue(neverthrow.ok(undefined));
       vi.mocked(logStorageManagerModule.appendLoglinesToFile).mockResolvedValue(
-        neverthrow.ok({ logStoreFilePath: '/path/to/logStore.txt' }),
+        neverthrow.ok(undefined),
       );
       vi.mocked(logSyncModule.syncLogs).mockResolvedValue(
         neverthrow.ok({
-          worldJoinLogs: 3,
-          playerJoinLogs: 0,
-          playerLeaveLogs: 0,
-          sessionDuration: 0,
-          photoCount: 0,
+          createdWorldJoinLogModelList: [],
+          createdPlayerJoinLogModelList: [],
+          createdPlayerLeaveLogModelList: [],
+          createdVRChatPhotoPathModelList: [],
         }),
       );
 
@@ -332,7 +346,7 @@ describe('importService', () => {
       vi.mocked(fs.stat).mockResolvedValue({
         isFile: () => true,
         isDirectory: () => false,
-      } as fs.Stats);
+      } as Stats);
       vi.mocked(fs.readFile).mockResolvedValue(
         'This is not a valid log line format\nAnother invalid line',
       );
@@ -344,15 +358,14 @@ describe('importService', () => {
         backupServiceModule.backupService.updateBackupMetadata,
       ).mockResolvedValue(neverthrow.ok(undefined));
       vi.mocked(logStorageManagerModule.appendLoglinesToFile).mockResolvedValue(
-        neverthrow.ok({ logStoreFilePath: '/path/to/logStore.txt' }),
+        neverthrow.ok(undefined),
       );
       vi.mocked(logSyncModule.syncLogs).mockResolvedValue(
         neverthrow.ok({
-          worldJoinLogs: 0,
-          playerJoinLogs: 0,
-          playerLeaveLogs: 0,
-          sessionDuration: 0,
-          photoCount: 0,
+          createdWorldJoinLogModelList: [],
+          createdPlayerJoinLogModelList: [],
+          createdPlayerLeaveLogModelList: [],
+          createdVRChatPhotoPathModelList: [],
         }),
       );
 
@@ -390,25 +403,57 @@ describe('importService', () => {
       vi.mocked(fs.stat).mockResolvedValue({
         isFile: () => false,
         isDirectory: () => true,
-      } as fs.Stats);
+      } as Stats);
       vi.mocked(fs.readdir).mockResolvedValue([
         {
           name: 'logStore-2023-11.txt',
           isFile: () => true,
           isDirectory: () => false,
+          isBlockDevice: () => false,
+          isCharacterDevice: () => false,
+          isFIFO: () => false,
+          isSocket: () => false,
+          isSymbolicLink: () => false,
+          path: '',
+          parentPath: '',
         },
         {
           name: 'vrchat-albums-export_data.txt',
           isFile: () => true,
           isDirectory: () => false,
+          isBlockDevice: () => false,
+          isCharacterDevice: () => false,
+          isFIFO: () => false,
+          isSocket: () => false,
+          isSymbolicLink: () => false,
+          path: '',
+          parentPath: '',
         },
         {
           name: 'not-related.txt',
           isFile: () => true,
           isDirectory: () => false,
+          isBlockDevice: () => false,
+          isCharacterDevice: () => false,
+          isFIFO: () => false,
+          isSocket: () => false,
+          isSymbolicLink: () => false,
+          path: '',
+          parentPath: '',
         },
-        { name: 'image.png', isFile: () => true, isDirectory: () => false },
-      ] as fs.Dirent[]);
+        {
+          name: 'image.png',
+          isFile: () => true,
+          isDirectory: () => false,
+          isBlockDevice: () => false,
+          isCharacterDevice: () => false,
+          isFIFO: () => false,
+          isSocket: () => false,
+          isSymbolicLink: () => false,
+          path: '',
+          parentPath: '',
+        },
+      ] as unknown as Dirent<Buffer>[]);
       vi.mocked(fs.readFile).mockResolvedValue(
         '2023-10-08 18:57:27 Log        -  [Behaviour] Joining or Creating Room: Test World',
       );
@@ -420,15 +465,14 @@ describe('importService', () => {
         backupServiceModule.backupService.updateBackupMetadata,
       ).mockResolvedValue(neverthrow.ok(undefined));
       vi.mocked(logStorageManagerModule.appendLoglinesToFile).mockResolvedValue(
-        neverthrow.ok({ logStoreFilePath: '/path/to/logStore.txt' }),
+        neverthrow.ok(undefined),
       );
       vi.mocked(logSyncModule.syncLogs).mockResolvedValue(
         neverthrow.ok({
-          worldJoinLogs: 2,
-          playerJoinLogs: 0,
-          playerLeaveLogs: 0,
-          sessionDuration: 0,
-          photoCount: 0,
+          createdWorldJoinLogModelList: [],
+          createdPlayerJoinLogModelList: [],
+          createdPlayerLeaveLogModelList: [],
+          createdVRChatPhotoPathModelList: [],
         }),
       );
 

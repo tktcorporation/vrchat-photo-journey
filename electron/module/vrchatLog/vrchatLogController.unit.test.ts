@@ -1,18 +1,8 @@
 import { promises as fs } from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import * as neverthrow from 'neverthrow';
 import { uuidv7 } from 'uuidv7';
-import {
-  afterAll,
-  afterEach,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi,
-} from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // テスト用のユーザーデータディレクトリを設定
 const testUserDataDir = path.join(
@@ -25,7 +15,7 @@ vi.mock('../../lib/wrappedApp', () => ({
   getAppUserDataPath: vi.fn(() => testUserDataDir),
 }));
 
-vi.mock('../exportService/exportService', () => ({
+vi.mock('./exportService/exportService', () => ({
   exportLogStoreFromDB: vi.fn(async ({ outputBasePath }) => ({
     totalLogLines: 0,
     exportedFiles: [
@@ -43,11 +33,10 @@ vi.mock('../../logSync/service', () => {
     },
     syncLogs: vi.fn(async () =>
       ok({
-        worldJoinLogs: 1,
-        playerJoinLogs: 0,
-        playerLeaveLogs: 0,
-        sessionDuration: 0,
-        photoCount: 0,
+        createdWorldJoinLogModelList: [],
+        createdPlayerJoinLogModelList: [],
+        createdPlayerLeaveLogModelList: [],
+        createdVRChatPhotoPathModelList: [],
       }),
     ),
   };
@@ -74,15 +63,11 @@ vi.mock('../../lib/sequelize', () => ({
 }));
 
 import { eventEmitter } from '../../trpc';
-import * as playerJoinLogService from '../VRChatPlayerJoinLogModel/playerJoinLog.service';
-import * as exportServiceModule from '../exportService/exportService';
 // モック後にインポート
 import { initSettingStore } from '../settingStore';
-import * as worldJoinLogService from '../vrchatWorldJoinLog/service';
 import { vrchatLogRouter } from './vrchatLogController';
 
 describe('vrchatLogController unit tests - Import and Rollback', () => {
-  let _settingStore: ReturnType<typeof initSettingStore>;
   let router: ReturnType<typeof vrchatLogRouter>;
   let caller: ReturnType<ReturnType<typeof vrchatLogRouter>['createCaller']>;
   let logStoreDir: string;
@@ -91,7 +76,7 @@ describe('vrchatLogController unit tests - Import and Rollback', () => {
 
   beforeEach(async () => {
     // 設定ストアとルーター初期化
-    _settingStore = initSettingStore();
+    initSettingStore();
     router = vrchatLogRouter();
     caller = router.createCaller({ eventEmitter });
 

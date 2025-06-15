@@ -1,5 +1,3 @@
-import type { Result } from 'neverthrow';
-import type PQueue from 'p-queue';
 import {
   afterAll,
   beforeAll,
@@ -9,27 +7,13 @@ import {
   it,
   vi,
 } from 'vitest';
-import DBQueue, {
-  type DBQueueError,
-  getDBQueue,
-  resetDBQueue,
-} from './dbQueue';
-import { logger } from './logger';
+import DBQueue, { getDBQueue, resetDBQueue } from './dbQueue';
 import {
   __cleanupTestRDBClient,
   __forceSyncRDBClient,
   __initTestRDBClient,
   getRDBClient,
 } from './sequelize';
-
-// ログ関数をモック化
-vi.mock('./logger', () => ({
-  logger: {
-    debug: vi.fn(),
-    error: vi.fn(),
-    info: vi.fn(),
-  },
-}));
 
 describe('DBQueue', () => {
   beforeAll(async () => {
@@ -83,9 +67,8 @@ describe('DBQueue', () => {
     const task = vi.fn().mockRejectedValue(error);
 
     // addWithResultは予期せぬエラーをスローするため、try-catchで捕捉する
-    let _result: Result<unknown, DBQueueError>;
     try {
-      _result = await queue.addWithResult(task);
+      await queue.addWithResult(task);
       // エラーがスローされるはずなので、ここには到達しないはず
       expect(false).toBe(true);
     } catch (e) {
@@ -99,40 +82,50 @@ describe('DBQueue', () => {
   it('キューが一杯の場合にエラーをスローすること', async () => {
     resetDBQueue(); // テスト用にリセット
 
-    // PQueueの動作をモック化
-    const mockAdd = vi.fn().mockImplementation(() => {
-      throw new Error('キューが一杯です');
-    });
+    // maxSize:1のキューを作成
+    const queue = new DBQueue({ maxSize: 1, onFull: 'throw', concurrency: 1 });
 
-    // モック化したPQueueを使用するDBQueueを作成
-    const queue = new DBQueue({ maxSize: 1, onFull: 'throw' });
-    queue.queue = { size: 1, add: mockAdd } as unknown as PQueue;
+    // 長時間実行されるタスクを追加してキューを埋める
+    const longRunningTask = () =>
+      new Promise<string>((resolve) => {
+        setTimeout(() => resolve('long task'), 1000);
+      });
 
-    // タスクを追加（これはエラーになるはず）
+    // 最初のタスクを開始（完了を待たない）
+    const firstTaskPromise = queue.add(longRunningTask);
+
+    // キューが一杯の状態で2つ目のタスクを追加しようとする
     await expect(queue.add(() => Promise.resolve('task'))).rejects.toThrow(
       'キューが一杯です',
     );
 
-    expect(mockAdd).not.toHaveBeenCalled();
+    // 最初のタスクの完了を待つ（クリーンアップ）
+    await firstTaskPromise;
   });
 
   it('キューが一杯の場合にaddWithResultでエラーをResult型で返すこと', async () => {
     resetDBQueue(); // テスト用にリセット
 
-    // PQueueの動作をモック化
-    const mockAdd = vi.fn();
+    // maxSize:1のキューを作成
+    const queue = new DBQueue({ maxSize: 1, onFull: 'throw', concurrency: 1 });
 
-    // モック化したPQueueを使用するDBQueueを作成
-    const queue = new DBQueue({ maxSize: 1, onFull: 'throw' });
-    queue.queue = { size: 1, add: mockAdd } as unknown as PQueue;
+    // 長時間実行されるタスクを追加してキューを埋める
+    const longRunningTask = () =>
+      new Promise<string>((resolve) => {
+        setTimeout(() => resolve('long task'), 1000);
+      });
 
-    // タスクを追加（これはエラーになるはず）
+    // 最初のタスクを開始（完了を待たない）
+    const firstTaskPromise = queue.add(longRunningTask);
+
+    // キューが一杯の状態で2つ目のタスクを追加しようとする
     const result = await queue.addWithResult(() => Promise.resolve('task'));
 
     expect(result.isErr()).toBe(true);
     expect(result._unsafeUnwrapErr().message).toContain('キューが一杯です');
 
-    expect(mockAdd).not.toHaveBeenCalled();
+    // 最初のタスクの完了を待つ（クリーンアップ）
+    await firstTaskPromise;
   });
 
   it('トランザクションを使用してタスクを実行できること', async () => {
@@ -261,37 +254,40 @@ describe('DBQueue', () => {
   it('キューの状態を正しく報告すること', async () => {
     resetDBQueue(); // テスト用にリセット
 
-    // モック化したPQueueを使用するDBQueueを作成
-    const newQueue = new DBQueue();
+    const queue = new DBQueue({ concurrency: 1 });
 
     // 初期状態
-    const mockQueueEmpty = { size: 0, pending: 0 } as unknown as PQueue;
-    newQueue.queue = mockQueueEmpty;
+    expect(queue.isEmpty).toBe(true);
+    expect(queue.isIdle).toBe(true);
+    expect(queue.size).toBe(0);
+    expect(queue.pending).toBe(0);
 
-    expect(newQueue.isEmpty).toBe(true);
-    expect(newQueue.isIdle).toBe(true);
-    expect(newQueue.size).toBe(0);
-    expect(newQueue.pending).toBe(0);
+    // タスクを追加して実行中の状態
+    const task1Promise = queue.add(
+      () => new Promise((resolve) => setTimeout(() => resolve('task1'), 50)),
+    );
 
-    // タスクが実行中の状態
-    const mockQueueRunning = { size: 0, pending: 1 } as unknown as PQueue;
-    newQueue.queue = mockQueueRunning;
+    // タスクが実行中
+    expect(queue.isEmpty).toBe(false);
+    expect(queue.isIdle).toBe(false);
+    expect(queue.pending).toBe(1);
 
-    expect(newQueue.isEmpty).toBe(false);
-    expect(newQueue.isIdle).toBe(false);
+    // 別のタスクを追加（キューに入る）
+    const task2Promise = queue.add(
+      () => new Promise((resolve) => setTimeout(() => resolve('task2'), 50)),
+    );
 
-    // タスクがキューに入っている状態
-    const mockQueueWithTasks = { size: 1, pending: 0 } as unknown as PQueue;
-    newQueue.queue = mockQueueWithTasks;
+    // キューにタスクがある状態
+    expect(queue.size).toBe(1);
+    expect(queue.isEmpty).toBe(false);
+    expect(queue.isIdle).toBe(false);
 
-    expect(newQueue.isEmpty).toBe(false);
-    expect(newQueue.isIdle).toBe(false);
+    // すべてのタスクが完了するのを待つ
+    await Promise.all([task1Promise, task2Promise]);
 
     // 再び空の状態
-    newQueue.queue = mockQueueEmpty;
-
-    expect(newQueue.isEmpty).toBe(true);
-    expect(newQueue.isIdle).toBe(true);
+    expect(queue.isEmpty).toBe(true);
+    expect(queue.isIdle).toBe(true);
   });
 
   it('キューが空になるまで待機できること', async () => {

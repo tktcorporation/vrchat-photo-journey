@@ -1,10 +1,9 @@
 import { promises as fs } from 'node:fs';
-import * as path from 'node:path';
-import * as datefns from 'date-fns';
-import * as neverthrow from 'neverthrow';
+import type { Dirent } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { LogRecord } from '../converters/dbToLogStore';
 import * as exportServiceModule from '../exportService/exportService';
+import type { ExportResult } from '../exportService/exportService';
 import { backupService } from './backupService';
 import type { DBLogProvider, ImportBackupMetadata } from './backupService';
 
@@ -27,6 +26,21 @@ vi.mock('../exportService/exportService', () => ({
   exportLogStoreFromDB: vi.fn(),
 }));
 
+// Helper function to create a mock Dirent
+// const _createMockDirent = (name: string, isDir: boolean) =>
+//   ({
+//     name,
+//     isDirectory: () => isDir,
+//     isFile: () => !isDir,
+//     isBlockDevice: () => false,
+//     isCharacterDevice: () => false,
+//     isFIFO: () => false,
+//     isSocket: () => false,
+//     isSymbolicLink: () => false,
+//     path: '',
+//     parentPath: '',
+//   }) as unknown as Dirent<Buffer>;
+
 describe('backupService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -45,11 +59,13 @@ describe('backupService', () => {
       const mockTimestamp = new Date('2023-12-01T14:30:45');
       vi.setSystemTime(mockTimestamp);
 
-      const mockExportResult = {
+      const mockExportResult: ExportResult = {
         totalLogLines: 100,
         exportedFiles: [
           '/mocked/userData/backups/vrchat-albums-export_2023-12-01_14-30-45/2023-11/logStore-2023-11.txt',
         ],
+        exportStartTime: mockTimestamp,
+        exportEndTime: mockTimestamp,
       };
 
       vi.mocked(exportServiceModule.exportLogStoreFromDB).mockResolvedValue(
@@ -147,18 +163,39 @@ describe('backupService', () => {
           name: 'vrchat-albums-export_2023-12-01_14-30-45',
           isDirectory: () => true,
           isFile: () => false,
-        },
+          isBlockDevice: () => false,
+          isCharacterDevice: () => false,
+          isFIFO: () => false,
+          isSocket: () => false,
+          isSymbolicLink: () => false,
+          path: '',
+          parentPath: '',
+        } as unknown as Dirent<Buffer>,
         {
           name: 'vrchat-albums-export_2023-12-02_10-20-30',
           isDirectory: () => true,
           isFile: () => false,
-        },
+          isBlockDevice: () => false,
+          isCharacterDevice: () => false,
+          isFIFO: () => false,
+          isSocket: () => false,
+          isSymbolicLink: () => false,
+          path: '',
+          parentPath: '',
+        } as unknown as Dirent<Buffer>,
         {
           name: 'not-a-backup',
           isDirectory: () => true,
           isFile: () => false,
-        },
-      ] as fs.Dirent[]);
+          isBlockDevice: () => false,
+          isCharacterDevice: () => false,
+          isFIFO: () => false,
+          isSocket: () => false,
+          isSymbolicLink: () => false,
+          path: '',
+          parentPath: '',
+        } as unknown as Dirent<Buffer>,
+      ] as Dirent<Buffer>[]);
 
       const metadata1: ImportBackupMetadata = {
         id: 'backup_20231201_143045',
@@ -204,8 +241,15 @@ describe('backupService', () => {
           name: 'vrchat-albums-export_2023-12-01_14-30-45',
           isDirectory: () => true,
           isFile: () => false,
-        },
-      ] as fs.Dirent[]);
+          isBlockDevice: () => false,
+          isCharacterDevice: () => false,
+          isFIFO: () => false,
+          isSocket: () => false,
+          isSymbolicLink: () => false,
+          path: '',
+          parentPath: '',
+        } as unknown as Dirent<Buffer>,
+      ] as Dirent<Buffer>[]);
 
       vi.mocked(fs.readFile).mockRejectedValue(new Error('File not found'));
 
@@ -239,8 +283,15 @@ describe('backupService', () => {
           name: 'vrchat-albums-export_2023-12-01_14-30-45',
           isDirectory: () => true,
           isFile: () => false,
-        },
-      ] as fs.Dirent[]);
+          isBlockDevice: () => false,
+          isCharacterDevice: () => false,
+          isFIFO: () => false,
+          isSocket: () => false,
+          isSymbolicLink: () => false,
+          path: '',
+          parentPath: '',
+        } as unknown as Dirent<Buffer>,
+      ] as Dirent<Buffer>[]);
       vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(metadata));
 
       const result = await backupService.getBackup(targetId);

@@ -1,7 +1,6 @@
 import { promises as fs } from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import * as neverthrow from 'neverthrow';
 import { uuidv7 } from 'uuidv7';
 import {
   afterAll,
@@ -70,10 +69,16 @@ vi.mock('./exportService/exportService', () => {
 import * as initRDBClient from '../../lib/sequelize';
 import { eventEmitter } from '../../trpc';
 import * as playerJoinLogService from '../VRChatPlayerJoinLogModel/playerJoinLog.service';
-import * as playerLeaveLogService from '../VRChatPlayerLeaveLogModel/playerLeaveLog.service';
 import { initSettingStore } from '../settingStore';
 import * as worldJoinLogService from '../vrchatWorldJoinLog/service';
 
+import {
+  VRChatPlayerIdSchema,
+  VRChatPlayerNameSchema,
+  VRChatWorldIdSchema,
+  VRChatWorldInstanceIdSchema,
+  VRChatWorldNameSchema,
+} from './model';
 import { vrchatLogRouter } from './vrchatLogController';
 
 // テスト用のユーザーデータディレクトリを設定
@@ -125,7 +130,9 @@ vi.mock('../fileHandlers/logStorageManager', () => {
 
       // ファイルに追記
       const content = `${logLines
-        .map((line) => (typeof line === 'string' ? line : line.value))
+        .map((line: unknown) =>
+          typeof line === 'string' ? line : (line as { value: string }).value,
+        )
         .join('\n')}\n`;
       fs.appendFileSync(filePath, content);
 
@@ -150,7 +157,7 @@ vi.mock('./service', async (importOriginal) => {
   const original = await importOriginal();
   const { ok } = await import('neverthrow');
   return {
-    ...original,
+    ...(original as object),
     getLogLinesByLogFilePathList: vi.fn(async () => ok([])),
     filterLogLinesByDate: vi.fn(() => []),
     getVRChatLogFilePaths: vi.fn(async () => ok([])),
@@ -162,7 +169,7 @@ vi.mock('../../logInfo/service', async (importOriginal) => {
   const original = await importOriginal();
   const { ok } = await import('neverthrow');
   return {
-    ...original,
+    ...(original as object),
     loadLogInfoIndexFromVRChatLog: vi.fn(async () => {
       console.log('[Mock] loadLogInfoIndexFromVRChatLog called');
       return ok({
@@ -176,7 +183,7 @@ vi.mock('../../logInfo/service', async (importOriginal) => {
 });
 
 describe('vrchatLogController integration - Import and Rollback', () => {
-  let _settingStore: ReturnType<typeof initSettingStore>;
+  // let _settingStore: ReturnType<typeof initSettingStore>;
   let router: ReturnType<typeof vrchatLogRouter>;
   let caller: ReturnType<ReturnType<typeof vrchatLogRouter>['createCaller']>;
   let logStoreDir: string;
@@ -194,7 +201,8 @@ describe('vrchatLogController integration - Import and Rollback', () => {
     await initRDBClient.__forceSyncRDBClient();
 
     // 設定ストアとルーター初期化
-    _settingStore = initSettingStore();
+    // _settingStore = initSettingStore();
+    initSettingStore();
     router = vrchatLogRouter();
     caller = router.createCaller({ eventEmitter });
 
@@ -234,9 +242,9 @@ describe('vrchatLogController integration - Import and Rollback', () => {
       {
         logType: 'worldJoin' as const,
         joinDate: joinDateTime,
-        worldId: { value: `wrld_${uuidv7()}` },
-        worldName: { value: 'Test World' },
-        worldInstanceId: { value: '12345' },
+        worldId: VRChatWorldIdSchema.parse(`wrld_${uuidv7()}`),
+        worldName: VRChatWorldNameSchema.parse('Test World'),
+        worldInstanceId: VRChatWorldInstanceIdSchema.parse('12345'),
       },
     ]);
     return logs[0];
@@ -246,8 +254,8 @@ describe('vrchatLogController integration - Import and Rollback', () => {
     const logs = await playerJoinLogService.createVRChatPlayerJoinLogModel([
       {
         logType: 'playerJoin' as const,
-        playerName: { value: 'TestPlayer' },
-        playerId: { value: `usr_${uuidv7()}` },
+        playerName: VRChatPlayerNameSchema.parse('TestPlayer'),
+        playerId: VRChatPlayerIdSchema.parse(`usr_${uuidv7()}`),
         joinDate: joinDateTime,
       },
     ]);
@@ -257,12 +265,12 @@ describe('vrchatLogController integration - Import and Rollback', () => {
   describe('Import → Rollback フロー', () => {
     it('logStoreファイルをインポートしてロールバックできる', async () => {
       // 1. 初期データをDBに作成
-      const _initialWorldLog = await createTestWorldJoinLog(
-        new Date('2023-11-01T10:00:00'),
-      );
-      const _initialPlayerLog = await createTestPlayerJoinLog(
-        new Date('2023-11-01T10:05:00'),
-      );
+      // const _initialWorldLog = await createTestWorldJoinLog(
+      //   new Date('2023-11-01T10:00:00'),
+      // );
+      // const _initialPlayerLog = await createTestPlayerJoinLog(
+      //   new Date('2023-11-01T10:05:00'),
+      // );
 
       // 2. インポート用のテストファイルを作成
       const testLogContent = [
@@ -414,12 +422,12 @@ describe('vrchatLogController integration - Import and Rollback', () => {
       await createTestPlayerJoinLog(new Date('2023-10-15T10:05:00'));
 
       // エクスポート結果をモック
-      const _mockExportedPath = path.join(
-        testExportDir,
-        'vrchat-albums-export_2023-10-15_10-00-00',
-        '2023-10',
-        'logStore-2023-10.txt',
-      );
+      // const _mockExportedPath = path.join(
+      //   testExportDir,
+      //   'vrchat-albums-export_2023-10-15_10-00-00',
+      //   '2023-10',
+      //   'logStore-2023-10.txt',
+      // );
       // エクスポート結果を作成する際、モックが自動的に正しいパスを返すのでここでは追加の設定は不要
 
       // 2. データをエクスポート

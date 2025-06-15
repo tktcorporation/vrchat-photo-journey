@@ -1,9 +1,10 @@
 import { promises as fs } from 'node:fs';
-import * as path from 'node:path';
+import type { Dirent } from 'node:fs';
 import * as neverthrow from 'neverthrow';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as dbQueueModule from '../../../lib/dbQueue';
 import * as logSyncModule from '../../logSync/service';
+import { VRChatLogFileError } from '../error';
 import * as logStorageManagerModule from '../fileHandlers/logStorageManager';
 import type { ImportBackupMetadata } from './backupService';
 import * as backupServiceModule from './backupService';
@@ -80,13 +81,27 @@ describe('rollbackService', () => {
           name: '2023-11',
           isDirectory: () => true,
           isFile: () => false,
-        },
+          isBlockDevice: () => false,
+          isCharacterDevice: () => false,
+          isFIFO: () => false,
+          isSocket: () => false,
+          isSymbolicLink: () => false,
+          path: '',
+          parentPath: '',
+        } as unknown as Dirent<Buffer>,
         {
           name: 'backup-metadata.json',
           isDirectory: () => false,
           isFile: () => true,
-        },
-      ] as fs.Dirent[]);
+          isBlockDevice: () => false,
+          isCharacterDevice: () => false,
+          isFIFO: () => false,
+          isSocket: () => false,
+          isSymbolicLink: () => false,
+          path: '',
+          parentPath: '',
+        } as unknown as Dirent<Buffer>,
+      ]);
 
       // logStoreディレクトリのクリア
       vi.mocked(fs.rm).mockResolvedValue(undefined);
@@ -98,11 +113,10 @@ describe('rollbackService', () => {
       // DB再構築
       vi.mocked(logSyncModule.syncLogs).mockResolvedValue(
         neverthrow.ok({
-          worldJoinLogs: 100,
-          playerJoinLogs: 50,
-          playerLeaveLogs: 30,
-          sessionDuration: 7200,
-          photoCount: 20,
+          createdWorldJoinLogModelList: [],
+          createdPlayerJoinLogModelList: [],
+          createdPlayerLeaveLogModelList: [],
+          createdVRChatPhotoPathModelList: [],
         }),
       );
 
@@ -163,8 +177,15 @@ describe('rollbackService', () => {
           name: 'backup-metadata.json',
           isDirectory: () => false,
           isFile: () => true,
-        },
-      ] as fs.Dirent[]);
+          isBlockDevice: () => false,
+          isCharacterDevice: () => false,
+          isFIFO: () => false,
+          isSocket: () => false,
+          isSymbolicLink: () => false,
+          path: '',
+          parentPath: '',
+        } as unknown as Dirent<Buffer>,
+      ]);
 
       const result = await rollbackService.rollbackToBackup(mockBackup);
 
@@ -183,8 +204,15 @@ describe('rollbackService', () => {
           name: '2023-11',
           isDirectory: () => true,
           isFile: () => false,
-        },
-      ] as fs.Dirent[]);
+          isBlockDevice: () => false,
+          isCharacterDevice: () => false,
+          isFIFO: () => false,
+          isSocket: () => false,
+          isSymbolicLink: () => false,
+          path: '',
+          parentPath: '',
+        } as unknown as Dirent<Buffer>,
+      ]);
       vi.mocked(fs.rm).mockResolvedValue(undefined);
       vi.mocked(fs.mkdir).mockResolvedValue(undefined);
       vi.mocked(fs.cp).mockRejectedValue(new Error('Copy failed'));
@@ -206,13 +234,20 @@ describe('rollbackService', () => {
           name: '2023-11',
           isDirectory: () => true,
           isFile: () => false,
-        },
-      ] as fs.Dirent[]);
+          isBlockDevice: () => false,
+          isCharacterDevice: () => false,
+          isFIFO: () => false,
+          isSocket: () => false,
+          isSymbolicLink: () => false,
+          path: '',
+          parentPath: '',
+        } as unknown as Dirent<Buffer>,
+      ]);
       vi.mocked(fs.rm).mockResolvedValue(undefined);
       vi.mocked(fs.mkdir).mockResolvedValue(undefined);
       vi.mocked(fs.cp).mockResolvedValue(undefined);
       vi.mocked(logSyncModule.syncLogs).mockResolvedValue(
-        neverthrow.err(new Error('DB sync failed')),
+        neverthrow.err(new VRChatLogFileError('LOG_FILES_NOT_FOUND')),
       );
 
       const result = await rollbackService.rollbackToBackup(mockBackup);
@@ -225,7 +260,7 @@ describe('rollbackService', () => {
 
     it('トランザクション内でエラーが発生した場合は適切に処理される', async () => {
       // トランザクションがエラーを返すようにモック
-      const dbQueue = {
+      vi.mocked(dbQueueModule.getDBQueue).mockReturnValueOnce({
         transaction: vi.fn(async () => {
           // トランザクションがエラーを返す
           return neverthrow.err({
@@ -233,10 +268,7 @@ describe('rollbackService', () => {
             message: 'Transaction failed',
           });
         }),
-      };
-      vi.mocked(dbQueueModule.getDBQueue).mockReturnValueOnce(
-        dbQueue as ReturnType<typeof dbQueueModule.getDBQueue>,
-      );
+      } as unknown as ReturnType<typeof dbQueueModule.getDBQueue>);
 
       const result = await rollbackService.rollbackToBackup(mockBackup);
 
@@ -263,8 +295,15 @@ describe('rollbackService', () => {
           name: '2023-11',
           isDirectory: () => true,
           isFile: () => false,
-        },
-      ] as fs.Dirent[]);
+          isBlockDevice: () => false,
+          isCharacterDevice: () => false,
+          isFIFO: () => false,
+          isSocket: () => false,
+          isSymbolicLink: () => false,
+          path: '',
+          parentPath: '',
+        } as unknown as Dirent<Buffer>,
+      ]);
 
       const result = await rollbackService.rollbackToBackup(mockBackup);
 
@@ -291,17 +330,23 @@ describe('rollbackService', () => {
           name: '2023-11',
           isDirectory: () => true,
           isFile: () => false,
-        },
-      ] as fs.Dirent[]);
+          isBlockDevice: () => false,
+          isCharacterDevice: () => false,
+          isFIFO: () => false,
+          isSocket: () => false,
+          isSymbolicLink: () => false,
+          path: '',
+          parentPath: '',
+        } as unknown as Dirent<Buffer>,
+      ]);
       vi.mocked(fs.mkdir).mockResolvedValue(undefined);
       vi.mocked(fs.cp).mockResolvedValue(undefined);
       vi.mocked(logSyncModule.syncLogs).mockResolvedValue(
         neverthrow.ok({
-          worldJoinLogs: 100,
-          playerJoinLogs: 50,
-          playerLeaveLogs: 30,
-          sessionDuration: 7200,
-          photoCount: 20,
+          createdWorldJoinLogModelList: [],
+          createdPlayerJoinLogModelList: [],
+          createdPlayerLeaveLogModelList: [],
+          createdVRChatPhotoPathModelList: [],
         }),
       );
       vi.mocked(
@@ -327,13 +372,27 @@ describe('rollbackService', () => {
           name: '2023-11',
           isDirectory: () => true,
           isFile: () => false,
-        },
+          isBlockDevice: () => false,
+          isCharacterDevice: () => false,
+          isFIFO: () => false,
+          isSocket: () => false,
+          isSymbolicLink: () => false,
+          path: '',
+          parentPath: '',
+        } as unknown as Dirent<Buffer>,
         {
           name: '2023-12',
           isDirectory: () => true,
           isFile: () => false,
-        },
-      ] as fs.Dirent[]);
+          isBlockDevice: () => false,
+          isCharacterDevice: () => false,
+          isFIFO: () => false,
+          isSocket: () => false,
+          isSymbolicLink: () => false,
+          path: '',
+          parentPath: '',
+        } as unknown as Dirent<Buffer>,
+      ]);
       vi.mocked(fs.rm).mockResolvedValue(undefined);
       vi.mocked(fs.mkdir).mockResolvedValue(undefined);
 
@@ -349,11 +408,10 @@ describe('rollbackService', () => {
 
       vi.mocked(logSyncModule.syncLogs).mockResolvedValue(
         neverthrow.ok({
-          worldJoinLogs: 50,
-          playerJoinLogs: 25,
-          playerLeaveLogs: 15,
-          sessionDuration: 3600,
-          photoCount: 10,
+          createdWorldJoinLogModelList: [],
+          createdPlayerJoinLogModelList: [],
+          createdPlayerLeaveLogModelList: [],
+          createdVRChatPhotoPathModelList: [],
         }),
       );
       vi.mocked(
@@ -374,8 +432,15 @@ describe('rollbackService', () => {
           name: '2023-11',
           isDirectory: () => true,
           isFile: () => false,
-        },
-      ] as fs.Dirent[]);
+          isBlockDevice: () => false,
+          isCharacterDevice: () => false,
+          isFIFO: () => false,
+          isSocket: () => false,
+          isSymbolicLink: () => false,
+          path: '',
+          parentPath: '',
+        } as unknown as Dirent<Buffer>,
+      ]);
       vi.mocked(fs.rm).mockResolvedValue(undefined);
       vi.mocked(fs.mkdir).mockResolvedValue(undefined);
       vi.mocked(fs.cp).mockRejectedValue(new Error('Copy failed'));

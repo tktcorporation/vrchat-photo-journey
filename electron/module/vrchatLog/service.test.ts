@@ -44,7 +44,11 @@ vi.mock('../../lib/wrappedFs', () => ({
     return neverthrow.ok(Buffer.from('test content'));
   }),
   createReadStream: vi.fn().mockReturnValue({
-    on: vi.fn().mockImplementation(function (event, callback) {
+    on: vi.fn().mockImplementation(function (
+      this: unknown,
+      event: string,
+      callback: () => void,
+    ) {
       if (event === 'data') {
         // 何もデータを返さない
       } else if (event === 'end') {
@@ -216,19 +220,12 @@ describe('appendLoglinesToFile', () => {
     const mockDate = new Date('2024-03-15T14:30:45');
     vi.setSystemTime(mockDate);
 
-    // createTimestampedLogFilePathをモック
+    // タイムスタンプ付きファイル名を予想される形式で設定
     const expectedFilePath = path.join(
       '/mock/user/data/logStore',
       '2024-03',
       'logStore-2024-03-20240315143045.txt',
     );
-    vi.mock('./model', async (importOriginal) => {
-      const originalModule = await importOriginal<typeof import('./model')>();
-      return {
-        ...originalModule,
-        createTimestampedLogFilePath: vi.fn().mockReturnValue(expectedFilePath),
-      };
-    });
 
     try {
       const result = await appendLoglinesToFile({
@@ -248,7 +245,6 @@ describe('appendLoglinesToFile', () => {
       );
     } finally {
       vi.useRealTimers();
-      vi.unmock('./model');
     }
   });
 });

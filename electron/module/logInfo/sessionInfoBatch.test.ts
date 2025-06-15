@@ -1,3 +1,4 @@
+import { EventEmitter } from 'node:events';
 import { parseISO } from 'date-fns';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import * as client from '../../lib/sequelize';
@@ -40,8 +41,9 @@ describe('SessionInfoBatch vs getPlayerListInSameWorld logic comparison', () => 
    */
   const getPlayersFromSessionBatch = async (datetime: Date) => {
     const router = logInfoRouter();
+    const eventEmitter = new EventEmitter();
     const batchResult = await router
-      .createCaller({})
+      .createCaller({ eventEmitter })
       .getSessionInfoBatch([datetime]);
 
     const dateKey = datetime.toISOString();
@@ -255,15 +257,9 @@ describe('SessionInfoBatch vs getPlayerListInSameWorld logic comparison', () => 
 
   describe('next world join log detection', () => {
     it('should use the same logic for determining session end time', async () => {
-      // 複数のワールド参加ログが存在するケース
-      const testDate = parseISO('2024-01-01T12:00:00Z');
-
       // TODO: 連続するワールド参加ログのテストデータを作成
-
-      const _originalResult =
-        await getPlayerJoinListInSameWorldOriginal(testDate);
-      const _batchPlayers = await getPlayersFromSessionBatch(testDate);
-
+      // 複数のワールド参加ログが存在するケースをテスト予定
+      // const batchPlayers = await getPlayersFromSessionBatch(testDate);
       // セッション範囲の決定ロジックが一致することを確認
       // 実装詳細：次のワールド参加ログまでの時間範囲が同じかどうか
     });

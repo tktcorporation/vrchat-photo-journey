@@ -30,7 +30,21 @@
       "Bash(nr test)",
       "Bash(nr test --reporter=verbose)",
       "Bash(sed:*)",
-      "Bash(gh pr view:*)"
+      "Bash(gh pr view:*)",
+      "Bash(yarn lint:type-check)",
+      "Bash(yarn lint:*)",
+      "Bash(yarn run lint:type-check:tsc:*)",
+      "Bash(yarn run tsgo:*)",
+      "Bash(yarn add:*)",
+      "Bash(npx biome check:*)",
+      "Bash(nr --version)",
+      "Bash(yarn playwright test:*)",
+      "Bash(nr lint:fix)",
+      "Bash(yarn list:*)",
+      "Bash(npx biome lint:*)",
+      "Bash(yarn biome check:*)",
+      "Bash(nr lint:fix)",
+      "Bash(nr lint)"
     ],
     "deny": []
   }

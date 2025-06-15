@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { LogRecord } from './converters/dbToLogStore';
 import * as exportService from './exportService/exportService';
 import type { DBLogProvider } from './exportService/exportService';
 import { vrchatLogRouter } from './vrchatLogController';
@@ -61,6 +60,11 @@ describe('vrchatLogController', () => {
           outputPath: '/custom/path',
         },
         ctx: createMockContext(),
+        rawInput: {
+          outputPath: '/custom/path',
+        },
+        path: 'exportLogStoreData',
+        type: 'mutation',
       });
 
       expect(result).toEqual(mockExportResult);
@@ -100,6 +104,13 @@ describe('vrchatLogController', () => {
           outputPath: '/custom/path',
         },
         ctx: createMockContext(),
+        rawInput: {
+          startDate,
+          endDate,
+          outputPath: '/custom/path',
+        },
+        path: 'exportLogStoreData',
+        type: 'mutation',
       });
 
       expect(result).toEqual(mockExportResult);
@@ -129,6 +140,12 @@ describe('vrchatLogController', () => {
             endDate: new Date('2023-10-08T23:59:59'),
           },
           ctx: createMockContext(),
+          rawInput: {
+            startDate: new Date('2023-10-08T00:00:00'),
+            endDate: new Date('2023-10-08T23:59:59'),
+          },
+          path: 'exportLogStoreData',
+          type: 'mutation',
         }),
       ).rejects.toThrow('Export failed: Database connection error');
     });
@@ -158,6 +175,9 @@ describe('vrchatLogController', () => {
       await mutation({
         input: {},
         ctx: createMockContext(),
+        rawInput: {},
+        path: 'exportLogStoreData',
+        type: 'mutation',
       });
 
       // getDBLogsFromDatabase関数が期待される引数で呼ばれることを確認
@@ -192,6 +212,12 @@ describe('vrchatLogController', () => {
           endDate,
         },
         ctx: createMockContext(),
+        rawInput: {
+          startDate,
+          endDate,
+        },
+        path: 'exportLogStoreData',
+        type: 'mutation',
       });
 
       // キャプチャした関数にローカルタイム引数が渡されることを確認
