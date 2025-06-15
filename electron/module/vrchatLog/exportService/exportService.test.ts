@@ -233,6 +233,90 @@ describe('exportService', () => {
       expect(fs.mkdir).not.toHaveBeenCalled();
     });
 
+    it('全期間指定（日付なし）でエクスポートできる', async () => {
+      const options: ExportLogStoreOptions = {
+        outputBasePath: '/test/exports',
+      };
+
+      const mockGetDBLogs = vi.fn().mockResolvedValue([
+        {
+          type: 'worldJoin' as const,
+          record: {
+            id: 'world-1',
+            worldId: 'wrld_12345678-1234-1234-1234-123456789abc',
+            worldName: 'All Time World',
+            worldInstanceId: '12345',
+            joinDateTime: new Date('2023-10-08T15:30:45'),
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        },
+        {
+          type: 'playerJoin' as const,
+          record: {
+            id: 'player-1',
+            playerName: 'AllTimePlayer',
+            playerId: 'usr_12345678-1234-1234-1234-123456789abc',
+            joinDateTime: new Date('2023-10-08T15:31:00'),
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        },
+      ]);
+
+      const result = await exportLogStoreFromDB(options, mockGetDBLogs);
+
+      expect(result.exportedFiles).toHaveLength(1);
+      expect(result.totalLogLines).toBe(3); // worldJoin=2行 + playerJoin=1行
+
+      // DB取得関数が日付パラメータなしで呼ばれることを確認
+      expect(mockGetDBLogs).toHaveBeenCalledWith(undefined, undefined);
+
+      // ファイル書き込みが呼ばれたことを確認
+      expect(fs.writeFile).toHaveBeenCalledTimes(1);
+      expect(fs.mkdir).toHaveBeenCalledTimes(1);
+    });
+
+    it('ローカルタイムからUTCへの変換を適切に処理する', async () => {
+      // フロントエンドから送られるローカルタイムを模擬
+      // '2023-10-08T00:00:00' (ローカルタイム開始)
+      // '2023-10-08T23:59:59.999' (ローカルタイム終了)
+      const localStartTime = new Date('2023-10-08T00:00:00');
+      const localEndTime = new Date('2023-10-08T23:59:59.999');
+
+      const options: ExportLogStoreOptions = {
+        startDate: localStartTime,
+        endDate: localEndTime,
+        outputBasePath: '/test/exports',
+      };
+
+      const mockGetDBLogs = vi.fn().mockResolvedValue([
+        {
+          type: 'worldJoin' as const,
+          record: {
+            id: 'world-1',
+            worldId: 'wrld_12345678-1234-1234-1234-123456789abc',
+            worldName: 'Timezone Test World',
+            worldInstanceId: '12345',
+            joinDateTime: new Date('2023-10-08T15:30:45Z'), // UTC時刻でDB保存
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        },
+      ]);
+
+      const result = await exportLogStoreFromDB(options, mockGetDBLogs);
+
+      expect(result.exportedFiles).toHaveLength(1);
+      expect(result.totalLogLines).toBe(2); // worldJoin=2行
+
+      // DB取得関数がローカルタイム（JavaScript Date）で呼ばれることを確認
+      expect(mockGetDBLogs).toHaveBeenCalledWith(localStartTime, localEndTime);
+
+      // 実際のDB比較ではJavaScriptがローカルタイムとUTCを自動変換するため、
+      // ここではパラメータが正しく渡されることのみ確認
+    });
+
     it('エラーが発生した場合は適切に処理される', async () => {
       const options: ExportLogStoreOptions = {
         startDate: new Date('2023-10-08T00:00:00'),

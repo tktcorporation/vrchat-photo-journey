@@ -15,6 +15,7 @@ const DataExport = memo(() => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [outputPath, setOutputPath] = useState('');
+  const [useFullPeriod, setUseFullPeriod] = useState(true);
 
   // コンポーネント初期化時にデフォルトパスを設定
   useEffect(() => {
@@ -61,32 +62,44 @@ const DataExport = memo(() => {
     });
 
   const handleExport = () => {
-    if (!startDate || !endDate) {
-      toast({
-        title: '入力エラー',
-        description: '開始日と終了日を指定してください',
-        variant: 'destructive',
+    // 全期間指定の場合は日付チェックをスキップ
+    if (!useFullPeriod) {
+      if (!startDate || !endDate) {
+        toast({
+          title: '入力エラー',
+          description:
+            '期間指定を選択した場合は開始日と終了日を指定してください',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // フロントエンドの日付をローカルタイムとして解釈
+      // startDate: その日の00:00:00 (ローカルタイム)
+      // endDate: その日の23:59:59.999 (ローカルタイム)
+      const start = new Date(`${startDate}T00:00:00`);
+      const end = new Date(`${endDate}T23:59:59.999`);
+
+      if (start >= end) {
+        toast({
+          title: '入力エラー',
+          description: '開始日は終了日より前の日付を指定してください',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      exportLogStore({
+        startDate: start,
+        endDate: end,
+        outputPath: outputPath || undefined,
       });
-      return;
-    }
-
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-
-    if (start >= end) {
-      toast({
-        title: '入力エラー',
-        description: '開始日は終了日より前の日付を指定してください',
-        variant: 'destructive',
+    } else {
+      // 全期間指定の場合は日付パラメータなしでエクスポート
+      exportLogStore({
+        outputPath: outputPath || undefined,
       });
-      return;
     }
-
-    exportLogStore({
-      startDate: start,
-      endDate: end,
-      outputPath: outputPath || undefined,
-    });
   };
 
   const setDateRange = (months: number) => {
@@ -96,15 +109,13 @@ const DataExport = memo(() => {
 
     setStartDate(start.toISOString().split('T')[0]);
     setEndDate(end.toISOString().split('T')[0]);
+    setUseFullPeriod(false);
   };
 
   const setAllTimeRange = () => {
-    // 十分に古い日付から現在まで（VRChatは2017年リリース）
-    const start = new Date('2017-01-01');
-    const end = new Date();
-
-    setStartDate(start.toISOString().split('T')[0]);
-    setEndDate(end.toISOString().split('T')[0]);
+    setUseFullPeriod(true);
+    setStartDate('');
+    setEndDate('');
   };
 
   return (
@@ -125,6 +136,15 @@ const DataExport = memo(() => {
 
           {/* プリセットボタン */}
           <div className="flex gap-2 flex-wrap">
+            <Button
+              type="button"
+              variant={useFullPeriod ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setAllTimeRange()}
+              className="text-xs"
+            >
+              全期間
+            </Button>
             <Button
               type="button"
               variant="outline"
@@ -161,15 +181,6 @@ const DataExport = memo(() => {
             >
               過去1年
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setAllTimeRange()}
-              className="text-xs"
-            >
-              全期間
-            </Button>
           </div>
 
           {/* 日付入力 */}
@@ -177,9 +188,13 @@ const DataExport = memo(() => {
             <div>
               <Label
                 htmlFor="startDate"
-                className="text-xs text-gray-600 dark:text-gray-400"
+                className={`text-xs ${
+                  useFullPeriod
+                    ? 'text-gray-400'
+                    : 'text-gray-600 dark:text-gray-400'
+                }`}
               >
-                開始日
+                開始日{useFullPeriod && ' (全期間選択時は無効)'}
               </Label>
               <div className="relative">
                 <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -188,6 +203,7 @@ const DataExport = memo(() => {
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
+                  disabled={useFullPeriod}
                   className="pl-10"
                 />
               </div>
@@ -195,9 +211,13 @@ const DataExport = memo(() => {
             <div>
               <Label
                 htmlFor="endDate"
-                className="text-xs text-gray-600 dark:text-gray-400"
+                className={`text-xs ${
+                  useFullPeriod
+                    ? 'text-gray-400'
+                    : 'text-gray-600 dark:text-gray-400'
+                }`}
               >
-                終了日
+                終了日{useFullPeriod && ' (全期間選択時は無効)'}
               </Label>
               <div className="relative">
                 <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -206,6 +226,7 @@ const DataExport = memo(() => {
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
+                  disabled={useFullPeriod}
                   className="pl-10"
                 />
               </div>
@@ -248,7 +269,9 @@ const DataExport = memo(() => {
         <div className="pt-4">
           <Button
             onClick={handleExport}
-            disabled={isExporting || !startDate || !endDate}
+            disabled={
+              isExporting || (!useFullPeriod && (!startDate || !endDate))
+            }
             className="w-full"
           >
             <Download className="h-4 w-4 mr-2" />

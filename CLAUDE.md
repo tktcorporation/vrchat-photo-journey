@@ -61,6 +61,16 @@ Electron desktop app for organizing VRChat photos by automatically associating t
    - **Cache Strategy**: startup detection (staleTime: 0) vs regular data (5min)
    - **Reference**: `docs/log-sync-architecture.md` (詳細実装パターン)
 
+6. **🚨 Timezone Handling Architecture** (CRITICAL - 日時データ整合性必須):
+   - **Consistent Local Time Processing**: 全ての日時データをローカルタイムとして統一処理
+   - **Log Parsing**: `parseLogDateTime()` でVRChatログをローカルタイムとして解釈
+   - **Frontend Dates**: フロントエンド日付入力は `new Date('YYYY-MM-DDTHH:mm:ss')` でローカルタイム処理
+   - **Database Storage**: SequelizeがDateオブジェクトを自動的にUTCで保存
+   - **UTC Conversion**: JavaScript Dateオブジェクトがローカルタイム→UTC変換を自動実行
+   - **Photo Timestamps**: 写真ファイル名の日時もローカルタイムとして処理
+   - **Test Pattern**: `electron/module/vrchatLog/parsers/timezone.test.ts` に統一パターン
+   - **Critical Rule**: 日時処理では常にローカルタイムベースで実装、UTC変換はSequelize/JSに委ねる
+
 
 ### Auto-Generated Files (変更禁止)
 - `src/assets/licenses.json`
