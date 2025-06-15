@@ -1,5 +1,9 @@
 import z from 'zod';
-import { UserFacingError } from '../../lib/errors';
+import {
+  ERROR_CATEGORIES,
+  ERROR_CODES,
+  UserFacingError,
+} from '../../lib/errors';
 import { procedure, router as trpcRouter } from '../../trpc';
 import { LOG_SYNC_MODE, type LogSyncMode, syncLogs } from './service';
 
@@ -28,10 +32,16 @@ export const logSyncRouter = () => {
         const result = await syncLogs(input.mode as LogSyncMode);
 
         if (result.isErr()) {
-          throw new UserFacingError(
-            `ログ同期に失敗しました: ${result.error.code}`,
-            { cause: result.error },
-          );
+          throw UserFacingError.withStructuredInfo({
+            code: ERROR_CODES.UNKNOWN,
+            category: ERROR_CATEGORIES.UNKNOWN_ERROR,
+            message: 'Log sync failed',
+            userMessage: `ログ同期に失敗しました: ${result.error.code}`,
+            cause:
+              result.error instanceof Error
+                ? result.error
+                : new Error(String(result.error)),
+          });
         }
 
         return true;

@@ -29,7 +29,8 @@
       "Bash(yarn typecheck)",
       "Bash(nr test)",
       "Bash(nr test --reporter=verbose)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Bash(gh pr view:*)"
     ],
     "deny": []
   }

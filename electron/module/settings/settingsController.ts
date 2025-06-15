@@ -1,6 +1,10 @@
 import type { UpdateCheckResult } from 'electron-updater';
 import { getWindow } from '../../electronUtil';
-import { UserFacingError } from '../../lib/errors';
+import {
+  ERROR_CATEGORIES,
+  ERROR_CODES,
+  UserFacingError,
+} from '../../lib/errors';
 import { logger } from '../../lib/logger';
 import * as sequelizeClient from '../../lib/sequelize';
 import * as electronUtilService from '../electronUtil/service';
@@ -205,10 +209,18 @@ export const settingsRouter = () =>
           const errorCode = logSyncResult.error.code;
 
           if (errorCode === 'APPEND_LOGS_FAILED') {
-            // VRChatログファイル関連のエラー（初期セットアップが必要）
-            throw new UserFacingError(
-              'LOG_DIRECTORY_ERROR: VRChatのログフォルダが見つからないか、アクセスできません。初期セットアップが必要です。',
-            );
+            // VRChatログファイル関連の設定（初期セットアップが必要）
+            throw UserFacingError.withStructuredInfo({
+              code: ERROR_CODES.VRCHAT_DIRECTORY_SETUP_REQUIRED,
+              category: ERROR_CATEGORIES.SETUP_REQUIRED,
+              message:
+                'VRChat directory setup is required for initial configuration',
+              userMessage:
+                'VRChatフォルダの設定が必要です。初期セットアップを開始します。',
+              details: {
+                syncError: logSyncResult.error,
+              },
+            });
           }
 
           // 開発環境ではwarnレベルでログ記録（Sentryに送信されない）
@@ -228,6 +240,13 @@ export const settingsRouter = () =>
           message: 'Application data initialization failed',
           stack: error instanceof Error ? error : undefined,
         });
+
+        // UserFacingErrorの場合は構造化情報を保持して再スロー
+        if (error instanceof UserFacingError) {
+          throw error;
+        }
+
+        // その他のエラーの場合は新しいUserFacingErrorでラップ
         const errorMessage =
           error instanceof Error
             ? error.message

@@ -83,9 +83,12 @@ describe('exportService integration', () => {
       expect(result.totalLogLines).toBe(4); // worldJoin=2行 + playerJoin=1行 + playerLeave=1行
 
       const exportedFilePath = result.exportedFiles[0];
-      // クロスプラットフォーム対応: パス区切り文字を正規化
-      const expectedPathPart = path.join('2023-10', 'logStore-2023-10.txt');
-      expect(exportedFilePath).toContain(expectedPathPart);
+      // 日時付きサブフォルダと月別サブフォルダが含まれることを確認
+      expect(exportedFilePath).toMatch(
+        /vrchat-albums-export_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}/,
+      );
+      expect(exportedFilePath).toContain('2023-10');
+      expect(exportedFilePath).toContain('logStore-2023-10.txt');
 
       // ファイルが実際に作成されていることを確認
       const fileExists = await fs
@@ -140,11 +143,18 @@ describe('exportService integration', () => {
       );
 
       expect(result.exportedFiles).toHaveLength(1);
-      expect(result.exportedFiles[0]).toBe(outputFilePath);
+      // 新しい実装では日時付きサブフォルダが作成されるため、パスが変わる
+      const actualFilePath = result.exportedFiles[0];
+      // クロスプラットフォーム対応: パスを分割して検証
+      const pathParts = actualFilePath.split(path.sep);
+      expect(pathParts[pathParts.length - 1]).toBe('single-export.txt');
+      expect(pathParts[pathParts.length - 2]).toMatch(
+        /^vrchat-albums-export_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}$/,
+      );
       expect(result.totalLogLines).toBe(4);
 
       // ファイル内容を確認
-      const fileContent = await fs.readFile(outputFilePath, 'utf-8');
+      const fileContent = await fs.readFile(actualFilePath, 'utf-8');
       expect(fileContent).toContain('Test World');
     } finally {
       try {
