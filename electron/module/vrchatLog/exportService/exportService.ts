@@ -14,8 +14,8 @@ import {
  */
 
 export interface ExportLogStoreOptions {
-  startDate: Date;
-  endDate: Date;
+  startDate?: Date;
+  endDate?: Date;
   outputBasePath?: string;
 }
 
@@ -27,8 +27,8 @@ export interface ExportResult {
 }
 
 export type DBLogProvider = (
-  startDate: Date,
-  endDate: Date,
+  startDate?: Date,
+  endDate?: Date,
 ) => Promise<LogRecord[]>;
 
 /**
@@ -50,7 +50,7 @@ const getDefaultLogStorePath = (): string => {
  * @param exportDateTime エクスポート実行日時
  * @returns フォルダ名（例: vrchat-albums-export_2023-11-15_10-20-30）
  */
-const createExportFolderName = (exportDateTime: Date): string => {
+const generateExportFolderName = (exportDateTime: Date): string => {
   const formattedDateTime = datefns.format(
     exportDateTime,
     'yyyy-MM-dd_HH-mm-ss',
@@ -74,9 +74,9 @@ export const getLogStoreExportPath = (
   const yearMonth = datefns.format(date, 'yyyy-MM');
   const fileName = `logStore-${yearMonth}.txt`;
 
-  // エクスポート実行日時のサブフォルダを作成
+  // エクスポート実行日時のサブフォルダ名を生成
   const exportTime = exportDateTime || new Date();
-  const exportFolder = createExportFolderName(exportTime);
+  const exportFolder = generateExportFolderName(exportTime);
 
   return path.join(base, exportFolder, yearMonth, fileName);
 };
@@ -140,7 +140,7 @@ export const exportLogStoreFromDB = async (
   const exportStartTime = new Date();
 
   try {
-    // DBからログデータを取得
+    // DBからログデータを取得（期間指定がない場合は全データ取得）
     const logRecords = await getDBLogs(options.startDate, options.endDate);
 
     if (logRecords.length === 0) {
@@ -217,7 +217,7 @@ export const exportLogStoreToSingleFile = async (
   const exportStartTime = new Date();
 
   try {
-    // DBからログデータを取得
+    // DBからログデータを取得（期間指定がない場合は全データ取得）
     const logRecords = await getDBLogs(options.startDate, options.endDate);
 
     if (logRecords.length === 0) {
@@ -232,8 +232,8 @@ export const exportLogStoreToSingleFile = async (
     // logStore形式に変換
     const logLines = exportLogsToLogStore(logRecords);
 
-    // エクスポート実行日時のサブフォルダを作成
-    const exportFolder = createExportFolderName(exportStartTime);
+    // エクスポート実行日時のサブフォルダ名を生成
+    const exportFolder = generateExportFolderName(exportStartTime);
     const outputDir = path.dirname(outputFilePath);
     const outputFileName = path.basename(outputFilePath);
     const finalOutputPath = path.join(outputDir, exportFolder, outputFileName);

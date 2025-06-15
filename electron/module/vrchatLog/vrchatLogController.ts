@@ -111,19 +111,32 @@ export const appendLoglinesToFileFromLogFilePathList = async (
 
 /**
  * DBからlogStore形式でエクスポートする
+ * 期間指定がない場合は全データを取得
  */
 const getDBLogsFromDatabase = async (
-  startDate: Date,
-  endDate: Date,
+  startDate?: Date,
+  endDate?: Date,
 ): Promise<LogRecord[]> => {
   const logRecords: LogRecord[] = [];
 
   // ワールド参加ログを取得
-  const worldJoinResult = await worldJoinLogService.findVRChatWorldJoinLogList({
-    gtJoinDateTime: startDate,
-    ltJoinDateTime: endDate,
+  const worldJoinQueryOptions: Parameters<
+    typeof worldJoinLogService.findVRChatWorldJoinLogList
+  >[0] = {
     orderByJoinDateTime: 'asc',
-  });
+  };
+
+  // 期間指定がある場合のみフィルタを追加
+  if (startDate) {
+    worldJoinQueryOptions.gtJoinDateTime = startDate;
+  }
+  if (endDate) {
+    worldJoinQueryOptions.ltJoinDateTime = endDate;
+  }
+
+  const worldJoinResult = await worldJoinLogService.findVRChatWorldJoinLogList(
+    worldJoinQueryOptions,
+  );
 
   for (const log of worldJoinResult) {
     logRecords.push({
@@ -141,11 +154,27 @@ const getDBLogsFromDatabase = async (
   }
 
   // プレイヤー参加ログを取得
-  const playerJoinResult =
-    await playerJoinLogService.getVRChatPlayerJoinLogListByJoinDateTime({
-      startJoinDateTime: startDate,
-      endJoinDateTime: endDate,
-    });
+  let playerJoinResult: Awaited<
+    ReturnType<
+      typeof playerJoinLogService.getVRChatPlayerJoinLogListByJoinDateTime
+    >
+  >;
+
+  if (startDate) {
+    playerJoinResult =
+      await playerJoinLogService.getVRChatPlayerJoinLogListByJoinDateTime({
+        startJoinDateTime: startDate,
+        endJoinDateTime: endDate || null,
+      });
+  } else {
+    // 期間指定がない場合は、最古の日付から現在までを取得
+    const oldestDate = new Date('2017-01-01'); // VRChatリリース日程度
+    playerJoinResult =
+      await playerJoinLogService.getVRChatPlayerJoinLogListByJoinDateTime({
+        startJoinDateTime: oldestDate,
+        endJoinDateTime: endDate || new Date(),
+      });
+  }
 
   if (playerJoinResult.isOk()) {
     for (const log of playerJoinResult.value) {
@@ -164,12 +193,24 @@ const getDBLogsFromDatabase = async (
   }
 
   // プレイヤー退出ログを取得
+  const playerLeaveQueryOptions: Parameters<
+    typeof playerLeaveLogService.findVRChatPlayerLeaveLogList
+  >[0] = {
+    orderByLeaveDateTime: 'asc',
+  };
+
+  // 期間指定がある場合のみフィルタを追加
+  if (startDate) {
+    playerLeaveQueryOptions.gtLeaveDateTime = startDate;
+  }
+  if (endDate) {
+    playerLeaveQueryOptions.ltLeaveDateTime = endDate;
+  }
+
   const playerLeaveResult =
-    await playerLeaveLogService.findVRChatPlayerLeaveLogList({
-      gtLeaveDateTime: startDate,
-      ltLeaveDateTime: endDate,
-      orderByLeaveDateTime: 'asc',
-    });
+    await playerLeaveLogService.findVRChatPlayerLeaveLogList(
+      playerLeaveQueryOptions,
+    );
 
   for (const log of playerLeaveResult) {
     logRecords.push({
@@ -215,16 +256,18 @@ export const vrchatLogRouter = () =>
     exportLogStoreData: procedure
       .input(
         z.object({
-          startDate: z.date(),
-          endDate: z.date(),
+          startDate: z.date().optional(),
+          endDate: z.date().optional(),
           outputPath: z.string().optional(),
         }),
       )
       .mutation(async (opts) => {
         const { input } = opts;
-        logger.info(
-          `exportLogStoreData: ${input.startDate.toISOString()} to ${input.endDate.toISOString()}`,
-        );
+        const dateRangeMsg =
+          input.startDate && input.endDate
+            ? `${input.startDate.toISOString()} to ${input.endDate.toISOString()} (received as local time, converted to UTC for DB query)`
+            : '全期間';
+        logger.info(`exportLogStoreData: ${dateRangeMsg}`);
 
         try {
           const result = await exportLogStoreFromDB(
