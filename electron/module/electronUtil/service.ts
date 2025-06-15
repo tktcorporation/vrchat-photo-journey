@@ -5,6 +5,7 @@ import { writeClipboardFilePaths } from 'clip-filepaths';
 import { app, clipboard, dialog, nativeImage, shell } from 'electron';
 import * as neverthrow from 'neverthrow';
 import sharp from 'sharp';
+import { P, match } from 'ts-pattern';
 
 /**
  * OS のエクスプローラーで指定パスを開くユーティリティ。
@@ -18,10 +19,11 @@ const openPathInExplorer = async (
     const result = await shell.openPath(path);
     return neverthrow.ok(result);
   } catch (error) {
-    if (error instanceof Error) {
-      return neverthrow.err(error);
-    }
-    throw error;
+    return match(error)
+      .with(P.instanceOf(Error), (err) => neverthrow.err(err))
+      .otherwise((err) => {
+        throw err;
+      });
   }
 };
 
@@ -96,7 +98,9 @@ const openPhotoPathWithPhotoApp = async (
     return neverthrow.ok('');
   } catch (error) {
     return neverthrow.err(
-      error instanceof Error ? error : new Error('Unknown error opening path'),
+      match(error)
+        .with(P.instanceOf(Error), (err) => err)
+        .otherwise(() => new Error('Unknown error opening path')),
     );
   }
 };
@@ -117,7 +121,9 @@ const openPathWithAssociatedApp = async (
     return neverthrow.ok('');
   } catch (error) {
     return neverthrow.err(
-      error instanceof Error ? error : new Error('Unknown error opening path'),
+      match(error)
+        .with(P.instanceOf(Error), (err) => err)
+        .otherwise(() => new Error('Unknown error opening path')),
     );
   }
 };
@@ -137,7 +143,9 @@ const copyImageDataByPath = async (
     return neverthrow.ok(undefined);
   } catch (error) {
     return neverthrow.err(
-      error instanceof Error ? error : new Error('Failed to copy image data'),
+      match(error)
+        .with(P.instanceOf(Error), (err) => err)
+        .otherwise(() => new Error('Failed to copy image data')),
     );
   }
 };
@@ -164,7 +172,9 @@ const copyImageByBase64 = async (options: {
     return neverthrow.ok(undefined);
   } catch (error) {
     return neverthrow.err(
-      error instanceof Error ? error : new Error('Failed to copy base64 image'),
+      match(error)
+        .with(P.instanceOf(Error), (err) => err)
+        .otherwise(() => new Error('Failed to copy base64 image')),
     );
   }
 };
@@ -209,9 +219,12 @@ const downloadImageAsPng = async (options: {
       return neverthrow.err('canceled');
     }
     return neverthrow.err(
-      error instanceof Error
-        ? new Error('Failed to handle png file', { cause: error })
-        : new Error('Failed to handle png file'),
+      match(error)
+        .with(
+          P.instanceOf(Error),
+          (err) => new Error('Failed to handle png file', { cause: err }),
+        )
+        .otherwise(() => new Error('Failed to handle png file')),
     );
   } finally {
     if (tempDir) {
