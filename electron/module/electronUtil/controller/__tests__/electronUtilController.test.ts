@@ -128,7 +128,7 @@ describe('electronUtilController', () => {
       const resolver = router.downloadImageAsPng._def.resolver as (opts: {
         ctx: Record<string, unknown>;
         input: inferProcedureInput<typeof router.downloadImageAsPng>;
-      }) => Promise<void>;
+      }) => Promise<boolean>;
 
       await expect(
         resolver({

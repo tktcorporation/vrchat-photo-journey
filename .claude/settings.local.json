@@ -26,8 +26,10 @@
       "Bash(git checkout:*)",
       "Bash(ls:*)",
       "Bash(gh issue list:*)",
-      "Bash(npm test:*)",
-      "Bash(npm run vitest run:*)"
+      "Bash(yarn typecheck)",
+      "Bash(nr test)",
+      "Bash(nr test --reporter=verbose)",
+      "Bash(sed:*)"
     ],
     "deny": []
   }
