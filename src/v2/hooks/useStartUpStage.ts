@@ -19,6 +19,7 @@ export interface ProcessStages {
 export interface ProcessError {
   stage: keyof ProcessStages;
   message: string;
+  originalError?: unknown; // tRPCエラーオブジェクト全体を保持
 }
 
 interface ProcessStageCallbacks {
@@ -48,7 +49,12 @@ export const useStartupStage = (callbacks?: ProcessStageCallbacks) => {
 
   // ステージ更新のヘルパー関数
   const updateStage = useCallback(
-    (stage: keyof ProcessStages, status: ProcessStage, errorMsg?: string) => {
+    (
+      stage: keyof ProcessStages,
+      status: ProcessStage,
+      errorMsg?: string,
+      originalError?: unknown,
+    ) => {
       setStages((prev) => ({ ...prev, [stage]: status }));
 
       console.log({
@@ -59,7 +65,7 @@ export const useStartupStage = (callbacks?: ProcessStageCallbacks) => {
       });
 
       if (status === 'error' && errorMsg) {
-        const processError = { stage, message: errorMsg };
+        const processError = { stage, message: errorMsg, originalError };
         setError(processError);
         callbacks?.onError?.(processError);
       } else if (status === 'success' || status === 'skipped') {
@@ -104,7 +110,9 @@ export const useStartupStage = (callbacks?: ProcessStageCallbacks) => {
           error instanceof Error
             ? error.message
             : 'アプリケーション初期化に失敗しました';
-        updateStage('initialization', 'error', errorMessage);
+
+        // tRPCエラーオブジェクト全体を保持
+        updateStage('initialization', 'error', errorMessage, error);
       },
     });
 
@@ -172,6 +180,7 @@ export const useStartupStage = (callbacks?: ProcessStageCallbacks) => {
     updateStage,
     errorMessage: error?.message ?? '',
     errorStage: error?.stage ?? '',
+    originalError: error?.originalError,
     retryProcess,
     completed,
     finished,
