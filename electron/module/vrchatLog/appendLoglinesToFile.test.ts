@@ -3,17 +3,17 @@ import path from 'node:path';
 import * as readline from 'node:readline';
 import neverthrow from 'neverthrow';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import * as fs from '../../../lib/wrappedFs';
+import * as fs from '../../lib/wrappedFs';
 import { appendLoglinesToFile } from './fileHandlers/logStorageManager';
 import { VRChatLogLineSchema, VRChatLogStoreFilePathSchema } from './model';
 
 // モック設定
-vi.mock('../../../lib/wrappedApp', () => ({
-  getAppUserDataPath: () => '/mock/user/data',
+vi.mock('../../lib/wrappedApp', () => ({
+  getAppUserDataPath: vi.fn(() => '/mock/user/data'),
 }));
 
 // 実際の関数をモックする
-vi.mock('../../../lib/wrappedFs', () => {
+vi.mock('../../lib/wrappedFs', () => {
   return {
     existsSyncSafe: vi.fn().mockReturnValue(false),
     mkdirSyncSafe: vi.fn().mockResolvedValue(neverthrow.ok(undefined)),
@@ -48,6 +48,12 @@ vi.mock('node:fs', async (importOriginal) => {
     readdir: vi
       .fn()
       .mockImplementation((_path, callback) => callback(null, [])),
+    writeFileSync: vi.fn(), // 追加: writeFileSync をモック
+    appendFile: vi.fn(), // 追加: appendFile をモック
+    createReadStream: vi.fn(),
+    promises: {
+      unlink: vi.fn(),
+    },
   };
 });
 

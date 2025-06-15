@@ -103,6 +103,27 @@ describe('service with database', () => {
 
 Reference: `electron/module/logInfo/service.spec.ts`
 
+## Test Organization Patterns
+
+### Integration Test Separation
+- Unit tests with mocks: `*.test.ts`
+- Database integration tests: `*.integration.test.ts`
+- Separating integration tests prevents database initialization conflicts in test runners
+
+Example: `logInfoController.test.ts` (mocked) vs `logInfoController.integration.test.ts` (real DB)
+
+### Vitest Mock Issues
+- Electron app mocking may require `vi.mock('electron')` before other mocks
+- Complex file system mocks may fail; use `describe.skip()` for problematic tests
+- Dynamic imports don't always solve mock timing issues in vitest
+
+### 🚨 Module Path Issues in Tests
+- **相対パスの確認必須**: テストファイルからのモジュールパスを正確に計算
+- **Example**: `electron/module/vrchatLog/` → `electron/lib/` = `../../lib/` (NOT `../../../lib/`)
+- **症状**: `TypeError: The "path" argument must be of type string. Received undefined`
+- **原因**: モックされた関数が `undefined` を返す（パスが間違っているため）
+- **解決**: import パスと vi.mock() パスの両方を修正
+
 ## CLAUDE.md 更新ルール
 
 以下の場合に更新:
