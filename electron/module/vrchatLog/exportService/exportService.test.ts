@@ -24,11 +24,17 @@ describe('exportService', () => {
   describe('getLogStoreExportPath', () => {
     it('日付からlogStore形式のパスを生成できる', () => {
       const date = new Date('2023-10-08T15:30:45');
-      const result = getLogStoreExportPath(date, '/path/to/logStore');
+      const exportDateTime = new Date('2023-11-15T10:20:30');
+      const result = getLogStoreExportPath(
+        date,
+        '/path/to/logStore',
+        exportDateTime,
+      );
 
       // クロスプラットフォーム対応: パス区切り文字を正規化
       const expectedPath = path.join(
         '/path/to/logStore',
+        'vrchat-albums-export_2023-11-15_10-20-30',
         '2023-10',
         'logStore-2023-10.txt',
       );
@@ -37,11 +43,13 @@ describe('exportService', () => {
 
     it('異なる年月でも正しいパスを生成できる', () => {
       const date = new Date('2024-01-15T09:15:30');
-      const result = getLogStoreExportPath(date, '/exports');
+      const exportDateTime = new Date('2024-02-20T14:45:10');
+      const result = getLogStoreExportPath(date, '/exports', exportDateTime);
 
       // クロスプラットフォーム対応: パス区切り文字を正規化
       const expectedPath = path.join(
         '/exports',
+        'vrchat-albums-export_2024-02-20_14-45-10',
         '2024-01',
         'logStore-2024-01.txt',
       );
@@ -52,12 +60,13 @@ describe('exportService', () => {
       const date = new Date('2023-10-08T15:30:45');
       const result = getLogStoreExportPath(date);
 
-      // クロスプラットフォーム対応: パス区切り文字を正規化して確認
-      const expectedPathPart = path.join(
-        'logStore',
-        '2023-10',
-        'logStore-2023-10.txt',
+      // エクスポート日時フォルダが含まれることを確認
+      expect(result).toMatch(
+        /vrchat-albums-export_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}/,
       );
+
+      // クロスプラットフォーム対応: パス区切り文字を正規化して確認
+      const expectedPathPart = path.join('2023-10', 'logStore-2023-10.txt');
       expect(result).toContain(expectedPathPart);
     });
   });
@@ -100,21 +109,24 @@ describe('exportService', () => {
       const result = await exportLogStoreFromDB(options, mockGetDBLogs);
 
       expect(result.exportedFiles).toHaveLength(1);
-      // クロスプラットフォーム対応: パス区切り文字を正規化
-      const expectedPath = path.join(
-        '/test/exports',
-        '2023-10',
-        'logStore-2023-10.txt',
+      // エクスポート日時フォルダが含まれることを確認
+      expect(result.exportedFiles[0]).toMatch(
+        /vrchat-albums-export_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}/,
       );
-      expect(result.exportedFiles[0]).toBe(expectedPath);
+      expect(result.exportedFiles[0]).toContain('2023-10');
+      expect(result.exportedFiles[0]).toContain('logStore-2023-10.txt');
       expect(result.totalLogLines).toBe(3); // worldJoin=2行 + playerJoin=1行
 
       // ファイル書き込みが呼ばれたことを確認
       expect(fs.writeFile).toHaveBeenCalledTimes(1);
-      const expectedDirPath = path.join('/test/exports', '2023-10');
-      expect(fs.mkdir).toHaveBeenCalledWith(expectedDirPath, {
-        recursive: true,
-      });
+      // ディレクトリ作成が呼ばれたことを確認（エクスポート日時フォルダを含む）
+      expect(fs.mkdir).toHaveBeenCalledTimes(1);
+      expect(fs.mkdir).toHaveBeenCalledWith(
+        expect.stringMatching(
+          /\/test\/exports\/vrchat-albums-export_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\/2023-10/,
+        ),
+        { recursive: true },
+      );
     });
 
     it('複数月にまたがるデータを月別ファイルにエクスポートできる', async () => {
@@ -154,31 +166,42 @@ describe('exportService', () => {
       const result = await exportLogStoreFromDB(options, mockGetDBLogs);
 
       expect(result.exportedFiles).toHaveLength(2);
-      // クロスプラットフォーム対応: パス区切り文字を正規化
-      const expectedPath1 = path.join(
-        '/test/exports',
-        '2023-09',
-        'logStore-2023-09.txt',
-      );
-      const expectedPath2 = path.join(
-        '/test/exports',
-        '2023-10',
-        'logStore-2023-10.txt',
-      );
-      expect(result.exportedFiles).toContain(expectedPath1);
-      expect(result.exportedFiles).toContain(expectedPath2);
+      // エクスポート日時フォルダが含まれることを確認
+      for (const filePath of result.exportedFiles) {
+        expect(filePath).toMatch(
+          /vrchat-albums-export_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}/,
+        );
+      }
+      expect(
+        result.exportedFiles.some(
+          (path) =>
+            path.includes('2023-09') && path.includes('logStore-2023-09.txt'),
+        ),
+      ).toBe(true);
+      expect(
+        result.exportedFiles.some(
+          (path) =>
+            path.includes('2023-10') && path.includes('logStore-2023-10.txt'),
+        ),
+      ).toBe(true);
       expect(result.totalLogLines).toBe(4); // 各worldJoin=2行ずつ
 
       // 2つのファイルが作成されたことを確認
       expect(fs.writeFile).toHaveBeenCalledTimes(2);
-      const expectedDir1 = path.join('/test/exports', '2023-09');
-      const expectedDir2 = path.join('/test/exports', '2023-10');
-      expect(fs.mkdir).toHaveBeenCalledWith(expectedDir1, {
-        recursive: true,
-      });
-      expect(fs.mkdir).toHaveBeenCalledWith(expectedDir2, {
-        recursive: true,
-      });
+      // ディレクトリ作成が呼ばれたことを確認（エクスポート日時フォルダを含む）
+      expect(fs.mkdir).toHaveBeenCalledTimes(2);
+      expect(fs.mkdir).toHaveBeenCalledWith(
+        expect.stringMatching(
+          /\/test\/exports\/vrchat-albums-export_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\/2023-09/,
+        ),
+        { recursive: true },
+      );
+      expect(fs.mkdir).toHaveBeenCalledWith(
+        expect.stringMatching(
+          /\/test\/exports\/vrchat-albums-export_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\/2023-10/,
+        ),
+        { recursive: true },
+      );
     });
 
     it('データが存在しない場合は空の結果を返す', async () => {

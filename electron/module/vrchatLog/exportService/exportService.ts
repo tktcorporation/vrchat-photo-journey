@@ -46,20 +46,39 @@ const getDefaultLogStorePath = (): string => {
 };
 
 /**
+ * エクスポート実行日時からフォルダ名を生成
+ * @param exportDateTime エクスポート実行日時
+ * @returns フォルダ名（例: vrchat-albums-export_2023-11-15_10-20-30）
+ */
+const createExportFolderName = (exportDateTime: Date): string => {
+  const formattedDateTime = datefns.format(
+    exportDateTime,
+    'yyyy-MM-dd_HH-mm-ss',
+  );
+  return `vrchat-albums-export_${formattedDateTime}`;
+};
+
+/**
  * 日付からlogStore形式のファイルパスを生成
  * @param date 対象日付
  * @param basePath ベースパス（省略時はデフォルト）
+ * @param exportDateTime エクスポート実行日時（省略時は現在時刻）
  * @returns logStore形式のファイルパス
  */
 export const getLogStoreExportPath = (
   date: Date,
   basePath?: string,
+  exportDateTime?: Date,
 ): string => {
   const base = basePath || getDefaultLogStorePath();
   const yearMonth = datefns.format(date, 'yyyy-MM');
   const fileName = `logStore-${yearMonth}.txt`;
 
-  return path.join(base, yearMonth, fileName);
+  // エクスポート実行日時のサブフォルダを作成
+  const exportTime = exportDateTime || new Date();
+  const exportFolder = createExportFolderName(exportTime);
+
+  return path.join(base, exportFolder, yearMonth, fileName);
 };
 
 /**
@@ -151,6 +170,7 @@ export const exportLogStoreFromDB = async (
         const filePath = getLogStoreExportPath(
           sampleDate,
           options.outputBasePath,
+          exportStartTime,
         );
 
         // ディレクトリを作成
@@ -212,18 +232,24 @@ export const exportLogStoreToSingleFile = async (
     // logStore形式に変換
     const logLines = exportLogsToLogStore(logRecords);
 
+    // エクスポート実行日時のサブフォルダを作成
+    const exportFolder = createExportFolderName(exportStartTime);
+    const outputDir = path.dirname(outputFilePath);
+    const outputFileName = path.basename(outputFilePath);
+    const finalOutputPath = path.join(outputDir, exportFolder, outputFileName);
+
     // ディレクトリを作成
-    const dirPath = path.dirname(outputFilePath);
+    const dirPath = path.dirname(finalOutputPath);
     await ensureDirectoryExists(dirPath);
 
     // ファイルに書き込み
     const content = formatLogStoreContent(logLines);
-    await fs.writeFile(outputFilePath, content, 'utf-8');
+    await fs.writeFile(finalOutputPath, content, 'utf-8');
 
     const exportEndTime = new Date();
 
     return {
-      exportedFiles: [outputFilePath],
+      exportedFiles: [finalOutputPath],
       totalLogLines: logLines.length,
       exportStartTime,
       exportEndTime,
