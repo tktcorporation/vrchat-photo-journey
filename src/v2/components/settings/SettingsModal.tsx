@@ -5,6 +5,7 @@ import {
   Globe2,
   Settings as SettingsIcon,
   Sun,
+  Upload,
 } from 'lucide-react';
 import type React from 'react';
 import { memo, useState } from 'react';
@@ -18,6 +19,7 @@ import { useI18n } from '../../i18n/store';
 import LanguageSelector from '../LanguageSelector';
 import AppInfo from './AppInfo';
 import DataExport from './DataExport';
+import DataImport from './DataImport';
 import LicenseInfo from './LicenseInfo';
 import PathSettings from './PathSettings';
 import SystemSettings from './SystemSettings';
@@ -34,7 +36,8 @@ type SettingsTab =
   | 'info'
   | 'license'
   | 'system'
-  | 'export';
+  | 'export'
+  | 'import';
 
 interface TabConfig {
   id: SettingsTab;
@@ -73,6 +76,12 @@ const SettingsModal = memo(({ onClose }: SettingsModalProps) => {
       label: 'データエクスポート',
       icon: Download,
       component: DataExport,
+    },
+    {
+      id: 'import',
+      label: 'データインポート',
+      icon: Upload,
+      component: DataImport,
     },
     {
       id: 'paths',
