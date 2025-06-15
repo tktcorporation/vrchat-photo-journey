@@ -145,8 +145,11 @@ describe('exportService integration', () => {
       expect(result.exportedFiles).toHaveLength(1);
       // 新しい実装では日時付きサブフォルダが作成されるため、パスが変わる
       const actualFilePath = result.exportedFiles[0];
-      expect(actualFilePath).toMatch(
-        /vrchat-albums-export_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\/single-export\.txt$/,
+      // クロスプラットフォーム対応: パスを分割して検証
+      const pathParts = actualFilePath.split(path.sep);
+      expect(pathParts[pathParts.length - 1]).toBe('single-export.txt');
+      expect(pathParts[pathParts.length - 2]).toMatch(
+        /^vrchat-albums-export_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}$/,
       );
       expect(result.totalLogLines).toBe(4);
 

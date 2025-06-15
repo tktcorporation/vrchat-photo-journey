@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { UserFacingError } from '../../../lib/errors';
+import { ERROR_CODES, UserFacingError } from '../../../lib/errors';
 import { logger } from '../../../lib/logger';
 import * as sequelizeClient from '../../../lib/sequelize';
 import { LOG_SYNC_MODE, syncLogs } from '../../logSync/service';
@@ -167,16 +167,29 @@ describe('settingsController.initializeAppData', () => {
     );
   });
 
-  it('APPEND_LOGS_FAILED エラー時は LOG_DIRECTORY_ERROR をスローする', async () => {
+  it('APPEND_LOGS_FAILED エラー時は構造化されたセットアップエラーをスローする', async () => {
     // ログ同期でAPPEND_LOGS_FAILEDエラー
     mockSyncLogs.mockResolvedValue({
       isErr: () => true,
       error: { code: 'APPEND_LOGS_FAILED', message: 'Failed to append logs' },
     });
 
-    await expect(initializeAppData()).rejects.toThrow(UserFacingError);
-    await expect(initializeAppData()).rejects.toThrow(
-      'LOG_DIRECTORY_ERROR: VRChatのログフォルダが見つからないか、アクセスできません。初期セットアップが必要です。',
+    let thrownError: UserFacingError | null = null;
+    try {
+      await initializeAppData();
+    } catch (error) {
+      thrownError = error as UserFacingError;
+    }
+
+    expect(thrownError).toBeInstanceOf(UserFacingError);
+    expect(thrownError?.errorInfo?.code).toBe(
+      ERROR_CODES.VRCHAT_DIRECTORY_SETUP_REQUIRED,
+    );
+    expect(thrownError?.errorInfo?.userMessage).toBe(
+      'VRChatフォルダの設定が必要です。初期セットアップを開始します。',
+    );
+    expect(thrownError?.message).toBe(
+      'VRChatフォルダの設定が必要です。初期セットアップを開始します。',
     );
   });
 

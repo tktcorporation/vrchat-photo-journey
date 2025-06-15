@@ -7,7 +7,7 @@ import {
   handleResultError,
   handleResultErrorWithSilent,
 } from './lib/errorHelpers';
-import { UserFacingError } from './lib/errors';
+import { ERROR_CATEGORIES, ERROR_CODES, UserFacingError } from './lib/errors';
 import { logger } from './lib/logger';
 import { backgroundSettingsRouter } from './module/backgroundSettings/controller/backgroundSettingsController';
 import { debugRouter } from './module/debug/debugController';
@@ -192,12 +192,13 @@ export const router = trpcRouter({
             };
           }
           // canceledでない場合は予期しないエラーとして扱う
-          throw new UserFacingError(
-            'ファイル選択ダイアログでエラーが発生しました。',
-            {
-              cause: new Error(String(error)),
-            },
-          );
+          throw UserFacingError.withStructuredInfo({
+            code: ERROR_CODES.UNKNOWN,
+            category: ERROR_CATEGORIES.UNKNOWN_ERROR,
+            message: 'File dialog error',
+            userMessage: 'ファイル選択ダイアログでエラーが発生しました。',
+            cause: new Error(String(error)),
+          });
         },
       );
     }),

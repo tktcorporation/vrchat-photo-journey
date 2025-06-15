@@ -121,12 +121,16 @@ describe('exportService', () => {
       expect(fs.writeFile).toHaveBeenCalledTimes(1);
       // ディレクトリ作成が呼ばれたことを確認（エクスポート日時フォルダを含む）
       expect(fs.mkdir).toHaveBeenCalledTimes(1);
-      expect(fs.mkdir).toHaveBeenCalledWith(
-        expect.stringMatching(
-          /\/test\/exports\/vrchat-albums-export_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\/2023-10/,
-        ),
-        { recursive: true },
+      const mkdirCallPath = vi.mocked(fs.mkdir).mock.calls[0][0];
+      expect(mkdirCallPath).toMatch(
+        /vrchat-albums-export_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}/,
       );
+      expect(mkdirCallPath).toContain('2023-10');
+      // パスの構造を確認
+      const pathParts = mkdirCallPath.split(path.sep);
+      expect(pathParts).toContain('test');
+      expect(pathParts).toContain('exports');
+      expect(pathParts[pathParts.length - 1]).toBe('2023-10');
     });
 
     it('複数月にまたがるデータを月別ファイルにエクスポートできる', async () => {
@@ -190,18 +194,25 @@ describe('exportService', () => {
       expect(fs.writeFile).toHaveBeenCalledTimes(2);
       // ディレクトリ作成が呼ばれたことを確認（エクスポート日時フォルダを含む）
       expect(fs.mkdir).toHaveBeenCalledTimes(2);
-      expect(fs.mkdir).toHaveBeenCalledWith(
-        expect.stringMatching(
-          /\/test\/exports\/vrchat-albums-export_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\/2023-09/,
-        ),
-        { recursive: true },
+      const mkdirCalls = vi.mocked(fs.mkdir).mock.calls;
+
+      // 1つ目のディレクトリパスを確認
+      const mkdirPath1 = mkdirCalls[0][0];
+      expect(mkdirPath1).toMatch(
+        /vrchat-albums-export_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}/,
       );
-      expect(fs.mkdir).toHaveBeenCalledWith(
-        expect.stringMatching(
-          /\/test\/exports\/vrchat-albums-export_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\/2023-10/,
-        ),
-        { recursive: true },
+      expect(mkdirPath1).toContain('2023-09');
+      const pathParts1 = mkdirPath1.split(path.sep);
+      expect(pathParts1[pathParts1.length - 1]).toBe('2023-09');
+
+      // 2つ目のディレクトリパスを確認
+      const mkdirPath2 = mkdirCalls[1][0];
+      expect(mkdirPath2).toMatch(
+        /vrchat-albums-export_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}/,
       );
+      expect(mkdirPath2).toContain('2023-10');
+      const pathParts2 = mkdirPath2.split(path.sep);
+      expect(pathParts2[pathParts2.length - 1]).toBe('2023-10');
     });
 
     it('データが存在しない場合は空の結果を返す', async () => {

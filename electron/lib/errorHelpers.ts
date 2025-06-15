@@ -1,5 +1,5 @@
 import type { Result } from 'neverthrow';
-import { UserFacingError } from './errors';
+import { ERROR_CATEGORIES, ERROR_CODES, UserFacingError } from './errors';
 
 /**
  * neverthrowのResultパターンとUserFacingErrorパターンを橋渡しするヘルパー関数群
@@ -122,20 +122,48 @@ export function handleResultErrorWithSilent<T, E>(
  */
 export const fileOperationErrorMappings = {
   ENOENT: (originalError: unknown) =>
-    new UserFacingError('指定されたファイルまたはフォルダが見つかりません。', {
-      cause: originalError,
+    UserFacingError.withStructuredInfo({
+      code: ERROR_CODES.FILE_NOT_FOUND,
+      category: ERROR_CATEGORIES.FILE_NOT_FOUND,
+      message: 'File or directory not found',
+      userMessage: '指定されたファイルまたはフォルダが見つかりません。',
+      cause:
+        originalError instanceof Error
+          ? originalError
+          : new Error(String(originalError)),
     }),
   canceled: (originalError: unknown) =>
-    new UserFacingError('操作がキャンセルされました。', {
-      cause: originalError,
+    UserFacingError.withStructuredInfo({
+      code: ERROR_CODES.UNKNOWN,
+      category: ERROR_CATEGORIES.UNKNOWN_ERROR,
+      message: 'Operation was canceled',
+      userMessage: '操作がキャンセルされました。',
+      cause:
+        originalError instanceof Error
+          ? originalError
+          : new Error(String(originalError)),
     }),
   Error: (originalError: unknown) =>
-    new UserFacingError('ファイル操作中にエラーが発生しました。', {
-      cause: originalError,
+    UserFacingError.withStructuredInfo({
+      code: ERROR_CODES.UNKNOWN,
+      category: ERROR_CATEGORIES.UNKNOWN_ERROR,
+      message: 'File operation error',
+      userMessage: 'ファイル操作中にエラーが発生しました。',
+      cause:
+        originalError instanceof Error
+          ? originalError
+          : new Error(String(originalError)),
     }),
   default: (originalError: unknown) =>
-    new UserFacingError('ファイル操作中にエラーが発生しました。', {
-      cause: originalError,
+    UserFacingError.withStructuredInfo({
+      code: ERROR_CODES.UNKNOWN,
+      category: ERROR_CATEGORIES.UNKNOWN_ERROR,
+      message: 'File operation error',
+      userMessage: 'ファイル操作中にエラーが発生しました。',
+      cause:
+        originalError instanceof Error
+          ? originalError
+          : new Error(String(originalError)),
     }),
 } as const;
 
@@ -144,17 +172,38 @@ export const fileOperationErrorMappings = {
  */
 export const photoOperationErrorMappings = {
   InputFileIsMissing: (originalError: unknown) =>
-    new UserFacingError(
-      '写真ファイルが見つかりません。ファイルが移動または削除された可能性があります。',
-      { cause: originalError },
-    ),
+    UserFacingError.withStructuredInfo({
+      code: ERROR_CODES.FILE_NOT_FOUND,
+      category: ERROR_CATEGORIES.FILE_NOT_FOUND,
+      message: 'Photo file is missing',
+      userMessage:
+        '写真ファイルが見つかりません。ファイルが移動または削除された可能性があります。',
+      cause:
+        originalError instanceof Error
+          ? originalError
+          : new Error(String(originalError)),
+    }),
   MODEL_NOT_FOUND: (originalError: unknown) =>
-    new UserFacingError('写真データが見つかりません。', {
-      cause: originalError,
+    UserFacingError.withStructuredInfo({
+      code: ERROR_CODES.DATABASE_ERROR,
+      category: ERROR_CATEGORIES.DATABASE_ERROR,
+      message: 'Photo data not found',
+      userMessage: '写真データが見つかりません。',
+      cause:
+        originalError instanceof Error
+          ? originalError
+          : new Error(String(originalError)),
     }),
   FILE_NOT_FOUND_MODEL_DELETED: (originalError: unknown) =>
-    new UserFacingError(
-      '写真ファイルが見つからないため、データベースから削除されました。',
-      { cause: originalError },
-    ),
+    UserFacingError.withStructuredInfo({
+      code: ERROR_CODES.FILE_NOT_FOUND,
+      category: ERROR_CATEGORIES.FILE_NOT_FOUND,
+      message: 'Photo file not found, removed from database',
+      userMessage:
+        '写真ファイルが見つからないため、データベースから削除されました。',
+      cause:
+        originalError instanceof Error
+          ? originalError
+          : new Error(String(originalError)),
+    }),
 } as const;
