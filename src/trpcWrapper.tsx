@@ -44,7 +44,8 @@ export default ({ children }: { children: React.ReactNode }) => {
     }
 
     window.Main.sendErrorMessage(logMessage);
-    toast(errorDetails);
+    // トーストはBackendのlogError関数から送信されるため、ここでは表示しない
+    // toast(errorDetails);
   };
   const [queryClient] = useState(
     () =>
