@@ -2,42 +2,45 @@ import { vi } from 'vitest';
 
 /**
  * tRPC の useQuery フックの戻り値をモックするためのヘルパー関数
- * 最小限のプロパティでテストが動作するように設計
+ *
+ * 注意: tRPCは公式のテストヘルパーを提供していないため、このカスタムヘルパーを使用します。
+ * tRPCの`UseTRPCQueryResult`型は@tanstack/react-queryの型と複雑に結合しており、
+ * 完全な型互換性を持つモックの作成は困難です。
+ *
+ * このヘルパーは実用的なサブセットのプロパティを提供し、テストで必要な
+ * 基本的な機能をカバーします。
+ *
  * @param overrides - 上書きしたいプロパティ
- * @returns tRPC useQuery モックオブジェクト
+ * @returns tRPC useQuery モックオブジェクト（型はanyですが、実際の構造は正確です）
  */
-export function createQueryStub<TData = unknown>(
+export function createQueryStub<TData = unknown, TError = unknown>(
   overrides: Partial<{
     data: TData | null | undefined;
     isLoading: boolean;
-    error: unknown;
+    error: TError | null;
     refetch: () => void;
     isFetching: boolean;
     isError: boolean;
     isSuccess: boolean;
   }> = {},
-) {
+  // biome-ignore lint/suspicious/noExplicitAny: tRPCの完全な型定義との互換性は複雑すぎるため、実用的なアプローチとしてanyを使用
+): any {
   const {
-    data = null,
+    data = undefined,
     isLoading = false,
     error = null,
     refetch = vi.fn(),
     isFetching = false,
     isError = false,
-    isSuccess = true,
   } = overrides;
 
-  // 最小限のプロパティと、テストで参照される可能性のあるプロパティを含む
-  const result = {
-    data,
-    isLoading,
-    error,
-    refetch,
+  // 基本的なプロパティ
+  const baseResult = {
+    data: data as TData | undefined,
+    error: error as TError | null,
+    // biome-ignore lint/suspicious/noExplicitAny: refetch function has complex overloads that are difficult to type
+    refetch: refetch as any,
     isFetching,
-    isError,
-    isSuccess,
-    status: isError ? 'error' : isLoading ? 'loading' : 'success',
-    fetchStatus: isFetching ? 'fetching' : 'idle',
     isPaused: false,
     isStale: false,
     isFetched: !isLoading,
@@ -45,22 +48,56 @@ export function createQueryStub<TData = unknown>(
     isRefetching: false,
     isLoadingError: isLoading && isError,
     isRefetchError: false,
+    isInitialLoading: isLoading && !data,
+    isPlaceholderData: false,
+    isPreviousData: false,
     dataUpdatedAt: data ? Date.now() : 0,
     errorUpdatedAt: error ? Date.now() : 0,
     failureCount: error ? 1 : 0,
-    failureReason: error,
+    failureReason: error as TError | null,
     errorUpdateCount: error ? 1 : 0,
     remove: vi.fn(),
-    // tRPC 固有のプロパティ
+    // tRPC specific properties
     trpc: {
       path: '',
       abortOnUnmount: false,
     },
   };
 
-  // 明示的に as any を使用して型チェックをバイパス
-  // これはテスト用ユーティリティであり、完全な型互換性よりも
-  // テストの簡潔性を優先するため
-  // biome-ignore lint/suspicious/noExplicitAny: テスト用ユーティリティのため any を許可
-  return result as any;
+  // 状態に応じた返却
+  if (isLoading) {
+    return {
+      ...baseResult,
+      isLoading: true,
+      isError: false,
+      isSuccess: false,
+      status: 'loading' as const,
+      fetchStatus: isFetching ? ('fetching' as const) : ('idle' as const),
+      data: undefined,
+      error: null,
+    };
+  }
+
+  if (isError) {
+    return {
+      ...baseResult,
+      isLoading: false,
+      isError: true,
+      isSuccess: false,
+      status: 'error' as const,
+      fetchStatus: isFetching ? ('fetching' as const) : ('idle' as const),
+      error: error as TError,
+    };
+  }
+
+  return {
+    ...baseResult,
+    isLoading: false,
+    isError: false,
+    isSuccess: true,
+    status: 'success' as const,
+    fetchStatus: isFetching ? ('fetching' as const) : ('idle' as const),
+    data: data as TData,
+    error: null,
+  };
 }
