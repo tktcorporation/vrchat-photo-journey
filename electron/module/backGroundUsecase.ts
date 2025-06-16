@@ -1,3 +1,4 @@
+import { match } from 'ts-pattern';
 import type { getSettingStore } from './settingStore';
 
 /**
@@ -8,10 +9,9 @@ const getIsEnabledBackgroundProcess =
   (settingStore: ReturnType<typeof getSettingStore>) => () => {
     const backgroundFileCreateFlag = settingStore.getBackgroundFileCreateFlag();
 
-    if (backgroundFileCreateFlag === null) {
-      return false;
-    }
-    return backgroundFileCreateFlag;
+    return match(backgroundFileCreateFlag)
+      .with(null, () => false)
+      .otherwise((flag) => flag);
   };
 
 /**
