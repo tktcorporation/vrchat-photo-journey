@@ -4,7 +4,11 @@ import * as datefns from 'date-fns';
 import * as neverthrow from 'neverthrow';
 import { P, match } from 'ts-pattern';
 import { logger } from '../../../lib/logger';
-import { BackupPathObject, ExportPathObject } from '../../../lib/pathObject';
+import {
+  BackupPathObjectSchema,
+  type ExportPathObject,
+  ExportPathObjectSchema,
+} from '../../../lib/pathObject';
 import { getAppUserDataPath } from '../../../lib/wrappedApp';
 import type { LogRecord } from '../converters/dbToLogStore';
 import { exportLogStoreFromDB } from '../exportService/exportService';
@@ -73,7 +77,9 @@ export class BackupService {
 
       // 2. バックアップメタデータ作成
       const backupId = this.generateBackupId(backupTimestamp);
-      const exportPath = new ExportPathObject(exportResult.exportedFiles[0]);
+      const exportPath = ExportPathObjectSchema.parse(
+        exportResult.exportedFiles[0],
+      );
       const exportFolderPath = this.extractExportFolderPath(exportPath);
 
       const metadata: ImportBackupMetadata = {
@@ -252,7 +258,9 @@ export class BackupService {
    */
   private extractExportFolderPath(exportPath: ExportPathObject): string {
     // パストラバーサルチェック
-    const backupBasePath = new BackupPathObject(this.getBackupBasePath());
+    const backupBasePath = BackupPathObjectSchema.parse(
+      this.getBackupBasePath(),
+    );
     if (!exportPath.isWithin(backupBasePath)) {
       throw new Error(
         `Export file path is outside backup directory: ${exportPath.value}`,

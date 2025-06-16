@@ -1,12 +1,10 @@
 import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
-  AbsolutePathObject,
   AbsolutePathObjectSchema,
   BackupPathObjectSchema,
   ExportPathObjectSchema,
   PathObjectSchema,
-  VRChatPhotoPathObject,
   VRChatPhotoPathObjectSchema,
 } from './pathObject.js';
 
@@ -27,7 +25,7 @@ describe('PathObject', () => {
     it('絶対パスに解決できる', () => {
       const pathObj = PathObjectSchema.parse('relative/path');
       const absolute = pathObj.resolve();
-      expect(absolute).toBeInstanceOf(AbsolutePathObject);
+      expect(absolute.value).toBe(path.resolve('relative/path'));
       expect(path.isAbsolute(absolute.value)).toBe(true);
     });
 
@@ -161,19 +159,21 @@ describe('BackupPathObject', () => {
 
 describe('VRChatPhotoPathObject', () => {
   it('VRChat写真用のglobパターンを生成できる', () => {
-    const photoPath = new VRChatPhotoPathObject('/path/to/photos');
+    const photoPath = VRChatPhotoPathObjectSchema.parse('/path/to/photos');
     const pattern = photoPath.toPhotoGlobPattern();
     expect(pattern).toBe('/path/to/photos/**/VRChat_*_wrld_*');
   });
 
   it('Windows形式のパスでもglobパターンを正しく生成できる', () => {
-    const photoPath = new VRChatPhotoPathObject('C:\\Users\\Test\\Pictures');
+    const photoPath = VRChatPhotoPathObjectSchema.parse(
+      'C:\\Users\\Test\\Pictures',
+    );
     const pattern = photoPath.toPhotoGlobPattern();
     expect(pattern).toBe('C:/Users/Test/Pictures/**/VRChat_*_wrld_*');
   });
 
   it('カスタムパターンでglobパターンを生成できる', () => {
-    const photoPath = new VRChatPhotoPathObject('/photos');
+    const photoPath = VRChatPhotoPathObjectSchema.parse('/photos');
     const pattern = photoPath.toPhotoGlobPattern('VRChat_*.png');
     expect(pattern).toBe('/photos/**/VRChat_*.png');
   });

@@ -201,7 +201,7 @@ class VRChatPhotoPathObject extends PathObject {
  * export classes
  * ValueObject を直接作ってしまえないように type のみ export する
  */
-export {
+export type {
   PathObject,
   AbsolutePathObject,
   ExportPathObject,

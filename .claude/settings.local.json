@@ -44,7 +44,9 @@
       "Bash(npx biome lint:*)",
       "Bash(yarn biome check:*)",
       "Bash(nr lint:fix)",
-      "Bash(nr lint)"
+      "Bash(nr lint)",
+      "Bash(nlx tsx:*)",
+      "Bash(DEBUG_LINT=1 yarn lint:valueobjects)"
     ],
     "deny": []
   }
