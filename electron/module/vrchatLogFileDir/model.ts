@@ -1,23 +1,5 @@
-const opaqueSymbol: unique symbol = Symbol('opaqueSymbol');
-
 import { z } from 'zod';
-
-export abstract class BaseValueObject<T extends string, K> {
-  // @ts-ignore TS1338
-  private readonly [opaqueSymbol]: T;
-  readonly value: K;
-
-  constructor(value: K) {
-    this.value = value;
-  }
-  /**
-   * 値オブジェクト同士の等価性を比較する
-   * 主に設定値の比較処理で利用される
-   */
-  equals(other: BaseValueObject<T, K>): boolean {
-    return this === other || this.value === other.value;
-  }
-}
+import { BaseValueObject } from '../../lib/baseValueObject.js';
 
 /**
  * VRChatのログファイルが格納されているディレクトリのパス
@@ -34,10 +16,7 @@ class NotValidatedVRChatLogFilesDirPath extends BaseValueObject<
   'NotValidatedVRChatLogFilesDirPath',
   string
 > {}
-class VRChatLogFilePath extends BaseValueObject<
-  'VRChatLogFilesDirPath',
-  string
-> {}
+class VRChatLogFilePath extends BaseValueObject<'VRChatLogFilePath', string> {}
 
 export type {
   VRChatLogFilesDirPath,

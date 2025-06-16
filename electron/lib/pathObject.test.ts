@@ -137,7 +137,7 @@ describe('ExportPathObject', () => {
     const withTimestamp = basePath.withTimestampedSubdir();
 
     expect(withTimestamp.value).toMatch(
-      /\/downloads\/vrchat-albums-export_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}$/,
+      /[/\\]downloads[/\\]vrchat-albums-export_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}$/,
     );
   });
 });
@@ -154,7 +154,7 @@ describe('BackupPathObject', () => {
     const withPrefix = backupBase.withImportBackupPrefix();
 
     expect(withPrefix.value).toMatch(
-      /\/app\/backups\/backup_\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}/,
+      /[/\\]app[/\\]backups[/\\]backup_\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}/,
     );
   });
 });
