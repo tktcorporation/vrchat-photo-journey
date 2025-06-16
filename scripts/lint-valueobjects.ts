@@ -70,15 +70,16 @@ class ValueObjectLinter {
           const exportedName = element.name.text;
           if (valueObjectClasses.has(exportedName)) {
             // Check if it's a type-only export
-            const isTypeOnly = node.isTypeOnly || element.isTypeOnly;
-            if (!isTypeOnly) {
+            // The export must be either "export type { ... }" or individual "type" specifier
+            const isValidTypeExport = node.isTypeOnly || element.isTypeOnly;
+            if (!isValidTypeExport) {
               const { line, character } =
                 sourceFile.getLineAndCharacterOfPosition(element.getStart());
               this.issues.push({
                 file: sourceFile.fileName,
                 line: line + 1,
                 column: character + 1,
-                message: `ValueObject ${exportedName} should be exported as type only. Use "export type { ${exportedName} }" instead of "export { ${exportedName} }"`,
+                message: `ValueObject ${exportedName} should be exported as type only. Use "export type { ${exportedName} }" or "export { type ${exportedName} }"`,
                 severity: 'error',
               });
             }
@@ -141,10 +142,26 @@ class ValueObjectLinter {
       if (clause.token === ts.SyntaxKind.ExtendsKeyword) {
         for (const type of clause.types) {
           const typeName = type.expression.getText();
+
+          // Direct BaseValueObject inheritance
           if (
             typeName === 'BaseValueObject' ||
             typeName.includes('BaseValueObject<')
           ) {
+            return true;
+          }
+
+          // Check if it extends other known ValueObjects
+          // This handles cases like AbsolutePathObject extends PathObject
+          const knownValueObjects = [
+            'PathObject',
+            'AbsolutePathObject',
+            'ExportPathObject',
+            'BackupPathObject',
+            'VRChatPhotoPathObject',
+          ];
+
+          if (knownValueObjects.includes(typeName)) {
             return true;
           }
         }
@@ -321,26 +338,15 @@ async function main() {
     );
     process.exit(0);
   } else {
-    consola.error(`Found ${issues.length} issues:`);
+    consola.error(`Found ${issues.length} issues:\n`);
 
-    // Group issues by file
-    const issuesByFile = issues.reduce(
-      (acc, issue) => {
-        if (!acc[issue.file]) acc[issue.file] = [];
-        acc[issue.file].push(issue);
-        return acc;
-      },
-      {} as Record<string, ValueObjectIssue[]>,
-    );
-
-    for (const [file, fileIssues] of Object.entries(issuesByFile)) {
-      consola.log(`\n${path.relative(process.cwd(), file)}:`);
-      for (const issue of fileIssues) {
-        const icon = issue.severity === 'error' ? '❌' : '⚠️';
-        consola.log(
-          `  ${icon} [${issue.line}:${issue.column}] ${issue.message}`,
-        );
-      }
+    // Output each issue with clickable file path
+    for (const issue of issues) {
+      const relativePath = path.relative(process.cwd(), issue.file);
+      const icon = issue.severity === 'error' ? '❌' : '⚠️';
+      consola.log(
+        `${icon} ${relativePath}:${issue.line}:${issue.column} - ${issue.message}`,
+      );
     }
 
     const errorCount = issues.filter((i) => i.severity === 'error').length;
