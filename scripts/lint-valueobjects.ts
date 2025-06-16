@@ -18,6 +18,7 @@ class ValueObjectLinter {
   private issues: ValueObjectIssue[] = [];
   private program: ts.Program;
   private checker: ts.TypeChecker;
+  private resolvedTypes = new Map<ts.Type, boolean>();
 
   constructor(private files: string[]) {
     const compilerOptions: ts.CompilerOptions = {
@@ -136,37 +137,81 @@ class ValueObjectLinter {
   }
 
   private extendsBaseValueObject(node: ts.ClassDeclaration): boolean {
-    if (!node.heritageClauses) return false;
+    if (!node.name) return false;
 
-    for (const clause of node.heritageClauses) {
-      if (clause.token === ts.SyntaxKind.ExtendsKeyword) {
-        for (const type of clause.types) {
-          const typeName = type.expression.getText();
+    // Get the symbol of the class
+    const symbol = this.checker.getSymbolAtLocation(node.name);
+    if (!symbol) return false;
 
-          // Direct BaseValueObject inheritance
-          if (
-            typeName === 'BaseValueObject' ||
-            typeName.includes('BaseValueObject<')
-          ) {
-            return true;
-          }
+    // Get the type of the class
+    const type = this.checker.getTypeOfSymbolAtLocation(symbol, node);
+    if (!type) return false;
 
-          // Check if it extends other known ValueObjects
-          // This handles cases like AbsolutePathObject extends PathObject
-          const knownValueObjects = [
-            'PathObject',
-            'AbsolutePathObject',
-            'ExportPathObject',
-            'BackupPathObject',
-            'VRChatPhotoPathObject',
-          ];
+    // Check if this type extends BaseValueObject
+    return this.isBaseValueObjectType(type);
+  }
 
-          if (knownValueObjects.includes(typeName)) {
-            return true;
+  private isBaseValueObjectType(type: ts.Type): boolean {
+    // Check cache first
+    const cached = this.resolvedTypes.get(type);
+    if (cached !== undefined) {
+      return cached;
+    }
+
+    // Get the symbol of the type
+    const symbol = type.getSymbol();
+
+    // Check if this is BaseValueObject itself
+    if (symbol && symbol.name === 'BaseValueObject') {
+      this.resolvedTypes.set(type, true);
+      return true;
+    }
+
+    // If this is a class type, check its base types
+    if (type.isClass()) {
+      const baseTypes = this.checker.getBaseTypes(type as ts.InterfaceType);
+
+      // Recursively check each base type
+      for (const baseType of baseTypes) {
+        if (this.isBaseValueObjectType(baseType)) {
+          this.resolvedTypes.set(type, true);
+          return true;
+        }
+      }
+    }
+
+    // Also check heritage clauses for direct inheritance check
+    // This handles cases where type resolution might miss some inheritance patterns
+    if (symbol?.declarations) {
+      for (const declaration of symbol.declarations) {
+        if (ts.isClassDeclaration(declaration) && declaration.heritageClauses) {
+          for (const clause of declaration.heritageClauses) {
+            if (clause.token === ts.SyntaxKind.ExtendsKeyword) {
+              for (const heritageType of clause.types) {
+                // Get the type of the heritage clause
+                const heritageSymbol = this.checker.getSymbolAtLocation(
+                  heritageType.expression,
+                );
+                if (heritageSymbol) {
+                  const resolvedType =
+                    this.checker.getDeclaredTypeOfSymbol(heritageSymbol);
+                  if (
+                    resolvedType &&
+                    this.isBaseValueObjectType(resolvedType)
+                  ) {
+                    this.resolvedTypes.set(type, true);
+                    return true;
+                  }
+                }
+              }
+            }
           }
         }
       }
     }
+
+    // Not a BaseValueObject
+    this.resolvedTypes.set(type, false);
     return false;
   }
 
@@ -236,6 +281,13 @@ class ValueObjectLinter {
     );
 
     if (hasExportModifier) {
+      const className = node.name?.text;
+
+      // BaseValueObject itself needs to be exported as a class since it's the abstract base
+      if (className === 'BaseValueObject') {
+        return;
+      }
+
       const { line, character } = sourceFile.getLineAndCharacterOfPosition(
         node.getStart(),
       );
@@ -243,13 +295,18 @@ class ValueObjectLinter {
         file: sourceFile.fileName,
         line: line + 1,
         column: character + 1,
-        message: `ValueObject ${node.name?.text} should be exported as type only, not as class`,
+        message: `ValueObject ${className} should be exported as type only, not as class`,
         severity: 'error',
       });
     }
   }
 
   private checkZodSchema(className: string, sourceFile: ts.SourceFile) {
+    // BaseValueObject is abstract and doesn't need a Zod schema
+    if (className === 'BaseValueObject') {
+      return;
+    }
+
     const schemaName = `${className}Schema`;
     let hasSchema = false;
 
@@ -338,13 +395,13 @@ async function main() {
     );
     process.exit(0);
   } else {
-    consola.error(`Found ${issues.length} issues:\n`);
+    consola.error(`Found ${issues.length} issues:`);
 
     // Output each issue with clickable file path
     for (const issue of issues) {
       const relativePath = path.relative(process.cwd(), issue.file);
       const icon = issue.severity === 'error' ? '❌' : '⚠️';
-      consola.log(
+      console.log(
         `${icon} ${relativePath}:${issue.line}:${issue.column} - ${issue.message}`,
       );
     }

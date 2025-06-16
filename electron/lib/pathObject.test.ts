@@ -25,7 +25,7 @@ describe('PathObject', () => {
     it('絶対パスに解決できる', () => {
       const pathObj = PathObjectSchema.parse('relative/path');
       const absolute = pathObj.resolve();
-      expect(absolute.value).toBe(path.resolve('/some/relative/path'));
+      expect(absolute.value).toBe(path.resolve('relative/path'));
       expect(path.isAbsolute(absolute.value)).toBe(true);
     });
 

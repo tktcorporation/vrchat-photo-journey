@@ -41,6 +41,95 @@ export const TestIdSchema = z.string().transform(val => new TestId(val));
     );
   });
 
+  it('should detect indirect inheritance from BaseValueObject', () => {
+    // Create a base PathObject
+    const pathObject = `
+import { BaseValueObject } from '../electron/lib/baseValueObject.js';
+import { z } from 'zod';
+
+class PathObject extends BaseValueObject<'PathObject', string> {}
+
+export type { PathObject };
+export const PathObjectSchema = z.string().transform(val => new PathObject(val));
+`;
+
+    // Create a class that extends PathObject (indirect inheritance)
+    const specialPathObject = `
+import { PathObject, PathObjectSchema } from './pathObject.js';
+import { z } from 'zod';
+
+const opaqueSymbol: unique symbol = Symbol('opaqueSymbol');
+
+class SpecialPathObject extends PathObject {
+  // @ts-ignore
+  private readonly [opaqueSymbol]: 'SpecialPathObject';
+}
+
+export type { SpecialPathObject };
+export const SpecialPathObjectSchema = z.string().transform(val => new SpecialPathObject(val));
+`;
+
+    fs.writeFileSync(path.join(testDir, 'pathObject.ts'), pathObject);
+    fs.writeFileSync(
+      path.join(testDir, 'specialPathObject.ts'),
+      specialPathObject,
+    );
+
+    // Run linter on test files
+    const result = execSync('npx tsx scripts/lint-valueobjects.ts', {
+      cwd: process.cwd(),
+      encoding: 'utf-8',
+      env: { ...process.env, NODE_ENV: 'test' },
+    });
+
+    expect(result).toContain(
+      'All ValueObject implementations follow the correct pattern!',
+    );
+  });
+
+  it('should fail when indirect ValueObject is exported as class', () => {
+    // Create a base PathObject
+    const pathObject = `
+import { BaseValueObject } from '../electron/lib/baseValueObject.js';
+import { z } from 'zod';
+
+class PathObject extends BaseValueObject<'PathObject', string> {}
+
+export type { PathObject };
+export const PathObjectSchema = z.string().transform(val => new PathObject(val));
+`;
+
+    // Create a class that extends PathObject but exports it incorrectly
+    const invalidPathObject = `
+import { PathObject, PathObjectSchema } from './pathObject.js';
+import { z } from 'zod';
+
+const opaqueSymbol: unique symbol = Symbol('opaqueSymbol');
+
+export class InvalidPathObject extends PathObject {
+  // @ts-ignore
+  private readonly [opaqueSymbol]: 'InvalidPathObject';
+}
+
+export const InvalidPathObjectSchema = z.string().transform(val => new InvalidPathObject(val));
+`;
+
+    fs.writeFileSync(path.join(testDir, 'pathObject.ts'), pathObject);
+    fs.writeFileSync(
+      path.join(testDir, 'invalidPathObject.ts'),
+      invalidPathObject,
+    );
+
+    // Run linter on test files
+    expect(() => {
+      execSync('npx tsx scripts/lint-valueobjects.ts', {
+        cwd: process.cwd(),
+        encoding: 'utf-8',
+        env: { ...process.env, NODE_ENV: 'test' },
+      });
+    }).toThrow();
+  });
+
   it('should fail for ValueObject with mismatched brand type', () => {
     const invalidValueObject = `
 import { BaseValueObject } from '../electron/lib/baseValueObject.js';
