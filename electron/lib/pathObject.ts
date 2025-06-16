@@ -1,4 +1,5 @@
 import * as path from 'node:path';
+import * as datefns from 'date-fns';
 import { z } from 'zod';
 import { BaseValueObject } from '../module/vrchatLog/model.js';
 
@@ -7,7 +8,7 @@ const opaqueSymbol: unique symbol = Symbol('opaqueSymbol');
 /**
  * 基本的なPathObject - 型安全なパス操作を提供
  */
-export class PathObject extends BaseValueObject<'PathObject', string> {
+class PathObject extends BaseValueObject<'PathObject', string> {
   /**
    * パスをプラットフォーム固有の形式に正規化
    */
@@ -77,7 +78,7 @@ export class PathObject extends BaseValueObject<'PathObject', string> {
 /**
  * 絶対パスを保証するPathObject
  */
-export class AbsolutePathObject extends PathObject {
+class AbsolutePathObject extends PathObject {
   // @ts-ignore TS1338
   private readonly [opaqueSymbol]: 'AbsolutePathObject';
 
@@ -94,7 +95,7 @@ export class AbsolutePathObject extends PathObject {
 /**
  * エクスポートパス専用のPathObject
  */
-export class ExportPathObject extends PathObject {
+class ExportPathObject extends PathObject {
   // @ts-ignore TS1338
   private readonly [opaqueSymbol]: 'ExportPathObject';
 
@@ -129,7 +130,7 @@ export class ExportPathObject extends PathObject {
 /**
  * バックアップパス専用のPathObject
  */
-export class BackupPathObject extends PathObject {
+class BackupPathObject extends PathObject {
   // @ts-ignore TS1338
   private readonly [opaqueSymbol]: 'BackupPathObject';
 
@@ -151,6 +152,64 @@ export class BackupPathObject extends PathObject {
 }
 
 /**
+ * VRChat写真ディレクトリ専用のPathObject
+ */
+class VRChatPhotoPathObject extends PathObject {
+  // @ts-ignore TS1338
+  private readonly [opaqueSymbol]: 'VRChatPhotoPathObject';
+
+  /**
+   * VRChat写真用のglobパターンを生成
+   * @param pattern 写真ファイルのパターン（デフォルト: 'VRChat_*_wrld_*'）
+   * @returns glob用のパターン文字列
+   */
+  toPhotoGlobPattern(pattern = 'VRChat_*_wrld_*'): string {
+    // パスをフォワードスラッシュに正規化し、再帰的な検索パターンを追加
+    const basePath = this.toGlobPattern();
+    return `${basePath}/**/${pattern}`;
+  }
+
+  /**
+   * 写真ファイル名からワールドIDと日時を抽出
+   * @param filePath 写真ファイルのパス
+   * @returns ワールドIDと参加日時、または null
+   */
+  extractPhotoInfo(): {
+    worldId: string;
+    joinDate: Date;
+  } | null {
+    const regex =
+      /VRChat_(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.\d{3})_wrld_([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\.[a-z]+/;
+    const matches = this.value.match(regex);
+    if (!matches) {
+      return null;
+    }
+
+    // ファイル名の日時はlocal timeなので、そのままパース
+    const joinDate = datefns.parse(
+      matches[1],
+      'yyyy-MM-dd_HH-mm-ss.SSS',
+      new Date(),
+    );
+    const worldId = `wrld_${matches[2]}`;
+
+    return { worldId, joinDate };
+  }
+}
+
+/**
+ * export classes
+ * ValueObject を直接作ってしまえないように type のみ export する
+ */
+export {
+  PathObject,
+  AbsolutePathObject,
+  ExportPathObject,
+  BackupPathObject,
+  VRChatPhotoPathObject,
+};
+
+/**
  * Zodスキーマ
  */
 export const PathObjectSchema = z
@@ -165,3 +224,6 @@ export const ExportPathObjectSchema = z
 export const BackupPathObjectSchema = z
   .string()
   .transform((val) => new BackupPathObject(val));
+export const VRChatPhotoPathObjectSchema = z
+  .string()
+  .transform((val) => new VRChatPhotoPathObject(val));
