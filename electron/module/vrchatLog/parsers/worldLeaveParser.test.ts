@@ -120,7 +120,7 @@ describe('inferWorldLeaveEvents', () => {
 
     const result = inferWorldLeaveEvents(logLines, worldJoinIndices);
 
-    expect(result).toBeNull();
+    expect(result).toEqual([]);
   });
 
   it('日時が抽出できないログ行は無視される', () => {

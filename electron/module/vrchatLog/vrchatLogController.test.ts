@@ -22,6 +22,20 @@ vi.mock('./../../lib/logger', () => ({
   },
 }));
 
+// syncLogsをモック
+vi.mock('../../logSync/service', () => ({
+  syncLogs: vi.fn(),
+  LOG_SYNC_MODE: {
+    FULL: 'FULL',
+    INCREMENTAL: 'INCREMENTAL',
+  },
+}));
+
+// その他必要なモジュールをモック
+vi.mock('./../vrchatLogFileDir/service');
+vi.mock('./../vrchatWorldJoinLog/service');
+vi.mock('./service');
+
 // eventEmitter をモック
 vi.mock('./../../trpc', () => ({
   eventEmitter: {
@@ -30,6 +44,7 @@ vi.mock('./../../trpc', () => ({
   procedure: {
     input: vi.fn().mockReturnThis(),
     mutation: vi.fn().mockImplementation((handler) => handler),
+    query: vi.fn().mockImplementation((handler) => handler),
   },
   router: vi.fn().mockImplementation((routes) => routes),
 }));
@@ -153,20 +168,15 @@ describe('vrchatLogController', () => {
 
   describe('getDBLogsFromDatabase (timezone handling)', () => {
     it('期間指定なしで全データ取得が呼ばれる', async () => {
-      // getDBLogsFromDatabase は直接テストできないため、
-      // exportLogStoreFromDB のコールバック引数として渡される関数をテスト
-      let capturedGetDBLogs: DBLogProvider | undefined;
+      const mockExportResult = {
+        exportedFiles: [],
+        totalLogLines: 0,
+        exportStartTime: new Date(),
+        exportEndTime: new Date(),
+      };
 
-      vi.mocked(exportService.exportLogStoreFromDB).mockImplementation(
-        async (_options, getDBLogs) => {
-          capturedGetDBLogs = getDBLogs;
-          return {
-            exportedFiles: [],
-            totalLogLines: 0,
-            exportStartTime: new Date(),
-            exportEndTime: new Date(),
-          };
-        },
+      vi.mocked(exportService.exportLogStoreFromDB).mockResolvedValue(
+        mockExportResult,
       );
 
       const router = vrchatLogRouter();
@@ -180,9 +190,15 @@ describe('vrchatLogController', () => {
         type: 'mutation',
       });
 
-      // getDBLogsFromDatabase関数が期待される引数で呼ばれることを確認
-      expect(capturedGetDBLogs).toBeDefined();
-      expect(typeof capturedGetDBLogs).toBe('function');
+      // exportLogStoreFromDBが期間指定なしで呼ばれることを確認
+      expect(exportService.exportLogStoreFromDB).toHaveBeenCalledWith(
+        {
+          startDate: undefined,
+          endDate: undefined,
+          outputBasePath: undefined,
+        },
+        expect.any(Function), // getDBLogsFromDatabase関数
+      );
     });
 
     it('期間指定時にローカルタイムが適切に処理される', async () => {
@@ -220,11 +236,8 @@ describe('vrchatLogController', () => {
         type: 'mutation',
       });
 
-      // キャプチャした関数にローカルタイム引数が渡されることを確認
+      // getDBLogsFromDatabase関数が期待される引数で呼ばれることを確認
       expect(capturedGetDBLogs).toBeDefined();
-
-      // 実際のDB関数呼び出しはモックの制約上困難なため、
-      // 引数の型と存在のみ確認
       expect(typeof capturedGetDBLogs).toBe('function');
     });
   });

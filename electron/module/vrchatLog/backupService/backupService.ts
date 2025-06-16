@@ -52,6 +52,24 @@ export class BackupService {
         getDBLogs,
       );
 
+      // エクスポートファイルが存在しない場合（空のDB）
+      if (exportResult.exportedFiles.length === 0) {
+        logger.info('No data to backup (empty database)');
+        // 空のバックアップメタデータを作成
+        const backupId = this.generateBackupId(backupTimestamp);
+        const metadata: ImportBackupMetadata = {
+          id: backupId,
+          backupTimestamp,
+          exportFolderPath: '', // 空のDB時はエクスポートフォルダなし
+          sourceFiles: [],
+          status: 'completed',
+          importTimestamp: backupTimestamp,
+          totalLogLines: 0,
+          exportedFiles: [],
+        };
+        return neverthrow.ok(metadata);
+      }
+
       // 2. バックアップメタデータ作成
       const backupId = this.generateBackupId(backupTimestamp);
       const exportFolderPath = this.extractExportFolderPath(

@@ -24,12 +24,12 @@ vi.mock('./exportService/exportService', () => ({
   })),
 }));
 
-vi.mock('../../logSync/service', () => {
+vi.mock('../logSync/service', () => {
   const { ok } = require('neverthrow');
   return {
     LOG_SYNC_MODE: {
-      FULL: 'full',
-      INCREMENTAL: 'incremental',
+      FULL: 'FULL',
+      INCREMENTAL: 'INCREMENTAL',
     },
     syncLogs: vi.fn(async () =>
       ok({

@@ -82,8 +82,8 @@ describe('DBQueue', () => {
   it('キューが一杯の場合にエラーをスローすること', async () => {
     resetDBQueue(); // テスト用にリセット
 
-    // maxSize:1のキューを作成
-    const queue = new DBQueue({ maxSize: 1, onFull: 'throw', concurrency: 1 });
+    // maxSize:2のキューを作成（実行中1つ + 待機中1つ = 合計2つまで）
+    const queue = new DBQueue({ maxSize: 2, onFull: 'throw', concurrency: 1 });
 
     // 長時間実行されるタスクを追加してキューを埋める
     const longRunningTask = () =>
@@ -91,23 +91,42 @@ describe('DBQueue', () => {
         setTimeout(() => resolve('long task'), 1000);
       });
 
-    // 最初のタスクを開始（完了を待たない）
+    // 最初のタスクを開始（実行中になる）
     const firstTaskPromise = queue.add(longRunningTask);
 
-    // キューが一杯の状態で2つ目のタスクを追加しようとする
-    await expect(queue.add(() => Promise.resolve('task'))).rejects.toThrow(
-      'キューが一杯です',
+    // 2つ目のタスクを追加（待機中になる、長時間実行するタスク）
+    const secondTaskPromise = queue.add(
+      () =>
+        new Promise<string>((resolve) => {
+          setTimeout(() => resolve('second task'), 1000);
+        }),
     );
 
-    // 最初のタスクの完了を待つ（クリーンアップ）
-    await firstTaskPromise;
+    // 少し待機してキューの状態を安定させる
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+    // キューの状態を確認
+    console.log('Queue pending:', queue.pending);
+    console.log('Queue size:', queue.size);
+    console.log('Queue isEmpty:', queue.isEmpty);
+    console.log('Queue isIdle:', queue.isIdle);
+    // totalTasksはprivateなので直接アクセスできないが、pending + sizeで計算
+    console.log('Total tasks:', queue.pending + queue.size);
+
+    // 3つ目のタスクを追加しようとすると、キューが一杯でエラー
+    await expect(
+      queue.add(() => Promise.resolve('third task')),
+    ).rejects.toThrow('キューが一杯です');
+
+    // タスクの完了を待つ（クリーンアップ）
+    await Promise.all([firstTaskPromise, secondTaskPromise]);
   });
 
   it('キューが一杯の場合にaddWithResultでエラーをResult型で返すこと', async () => {
     resetDBQueue(); // テスト用にリセット
 
-    // maxSize:1のキューを作成
-    const queue = new DBQueue({ maxSize: 1, onFull: 'throw', concurrency: 1 });
+    // maxSize:2のキューを作成（実行中1つ + 待機中1つ = 合計2つまで）
+    const queue = new DBQueue({ maxSize: 2, onFull: 'throw', concurrency: 1 });
 
     // 長時間実行されるタスクを追加してキューを埋める
     const longRunningTask = () =>
@@ -115,17 +134,28 @@ describe('DBQueue', () => {
         setTimeout(() => resolve('long task'), 1000);
       });
 
-    // 最初のタスクを開始（完了を待たない）
+    // 最初のタスクを開始（実行中になる）
     const firstTaskPromise = queue.add(longRunningTask);
 
-    // キューが一杯の状態で2つ目のタスクを追加しようとする
-    const result = await queue.addWithResult(() => Promise.resolve('task'));
+    // 2つ目のタスクを追加（待機中になる、こちらも長時間実行）
+    const secondTaskPromise = queue.addWithResult(longRunningTask);
+
+    // 少し待機してキューの状態を安定させる
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+    // 3つ目のタスクを追加しようとすると、キューが一杯でエラー
+    const result = await queue.addWithResult(() =>
+      Promise.resolve('third task'),
+    );
 
     expect(result.isErr()).toBe(true);
     expect(result._unsafeUnwrapErr().message).toContain('キューが一杯です');
 
-    // 最初のタスクの完了を待つ（クリーンアップ）
+    // タスクの完了を待つ（クリーンアップ）
     await firstTaskPromise;
+    if ((await secondTaskPromise).isOk()) {
+      // secondTaskPromiseも完了を待つ
+    }
   });
 
   it('トランザクションを使用してタスクを実行できること', async () => {

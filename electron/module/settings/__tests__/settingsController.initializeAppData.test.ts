@@ -190,23 +190,27 @@ describe('settingsController.initializeAppData', () => {
       error: { code: 'APPEND_LOGS_FAILED', message: 'Failed to append logs' },
     });
 
-    let thrownError: UserFacingError | null = null;
+    let thrownError: Error | null = null;
     try {
       if (!initializeAppData)
         throw new Error('initializeAppData not initialized');
       await initializeAppData();
     } catch (error) {
-      thrownError = error as UserFacingError;
+      thrownError = error as Error;
     }
 
-    expect(thrownError).toBeInstanceOf(UserFacingError);
-    expect(thrownError?.errorInfo?.code).toBe(
+    // TRPCError内のcauseがUserFacingErrorであることを確認
+    expect(thrownError).toBeDefined();
+    const cause = (thrownError as { cause?: unknown })
+      ?.cause as UserFacingError;
+    expect(cause).toBeInstanceOf(UserFacingError);
+    expect(cause?.errorInfo?.code).toBe(
       ERROR_CODES.VRCHAT_DIRECTORY_SETUP_REQUIRED,
     );
-    expect(thrownError?.errorInfo?.userMessage).toBe(
+    expect(cause?.errorInfo?.userMessage).toBe(
       'VRChatフォルダの設定が必要です。初期セットアップを開始します。',
     );
-    expect(thrownError?.message).toBe(
+    expect(cause?.message).toBe(
       'VRChatフォルダの設定が必要です。初期セットアップを開始します。',
     );
   });
@@ -239,12 +243,19 @@ describe('settingsController.initializeAppData', () => {
 
     if (!initializeAppData)
       throw new Error('initializeAppData not initialized');
-    await expect(initializeAppData()).rejects.toThrow(UserFacingError);
-    if (!initializeAppData)
-      throw new Error('initializeAppData not initialized');
-    await expect(initializeAppData()).rejects.toThrow(
-      '初期化に失敗しました: Database sync failed',
-    );
+
+    let thrownError: Error | null = null;
+    try {
+      await initializeAppData();
+    } catch (error) {
+      thrownError = error as Error;
+    }
+
+    expect(thrownError).toBeDefined();
+    const cause = (thrownError as { cause?: unknown })
+      ?.cause as UserFacingError;
+    expect(cause).toBeInstanceOf(UserFacingError);
+    expect(cause?.message).toBe('初期化に失敗しました: Database sync failed');
 
     expect(mockLogger.error).toHaveBeenCalledWith({
       message: 'Application data initialization failed',
@@ -258,10 +269,19 @@ describe('settingsController.initializeAppData', () => {
 
     if (!initializeAppData)
       throw new Error('initializeAppData not initialized');
-    await expect(initializeAppData()).rejects.toThrow(UserFacingError);
-    if (!initializeAppData)
-      throw new Error('initializeAppData not initialized');
-    await expect(initializeAppData()).rejects.toThrow(
+
+    let thrownError: Error | null = null;
+    try {
+      await initializeAppData();
+    } catch (error) {
+      thrownError = error as Error;
+    }
+
+    expect(thrownError).toBeDefined();
+    const cause = (thrownError as { cause?: unknown })
+      ?.cause as UserFacingError;
+    expect(cause).toBeInstanceOf(UserFacingError);
+    expect(cause?.message).toBe(
       '初期化に失敗しました: Unknown initialization error',
     );
   });
