@@ -9,6 +9,7 @@ import * as vrchatLogFileDirService from './../vrchatLogFileDir/service';
 import * as worldJoinLogService from './../vrchatWorldJoinLog/service';
 import { backupService } from './backupService/backupService';
 import { rollbackService } from './backupService/rollbackService';
+import { FILTER_PATTERNS } from './constants/logPatterns';
 import type { LogRecord } from './converters/dbToLogStore';
 import { exportLogStoreFromDB } from './exportService/exportService';
 import { importService } from './importService/importService';
@@ -77,13 +78,7 @@ export const appendLoglinesToFileFromLogFilePathList = async (
 
   const logLineList = await vrchatLogService.getLogLinesByLogFilePathList({
     logFilePathList: logFilePathList.value,
-    includesList: [
-      'VRC Analytics Initialized',
-      '[Behaviour] Joining ',
-      '[Behaviour] OnPlayerJoined ',
-      '[Behaviour] OnPlayerLeft ',
-      'VRCApplication: HandleApplicationQuit',
-    ],
+    includesList: [...FILTER_PATTERNS],
   });
   if (logLineList.isErr()) {
     return neverthrow.err(logLineList.error);
@@ -228,6 +223,13 @@ const getDBLogsFromDatabase = async (
       },
     });
   }
+
+  // TODO: アプリイベントログの取得は今後実装
+  // const appEventRecords = await appEventService.getAppEventLogRecords(
+  //   startDate,
+  //   endDate,
+  // );
+  // logRecords.push(...appEventRecords);
 
   return logRecords;
 };

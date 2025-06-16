@@ -26,6 +26,8 @@ interface LogProcessingResults {
   createdPlayerJoinLogModelList: VRChatPlayerJoinLogModel[];
   createdPlayerLeaveLogModelList: VRChatPlayerLeaveLogModel[];
   createdVRChatPhotoPathModelList: VRChatPhotoPathModel[];
+  // TODO: アプリイベントの処理は今後実装
+  // createdAppEventCount: number;
 }
 
 /**
@@ -231,25 +233,34 @@ export async function loadLogInfoIndexFromVRChatLog({
 
       const filterStartTime = performance.now();
       const filtered = logInfoList.filter((log) => {
-        if (log.logType === 'worldJoin') {
-          return (
-            !latestWorldJoinDate ||
-            log.joinDate > latestWorldJoinDate.joinDateTime
-          );
+        switch (log.logType) {
+          case 'worldJoin':
+            return (
+              !latestWorldJoinDate ||
+              log.joinDate > latestWorldJoinDate.joinDateTime
+            );
+          case 'playerJoin':
+            return (
+              !latestPlayerJoinDate ||
+              log.joinDate > latestPlayerJoinDate.joinDateTime
+            );
+          case 'playerLeave':
+            return (
+              !latestPlayerLeaveDate ||
+              log.leaveDate > latestPlayerLeaveDate.leaveDateTime
+            );
+          case 'worldLeave':
+            // ワールド退出はDBに保存しないのでスキップ
+            return false;
+          // TODO: アプリイベントの処理は今後実装
+          // case 'appStart':
+          // case 'appExit':
+          // case 'appVersion':
+          //   // アプリイベントは常に保存（重複はDB側で除外）
+          //   return true;
+          default:
+            return false;
         }
-        if (log.logType === 'playerJoin') {
-          return (
-            !latestPlayerJoinDate ||
-            log.joinDate > latestPlayerJoinDate.joinDateTime
-          );
-        }
-        if (log.logType === 'playerLeave') {
-          return (
-            !latestPlayerLeaveDate ||
-            log.leaveDate > latestPlayerLeaveDate.leaveDateTime
-          );
-        }
-        return false;
       });
       const filterEndTime = performance.now();
       logger.debug(
@@ -272,6 +283,8 @@ export async function loadLogInfoIndexFromVRChatLog({
     createdWorldJoinLogModelList: [],
     createdPlayerJoinLogModelList: [],
     createdPlayerLeaveLogModelList: [],
+    // TODO: アプリイベントの処理は今後実装
+    // createdAppEventCount: 0,
   };
 
   // 5. ログのバッチ処理
@@ -290,24 +303,44 @@ export async function loadLogInfoIndexFromVRChatLog({
     const playerLeaveLogBatch = batch.filter(
       (log): log is VRChatPlayerLeaveLog => log.logType === 'playerLeave',
     );
+    // TODO: アプリイベントの処理は今後実装
+    // const appEventLogBatch = batch.filter(
+    //   (
+    //     log,
+    //   ): log is VRChatAppStartLog | VRChatAppExitLog | VRChatAppVersionLog =>
+    //     log.logType === 'appStart' ||
+    //     log.logType === 'appExit' ||
+    //     log.logType === 'appVersion',
+    // );
 
     logger.debug(`worldJoinLogBatch: ${worldJoinLogBatch.length}`);
     logger.debug(`playerJoinLogBatch: ${playerJoinLogBatch.length}`);
     logger.debug(`playerLeaveLogBatch: ${playerLeaveLogBatch.length}`);
+    // TODO: アプリイベントの処理は今後実装
+    // logger.debug(`appEventLogBatch: ${appEventLogBatch.length}`);
 
     const dbInsertStartTime = performance.now();
-    const [worldJoinResults, playerJoinResults, playerLeaveResults] =
-      await Promise.all([
-        worldJoinLogService.createVRChatWorldJoinLogModel(worldJoinLogBatch),
-        playerJoinLogService.createVRChatPlayerJoinLogModel(playerJoinLogBatch),
-        playerLeaveLogService.createVRChatPlayerLeaveLogModel(
-          playerLeaveLogBatch.map((logInfo) => ({
-            leaveDate: logInfo.leaveDate,
-            playerName: logInfo.playerName.value,
-            playerId: logInfo.playerId?.value ?? null,
-          })),
-        ),
-      ]);
+    const [
+      worldJoinResults,
+      playerJoinResults,
+      playerLeaveResults,
+      // TODO: アプリイベントの処理は今後実装
+      // appEventResult,
+    ] = await Promise.all([
+      worldJoinLogService.createVRChatWorldJoinLogModel(worldJoinLogBatch),
+      playerJoinLogService.createVRChatPlayerJoinLogModel(playerJoinLogBatch),
+      playerLeaveLogService.createVRChatPlayerLeaveLogModel(
+        playerLeaveLogBatch.map((logInfo) => ({
+          leaveDate: logInfo.leaveDate,
+          playerName: logInfo.playerName.value,
+          playerId: logInfo.playerId?.value ?? null,
+        })),
+      ),
+      // TODO: アプリイベントの処理は今後実装
+      // appEventLogBatch.length > 0
+      //   ? appEventService.saveAppEventLogs(appEventLogBatch)
+      //   : neverthrow.ok([]),
+    ]);
     const dbInsertEndTime = performance.now();
     logger.debug(
       `Batch ${i / BATCH_SIZE + 1}: DB insert took ${
@@ -321,6 +354,10 @@ export async function loadLogInfoIndexFromVRChatLog({
       results.createdPlayerJoinLogModelList.concat(playerJoinResults);
     results.createdPlayerLeaveLogModelList =
       results.createdPlayerLeaveLogModelList.concat(playerLeaveResults);
+    // TODO: アプリイベントの処理は今後実装
+    // if (appEventResult.isOk()) {
+    //   results.createdAppEventCount += appEventResult.value.length;
+    // }
 
     const batchEndTime = performance.now();
     logger.debug(

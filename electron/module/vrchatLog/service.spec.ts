@@ -65,6 +65,10 @@ describe('getVRChaLogInfoFromLogPath', () => {
         | service.VRChatPlayerLeaveLog
         | service.VRChatWorldLeaveLog
       )[],
+      // TODO: アプリイベントの型は今後実装
+      // | service.VRChatAppStartLog
+      // | service.VRChatAppExitLog
+      // | service.VRChatAppVersionLog
       VRChatLogFileError
     >
   >;
