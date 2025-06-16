@@ -1,23 +1,5 @@
-const opaqueSymbol: unique symbol = Symbol('opaqueSymbol');
-
 import { z } from 'zod';
-
-export abstract class BaseValueObject<T extends string, K> {
-  // @ts-ignore TS1338
-  private readonly [opaqueSymbol]: T;
-  readonly value: K;
-
-  constructor(value: K) {
-    this.value = value;
-  }
-  /**
-   * 値オブジェクト同士の等価性を比較する
-   * API 関連の値検証で使用される
-   */
-  equals(other: BaseValueObject<T, K>): boolean {
-    return this === other || this.value === other.value;
-  }
-}
+import { BaseValueObject } from '../../lib/baseValueObject.js';
 
 /**
  * VRChat World ID

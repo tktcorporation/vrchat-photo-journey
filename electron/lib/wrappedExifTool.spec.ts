@@ -1,8 +1,8 @@
 import * as fs from 'node:fs';
 import type { ExifDateTime } from 'exiftool-vendored';
-import * as path from 'pathe';
 import sharp from 'sharp';
 import * as tmp from 'tmp-promise';
+import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest';
 import * as wrappedExiftool from './wrappedExifTool';
 
 describe('wrappedExifTool', () => {

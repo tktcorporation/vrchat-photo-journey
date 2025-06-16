@@ -26,24 +26,24 @@ vi.mock('electron-is-dev', () => ({
 }));
 
 // 型定義
-const mockLogger = logger as {
+const mockLogger = logger as unknown as {
   info: ReturnType<typeof vi.fn>;
   debug: ReturnType<typeof vi.fn>;
   warn: ReturnType<typeof vi.fn>;
   error: ReturnType<typeof vi.fn>;
 };
 
-const mockSequelizeClient = sequelizeClient as {
+const mockSequelizeClient = sequelizeClient as unknown as {
   syncRDBClient: ReturnType<typeof vi.fn>;
 };
 
 const mockSyncLogs = syncLogs as ReturnType<typeof vi.fn>;
 
-const mockVrchatWorldJoinLogService = vrchatWorldJoinLogService as {
+const mockVrchatWorldJoinLogService = vrchatWorldJoinLogService as unknown as {
   findVRChatWorldJoinLogList: ReturnType<typeof vi.fn>;
 };
 
-const mockSettingStore = settingStore as {
+const mockSettingStore = settingStore as unknown as {
   getSettingStore: ReturnType<typeof vi.fn>;
 };
 
@@ -54,15 +54,21 @@ async function getInitializeAppDataFunction() {
   const router = settingsRouter();
 
   // tRPCルーターから initializeAppData mutation を取得
-  const procedure = router._def.procedures.initializeAppData;
 
-  // resolver関数を直接取得して返す
-  // @ts-expect-error tRPC内部実装にアクセス
-  return procedure._def.resolver;
+  // mutationを直接実行
+  return async () => {
+    // Callerを作成してmutationを呼び出す
+    const caller = router.createCaller({
+      eventEmitter: new (await import('node:events')).EventEmitter(),
+    });
+    return await caller.initializeAppData();
+  };
 }
 
 describe('settingsController.initializeAppData', () => {
-  let initializeAppData: () => Promise<{ success: boolean; message?: string }>;
+  let initializeAppData:
+    | (() => Promise<{ success: boolean; message?: string }>)
+    | undefined;
 
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -91,6 +97,10 @@ describe('settingsController.initializeAppData', () => {
   });
 
   it('正常な初期化処理が完了する', async () => {
+    if (!initializeAppData)
+      throw new Error('initializeAppData not initialized');
+    if (!initializeAppData)
+      throw new Error('initializeAppData not initialized');
     const result = await initializeAppData();
 
     expect(result).toEqual({ success: true });
@@ -124,6 +134,8 @@ describe('settingsController.initializeAppData', () => {
       [],
     );
 
+    if (!initializeAppData)
+      throw new Error('initializeAppData not initialized');
     await initializeAppData();
 
     expect(mockSyncLogs).toHaveBeenCalledWith(LOG_SYNC_MODE.FULL);
@@ -143,6 +155,8 @@ describe('settingsController.initializeAppData', () => {
       existingLogs,
     );
 
+    if (!initializeAppData)
+      throw new Error('initializeAppData not initialized');
     await initializeAppData();
 
     expect(mockSyncLogs).toHaveBeenCalledWith(LOG_SYNC_MODE.INCREMENTAL);
@@ -158,6 +172,8 @@ describe('settingsController.initializeAppData', () => {
       new Error('Database connection error'),
     );
 
+    if (!initializeAppData)
+      throw new Error('initializeAppData not initialized');
     await initializeAppData();
 
     expect(mockSyncLogs).toHaveBeenCalledWith(LOG_SYNC_MODE.FULL);
@@ -174,21 +190,27 @@ describe('settingsController.initializeAppData', () => {
       error: { code: 'APPEND_LOGS_FAILED', message: 'Failed to append logs' },
     });
 
-    let thrownError: UserFacingError | null = null;
+    let thrownError: Error | null = null;
     try {
+      if (!initializeAppData)
+        throw new Error('initializeAppData not initialized');
       await initializeAppData();
     } catch (error) {
-      thrownError = error as UserFacingError;
+      thrownError = error as Error;
     }
 
-    expect(thrownError).toBeInstanceOf(UserFacingError);
-    expect(thrownError?.errorInfo?.code).toBe(
+    // TRPCError内のcauseがUserFacingErrorであることを確認
+    expect(thrownError).toBeDefined();
+    const cause = (thrownError as { cause?: unknown })
+      ?.cause as UserFacingError;
+    expect(cause).toBeInstanceOf(UserFacingError);
+    expect(cause?.errorInfo?.code).toBe(
       ERROR_CODES.VRCHAT_DIRECTORY_SETUP_REQUIRED,
     );
-    expect(thrownError?.errorInfo?.userMessage).toBe(
+    expect(cause?.errorInfo?.userMessage).toBe(
       'VRChatフォルダの設定が必要です。初期セットアップを開始します。',
     );
-    expect(thrownError?.message).toBe(
+    expect(cause?.message).toBe(
       'VRChatフォルダの設定が必要です。初期セットアップを開始します。',
     );
   });
@@ -200,6 +222,8 @@ describe('settingsController.initializeAppData', () => {
       error: { code: 'OTHER_ERROR', message: 'Some other error' },
     });
 
+    if (!initializeAppData)
+      throw new Error('initializeAppData not initialized');
     const result = await initializeAppData();
 
     expect(result).toEqual({ success: true });
@@ -217,10 +241,21 @@ describe('settingsController.initializeAppData', () => {
       new Error('Database sync failed'),
     );
 
-    await expect(initializeAppData()).rejects.toThrow(UserFacingError);
-    await expect(initializeAppData()).rejects.toThrow(
-      '初期化に失敗しました: Database sync failed',
-    );
+    if (!initializeAppData)
+      throw new Error('initializeAppData not initialized');
+
+    let thrownError: Error | null = null;
+    try {
+      await initializeAppData();
+    } catch (error) {
+      thrownError = error as Error;
+    }
+
+    expect(thrownError).toBeDefined();
+    const cause = (thrownError as { cause?: unknown })
+      ?.cause as UserFacingError;
+    expect(cause).toBeInstanceOf(UserFacingError);
+    expect(cause?.message).toBe('初期化に失敗しました: Database sync failed');
 
     expect(mockLogger.error).toHaveBeenCalledWith({
       message: 'Application data initialization failed',
@@ -232,17 +267,34 @@ describe('settingsController.initializeAppData', () => {
     // 文字列エラー（Error オブジェクトではない）
     mockSequelizeClient.syncRDBClient.mockRejectedValue('String error');
 
-    await expect(initializeAppData()).rejects.toThrow(UserFacingError);
-    await expect(initializeAppData()).rejects.toThrow(
+    if (!initializeAppData)
+      throw new Error('initializeAppData not initialized');
+
+    let thrownError: Error | null = null;
+    try {
+      await initializeAppData();
+    } catch (error) {
+      thrownError = error as Error;
+    }
+
+    expect(thrownError).toBeDefined();
+    const cause = (thrownError as { cause?: unknown })
+      ?.cause as UserFacingError;
+    expect(cause).toBeInstanceOf(UserFacingError);
+    expect(cause?.message).toBe(
       '初期化に失敗しました: Unknown initialization error',
     );
   });
 
   it('重複実行防止が機能する', async () => {
     // 最初の実行
+    if (!initializeAppData)
+      throw new Error('initializeAppData not initialized');
     const firstPromise = initializeAppData();
 
     // 2回目の実行（重複）
+    if (!initializeAppData)
+      throw new Error('initializeAppData not initialized');
     const secondResult = await initializeAppData();
 
     // 2回目は重複として処理される
@@ -261,9 +313,13 @@ describe('settingsController.initializeAppData', () => {
 
   it('正常完了後はフラグがリセットされる', async () => {
     // 最初の実行を完了
+    if (!initializeAppData)
+      throw new Error('initializeAppData not initialized');
     await initializeAppData();
 
     // 2回目の実行は正常に動作する（重複扱いにならない）
+    if (!initializeAppData)
+      throw new Error('initializeAppData not initialized');
     const result = await initializeAppData();
     expect(result).toEqual({ success: true });
   });
@@ -275,13 +331,17 @@ describe('settingsController.initializeAppData', () => {
     );
 
     try {
+      if (!initializeAppData)
+        throw new Error('initializeAppData not initialized');
       await initializeAppData();
-    } catch (_error) {
+    } catch {
       // エラーは期待される
     }
 
     // エラー後に再実行可能
     mockSequelizeClient.syncRDBClient.mockResolvedValue(undefined);
+    if (!initializeAppData)
+      throw new Error('initializeAppData not initialized');
     const result = await initializeAppData();
     expect(result).toEqual({ success: true });
   });

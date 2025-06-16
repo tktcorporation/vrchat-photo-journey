@@ -1,5 +1,5 @@
 import { render } from '@testing-library/react';
-import React from 'react';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { BoldPreviewSvg } from './BoldPreview';
 
 // jsdomではレイアウト計算が正確に行われないため、getBoundingClientRectをモック化

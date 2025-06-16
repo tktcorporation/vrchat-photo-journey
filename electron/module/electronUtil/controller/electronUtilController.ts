@@ -162,4 +162,13 @@ export const electronUtilRouter = () =>
         handleResultError(result, fileOperationErrorMappings);
         return true;
       }),
+    openGetFileDialog: procedure
+      .input(z.array(z.enum(['openDirectory', 'openFile', 'multiSelections'])))
+      .query(async (ctx) => {
+        const result = await utilsService.openGetFileDialog(ctx.input);
+        return result.match(
+          (filePaths) => filePaths,
+          () => null,
+        );
+      }),
   });

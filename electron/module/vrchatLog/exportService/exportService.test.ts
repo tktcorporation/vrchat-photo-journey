@@ -1,7 +1,6 @@
 import { promises as fs } from 'node:fs';
 import * as path from 'node:path';
-import * as datefns from 'date-fns';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   type ExportLogStoreOptions,
   exportLogStoreFromDB,
@@ -121,13 +120,13 @@ describe('exportService', () => {
       expect(fs.writeFile).toHaveBeenCalledTimes(1);
       // ディレクトリ作成が呼ばれたことを確認（エクスポート日時フォルダを含む）
       expect(fs.mkdir).toHaveBeenCalledTimes(1);
-      const mkdirCallPath = vi.mocked(fs.mkdir).mock.calls[0][0];
+      const mkdirCallPath = String(vi.mocked(fs.mkdir).mock.calls[0][0]);
       expect(mkdirCallPath).toMatch(
         /vrchat-albums-export_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}/,
       );
       expect(mkdirCallPath).toContain('2023-10');
       // パスの構造を確認
-      const pathParts = mkdirCallPath.split(path.sep);
+      const pathParts = String(mkdirCallPath).split(path.sep);
       expect(pathParts).toContain('test');
       expect(pathParts).toContain('exports');
       expect(pathParts[pathParts.length - 1]).toBe('2023-10');
@@ -197,21 +196,21 @@ describe('exportService', () => {
       const mkdirCalls = vi.mocked(fs.mkdir).mock.calls;
 
       // 1つ目のディレクトリパスを確認
-      const mkdirPath1 = mkdirCalls[0][0];
+      const mkdirPath1 = String(mkdirCalls[0][0]);
       expect(mkdirPath1).toMatch(
         /vrchat-albums-export_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}/,
       );
       expect(mkdirPath1).toContain('2023-09');
-      const pathParts1 = mkdirPath1.split(path.sep);
+      const pathParts1 = String(mkdirPath1).split(path.sep);
       expect(pathParts1[pathParts1.length - 1]).toBe('2023-09');
 
       // 2つ目のディレクトリパスを確認
-      const mkdirPath2 = mkdirCalls[1][0];
+      const mkdirPath2 = String(mkdirCalls[1][0]);
       expect(mkdirPath2).toMatch(
         /vrchat-albums-export_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}/,
       );
       expect(mkdirPath2).toContain('2023-10');
-      const pathParts2 = mkdirPath2.split(path.sep);
+      const pathParts2 = String(mkdirPath2).split(path.sep);
       expect(pathParts2[pathParts2.length - 1]).toBe('2023-10');
     });
 

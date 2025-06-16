@@ -1,24 +1,6 @@
-const opaqueSymbol: unique symbol = Symbol('opaqueSymbol');
-
 import * as datefns from 'date-fns';
 import { z } from 'zod';
-
-export abstract class BaseValueObject<T extends string, K> {
-  // @ts-ignore TS1338
-  private readonly [opaqueSymbol]: T;
-  readonly value: K;
-
-  constructor(value: K) {
-    this.value = value;
-  }
-  /**
-   * 値オブジェクト同士の等価性を比較する
-   * 他のモジュールで value プロパティの比較に利用される
-   */
-  equals(other: BaseValueObject<T, K>): boolean {
-    return this === other || this.value === other.value;
-  }
-}
+import { BaseValueObject } from '../lib/baseValueObject.js';
 
 /**
  * VRChatの写真ファイル名

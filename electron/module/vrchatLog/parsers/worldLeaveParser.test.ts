@@ -1,17 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import type { VRChatLogLine } from '../model';
+import { VRChatLogLineSchema } from '../model';
 import {
   extractWorldLeaveInfoFromLog,
   inferWorldLeaveEvents,
 } from './worldLeaveParser';
 
-const createLogLine = (value: string): VRChatLogLine => ({
-  id: Math.random().toString(),
-  value,
-  logFileId: 'test',
-  createdAt: new Date(),
-  updatedAt: null,
-});
+const createLogLine = (value: string) => VRChatLogLineSchema.parse(value);
 
 describe('extractWorldLeaveInfoFromLog', () => {
   it('アプリケーション終了ログを正しく検出する', () => {
@@ -126,7 +120,7 @@ describe('inferWorldLeaveEvents', () => {
 
     const result = inferWorldLeaveEvents(logLines, worldJoinIndices);
 
-    expect(result).toHaveLength(0);
+    expect(result).toEqual([]);
   });
 
   it('日時が抽出できないログ行は無視される', () => {

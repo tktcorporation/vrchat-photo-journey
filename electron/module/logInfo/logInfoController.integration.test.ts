@@ -1,17 +1,10 @@
 import * as datefns from 'date-fns';
-import {
-  afterAll,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi,
-} from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { clearAllCaches } from '../../lib/queryCache';
 import * as initRDBClient from '../../lib/sequelize';
 import * as playerJoinLogService from '../VRChatPlayerJoinLogModel/playerJoinLog.service';
 import {
+  VRChatPlayerIdSchema,
   VRChatPlayerNameSchema,
   VRChatWorldIdSchema,
   VRChatWorldInstanceIdSchema,
@@ -157,39 +150,51 @@ describe('getPlayerJoinListInSameWorld 統合テスト', () => {
         joinDate: datefns.subHours(baseDate, 2.5),
         playerName: VRChatPlayerNameSchema.parse('Morning Player 1'),
         logType: 'playerJoin' as const,
-        playerId: 'usr_morning1',
+        playerId: VRChatPlayerIdSchema.parse(
+          'usr_12345678-1234-1234-1234-123456789012',
+        ),
       },
       {
         joinDate: datefns.subHours(baseDate, 2),
         playerName: VRChatPlayerNameSchema.parse('Morning Player 2'),
         logType: 'playerJoin' as const,
-        playerId: 'usr_morning2',
+        playerId: VRChatPlayerIdSchema.parse(
+          'usr_22345678-1234-1234-1234-123456789012',
+        ),
       },
       // Afternoon World のプレイヤー
       {
         joinDate: datefns.subMinutes(baseDate, 45),
         playerName: VRChatPlayerNameSchema.parse('Afternoon Player 1'),
         logType: 'playerJoin' as const,
-        playerId: 'usr_afternoon1',
+        playerId: VRChatPlayerIdSchema.parse(
+          'usr_32345678-1234-1234-1234-123456789012',
+        ),
       },
       {
         joinDate: datefns.subMinutes(baseDate, 30),
         playerName: VRChatPlayerNameSchema.parse('Afternoon Player 2'),
         logType: 'playerJoin' as const,
-        playerId: 'usr_afternoon2',
+        playerId: VRChatPlayerIdSchema.parse(
+          'usr_42345678-1234-1234-1234-123456789012',
+        ),
       },
       {
         joinDate: datefns.subMinutes(baseDate, 15),
         playerName: VRChatPlayerNameSchema.parse('Afternoon Player 3'),
         logType: 'playerJoin' as const,
-        playerId: 'usr_afternoon3',
+        playerId: VRChatPlayerIdSchema.parse(
+          'usr_52345678-1234-1234-1234-123456789012',
+        ),
       },
       // Evening World のプレイヤー
       {
         joinDate: datefns.addHours(baseDate, 2.5),
         playerName: VRChatPlayerNameSchema.parse('Evening Player 1'),
         logType: 'playerJoin' as const,
-        playerId: 'usr_evening1',
+        playerId: VRChatPlayerIdSchema.parse(
+          'usr_62345678-1234-1234-1234-123456789012',
+        ),
       },
     ];
 
@@ -242,25 +247,33 @@ describe('getPlayerJoinListInSameWorld 統合テスト', () => {
         joinDate: datefns.subHours(baseDate, 1.5),
         playerName: VRChatPlayerNameSchema.parse('Current Player 1'),
         logType: 'playerJoin' as const,
-        playerId: 'usr_current1',
+        playerId: VRChatPlayerIdSchema.parse(
+          'usr_72345678-1234-1234-1234-123456789012',
+        ),
       },
       {
         joinDate: datefns.subHours(baseDate, 1),
         playerName: VRChatPlayerNameSchema.parse('Current Player 2'),
         logType: 'playerJoin' as const,
-        playerId: 'usr_current2',
+        playerId: VRChatPlayerIdSchema.parse(
+          'usr_82345678-1234-1234-1234-123456789012',
+        ),
       },
       {
         joinDate: datefns.subMinutes(baseDate, 30),
         playerName: VRChatPlayerNameSchema.parse('Current Player 3'),
         logType: 'playerJoin' as const,
-        playerId: 'usr_current3',
+        playerId: VRChatPlayerIdSchema.parse(
+          'usr_92345678-1234-1234-1234-123456789012',
+        ),
       },
       {
         joinDate: baseDate,
         playerName: VRChatPlayerNameSchema.parse('Current Player 4'),
         logType: 'playerJoin' as const,
-        playerId: 'usr_current4',
+        playerId: VRChatPlayerIdSchema.parse(
+          'usr_a2345678-1234-1234-1234-123456789012',
+        ),
       },
     ];
 

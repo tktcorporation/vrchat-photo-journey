@@ -1,20 +1,11 @@
-import * as nodeFs from 'node:fs';
 import path from 'node:path';
-import * as readline from 'node:readline';
-import * as datefns from 'date-fns';
 import neverthrow from 'neverthrow';
-import { match } from 'ts-pattern';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import * as fs from '../../lib/wrappedFs';
 import type { VRChatLogFilesDirPath } from '../vrchatLogFileDir/model';
 import type { VRChatLogFileError } from './error';
-import {
-  type VRChatLogLine,
-  VRChatLogLineSchema,
-  VRChatLogStoreFilePathSchema,
-} from './model';
+import { VRChatLogLineSchema } from './model';
 import * as service from './service';
-import type { VRChatPlayerLeaveLog } from './service';
 
 // 最小限のモック設定
 vi.mock('../../lib/appPath', () => ({
@@ -33,7 +24,11 @@ vi.mock('../../lib/wrappedFs', () => {
       .fn()
       .mockReturnValue(neverthrow.ok(Buffer.from('test content'))),
     createReadStream: vi.fn().mockReturnValue({
-      on: vi.fn().mockImplementation(function (event, callback) {
+      on: vi.fn().mockImplementation(function (
+        this: unknown,
+        event: string,
+        callback: () => void,
+      ) {
         if (event === 'data') {
           // 何もデータを返さない
         } else if (event === 'end') {
@@ -47,10 +42,7 @@ vi.mock('../../lib/wrappedFs', () => {
   };
 });
 
-vi.mock('node:fs', () => ({
-  statSync: vi.fn().mockReturnValue({ size: 100 }), // 小さいサイズを返す
-}));
-
+// readlineは内部モジュールで使用されるため残す
 vi.mock('node:readline', () => ({
   createInterface: vi.fn().mockReturnValue({
     [Symbol.asyncIterator]: async function* () {
@@ -63,24 +55,16 @@ vi.mock('node:readline', () => ({
 }));
 
 describe('getVRChaLogInfoFromLogPath', () => {
-  interface VRChatWorldJoinLog {
-    logType: 'worldJoin';
-    joinDate: Date;
-    worldId: string;
-    worldInstanceId: string;
-    worldName: string;
-  }
-  interface VRChatPlayerJoinLog {
-    logType: 'playerJoin';
-    joinDate: Date;
-    playerName: string;
-    playerId: string | null;
-  }
   type GetVRChaLogInfoFromLogPath = (
     logFilesDir: VRChatLogFilesDirPath,
   ) => Promise<
     neverthrow.Result<
-      (VRChatWorldJoinLog | VRChatPlayerJoinLog | VRChatPlayerLeaveLog)[],
+      (
+        | service.VRChatWorldJoinLog
+        | service.VRChatPlayerJoinLog
+        | service.VRChatPlayerLeaveLog
+        | service.VRChatWorldLeaveLog
+      )[],
       VRChatLogFileError
     >
   >;
@@ -135,24 +119,24 @@ describe('getVRChaLogInfoFromLogPath', () => {
     }
     expect(result.value.length).toBeGreaterThan(0);
     const playerJoinLogs = result.value.filter(
-      (log): log is VRChatPlayerJoinLog => log.logType === 'playerJoin',
+      (log): log is service.VRChatPlayerJoinLog => log.logType === 'playerJoin',
     );
     expect(playerJoinLogs.length).toBeGreaterThan(0);
 
     // プレイヤーIDを持つログが少なくとも1つ存在することを確認
     const hasPlayerIdLog = playerJoinLogs.filter((log) =>
-      log.playerId?.startsWith('usr_'),
+      log.playerId?.value?.startsWith('usr_'),
     );
     expect(hasPlayerIdLog.length).toBeGreaterThan(0);
 
     for (const log of result.value) {
       if (log.logType === 'playerJoin') {
         expect(log.joinDate).toBeInstanceOf(Date);
-        expect(log.playerName.length).toBeGreaterThan(0);
+        expect(log.playerName.value.length).toBeGreaterThan(0);
         // プレイヤーIDはnullまたはusr_で始まる文字列
-        expect(log.playerId === null || log.playerId?.startsWith('usr_')).toBe(
-          true,
-        );
+        expect(
+          log.playerId === null || log.playerId?.value?.startsWith('usr_'),
+        ).toBe(true);
         continue;
       }
       if (log.logType === 'worldJoin') {
@@ -163,12 +147,12 @@ describe('getVRChaLogInfoFromLogPath', () => {
         // 68738~hidden(usr_e3dd71aa-3469-439a-a90c-5b58738e92b9)~region(jp)
         // 91889~region(jp)
         expect(log.worldInstanceId).toMatch(/^[0-9]+~.+$/);
-        expect(log.worldName.length).toBeGreaterThan(0);
+        expect(log.worldName.value.length).toBeGreaterThan(0);
         continue;
       }
       if (log.logType === 'playerLeave') {
         expect(log.leaveDate).toBeInstanceOf(Date);
-        expect(log.playerName.length).toBeGreaterThan(0);
+        expect(log.playerName.value.length).toBeGreaterThan(0);
         continue;
       }
       throw new Error('Unexpected log type');

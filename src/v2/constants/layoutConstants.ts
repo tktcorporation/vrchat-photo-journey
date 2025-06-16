@@ -4,7 +4,14 @@
  * これらの定数は PhotoGrid, MeasurePhotoGroup, JustifiedLayoutCalculator で
  * 共通して使用され、データ整合性を保つために一箇所で管理される。
  */
-export const LAYOUT_CONSTANTS = {
+interface LayoutConstants {
+  TARGET_ROW_HEIGHT: number;
+  GAP: number;
+  HEADER_HEIGHT: number;
+  SPACING: number;
+  MAX_LAST_ROW_SCALE: number;
+}
+export const LAYOUT_CONSTANTS: LayoutConstants = {
   /** 写真グリッドの目標行高さ (px) */
   TARGET_ROW_HEIGHT: 200,
 
@@ -21,4 +28,4 @@ export const LAYOUT_CONSTANTS = {
   MAX_LAST_ROW_SCALE: 1.5,
 } as const;
 
-export type LayoutConstants = typeof LAYOUT_CONSTANTS;
+export type { LayoutConstants };

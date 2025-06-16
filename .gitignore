@@ -17,12 +17,8 @@ yarn-error.log*
 test-app.log
 
 # dev debug
-debug/photos/**/*.html
-debug/photos/**/VRChat*wrld*
-debug/photos/**/VRChat_*x*.png
-debug/photos/**/*.txt
-debug/logs-store/*.log
-debug/db/*
+debug
+!debug/*.sh
 !debug/db/.gitkeep
 debug/sequelize.sqlite
 app.log

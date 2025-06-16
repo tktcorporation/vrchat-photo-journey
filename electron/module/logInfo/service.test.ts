@@ -2,19 +2,14 @@ import * as nodeFs from 'node:fs';
 import path from 'node:path';
 import * as datefns from 'date-fns';
 import * as neverthrow from 'neverthrow';
-import { v4 as uuidv4 } from 'uuid';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import * as client from '../../lib/sequelize';
 import { getAppUserDataPath } from '../../lib/wrappedApp';
 import type { VRChatPlayerJoinLogModel } from '../VRChatPlayerJoinLogModel/playerJoinInfoLog.model';
 import * as playerJoinLogService from '../VRChatPlayerJoinLogModel/playerJoinLog.service';
 import type { VRChatPlayerLeaveLogModel } from '../VRChatPlayerLeaveLogModel/playerLeaveLog.model';
 import * as playerLeaveLogService from '../VRChatPlayerLeaveLogModel/playerLeaveLog.service';
 import { VRChatLogStoreFilePathSchema } from '../vrchatLog/model';
-import type {
-  VRChatPlayerJoinLog,
-  VRChatWorldJoinLog,
-} from '../vrchatLog/service';
+// import type { VRChatWorldJoinLog } from '../vrchatLog/service';
 import * as vrchatLogService from '../vrchatLog/service';
 import { VRChatPhotoDirPathSchema } from '../vrchatPhoto/valueObjects';
 import * as vrchatPhotoService from '../vrchatPhoto/vrchatPhoto.service';
@@ -115,7 +110,7 @@ describe('loadLogInfoIndexFromVRChatLog', () => {
       expect(result.isOk()).toBe(true);
 
       // getLogStoreFilePathsInRangeが適切な引数で呼ばれたか確認
-      const _oneYearAgo = datefns.subYears(mockDate, 1);
+      // const _oneYearAgo = datefns.subYears(mockDate, 1);
       expect(vrchatLogService.getLogStoreFilePathsInRange).toHaveBeenCalledWith(
         expect.any(Date),
         expect.any(Date),

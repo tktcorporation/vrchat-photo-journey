@@ -7,8 +7,11 @@ import * as playerJoinLogService from './../VRChatPlayerJoinLogModel/playerJoinL
 import * as playerLeaveLogService from './../VRChatPlayerLeaveLogModel/playerLeaveLog.service';
 import * as vrchatLogFileDirService from './../vrchatLogFileDir/service';
 import * as worldJoinLogService from './../vrchatWorldJoinLog/service';
+import { backupService } from './backupService/backupService';
+import { rollbackService } from './backupService/rollbackService';
 import type { LogRecord } from './converters/dbToLogStore';
 import { exportLogStoreFromDB } from './exportService/exportService';
+import { importService } from './importService/importService';
 import * as vrchatLogService from './service';
 
 /**
@@ -299,6 +302,182 @@ export const vrchatLogRouter = () =>
           eventEmitter.emit(
             'toast',
             `エクスポートに失敗しました: ${errorMessage}`,
+          );
+          throw error;
+        }
+      }),
+    createPreImportBackup: procedure.mutation(async () => {
+      logger.info('Creating pre-import backup');
+
+      try {
+        const backupResult = await backupService.createPreImportBackup(
+          getDBLogsFromDatabase,
+        );
+
+        if (backupResult.isErr()) {
+          logger.error({
+            message: `Pre-import backup failed: ${backupResult.error.message}`,
+          });
+          eventEmitter.emit(
+            'toast',
+            `バックアップ作成に失敗しました: ${backupResult.error.message}`,
+          );
+          throw backupResult.error;
+        }
+
+        const backup = backupResult.value;
+
+        logger.info(`Pre-import backup created successfully: ${backup.id}`);
+        eventEmitter.emit(
+          'toast',
+          `バックアップ作成完了: ${backup.exportFolderPath}`,
+        );
+
+        return backup;
+      } catch (error) {
+        logger.error({
+          message: `Pre-import backup failed: ${String(error)}`,
+        });
+        const errorMessage = match(error)
+          .with(P.instanceOf(Error), (err) => err.message)
+          .otherwise((err) => String(err));
+        eventEmitter.emit(
+          'toast',
+          `バックアップ作成に失敗しました: ${errorMessage}`,
+        );
+        throw error;
+      }
+    }),
+    importLogStoreFiles: procedure
+      .input(
+        z.object({
+          filePaths: z.array(z.string()),
+        }),
+      )
+      .mutation(async (opts) => {
+        const { input } = opts;
+        logger.info(
+          `Starting logStore import for ${input.filePaths.length} files`,
+        );
+
+        try {
+          const importResult = await importService.importLogStoreFiles(
+            input.filePaths,
+            getDBLogsFromDatabase,
+          );
+
+          if (importResult.isErr()) {
+            logger.error({
+              message: `LogStore import failed: ${importResult.error.message}`,
+            });
+            eventEmitter.emit(
+              'toast',
+              `インポートに失敗しました: ${importResult.error.message}`,
+            );
+            throw importResult.error;
+          }
+
+          const result = importResult.value;
+
+          logger.info(
+            `LogStore import completed: ${result.importedData.totalLines} lines from ${result.importedData.processedFiles.length} files`,
+          );
+
+          eventEmitter.emit(
+            'toast',
+            `インポート完了: ${result.importedData.totalLines}行、${result.importedData.processedFiles.length}ファイル`,
+          );
+
+          return result;
+        } catch (error) {
+          logger.error({
+            message: `LogStore import failed: ${String(error)}`,
+          });
+          const errorMessage = match(error)
+            .with(P.instanceOf(Error), (err) => err.message)
+            .otherwise((err) => String(err));
+          eventEmitter.emit(
+            'toast',
+            `インポートに失敗しました: ${errorMessage}`,
+          );
+          throw error;
+        }
+      }),
+    getImportBackupHistory: procedure.query(async () => {
+      logger.info('Getting import backup history');
+
+      try {
+        const historyResult = await backupService.getBackupHistory();
+
+        if (historyResult.isErr()) {
+          logger.error({
+            message: `Failed to get backup history: ${historyResult.error.message}`,
+          });
+          throw historyResult.error;
+        }
+
+        return historyResult.value;
+      } catch (error) {
+        logger.error({
+          message: `Failed to get backup history: ${String(error)}`,
+        });
+        throw error;
+      }
+    }),
+    rollbackToBackup: procedure
+      .input(
+        z.object({
+          backupId: z.string(),
+        }),
+      )
+      .mutation(async (opts) => {
+        const { input } = opts;
+        logger.info(`Starting rollback to backup: ${input.backupId}`);
+
+        try {
+          const backupResult = await backupService.getBackup(input.backupId);
+          if (backupResult.isErr()) {
+            logger.error({
+              message: `Failed to get backup: ${backupResult.error.message}`,
+            });
+            eventEmitter.emit(
+              'toast',
+              `バックアップが見つかりません: ${backupResult.error.message}`,
+            );
+            throw backupResult.error;
+          }
+
+          const backup = backupResult.value;
+
+          const rollbackResult = await rollbackService.rollbackToBackup(backup);
+          if (rollbackResult.isErr()) {
+            logger.error({
+              message: `Rollback failed: ${rollbackResult.error.message}`,
+            });
+            eventEmitter.emit(
+              'toast',
+              `ロールバックに失敗しました: ${rollbackResult.error.message}`,
+            );
+            throw rollbackResult.error;
+          }
+
+          logger.info(`Rollback completed successfully: ${input.backupId}`);
+          eventEmitter.emit(
+            'toast',
+            `ロールバック完了: ${backup.exportFolderPath}に復帰しました`,
+          );
+
+          return { success: true, backup };
+        } catch (error) {
+          logger.error({
+            message: `Rollback failed: ${String(error)}`,
+          });
+          const errorMessage = match(error)
+            .with(P.instanceOf(Error), (err) => err.message)
+            .otherwise((err) => String(err));
+          eventEmitter.emit(
+            'toast',
+            `ロールバックに失敗しました: ${errorMessage}`,
           );
           throw error;
         }

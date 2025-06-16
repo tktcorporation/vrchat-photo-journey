@@ -1,4 +1,3 @@
-import type * as fs from 'node:fs'; // Import fs for Stats type
 import * as nodefsPromises from 'node:fs/promises'; // 明示的にインポート
 import * as dateFns from 'date-fns';
 import { glob } from 'glob';
@@ -57,33 +56,33 @@ vi.mock('./../../lib/logger', () => ({
 }));
 
 // Helper to create mock file stats
-const createMockStat = (mtime: Date): fs.Stats => ({
-  mtime,
-  isFile: () => true,
-  isDirectory: () => false,
-  isBlockDevice: () => false,
-  isCharacterDevice: () => false,
-  isSymbolicLink: () => false,
-  isFIFO: () => false,
-  isSocket: () => false,
-  dev: 0,
-  ino: 0,
-  mode: 0,
-  nlink: 0,
-  uid: 0,
-  gid: 0,
-  rdev: 0,
-  size: 1024,
-  blksize: 4096,
-  blocks: 1,
-  atimeMs: mtime.getTime(),
-  mtimeMs: mtime.getTime(),
-  ctimeMs: mtime.getTime(),
-  birthtimeMs: mtime.getTime(),
-  atime: mtime,
-  ctime: mtime,
-  birthtime: mtime,
-});
+// const _createMockStat = (mtime: Date): fs.Stats => ({
+//   mtime,
+//   isFile: () => true,
+//   isDirectory: () => false,
+//   isBlockDevice: () => false,
+//   isCharacterDevice: () => false,
+//   isSymbolicLink: () => false,
+//   isFIFO: () => false,
+//   isSocket: () => false,
+//   dev: 0,
+//   ino: 0,
+//   mode: 0,
+//   nlink: 0,
+//   uid: 0,
+//   gid: 0,
+//   rdev: 0,
+//   size: 1024,
+//   blksize: 4096,
+//   blocks: 1,
+//   atimeMs: mtime.getTime(),
+//   mtimeMs: mtime.getTime(),
+//   ctimeMs: mtime.getTime(),
+//   birthtimeMs: mtime.getTime(),
+//   atime: mtime,
+//   ctime: mtime,
+//   birthtime: mtime,
+// });
 
 describe('createVRChatPhotoPathIndex', () => {
   const mockPhotoDir = VRChatPhotoDirPathSchema.parse('/mock/photos');
@@ -111,14 +110,7 @@ describe('createVRChatPhotoPathIndex', () => {
   ];
   const allFiles = [...mockMainFiles, ...mockExtraFiles];
 
-  const mockMainStats = {
-    [mockMainFiles[0]]: createMockStat(oneHourAgo),
-    [mockMainFiles[1]]: createMockStat(threeHoursAgo),
-  };
-  const mockExtraStats = {
-    [mockExtraFiles[0]]: createMockStat(now),
-  };
-  const _allStats = { ...mockMainStats, ...mockExtraStats };
+  // const _allStats = { ...mockMainStats, ...mockExtraStats };
 
   beforeEach(() => {
     // Mock settings store

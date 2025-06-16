@@ -160,9 +160,20 @@ vi.mock('./../../../../trpc', () => ({
       getSessionInfoBatch: {
         useQuery: (joinDates: Date[]) => {
           // 検索クエリが存在する場合のみプレイヤーデータを返す
-          const data: Record<string, { players: typeof mockPlayers }> = {};
+          const data: Record<
+            string,
+            {
+              worldId: string | null;
+              worldName: string | null;
+              worldInstanceId: string | null;
+              players: typeof mockPlayers;
+            }
+          > = {};
           for (const date of joinDates) {
             data[date.toISOString()] = {
+              worldId: null,
+              worldName: null,
+              worldInstanceId: null,
               players: mockPlayers,
             };
           }

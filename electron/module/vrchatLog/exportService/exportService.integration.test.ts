@@ -14,13 +14,13 @@ import {
 describe('exportService integration', () => {
   // モックDB取得関数（実際のDBに依存しないテスト用）
   const getMockDBLogs: DBLogProvider = async (
-    startDate: Date,
-    endDate: Date,
+    startDate?: Date,
+    endDate?: Date,
   ): Promise<LogRecord[]> => {
     // テスト用のモックデータを返す
     const testDate = new Date('2023-10-08T15:30:45');
 
-    if (testDate >= startDate && testDate <= endDate) {
+    if (startDate && endDate && testDate >= startDate && testDate <= endDate) {
       return [
         {
           type: 'worldJoin',
@@ -118,7 +118,7 @@ describe('exportService integration', () => {
       // 一時ディレクトリを削除
       try {
         await fs.rm(tempDir, { recursive: true });
-      } catch (_error) {
+      } catch {
         // エラーは無視
       }
     }
@@ -159,7 +159,7 @@ describe('exportService integration', () => {
     } finally {
       try {
         await fs.rm(tempDir, { recursive: true });
-      } catch (_error) {
+      } catch {
         // エラーは無視
       }
     }
@@ -184,7 +184,7 @@ describe('exportService integration', () => {
     } finally {
       try {
         await fs.rm(tempDir, { recursive: true });
-      } catch (_error) {
+      } catch {
         // エラーは無視
       }
     }

@@ -2,6 +2,11 @@ import * as neverthrow from 'neverthrow';
 import { P, match } from 'ts-pattern';
 import z from 'zod';
 import { BATCH_CONFIG } from '../../constants/batchConfig';
+import {
+  ERROR_CATEGORIES,
+  ERROR_CODES,
+  UserFacingError,
+} from '../../lib/errors';
 import * as playerJoinLogService from '../VRChatPlayerJoinLogModel/playerJoinLog.service';
 import * as worldJoinLogService from '../vrchatWorldJoinLog/service';
 import { findVRChatWorldJoinLogFromPhotoList } from '../vrchatWorldJoinLogFromPhoto/service';
@@ -107,7 +112,13 @@ const findRecentMergedWorldJoinLog = async (datetime: Date) => {
       message: `Error in findRecentMergedWorldJoinLog for datetime ${datetime.toISOString()}: ${error}`,
       stack: error instanceof Error ? error : new Error(String(error)),
     });
-    throw error;
+    throw UserFacingError.withStructuredInfo({
+      code: ERROR_CODES.DATABASE_ERROR,
+      category: ERROR_CATEGORIES.DATABASE_ERROR,
+      message: `Failed to find recent world join log: ${error}`,
+      userMessage: 'ワールド参加ログの取得中にエラーが発生しました。',
+      cause: error instanceof Error ? error : new Error(String(error)),
+    });
   }
 };
 
@@ -137,7 +148,13 @@ const findNextMergedWorldJoinLog = async (datetime: Date) => {
       message: `Error in findNextMergedWorldJoinLog for datetime ${datetime.toISOString()}: ${error}`,
       stack: error instanceof Error ? error : new Error(String(error)),
     });
-    throw error;
+    throw UserFacingError.withStructuredInfo({
+      code: ERROR_CODES.DATABASE_ERROR,
+      category: ERROR_CATEGORIES.DATABASE_ERROR,
+      message: `Failed to find next world join log: ${error}`,
+      userMessage: 'ワールド参加ログの取得中にエラーが発生しました。',
+      cause: error instanceof Error ? error : new Error(String(error)),
+    });
   }
 };
 
@@ -396,7 +413,13 @@ const getPlayerJoinListInSameWorldCore = async (
     });
 
     // Re-throw the error to be caught by the cache layer
-    throw error;
+    throw UserFacingError.withStructuredInfo({
+      code: ERROR_CODES.DATABASE_ERROR,
+      category: ERROR_CATEGORIES.DATABASE_ERROR,
+      message: `Failed to get player join list: ${error}`,
+      userMessage: 'プレイヤー情報の取得中にエラーが発生しました。',
+      cause: error instanceof Error ? error : new Error(String(error)),
+    });
   }
 };
 
@@ -443,7 +466,13 @@ export const logInfoRouter = () =>
             return value;
           },
           (error) => {
-            throw error;
+            throw UserFacingError.withStructuredInfo({
+              code: ERROR_CODES.DATABASE_ERROR,
+              category: ERROR_CATEGORIES.DATABASE_ERROR,
+              message: `Failed to get recent world join log: ${error}`,
+              userMessage: '写真に関連するワールド情報の取得に失敗しました。',
+              cause: new Error(String(error)),
+            });
           },
         );
       }),
