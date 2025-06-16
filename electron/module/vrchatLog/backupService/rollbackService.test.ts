@@ -12,7 +12,7 @@ import * as backupServiceModule from './backupService';
 import { rollbackService } from './rollbackService';
 
 // モックの設定
-vi.mock('fs', () => ({
+vi.mock('node:fs', () => ({
   promises: {
     access: vi.fn(),
     readdir: vi.fn(),

@@ -9,7 +9,7 @@ import { backupService } from './backupService';
 import type { DBLogProvider, ImportBackupMetadata } from './backupService';
 
 // モックの設定
-vi.mock('fs', () => ({
+vi.mock('node:fs', () => ({
   promises: {
     access: vi.fn(),
     readdir: vi.fn(),

@@ -22,13 +22,15 @@ const getLogLinesFromLogPhotoDirPath = async ({
 }: { vrChatPhotoDirPath: VRChatPhotoDirPath }): Promise<
   VRChatWorldJoinLogFromPhoto[]
 > => {
-  const globPath = path.posix.join(
+  // Convert to POSIX format for glob pattern matching
+  // glob always expects forward slashes regardless of platform
+  const normalizedPath = path.posix.join(
     vrChatPhotoDirPath.value,
     '**',
     'VRChat_*_wrld_*',
   );
   // 正規表現にマッチするファイルを再帰的に取得
-  const logPhotoFilePathList = await glob(globPath);
+  const logPhotoFilePathList = await glob(normalizedPath);
 
   // ファイル名のパターン:
   // VRChat_YYYY-MM-DD_HH-mm-ss.SSS_wrld_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.ext

@@ -20,6 +20,18 @@ import { useToast } from '../../hooks/use-toast';
 // The actual type comes from the tRPC query result
 
 /**
+ * Cross-platform helper to extract filename from path
+ * Handles both forward slashes (Unix/Mac) and backslashes (Windows)
+ */
+const getFilenameFromPath = (filePath: string): string => {
+  // Split by both forward slashes and backslashes
+  const parts = filePath.split(/[/\\]/);
+  const filename = parts[parts.length - 1];
+  // If filename is empty (path ends with separator), try the second to last part
+  return filename || parts[parts.length - 2] || filePath;
+};
+
+/**
  * ログデータのインポート機能を提供するコンポーネント
  * SettingsModal内のデータインポートタブから利用される
  */
@@ -69,9 +81,9 @@ const DataImport = memo(() => {
         setSelectedPaths([dirPath]);
         toast({
           title: 'ディレクトリ選択完了',
-          description: `ディレクトリが選択されました: ${dirPath
-            .split('/')
-            .pop()}`,
+          description: `ディレクトリが選択されました: ${getFilenameFromPath(
+            dirPath,
+          )}`,
         });
       }
     } catch (error) {
@@ -245,7 +257,7 @@ const DataImport = memo(() => {
                     key={pathItem}
                     className="text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 p-2 rounded"
                   >
-                    {pathItem.split('/').pop()}
+                    {getFilenameFromPath(pathItem)}
                     <div className="text-gray-500 truncate">{pathItem}</div>
                   </div>
                 ))}
@@ -368,7 +380,7 @@ const DataImport = memo(() => {
                       <div className="text-blue-600 dark:text-blue-400">
                         インポート元:{' '}
                         {backup.sourceFiles
-                          .map((f) => f.split('/').pop())
+                          .map((f) => getFilenameFromPath(f))
                           .join(', ')}
                       </div>
                     )}

@@ -253,16 +253,18 @@ export class BackupService {
   private extractExportFolderPath(firstExportedFile: string): string {
     // '/path/to/backups/vrchat-albums-export_2023-12-01_14-30-45/2023-11/logStore-2023-11.txt'
     // から 'vrchat-albums-export_2023-12-01_14-30-45' を抽出
-    const parts = firstExportedFile.split(path.sep);
-    const exportFolderIndex = parts.findIndex((part) =>
-      part.startsWith('vrchat-albums-export_'),
-    );
+    const backupBasePath = this.getBackupBasePath();
+    const relativePath = path.relative(backupBasePath, firstExportedFile);
 
-    if (exportFolderIndex === -1) {
+    // relativePath は 'vrchat-albums-export_.../...' のようになる
+    // プラットフォーム間で互換性のあるようにセパレータで分割
+    const [exportFolderName] = relativePath.split(/[/\\]/);
+
+    if (!exportFolderName?.startsWith('vrchat-albums-export_')) {
       throw new Error(`Invalid export file path: ${firstExportedFile}`);
     }
 
-    return parts[exportFolderIndex];
+    return exportFolderName;
   }
 
   /**
