@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import {
   OptionalVRChatPlayerIdSchema,
-  VRChatPlayerId,
   VRChatPlayerIdSchema,
-  VRChatPlayerName,
   VRChatPlayerNameSchema,
-  VRChatWorldId,
   VRChatWorldIdSchema,
-  VRChatWorldInstanceId,
   VRChatWorldInstanceIdSchema,
-  VRChatWorldName,
   VRChatWorldNameSchema,
+  isValidVRChatPlayerId,
+  isValidVRChatPlayerName,
+  isValidVRChatWorldId,
+  isValidVRChatWorldInstanceId,
+  isValidVRChatWorldName,
 } from './model';
 
 describe('VRChatログ関連のvalueObjects', () => {
@@ -31,9 +31,9 @@ describe('VRChatログ関連のvalueObjects', () => {
 
     it('isValid静的メソッドが正しく動作する', () => {
       expect(
-        VRChatPlayerId.isValid('usr_12345678-1234-1234-1234-123456789abc'),
+        isValidVRChatPlayerId('usr_12345678-1234-1234-1234-123456789abc'),
       ).toBe(true);
-      expect(VRChatPlayerId.isValid('invalid-id')).toBe(false);
+      expect(isValidVRChatPlayerId('invalid-id')).toBe(false);
     });
   });
 
@@ -54,9 +54,9 @@ describe('VRChatログ関連のvalueObjects', () => {
 
     it('isValid静的メソッドが正しく動作する', () => {
       expect(
-        VRChatWorldId.isValid('wrld_12345678-1234-1234-1234-123456789abc'),
+        isValidVRChatWorldId('wrld_12345678-1234-1234-1234-123456789abc'),
       ).toBe(true);
-      expect(VRChatWorldId.isValid('invalid-id')).toBe(false);
+      expect(isValidVRChatWorldId('invalid-id')).toBe(false);
     });
   });
 
@@ -86,11 +86,11 @@ describe('VRChatログ関連のvalueObjects', () => {
     });
 
     it('isValid静的メソッドが正しく動作する', () => {
-      expect(VRChatWorldInstanceId.isValid('12345')).toBe(true);
-      expect(VRChatWorldInstanceId.isValid('86676~region(jp)')).toBe(true);
-      expect(VRChatWorldInstanceId.isValid('83c39dd3c3~region(us)')).toBe(true);
-      expect(VRChatWorldInstanceId.isValid('abc123')).toBe(true);
-      expect(VRChatWorldInstanceId.isValid('invalid-id')).toBe(false);
+      expect(isValidVRChatWorldInstanceId('12345')).toBe(true);
+      expect(isValidVRChatWorldInstanceId('86676~region(jp)')).toBe(true);
+      expect(isValidVRChatWorldInstanceId('83c39dd3c3~region(us)')).toBe(true);
+      expect(isValidVRChatWorldInstanceId('abc123')).toBe(true);
+      expect(isValidVRChatWorldInstanceId('invalid-id')).toBe(false);
     });
   });
 
@@ -113,10 +113,10 @@ describe('VRChatログ関連のvalueObjects', () => {
     });
 
     it('isValid静的メソッドが正しく動作する', () => {
-      expect(VRChatPlayerName.isValid('TestPlayer')).toBe(true);
-      expect(VRChatPlayerName.isValid('Test Player With Spaces')).toBe(true);
-      expect(VRChatPlayerName.isValid('')).toBe(false);
-      expect(VRChatPlayerName.isValid('   ')).toBe(false);
+      expect(isValidVRChatPlayerName('TestPlayer')).toBe(true);
+      expect(isValidVRChatPlayerName('Test Player With Spaces')).toBe(true);
+      expect(isValidVRChatPlayerName('')).toBe(false);
+      expect(isValidVRChatPlayerName('   ')).toBe(false);
     });
   });
 
@@ -133,9 +133,9 @@ describe('VRChatログ関連のvalueObjects', () => {
     });
 
     it('isValid静的メソッドが正しく動作する', () => {
-      expect(VRChatWorldName.isValid('Test World')).toBe(true);
-      expect(VRChatWorldName.isValid('')).toBe(false);
-      expect(VRChatWorldName.isValid('   ')).toBe(false);
+      expect(isValidVRChatWorldName('Test World')).toBe(true);
+      expect(isValidVRChatWorldName('')).toBe(false);
+      expect(isValidVRChatWorldName('   ')).toBe(false);
     });
   });
 

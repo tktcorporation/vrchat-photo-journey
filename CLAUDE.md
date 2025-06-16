@@ -187,6 +187,25 @@ Example: `logInfoController.test.ts` (mocked) vs `logInfoController.integration.
 - **原因**: モックされた関数が `undefined` を返す（パスが間違っているため）
 - **解決**: import パスと vi.mock() パスの両方を修正
 
+### 🚨 ValueObject Pattern (型安全・カプセル化必須)
+- **Type-Only Export Pattern**: ValueObjectクラスは型のみエクスポート
+  ```typescript
+  class MyValueObject extends BaseValueObject<'MyValueObject', string> {}
+  export type { MyValueObject };  // ✅ 型のみエクスポート
+  export { MyValueObject };        // ❌ クラスエクスポート禁止
+  ```
+- **Instance Creation**: Zodスキーマ経由でのみインスタンス化
+  ```typescript
+  const obj = MyValueObjectSchema.parse(value);  // ✅
+  const obj = new MyValueObject(value);          // ❌ 直接new禁止
+  ```
+- **Validation Functions**: 静的メソッドは独立関数として定義
+  ```typescript
+  export const isValidMyValueObject = (value: string): boolean => {...}
+  ```
+- **Lint Enforcement**: `yarn lint:valueobjects` で自動検証
+- **Benefits**: カプセル化強化、不正なインスタンス生成防止
+
 ## CLAUDE.md 更新ルール
 
 以下の場合に更新:
