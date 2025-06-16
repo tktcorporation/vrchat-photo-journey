@@ -6,6 +6,50 @@ All notable changes to this project will be documented in this file.
 
 ### 🚀 Features
 
+- Add player name search (#415)
+- Add frequently played players to search overlay (#416)
+- DB→logStore逆変換機能とエクスポート機能の実装 (#440) (#441)
+- エクスポート先に日時付きサブフォルダを作成 (#442)
+- Improve export functionality with default full-period mode and timezone handling (#446)
+- バックアップエクスポート、インポート機能の実装 (#449)
+
+### 🐛 Bug Fixes
+
+- Add missing SENTRY_RELEASE environment variable in GitHub Actions (#418)
+- Resolve initial startup database table error (#420)
+- Show world headers even when no photos exist in sessions (#423) (#426)
+- Implement comprehensive timeout prevention for getPlayerListInSameWorld queries (#431)
+- Improve timeout error stack traces and debugging for cache operations (#433)
+- 検索オーバーレイのUX改善 (#434)
+- Optimize session batch processing with PhotoAsLog integration and timeout improvements (#435)
+- Improve cache key strategy for session player lists to prevent data integrity issues (#436)
+- Remove session duration limits and optimize query performance (#437)
+- AppendLoglinesToFile now properly appends instead of overwriting (#439)
+- Resolve session boundary issues in player grouping for search (#452)
+
+### 🚜 Refactor
+
+- Simplify and reorganize CLAUDE.md for better readability (#419)
+- Optimize DBQueue and add efficient session query batching (#432)
+- Improve error handling with structured error info and user-friendly toast notifications (#448)
+
+### 📚 Documentation
+
+- Update README with current features and improved user guide (#451)
+
+### 🧪 Testing
+
+- ValueObjectの型安全性向上とテスト修正 (#450)
+
+### ⚙️ Miscellaneous Tasks
+
+- Fix Sentry release config for sourcemaps (#413)
+- Optimize LocationGroupHeader queries to prevent timeout errors (#427) (#428)
+
+## [0.14.0] - 2025-06-10
+
+### 🚀 Features
+
 - Remember window size and position (#376)
 - Local 開発で Sentry が dev で送られるように (#384)
 - 原因不明エラーのトレースを調査しやすくする (#387)
