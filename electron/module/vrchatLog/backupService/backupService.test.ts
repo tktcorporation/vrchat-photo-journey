@@ -1,5 +1,6 @@
 import { promises as fs } from 'node:fs';
 import type { Dirent } from 'node:fs';
+import * as path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { LogRecord } from '../converters/dbToLogStore';
 import * as exportServiceModule from '../exportService/exportService';
@@ -62,7 +63,12 @@ describe('backupService', () => {
       const mockExportResult: ExportResult = {
         totalLogLines: 100,
         exportedFiles: [
-          '/mocked/userData/backups/vrchat-albums-export_2023-12-01_14-30-45/2023-11/logStore-2023-11.txt',
+          path.join(
+            '/mocked/userData/backups',
+            'vrchat-albums-export_2023-12-01_14-30-45',
+            '2023-11',
+            'logStore-2023-11.txt',
+          ),
         ],
         exportStartTime: mockTimestamp,
         exportEndTime: mockTimestamp,
@@ -92,14 +98,18 @@ describe('backupService', () => {
       // エクスポート関数が正しいパラメータで呼ばれたことを確認
       expect(exportServiceModule.exportLogStoreFromDB).toHaveBeenCalledWith(
         {
-          outputBasePath: '/mocked/userData/backups',
+          outputBasePath: path.join('/mocked/userData', 'backups'),
         },
         mockGetDBLogs,
       );
 
       // メタデータファイルが保存されたことを確認
       expect(fs.writeFile).toHaveBeenCalledWith(
-        '/mocked/userData/backups/vrchat-albums-export_2023-12-01_14-30-45/backup-metadata.json',
+        path.join(
+          '/mocked/userData/backups',
+          'vrchat-albums-export_2023-12-01_14-30-45',
+          'backup-metadata.json',
+        ),
         expect.any(String),
       );
     });
@@ -138,7 +148,11 @@ describe('backupService', () => {
 
       expect(result.isOk()).toBe(true);
       expect(fs.writeFile).toHaveBeenCalledWith(
-        '/mocked/userData/backups/vrchat-albums-export_2023-12-01_14-30-45/backup-metadata.json',
+        path.join(
+          '/mocked/userData/backups',
+          'vrchat-albums-export_2023-12-01_14-30-45',
+          'backup-metadata.json',
+        ),
         JSON.stringify(metadata, null, 2),
       );
     });

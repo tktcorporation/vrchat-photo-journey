@@ -1,5 +1,6 @@
 import { promises as fs } from 'node:fs';
 import type { Dirent } from 'node:fs';
+import * as path from 'node:path';
 import * as neverthrow from 'neverthrow';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as dbQueueModule from '../../../lib/dbQueue';
@@ -23,13 +24,13 @@ vi.mock('fs', () => ({
 
 vi.mock('./backupService', () => ({
   backupService: {
-    getBackupBasePath: vi.fn(() => '/mocked/userData/backups'),
+    getBackupBasePath: vi.fn(() => path.join('/mocked', 'userData', 'backups')),
     updateBackupMetadata: vi.fn(),
   },
 }));
 
 vi.mock('../fileHandlers/logStorageManager', () => ({
-  getLogStoreDir: vi.fn(() => '/mocked/logStore'),
+  getLogStoreDir: vi.fn(() => path.join('/mocked', 'logStore')),
   initLogStoreDir: vi.fn(),
 }));
 
@@ -68,7 +69,12 @@ describe('rollbackService', () => {
     importTimestamp: new Date('2023-12-01T14:35:00'),
     totalLogLines: 100,
     exportedFiles: [
-      '/mocked/userData/backups/vrchat-albums-export_2023-12-01_14-30-45/2023-11/logStore-2023-11.txt',
+      path.join(
+        '/mocked/userData/backups',
+        'vrchat-albums-export_2023-12-01_14-30-45',
+        '2023-11',
+        'logStore-2023-11.txt',
+      ),
     ],
   };
 
@@ -130,15 +136,19 @@ describe('rollbackService', () => {
       expect(result.isOk()).toBe(true);
 
       // logStoreがクリアされたことを確認
-      expect(fs.rm).toHaveBeenCalledWith('/mocked/logStore', {
+      expect(fs.rm).toHaveBeenCalledWith(path.join('/mocked', 'logStore'), {
         recursive: true,
         force: true,
       });
 
       // logStoreが復帰されたことを確認
       expect(fs.cp).toHaveBeenCalledWith(
-        '/mocked/userData/backups/vrchat-albums-export_2023-12-01_14-30-45/2023-11',
-        '/mocked/logStore/2023-11',
+        path.join(
+          '/mocked/userData/backups',
+          'vrchat-albums-export_2023-12-01_14-30-45',
+          '2023-11',
+        ),
+        path.join('/mocked/logStore', '2023-11'),
         { recursive: true, force: true },
       );
 
@@ -320,7 +330,7 @@ describe('rollbackService', () => {
     // logStoreディレクトリのクリア処理のテスト
     it('logStoreディレクトリが存在しない場合もエラーにならない', async () => {
       vi.mocked(fs.access).mockImplementation(async (p) => {
-        if (p === '/mocked/logStore') {
+        if (p === path.join('/mocked', 'logStore')) {
           throw new Error('ENOENT');
         }
         return undefined;
