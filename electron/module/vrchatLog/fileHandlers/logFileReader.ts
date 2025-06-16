@@ -1,6 +1,7 @@
 import * as nodeFs from 'node:fs';
 import readline from 'node:readline';
 import * as neverthrow from 'neverthrow';
+import { match } from 'ts-pattern';
 import * as fs from '../../../lib/wrappedFs';
 import type { VRChatLogFilePath } from '../../vrchatLogFileDir/model';
 import type { VRChatLogFileError } from '../error';
@@ -22,34 +23,34 @@ export const getLogLinesFromLogFile = async (props: {
   includesList: string[];
 }): Promise<neverthrow.Result<string[], VRChatLogFileError>> => {
   // ファイルが存在するか確認
-  if (!nodeFs.existsSync(props.logFilePath.value)) {
-    // ファイルが存在しない場合は空の配列を返す
-    return neverthrow.ok([]);
-  }
-
-  const stream = fs.createReadStream(props.logFilePath.value);
-  const reader = readline.createInterface({
-    input: stream,
-    crlfDelay: Number.POSITIVE_INFINITY,
-  });
-
-  const lines: string[] = [];
-  reader.on('line', (line) => {
-    // includesList の配列の中のどれかと一致したら追加
-    if (props.includesList.some((include) => line.includes(include))) {
-      lines.push(line);
-    }
-  });
-
-  await Promise.all([
-    new Promise((resolve) => {
-      stream.on('close', () => {
-        resolve(null);
+  return match(nodeFs.existsSync(props.logFilePath.value))
+    .with(false, () => neverthrow.ok<string[], VRChatLogFileError>([]))
+    .with(true, async () => {
+      const stream = fs.createReadStream(props.logFilePath.value);
+      const reader = readline.createInterface({
+        input: stream,
+        crlfDelay: Number.POSITIVE_INFINITY,
       });
-    }),
-  ]);
 
-  return neverthrow.ok(lines);
+      const lines: string[] = [];
+      reader.on('line', (line) => {
+        // includesList の配列の中のどれかと一致したら追加
+        if (props.includesList.some((include) => line.includes(include))) {
+          lines.push(line);
+        }
+      });
+
+      await Promise.all([
+        new Promise((resolve) => {
+          stream.on('close', () => {
+            resolve(null);
+          });
+        }),
+      ]);
+
+      return neverthrow.ok(lines);
+    })
+    .exhaustive();
 };
 
 /**
@@ -81,9 +82,10 @@ export const getLogLinesByLogFilePathList = async (props: {
     }),
   );
 
-  if (errors.length > 0) {
-    return neverthrow.err(errors[0]);
-  }
-
-  return neverthrow.ok(logLineList);
+  return match(errors.length > 0)
+    .with(true, () =>
+      neverthrow.err<VRChatLogLine[], VRChatLogFileError>(errors[0]),
+    )
+    .with(false, () => neverthrow.ok(logLineList))
+    .exhaustive();
 };
