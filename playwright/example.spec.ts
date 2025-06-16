@@ -54,7 +54,7 @@ test('各画面でスクショ', async () => {
 
   // 4s以内に処理が終わらなければエラー
   const timeoutDecreaseTwo = TIMEOUT - 2000;
-  await Promise.race([
+  Promise.race([
     new Promise((resolve) => setTimeout(resolve, timeoutDecreaseTwo)),
     new Promise((_resolve, reject) => {
       setTimeout(async () => {
