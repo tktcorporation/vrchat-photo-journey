@@ -32,16 +32,37 @@ export const convertLogLinesToWorldAndPlayerJoinLogInfos = (
   | VRChatPlayerJoinLog
   | VRChatPlayerLeaveLog
 )[] => {
+  // TODO: アプリイベントの処理は今後実装
+  // | VRChatAppStartLog
+  // | VRChatAppExitLog
   const logInfos: (
     | VRChatWorldJoinLog
     | VRChatWorldLeaveLog
     | VRChatPlayerJoinLog
     | VRChatPlayerLeaveLog
-  )[] = [];
+  )[] =
+    // TODO: アプリイベントの処理は今後実装
+    // | VRChatAppStartLog
+    // | VRChatAppExitLog
+    [];
 
   const worldJoinIndices: number[] = [];
 
   for (const [index, l] of logLines.entries()) {
+    // TODO: アプリイベントの処理は今後実装
+    // // アプリ開始ログ (VRC Analytics Initialized)
+    // const appStartInfo = extractAppStartInfoFromLog(l);
+    // if (appStartInfo) {
+    //   logInfos.push(appStartInfo);
+    // }
+
+    // アプリ終了ログ (VRCApplication: HandleApplicationQuit)
+    // このパターンはworldLeaveParserで処理される
+    // const appExitInfo = extractAppExitInfoFromLog(l);
+    // if (appExitInfo) {
+    //   logInfos.push(appExitInfo);
+    // }
+
     // ワールド参加ログ
     if (l.value.includes('Joining wrld_')) {
       const info = extractWorldJoinInfoFromLogs(logLines, index);
@@ -102,4 +123,10 @@ export {
   extractPlayerJoinInfoFromLog,
   extractPlayerLeaveInfoFromLog,
 } from './playerActionParser';
+// TODO: アプリイベントのパーサーは今後実装
+// export {
+//   extractAppStartInfoFromLog,
+//   extractAppExitInfoFromLog,
+//   extractAppVersionInfoFromLog,
+// } from './appEventParser';
 export { filterLogLinesByDate } from './baseParser';

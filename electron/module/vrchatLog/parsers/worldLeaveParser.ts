@@ -1,3 +1,4 @@
+import { match } from 'ts-pattern';
 import type { VRChatLogLine } from '../model';
 import { parseLogDateTime } from './baseParser';
 
@@ -23,12 +24,7 @@ export const extractWorldLeaveInfoFromLog = (
   logEntry: VRChatLogLine,
 ): VRChatWorldLeaveLog | null => {
   // アプリケーション終了パターン
-  const appQuitPatterns = [
-    /OnApplicationPause/,
-    /OnApplicationQuit/,
-    /Application terminating/,
-    /Shutting down/,
-  ];
+  const appQuitPatterns = [/VRCApplication: HandleApplicationQuit/];
 
   // 接続切断パターン
   const disconnectPatterns = [
@@ -39,7 +35,8 @@ export const extractWorldLeaveInfoFromLog = (
   ];
 
   // 手動退出パターン（推測）
-  const userActionPatterns = [/Left Room/, /Leaving room/, /User left/];
+  // TODO: 実際のVRChatログパターンを調査して追加
+  const userActionPatterns: RegExp[] = [];
 
   // 日時を抽出
   const dateTimeRegex = /(\d{4}\.\d{2}\.\d{2}) (\d{2}:\d{2}:\d{2})/;
@@ -54,37 +51,23 @@ export const extractWorldLeaveInfoFromLog = (
   const leaveDate = parseLogDateTime(date, time);
 
   // パターンマッチング
-  for (const pattern of appQuitPatterns) {
-    if (pattern.test(logEntry.value)) {
-      return {
-        logType: 'worldLeave',
-        leaveDate,
-        reason: 'applicationQuit',
-      };
-    }
-  }
+  const patterns = [
+    { patterns: appQuitPatterns, reason: 'applicationQuit' as const },
+    { patterns: disconnectPatterns, reason: 'disconnect' as const },
+    { patterns: userActionPatterns, reason: 'userAction' as const },
+  ];
 
-  for (const pattern of disconnectPatterns) {
-    if (pattern.test(logEntry.value)) {
-      return {
-        logType: 'worldLeave',
-        leaveDate,
-        reason: 'disconnect',
-      };
-    }
-  }
+  const matchedPattern = patterns.find(({ patterns: patternList }) =>
+    patternList.some((pattern) => pattern.test(logEntry.value)),
+  );
 
-  for (const pattern of userActionPatterns) {
-    if (pattern.test(logEntry.value)) {
-      return {
-        logType: 'worldLeave',
-        leaveDate,
-        reason: 'userAction',
-      };
-    }
-  }
-
-  return null;
+  return match(matchedPattern)
+    .with(undefined, () => null)
+    .otherwise((matched) => ({
+      logType: 'worldLeave' as const,
+      leaveDate,
+      reason: matched.reason,
+    }));
 };
 
 /**
@@ -107,18 +90,18 @@ export const inferWorldLeaveEvents = (
   for (let i = 0; i < worldJoinIndices.length; i++) {
     const nextJoinIndex = worldJoinIndices[i + 1];
 
-    let leaveIndex: number;
-    let reason: VRChatWorldLeaveLog['reason'] = 'unknown';
-
-    if (nextJoinIndex !== undefined) {
-      // 次のワールド参加がある場合、その直前で退出と判定
-      leaveIndex = nextJoinIndex - 1;
-      reason = 'userAction';
-    } else {
-      // 最後のワールド参加の場合、ログファイルの最後で退出と判定
-      leaveIndex = logLines.length - 1;
-      reason = 'applicationQuit'; // ログファイルが終了しているため
-    }
+    const { leaveIndex, reason } = match(nextJoinIndex !== undefined)
+      .with(false, () => ({
+        // 最後のワールド参加の場合、ログファイルの最後で退出と判定
+        leaveIndex: logLines.length - 1,
+        reason: 'applicationQuit' as const, // ログファイルが終了しているため
+      }))
+      .with(true, () => ({
+        // 次のワールド参加がある場合、その直前で退出と判定
+        leaveIndex: nextJoinIndex - 1,
+        reason: 'userAction' as const,
+      }))
+      .exhaustive();
 
     // 退出時刻を推定
     const leaveLogEntry = logLines[leaveIndex];

@@ -42,9 +42,21 @@ export interface ExportOptions {
   outputPath?: string;
 }
 
+// TODO: アプリイベントの型は今後実装
+// export interface AppEventLogRecord {
+//   id: string;
+//   eventType: 'APP_START' | 'APP_EXIT' | 'APP_VERSION';
+//   eventDateTime: Date;
+//   eventData?: string;
+//   createdAt: Date;
+//   updatedAt: Date;
+// }
+
 export interface LogRecord {
-  type: 'worldJoin' | 'playerJoin' | 'playerLeave';
+  type: 'worldJoin' | 'playerJoin' | 'playerLeave'; // TODO: 'appEvent' は今後実装
   record: DBLogRecord | PlayerJoinLogRecord | PlayerLeaveLogRecord;
+  // TODO: | AppEventLogRecord;
+  // NOTE: worldLeaveはDBに保存されないため、LogRecordには含まれない
 }
 
 /**
@@ -74,6 +86,54 @@ export const convertWorldJoinLogToLogLines = (
 
   return [joiningLine, roomLine];
 };
+
+// TODO: アプリイベントログの変換は今後実装
+// /**
+//  * アプリイベントログをlogStore形式のログ行に変換
+//  * @param appEventLog アプリイベントログのDBレコード
+//  * @returns logStore形式のログ行
+//  */
+// export const convertAppEventLogToLogLine = (
+//   appEventLog: AppEventLogRecord,
+// ): VRChatLogLine => {
+//   const dateTimeStr = formatLogDateTime(appEventLog.eventDateTime);
+//
+//   let logLine: string;
+//
+//   switch (appEventLog.eventType) {
+//     case 'APP_START':
+//       logLine = `${dateTimeStr} Log        -  VRC Analytics Initialized`;
+//       break;
+//     case 'APP_EXIT': {
+//       // Use eventData to determine specific exit type if available
+//       const exitType = appEventLog.eventData || 'OnApplicationQuit';
+//       if (exitType === 'handleQuit') {
+//         logLine = `${dateTimeStr} Log        -  VRCApplication: HandleApplicationQuit`;
+//       } else if (exitType === 'pause') {
+//         logLine = `${dateTimeStr} Log        -  OnApplicationPause`;
+//       } else if (exitType === 'quit') {
+//         logLine = `${dateTimeStr} Log        -  OnApplicationQuit`;
+//       } else if (exitType === 'terminating') {
+//         logLine = `${dateTimeStr} Log        -  Application terminating`;
+//       } else if (exitType === 'shutdown') {
+//         logLine = `${dateTimeStr} Log        -  Shutting down`;
+//       } else {
+//         logLine = `${dateTimeStr} Log        -  OnApplicationQuit`;
+//       }
+//       break;
+//     }
+//     case 'APP_VERSION': {
+//       const version = appEventLog.eventData || 'Unknown';
+//       logLine = `${dateTimeStr} Log        -  Application.version: ${version}`;
+//       break;
+//     }
+//     default:
+//       // Should never happen with TypeScript, but handle gracefully
+//       logLine = `${dateTimeStr} Log        -  Unknown app event`;
+//   }
+//
+//   return VRChatLogLineSchema.parse(logLine);
+// };
 
 /**
  * プレイヤー参加ログをlogStore形式のログ行に変換
@@ -119,20 +179,27 @@ export const convertPlayerLeaveLogToLogLine = (
  * 各ログレコードから対応する日時を取得
  */
 const getLogDateTime = (logRecord: LogRecord): Date => {
-  return match(logRecord)
-    .with(
-      { type: 'worldJoin' },
-      (record) => (record.record as DBLogRecord).joinDateTime,
-    )
-    .with(
-      { type: 'playerJoin' },
-      (record) => (record.record as PlayerJoinLogRecord).joinDateTime,
-    )
-    .with(
-      { type: 'playerLeave' },
-      (record) => (record.record as PlayerLeaveLogRecord).leaveDateTime,
-    )
-    .exhaustive();
+  return (
+    match(logRecord)
+      .with(
+        { type: 'worldJoin' },
+        (record) => (record.record as DBLogRecord).joinDateTime,
+      )
+      .with(
+        { type: 'playerJoin' },
+        (record) => (record.record as PlayerJoinLogRecord).joinDateTime,
+      )
+      .with(
+        { type: 'playerLeave' },
+        (record) => (record.record as PlayerLeaveLogRecord).leaveDateTime,
+      )
+      // TODO: アプリイベントの処理は今後実装
+      // .with(
+      //   { type: 'appEvent' },
+      //   (record) => (record.record as AppEventLogRecord).eventDateTime,
+      // )
+      .exhaustive()
+  );
 };
 
 /**
@@ -172,6 +239,13 @@ export const exportLogsToLogStore = (
         );
         return [playerLeaveLine];
       })
+      // TODO: アプリイベントの処理は今後実装
+      // .with({ type: 'appEvent' }, (record) => {
+      //   const appEventLine = convertAppEventLogToLogLine(
+      //     record.record as AppEventLogRecord,
+      //   );
+      //   return [appEventLine];
+      // })
       .exhaustive();
 
     logLines.push(...newLines);
