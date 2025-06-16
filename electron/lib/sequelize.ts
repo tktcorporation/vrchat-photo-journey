@@ -36,6 +36,8 @@ const _newRDBClient = (props: { db_url: string }) => {
       VRChatPlayerJoinLogModel,
       VRChatPlayerLeaveLogModel,
       VRChatPhotoPathModel,
+      // TODO: アプリイベントモデルは今後実装
+      // VRChatAppEventModel,
       Migrations,
     ],
   };

@@ -105,6 +105,11 @@ const groupLogRecordsByMonth = (
         { type: 'playerLeave' },
         (record) => (record.record as { leaveDateTime: Date }).leaveDateTime,
       )
+      // TODO: アプリイベントの処理は今後実装
+      // .with(
+      //   { type: 'appEvent' },
+      //   (record) => (record.record as { eventDateTime: Date }).eventDateTime,
+      // )
       .exhaustive();
 
     const yearMonth = datefns.format(recordDate, 'yyyy-MM');

@@ -1,5 +1,6 @@
 import { type Result, err, ok } from 'neverthrow';
 import { ofetch } from 'ofetch';
+import { P, match } from 'ts-pattern';
 import type { QueryObject } from 'ufo';
 
 // 独自エラークラスの定義
@@ -70,10 +71,11 @@ const fetchWithResult = async <T = unknown>(
     });
     return ok(response);
   } catch (error: unknown) {
-    if (error instanceof FetchError) {
-      return err(error);
-    }
-    throw error; // FetchError でない場合はそのまま throw する
+    return match(error)
+      .with(P.instanceOf(FetchError), (e) => err(e))
+      .otherwise((e) => {
+        throw e; // FetchError でない場合はそのまま throw する
+      });
   }
 };
 
