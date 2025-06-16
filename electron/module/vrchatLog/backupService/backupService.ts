@@ -4,6 +4,7 @@ import * as datefns from 'date-fns';
 import * as neverthrow from 'neverthrow';
 import { P, match } from 'ts-pattern';
 import { logger } from '../../../lib/logger';
+import { BackupPathObject, ExportPathObject } from '../../../lib/pathObject';
 import { getAppUserDataPath } from '../../../lib/wrappedApp';
 import type { LogRecord } from '../converters/dbToLogStore';
 import { exportLogStoreFromDB } from '../exportService/exportService';
@@ -72,9 +73,8 @@ export class BackupService {
 
       // 2. バックアップメタデータ作成
       const backupId = this.generateBackupId(backupTimestamp);
-      const exportFolderPath = this.extractExportFolderPath(
-        exportResult.exportedFiles[0],
-      );
+      const exportPath = new ExportPathObject(exportResult.exportedFiles[0]);
+      const exportFolderPath = this.extractExportFolderPath(exportPath);
 
       const metadata: ImportBackupMetadata = {
         id: backupId,
@@ -250,18 +250,18 @@ export class BackupService {
   /**
    * エクスポートファイルパスからエクスポートフォルダ名を抽出
    */
-  private extractExportFolderPath(firstExportedFile: string): string {
-    // '/path/to/backups/vrchat-albums-export_2023-12-01_14-30-45/2023-11/logStore-2023-11.txt'
-    // から 'vrchat-albums-export_2023-12-01_14-30-45' を抽出
-    const backupBasePath = this.getBackupBasePath();
-    const relativePath = path.relative(backupBasePath, firstExportedFile);
+  private extractExportFolderPath(exportPath: ExportPathObject): string {
+    // パストラバーサルチェック
+    const backupBasePath = new BackupPathObject(this.getBackupBasePath());
+    if (!exportPath.isWithin(backupBasePath)) {
+      throw new Error(
+        `Export file path is outside backup directory: ${exportPath.value}`,
+      );
+    }
 
-    // relativePath は 'vrchat-albums-export_.../...' のようになる
-    // プラットフォーム間で互換性のあるようにセパレータで分割
-    const [exportFolderName] = relativePath.split(/[/\\]/);
-
-    if (!exportFolderName?.startsWith('vrchat-albums-export_')) {
-      throw new Error(`Invalid export file path: ${firstExportedFile}`);
+    const exportFolderName = exportPath.extractExportFolderName();
+    if (!exportFolderName) {
+      throw new Error(`Invalid export file path: ${exportPath.value}`);
     }
 
     return exportFolderName;
