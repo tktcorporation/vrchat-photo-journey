@@ -22,6 +22,7 @@ import {
   getPlayerNameSuggestions,
   getWorldNameSuggestions,
   loadLogInfoIndexFromVRChatLog,
+  searchSessionsByPlayerName,
 } from './service';
 
 /**
@@ -536,6 +537,42 @@ export const logInfoRouter = () =>
           input.limit,
         );
         return suggestions;
+      }),
+
+    /**
+     * プレイヤー名で検索して、そのプレイヤーがいたセッションの参加日時を返す
+     * 効率的なサーバーサイド検索により、該当するセッションのみを返します。
+     * @param playerName - 検索するプレイヤー名（部分一致）
+     * @returns 該当するセッションの参加日時の配列
+     */
+    searchSessionsByPlayerName: procedure
+      .input(
+        z.object({
+          playerName: z.string().min(1),
+        }),
+      )
+      .query(async ({ input }) => {
+        try {
+          const sessionDates = await searchSessionsByPlayerName(
+            input.playerName,
+          );
+          logger.debug(
+            `searchSessionsByPlayerName: Found ${sessionDates.length} sessions for player "${input.playerName}"`,
+          );
+          return sessionDates;
+        } catch (error) {
+          logger.error({
+            message: `Failed to search sessions by player name: ${error}`,
+            stack: error instanceof Error ? error : new Error(String(error)),
+          });
+          throw UserFacingError.withStructuredInfo({
+            code: ERROR_CODES.DATABASE_ERROR,
+            category: ERROR_CATEGORIES.DATABASE_ERROR,
+            message: `Failed to search sessions by player name: ${error}`,
+            userMessage: 'プレイヤー検索中にエラーが発生しました。',
+            cause: error instanceof Error ? error : new Error(String(error)),
+          });
+        }
       }),
 
     /**

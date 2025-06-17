@@ -4,7 +4,6 @@ import pathe from 'pathe';
 import { useMemo } from 'react';
 import { VRChatPhotoFileNameWithExtSchema } from '../../../valueObjects';
 import type { Photo } from '../../types/photo';
-import type { Player } from '../LocationGroupHeader/PlayerList';
 import type { GroupedPhotos } from './useGroupPhotos';
 import {
   type DebugInfo as GroupingDebugInfo,
@@ -70,8 +69,6 @@ export function usePhotoGallery(
   isMultiSelectMode: boolean;
   /** 複数選択モードの有効/無効を設定する関数 */
   setIsMultiSelectMode: (value: boolean) => void;
-  /** 各日時のプレイヤー情報マップ (ISO文字列 -> Player[]) */
-  playersMap: Record<string, Player[] | undefined>;
   /** デバッグ情報 */
   debug: GalleryDebugInfo;
 } {
@@ -127,37 +124,37 @@ export function usePhotoGallery(
     debug: groupingDebug,
   } = useGroupPhotos(photoList, options?.onGroupingEnd);
 
-  const joinDates = useMemo(
-    () => Object.values(originalGroupedPhotos).map((g) => g.joinDateTime),
-    [originalGroupedPhotos],
-  );
+  // プレイヤー名での検索を効率的に行う
+  const isPlayerSearch = useMemo(() => {
+    // 検索クエリが存在し、ワールド名検索でマッチしない場合はプレイヤー検索とみなす
+    if (!searchQuery) return false;
 
-  // バッチクエリで全セッション情報を効率的に取得
-  const { data: sessionBatchData, isLoading: isLoadingSessionBatch } =
-    trpcReact.logInfo.getSessionInfoBatch.useQuery(joinDates, {
-      enabled: searchQuery.length > 0 && joinDates.length > 0, // 検索時のみ有効
-      staleTime: 1000 * 60 * 5,
-      cacheTime: 1000 * 60 * 30,
-    });
+    // まずワールド名で部分一致があるかチェック
+    const query = searchQuery.toLowerCase();
+    const hasWorldMatch = Object.values(originalGroupedPhotos).some((group) =>
+      group.worldInfo?.worldName.toLowerCase().includes(query),
+    );
 
-  const playersMap = useMemo(() => {
-    if (!sessionBatchData) {
-      return joinDates.reduce<Record<string, Player[] | undefined>>(
-        (acc, dt) => {
-          acc[dt.toISOString()] = undefined;
-          return acc;
-        },
-        {},
-      );
-    }
+    // ワールド名でマッチしない場合、プレイヤー検索の可能性が高い
+    return !hasWorldMatch;
+  }, [searchQuery, originalGroupedPhotos]);
 
-    return joinDates.reduce<Record<string, Player[] | undefined>>((acc, dt) => {
-      const isoString = dt.toISOString();
-      const sessionData = sessionBatchData[isoString];
-      acc[isoString] = sessionData?.players;
-      return acc;
-    }, {});
-  }, [joinDates, sessionBatchData]);
+  // プレイヤー名で検索して該当するセッションの日時を取得
+  const { data: playerSearchSessions, isLoading: isLoadingPlayerSearch } =
+    trpcReact.logInfo.searchSessionsByPlayerName.useQuery(
+      { playerName: searchQuery },
+      {
+        enabled: isPlayerSearch && searchQuery.length > 0,
+        staleTime: 1000 * 60 * 5,
+        cacheTime: 1000 * 60 * 30,
+      },
+    );
+
+  // プレイヤー検索結果を日時のSetに変換（高速な検索のため）
+  const playerSearchSessionSet = useMemo(() => {
+    if (!playerSearchSessions) return null;
+    return new Set(playerSearchSessions.map((date) => date.toISOString()));
+  }, [playerSearchSessions]);
 
   const filteredGroupedPhotos = useMemo(() => {
     if (!searchQuery) return originalGroupedPhotos;
@@ -166,19 +163,22 @@ export function usePhotoGallery(
     const filtered: GroupedPhotos = {};
 
     for (const [key, group] of Object.entries(originalGroupedPhotos)) {
+      // ワールド名での検索
       if (group.worldInfo?.worldName.toLowerCase().includes(query)) {
         filtered[key] = group;
         continue;
       }
 
-      const players = playersMap[group.joinDateTime.toISOString()];
-      if (
-        players?.some((p: Player) => p.playerName.toLowerCase().includes(query))
-      ) {
-        filtered[key] = group;
-        continue;
+      // プレイヤー名での検索（サーバーサイド検索結果を使用）
+      if (isPlayerSearch && playerSearchSessionSet) {
+        const sessionKey = group.joinDateTime.toISOString();
+        if (playerSearchSessionSet.has(sessionKey)) {
+          filtered[key] = group;
+          continue;
+        }
       }
 
+      // ファイル名での検索
       const matchingPhotos = group.photos.filter((photo: Photo) =>
         photo.fileNameWithExt.value.toLowerCase().includes(query),
       );
@@ -187,10 +187,15 @@ export function usePhotoGallery(
       }
     }
     return filtered;
-  }, [originalGroupedPhotos, searchQuery, playersMap]);
+  }, [
+    originalGroupedPhotos,
+    searchQuery,
+    isPlayerSearch,
+    playerSearchSessionSet,
+  ]);
 
   const isLoading =
-    isLoadingPhotos || isLoadingGrouping || isLoadingSessionBatch;
+    isLoadingPhotos || isLoadingGrouping || isLoadingPlayerSearch;
 
   const filteredPhotosCount = useMemo(() => {
     return Object.values(filteredGroupedPhotos).reduce(
@@ -225,7 +230,6 @@ export function usePhotoGallery(
     setSelectedPhotos,
     isMultiSelectMode,
     setIsMultiSelectMode,
-    playersMap,
     debug,
   };
 }
