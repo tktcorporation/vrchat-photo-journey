@@ -46,7 +46,8 @@
       "Bash(nr lint:fix)",
       "Bash(nr lint)",
       "Bash(nlx tsx:*)",
-      "Bash(DEBUG_LINT=1 yarn lint:valueobjects)"
+      "Bash(DEBUG_LINT=1 yarn lint:valueobjects)",
+      "Bash(true)"
     ],
     "deny": []
   }
