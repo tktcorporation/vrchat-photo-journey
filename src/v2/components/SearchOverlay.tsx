@@ -6,7 +6,7 @@ import { useI18n } from '../i18n/store';
 interface SearchOverlayProps {
   isOpen: boolean;
   onClose: () => void;
-  onSearch: (query: string) => void;
+  onSearch: (query: string, type?: 'world' | 'player') => void;
   initialQuery?: string;
 }
 
@@ -151,7 +151,7 @@ const SearchOverlay = memo(
           case 'Enter':
             e.preventDefault();
             if (suggestions[highlightedIndex]) {
-              handleSelect(suggestions[highlightedIndex].value);
+              handleSelect(suggestions[highlightedIndex]);
             } else {
               handleSearch();
             }
@@ -166,9 +166,12 @@ const SearchOverlay = memo(
 
     // 候補選択
     const handleSelect = useCallback(
-      (value: string) => {
-        setQuery(value);
-        onSearch(value);
+      (suggestion: SearchSuggestion) => {
+        setQuery(suggestion.value);
+        onSearch(
+          suggestion.value,
+          suggestion.type === 'recent' ? undefined : suggestion.type,
+        );
         onClose();
       },
       [onSearch, onClose],
@@ -290,11 +293,11 @@ const SearchOverlay = memo(
                           ? 'bg-primary/10 dark:bg-primary/20'
                           : 'hover:bg-gray-100/50 dark:hover:bg-gray-800/50'
                       }`}
-                      onClick={() => handleSelect(suggestion.value)}
+                      onClick={() => handleSelect(suggestion)}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
                           e.preventDefault();
-                          handleSelect(suggestion.value);
+                          handleSelect(suggestion);
                         }
                       }}
                       onMouseEnter={() => setHighlightedIndex(index)}

@@ -1,5 +1,5 @@
 import { trpcReact } from '@/trpc';
-import { memo, useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useState } from 'react';
 import { useToast } from '../hooks/use-toast';
 import { useDebounce } from '../hooks/useDebounce';
 import type { UseLoadingStateResult } from '../hooks/useLoadingState';
@@ -12,7 +12,7 @@ interface PhotoGalleryProps extends UseLoadingStateResult {}
 
 export interface PhotoGalleryData {
   searchQuery: string;
-  setSearchQuery: (query: string) => void;
+  setSearchQuery: (query: string, type?: 'world' | 'player') => void;
   onOpenSettings: () => void;
   selectedPhotoCount: number;
   onClearSelection: () => void;
@@ -31,6 +31,9 @@ export interface PhotoGalleryData {
  */
 const PhotoGallery = memo((props: PhotoGalleryProps) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchType, setSearchType] = useState<'world' | 'player' | undefined>(
+    undefined,
+  );
   const debouncedSearchQuery = useDebounce(searchQuery, 300); // 300ms のデバウンス
   const [showSettings, setShowSettings] = useState(false);
   const { t } = useI18n();
@@ -42,7 +45,7 @@ const PhotoGallery = memo((props: PhotoGalleryProps) => {
     isMultiSelectMode,
     setIsMultiSelectMode,
     groupedPhotos,
-  } = usePhotoGallery(debouncedSearchQuery, {
+  } = usePhotoGallery(debouncedSearchQuery, searchType, {
     onGroupingEnd: props.finishLoadingGrouping,
   });
 
@@ -118,10 +121,19 @@ const PhotoGallery = memo((props: PhotoGalleryProps) => {
     };
   }, [isMultiSelectMode, handleClearSelection]);
 
+  // 検索ハンドラー（クエリとタイプの両方を更新）
+  const handleSearch = useCallback(
+    (query: string, type?: 'world' | 'player') => {
+      setSearchQuery(query);
+      setSearchType(type);
+    },
+    [],
+  );
+
   // PhotoGalleryData をエクスポートして AppHeader に渡せるようにする
   const galleryData: PhotoGalleryData = {
     searchQuery,
-    setSearchQuery,
+    setSearchQuery: handleSearch,
     onOpenSettings: () => setShowSettings(true),
     selectedPhotoCount: selectedPhotos.size,
     onClearSelection: handleClearSelection,
@@ -138,6 +150,7 @@ const PhotoGallery = memo((props: PhotoGalleryProps) => {
     <div className="flex flex-col h-full">
       <GalleryContent
         searchQuery={searchQuery}
+        searchType={searchType}
         isLoadingStartupSync={props.isLoadingStartupSync}
         isLoadingGrouping={props.isLoadingGrouping}
         finishLoadingGrouping={props.finishLoadingGrouping}

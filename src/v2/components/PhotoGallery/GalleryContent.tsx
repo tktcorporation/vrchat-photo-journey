@@ -22,6 +22,8 @@ interface GalleryContentProps
   > {
   /** ヘッダーから渡される検索クエリ */
   searchQuery: string;
+  /** 検索タイプ（world | player | undefined） */
+  searchType?: 'world' | 'player';
   /** ギャラリーデータ（統合AppHeaderに渡す） */
   galleryData?: PhotoGalleryData;
 }
@@ -79,6 +81,7 @@ const SkeletonGroup = () => (
 const GalleryContent = memo(
   ({
     searchQuery,
+    searchType,
     isLoadingStartupSync,
     isLoadingGrouping,
     finishLoadingGrouping,
@@ -92,7 +95,9 @@ const GalleryContent = memo(
       setSelectedPhotos,
       isMultiSelectMode,
       setIsMultiSelectMode,
-    } = usePhotoGallery(searchQuery, { onGroupingEnd: finishLoadingGrouping });
+    } = usePhotoGallery(searchQuery, searchType, {
+      onGroupingEnd: finishLoadingGrouping,
+    });
     const containerRef = useRef<HTMLDivElement>(null);
     const groupSizesRef = useRef<Map<string, number>>(new Map());
 
