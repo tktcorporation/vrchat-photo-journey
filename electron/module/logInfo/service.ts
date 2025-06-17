@@ -481,3 +481,81 @@ export const getFrequentPlayerNames = async (
 
   return playerCounts.map((player) => player.playerName);
 };
+
+/**
+ * プレイヤー名で検索して、そのプレイヤーがいたセッションの参加日時を返す
+ *
+ * 効率的なサーバーサイド検索により、該当するセッションのみを返します。
+ * これにより、フロントエンドは全データをフェッチする必要がなくなります。
+ *
+ * @param playerName 検索するプレイヤー名（部分一致）
+ * @returns 該当するセッションの参加日時の配列
+ */
+export const searchSessionsByPlayerName = async (
+  playerName: string,
+): Promise<Date[]> => {
+  const startTime = performance.now();
+
+  try {
+    // プレイヤー名で部分一致検索（大文字小文字を区別しない）
+    const playerJoinLogs = await VRChatPlayerJoinLogModel.findAll({
+      where: {
+        playerName: {
+          [Op.like]: `%${playerName}%`,
+        },
+      },
+      order: [['joinDateTime', 'DESC']],
+    });
+
+    if (playerJoinLogs.length === 0) {
+      logger.debug(
+        `searchSessionsByPlayerName: No players found for query "${playerName}"`,
+      );
+      return [];
+    }
+
+    // 各プレイヤー参加ログに対して、対応するワールド参加ログを探す
+    const sessionJoinDates: Date[] = [];
+    const processedWorldJoins = new Set<string>();
+
+    for (const playerLog of playerJoinLogs) {
+      // このプレイヤーが参加した時点での最新のワールド参加ログを取得
+      const worldJoinLog = await VRChatWorldJoinLogModel.findOne({
+        where: {
+          joinDateTime: {
+            [Op.lte]: playerLog.joinDateTime,
+          },
+        },
+        order: [['joinDateTime', 'DESC']],
+      });
+
+      if (worldJoinLog) {
+        const worldJoinKey = worldJoinLog.joinDateTime.toISOString();
+
+        // 同じワールドセッションを重複して追加しないようにする
+        if (!processedWorldJoins.has(worldJoinKey)) {
+          processedWorldJoins.add(worldJoinKey);
+          sessionJoinDates.push(worldJoinLog.joinDateTime);
+        }
+      }
+    }
+
+    const endTime = performance.now();
+    logger.debug(
+      `searchSessionsByPlayerName: Found ${
+        sessionJoinDates.length
+      } unique sessions for player "${playerName}" in ${(
+        endTime - startTime
+      ).toFixed(2)}ms`,
+    );
+
+    // 新しい順にソートして返す
+    return sessionJoinDates.sort((a, b) => b.getTime() - a.getTime());
+  } catch (error) {
+    logger.error({
+      message: `Error searching sessions by player name: ${error}`,
+      stack: error instanceof Error ? error : new Error(String(error)),
+    });
+    throw error;
+  }
+};

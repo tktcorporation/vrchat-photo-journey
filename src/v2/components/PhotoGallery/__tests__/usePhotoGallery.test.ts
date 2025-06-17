@@ -183,6 +183,22 @@ vi.mock('./../../../../trpc', () => ({
           };
         },
       },
+      searchSessionsByPlayerName: {
+        useQuery: ({ playerName }: { playerName: string }) => {
+          // プレイヤー名検索をモック
+          if (playerName.toLowerCase().includes('test player')) {
+            // グループの参加日時を返す
+            return {
+              data: [new Date('2024-01-01T01:00:00Z')],
+              isLoading: false,
+            };
+          }
+          return {
+            data: [],
+            isLoading: false,
+          };
+        },
+      },
     },
   },
 }));
