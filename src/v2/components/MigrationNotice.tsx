@@ -112,8 +112,7 @@ export const useMigrationNotice = () => {
     setShowMigrationDialog(false);
 
     toast({
-      title: '移行をスキップしました',
-      description: '設定画面からいつでもデータ移行を実行できます。',
+      title: 'データ移行をスキップしました',
       duration: 5000,
     });
   };

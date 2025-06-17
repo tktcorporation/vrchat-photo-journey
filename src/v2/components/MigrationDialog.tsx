@@ -40,7 +40,6 @@ export const MigrationDialog: React.FC<MigrationDialogProps> = ({
         description: `移行されたデータ: ${result.migratedItems.join('、')}`,
       });
       onMigrationComplete();
-      onClose();
     },
     onError: (error) => {
       toast({
