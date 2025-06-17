@@ -97,7 +97,7 @@ const error = ({ message, stack }: ErrorLogParams): void => {
   // 規約同意済みの場合のみSentryへ送信
   match(termsAccepted)
     .with(true, () => {
-      logger.debug('Attempting to send error to Sentry...');
+      log.debug('Attempting to send error to Sentry...');
       try {
         captureException(errorInfo, {
           extra: {
@@ -107,13 +107,13 @@ const error = ({ message, stack }: ErrorLogParams): void => {
             source: 'electron-main',
           },
         });
-        logger.debug('Error sent to Sentry successfully');
+        log.debug('Error sent to Sentry successfully');
       } catch (sentryError) {
-        logger.debug('Failed to send error to Sentry:', sentryError);
+        log.debug('Failed to send error to Sentry:', sentryError);
       }
     })
     .otherwise(() => {
-      logger.debug('Terms not accepted, skipping Sentry error');
+      log.debug('Terms not accepted, skipping Sentry error');
     });
 };
 
