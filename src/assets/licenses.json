@@ -4584,7 +4584,7 @@
     "path": "node_modules/vite",
     "licenseFile": "node_modules/vite/LICENSE.md"
   },
-  "vrchat-albums@0.14.0": {
+  "vrchat-albums@0.15.0": {
     "licenses": "MIT*",
     "repository": "https://github.com/tktcorporation/vrchat-albums",
     "publisher": "tktcorporation",
