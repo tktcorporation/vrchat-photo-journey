@@ -357,9 +357,10 @@ export const performMigration = async (): Promise<
         `Failed to create migration marker: ${markerResult.error.message}`,
       );
     }
-    // Clear migration cache after successful migration
-    clearMigrationCache();
   }
+
+  // Clear migration cache after every migration attempt (success or failure)
+  clearMigrationCache();
 
   logger.info('Migration completed:', result);
   return ok(result);
