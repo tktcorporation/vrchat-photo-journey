@@ -44,11 +44,13 @@ interface UsePhotoGalleryOptions {
 /**
  * 写真ギャラリーの状態管理とロジックを提供するカスタムフック
  * @param searchQuery - ヘッダーの検索バーに入力された検索クエリ
+ * @param searchType - 検索タイプ（world | player | undefined）
  * @param options - オプション
  * @returns ギャラリー表示に必要な状態とセッター関数
  */
 export function usePhotoGallery(
   searchQuery: string,
+  searchType?: 'world' | 'player',
   options?: UsePhotoGalleryOptions,
 ): {
   /** ワールドセッションごとにグループ化され、検索クエリでフィルタリングされた写真データ */
@@ -126,7 +128,11 @@ export function usePhotoGallery(
 
   // プレイヤー名での検索を効率的に行う
   const isPlayerSearch = useMemo(() => {
-    // 検索クエリが存在し、ワールド名検索でマッチしない場合はプレイヤー検索とみなす
+    // 明示的に検索タイプが指定されている場合はそれを使用
+    if (searchType === 'player') return true;
+    if (searchType === 'world') return false;
+
+    // タイプが指定されていない場合は従来のヒューリスティック
     if (!searchQuery) return false;
 
     // まずワールド名で部分一致があるかチェック
@@ -137,7 +143,7 @@ export function usePhotoGallery(
 
     // ワールド名でマッチしない場合、プレイヤー検索の可能性が高い
     return !hasWorldMatch;
-  }, [searchQuery, originalGroupedPhotos]);
+  }, [searchQuery, searchType, originalGroupedPhotos]);
 
   // プレイヤー名で検索して該当するセッションの日時を取得
   const { data: playerSearchSessions, isLoading: isLoadingPlayerSearch } =
@@ -163,6 +169,26 @@ export function usePhotoGallery(
     const filtered: GroupedPhotos = {};
 
     for (const [key, group] of Object.entries(originalGroupedPhotos)) {
+      // 明示的なワールド検索の場合、ワールド名のみでフィルタ
+      if (searchType === 'world') {
+        if (group.worldInfo?.worldName.toLowerCase().includes(query)) {
+          filtered[key] = group;
+        }
+        continue;
+      }
+
+      // 明示的なプレイヤー検索の場合、プレイヤー名のみでフィルタ
+      if (searchType === 'player') {
+        if (playerSearchSessionSet) {
+          const sessionKey = group.joinDateTime.toISOString();
+          if (playerSearchSessionSet.has(sessionKey)) {
+            filtered[key] = group;
+          }
+        }
+        continue;
+      }
+
+      // タイプが指定されていない場合は従来のロジック
       // ワールド名での検索
       if (group.worldInfo?.worldName.toLowerCase().includes(query)) {
         filtered[key] = group;
@@ -190,6 +216,7 @@ export function usePhotoGallery(
   }, [
     originalGroupedPhotos,
     searchQuery,
+    searchType,
     isPlayerSearch,
     playerSearchSessionSet,
   ]);
