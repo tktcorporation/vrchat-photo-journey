@@ -187,7 +187,7 @@ export const LocationGroupHeader = ({
 
   // ワールドリンク
   const worldLink = worldInstanceId
-    ? `https://vrchat.com/home/world/${worldId}?instanceId=${worldInstanceId}`
+    ? `https://vrchat.com/home/launch?worldId=${worldId}&instanceId=${worldInstanceId}`
     : `https://vrchat.com/home/world/${worldId}/info`;
 
   if (worldId === null) {
