@@ -454,7 +454,7 @@ const Contents = () => {
                     ))}
                 </p>
                 {errorInfo && (
-                  <details className="mt-4 text-left">
+                  <details className="mt-4 text-left" open>
                     <summary className="cursor-pointer text-sm text-gray-500">
                       エラー詳細
                     </summary>
