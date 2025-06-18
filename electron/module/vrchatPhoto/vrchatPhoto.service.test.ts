@@ -158,12 +158,16 @@ describe('createVRChatPhotoPathIndex', () => {
     // Check stat calls (should NOT be called)
     expect(nodefsPromises.stat).toHaveBeenCalledTimes(0);
 
-    // Check DB save call
-    expect(model.createOrUpdateListVRChatPhotoPath).toHaveBeenCalledTimes(1);
-    const savedData = vi.mocked(model.createOrUpdateListVRChatPhotoPath).mock
-      .calls[0][0];
-    expect(savedData).toHaveLength(allFiles.length);
-    const savedPaths = savedData.map((d) => d.photoPath);
+    // Check DB save call - now called multiple times due to batching
+    expect(model.createOrUpdateListVRChatPhotoPath).toHaveBeenCalled();
+
+    // Collect all saved data across all batches
+    const allSavedData = vi
+      .mocked(model.createOrUpdateListVRChatPhotoPath)
+      .mock.calls.flatMap((call) => call[0]);
+
+    expect(allSavedData).toHaveLength(allFiles.length);
+    const savedPaths = allSavedData.map((d) => d.photoPath);
     expect(savedPaths).toEqual(expect.arrayContaining(allFiles));
   });
 
@@ -183,11 +187,15 @@ describe('createVRChatPhotoPathIndex', () => {
       mockMainFiles[0], // modified 1 hour ago
       mockExtraFiles[0], // modified now
     ];
-    expect(model.createOrUpdateListVRChatPhotoPath).toHaveBeenCalledTimes(1);
-    const savedData = vi.mocked(model.createOrUpdateListVRChatPhotoPath).mock
-      .calls[0][0];
-    expect(savedData).toHaveLength(expectedUpdatedFiles.length);
-    const savedPaths = savedData.map((d) => d.photoPath);
+    expect(model.createOrUpdateListVRChatPhotoPath).toHaveBeenCalled();
+
+    // Collect all saved data across all batches
+    const allSavedData = vi
+      .mocked(model.createOrUpdateListVRChatPhotoPath)
+      .mock.calls.flatMap((call) => call[0]);
+
+    expect(allSavedData).toHaveLength(expectedUpdatedFiles.length);
+    const savedPaths = allSavedData.map((d) => d.photoPath);
     expect(savedPaths).toEqual(expect.arrayContaining(expectedUpdatedFiles));
     expect(savedPaths).not.toContain(mockMainFiles[1]); // Should not contain the file modified 3 hours ago
   });
