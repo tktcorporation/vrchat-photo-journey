@@ -2,7 +2,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ipcLink } from 'electron-trpc/renderer';
 import type React from 'react';
 import { useState } from 'react';
-import { toast } from 'react-hot-toast';
 import superjson from 'superjson';
 
 import { trpcReact } from './trpc';

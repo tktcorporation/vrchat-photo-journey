@@ -1,4 +1,3 @@
-import { trpcReact } from '@/trpc';
 import { format } from 'date-fns';
 import {
   Calendar,
@@ -9,17 +8,18 @@ import {
   Share2,
   Users,
 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
 import type { ReactPortal } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { trpcReact } from '@/trpc';
 import { useI18n } from '../../i18n/store';
-import { PlatformBadge } from './PlatformBadge';
-import { type Player, PlayerList } from './PlayerList';
-import { ShareDialog } from './ShareDialog';
 import { usePlayerListDisplay } from './hooks/usePlayerListDisplay';
 import { useQueryQueue } from './hooks/useQueryQueue';
 import { useSessionInfoBatch } from './hooks/useSessionInfoBatch';
 import { useShareActions } from './hooks/useShareActions';
+import { PlatformBadge } from './PlatformBadge';
+import { type Player, PlayerList } from './PlayerList';
+import { ShareDialog } from './ShareDialog';
 
 /**
  * LocationGroupHeaderのプロパティ定義

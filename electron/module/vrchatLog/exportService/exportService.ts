@@ -4,9 +4,9 @@ import * as datefns from 'date-fns';
 import { app } from 'electron';
 import { match } from 'ts-pattern';
 import {
-  type LogRecord,
   exportLogsToLogStore,
   formatLogStoreContent,
+  type LogRecord,
 } from '../converters/dbToLogStore';
 
 /**

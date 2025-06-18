@@ -1,11 +1,11 @@
-import { Toaster } from '@/components/ui/toaster';
-import { scrubEventData } from '@/lib/utils/masking';
-import { trpcClient, trpcReact } from '@/trpc';
-import TrpcWrapper from '@/trpcWrapper';
 import type { Event, EventHint } from '@sentry/electron/main';
 import { init as initSentry } from '@sentry/electron/renderer';
 import { useEffect, useState } from 'react';
 import { match } from 'ts-pattern';
+import { Toaster } from '@/components/ui/toaster';
+import { scrubEventData } from '@/lib/utils/masking';
+import { trpcClient, trpcReact } from '@/trpc';
+import TrpcWrapper from '@/trpcWrapper';
 import './App.css';
 import {
   ERROR_CATEGORIES,
@@ -15,12 +15,13 @@ import {
 
 // Electron レンダラープロセスでの開発環境検出
 const isDev = process.env.NODE_ENV === 'development';
+
 import { AppHeader } from './components/AppHeader';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { useMigrationNotice } from './components/MigrationNotice';
 import PhotoGallery from './components/PhotoGallery';
-import { TermsModal } from './components/TermsModal';
 import PathSettings from './components/settings/PathSettings';
+import { TermsModal } from './components/TermsModal';
 import { terms } from './constants/terms/ja';
 import { StartupProvider, useStartup } from './contexts/StartupContext';
 import { ThemeProvider } from './contexts/ThemeContext';

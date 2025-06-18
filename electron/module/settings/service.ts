@@ -1,5 +1,5 @@
 import { app } from 'electron';
-import { type UpdateCheckResult, autoUpdater } from 'electron-updater';
+import { autoUpdater, type UpdateCheckResult } from 'electron-updater';
 import { logger } from '../../lib/logger';
 
 /**
