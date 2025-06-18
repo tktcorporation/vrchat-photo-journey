@@ -216,6 +216,24 @@ export const settingsRouter = () =>
           }, using ${syncMode} sync mode`,
         );
 
+        // Step 3.5: 初回起動時に自動起動を有効化
+        if (isFirstLaunch) {
+          logger.info(
+            'Step 3.5: Setting default auto-start enabled for first launch...',
+          );
+          try {
+            const { app } = await import('electron');
+            app.setLoginItemSettings({
+              openAtLogin: true,
+              openAsHidden: true,
+            });
+            logger.info('Auto-start enabled by default for first launch');
+          } catch (error) {
+            logger.warn('Failed to set default auto-start:', error);
+            // 自動起動の設定に失敗してもアプリの初期化は続行
+          }
+        }
+
         // Step 4: ログ同期実行
         logger.info('Step 4: Starting log sync...');
         const logSyncResult = await syncLogs(syncMode);

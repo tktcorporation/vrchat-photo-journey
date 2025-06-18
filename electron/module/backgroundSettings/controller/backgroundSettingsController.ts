@@ -12,8 +12,9 @@ const getIsBackgroundFileCreationEnabled =
   (settingStore: ReturnType<typeof getSettingStore>) =>
   async (): Promise<boolean> => {
     const flag = settingStore.getBackgroundFileCreateFlag();
+    // デフォルトは true にする
     console.log('flag', flag);
-    return flag ?? false;
+    return flag ?? true;
   };
 
 /**
