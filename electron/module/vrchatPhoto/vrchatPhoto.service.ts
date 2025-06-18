@@ -1,4 +1,5 @@
 import * as fsPromises from 'node:fs/promises';
+import { performance } from 'node:perf_hooks';
 import * as dateFns from 'date-fns';
 import { app } from 'electron';
 import { glob } from 'glob';
@@ -68,82 +69,142 @@ export const getVRChatPhotoDirPath = (): VRChatPhotoDirPath => {
   return photoDir;
 };
 
-interface VRChatPhotoInfo {
-  photoPath: string;
-  takenAt: Date;
-  width: number;
-  height: number;
-}
+// バッチサイズ定数
+const PHOTO_PATH_BATCH_SIZE = 1000; // パスの取得用（stat情報のチェック）
+const PHOTO_METADATA_BATCH_SIZE = 100; // メタデータ取得用（sharp処理は重いため小さく）
 
-export const getVRChatPhotoList = async (
+/**
+ * 写真パスをバッチごとに取得するジェネレータ関数
+ */
+async function* getPhotoPathBatches(
   dirPath: VRChatPhotoDirPath,
   lastProcessedDate?: Date | null,
-): Promise<VRChatPhotoInfo[]> => {
+): AsyncGenerator<string[], void, unknown> {
   const targetDir = dirPath.value;
   if (!targetDir) {
-    return [];
+    return;
   }
+
   // Convert to POSIX format for glob pattern matching
-  // glob always expects forward slashes regardless of platform
   const normalizedTargetDir = path.normalize(targetDir).replace(/\\/g, '/');
   const allPhotoPathList = await glob(`${normalizedTargetDir}/**/VRChat_*.png`);
 
   let targetPhotoPathList: string[];
   if (lastProcessedDate) {
-    // Promise.all で並列処理
-    const statsPromises = allPhotoPathList.map(async (photoPath) => {
+    // バッチ処理でstat情報を取得
+    const filteredPaths: string[] = [];
+    for (let i = 0; i < allPhotoPathList.length; i += PHOTO_PATH_BATCH_SIZE) {
+      const batch = allPhotoPathList.slice(i, i + PHOTO_PATH_BATCH_SIZE);
+      const statsPromises = batch.map(async (photoPath) => {
+        try {
+          const stats = await fsPromises.stat(photoPath);
+          return { photoPath, stats };
+        } catch (error) {
+          logger.error({
+            message: `Failed to get stats for ${photoPath}`,
+            stack: error instanceof Error ? error : new Error(String(error)),
+          });
+          return null;
+        }
+      });
+
+      const statsResults = (await Promise.all(statsPromises)).filter(
+        (result): result is NonNullable<typeof result> => result !== null,
+      );
+
+      filteredPaths.push(
+        ...statsResults
+          .filter((r) => r.stats.mtime > lastProcessedDate)
+          .map((r) => r.photoPath),
+      );
+    }
+    targetPhotoPathList = filteredPaths;
+  } else {
+    targetPhotoPathList = allPhotoPathList;
+  }
+
+  // メタデータ処理用の小さいバッチサイズでyield
+  for (
+    let i = 0;
+    i < targetPhotoPathList.length;
+    i += PHOTO_METADATA_BATCH_SIZE
+  ) {
+    yield targetPhotoPathList.slice(i, i + PHOTO_METADATA_BATCH_SIZE);
+  }
+}
+
+/**
+ * 写真情報のバッチを処理する
+ * メモリ効率を考慮し、並列処理数を制限
+ */
+async function processPhotoBatch(
+  photoPaths: string[],
+): Promise<
+  Array<{ photoPath: string; takenAt: Date; width: number; height: number }>
+> {
+  const results: Array<{
+    photoPath: string;
+    takenAt: Date;
+    width: number;
+    height: number;
+  }> = [];
+  const PARALLEL_LIMIT = 10; // sharp処理の並列数を制限
+
+  // 並列処理数を制限しながらバッチ処理
+  for (let i = 0; i < photoPaths.length; i += PARALLEL_LIMIT) {
+    const subBatch = photoPaths.slice(i, i + PARALLEL_LIMIT);
+
+    const photoInfoPromises = subBatch.map(async (photoPath) => {
+      const matchResult = photoPath.match(
+        /VRChat_(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.\d{3})/,
+      );
+      if (!matchResult) {
+        return null;
+      }
+
       try {
-        const stats = await fsPromises.stat(photoPath);
-        return { photoPath, stats };
+        const takenAt = dateFns.parse(
+          matchResult[1],
+          'yyyy-MM-dd_HH-mm-ss.SSS',
+          new Date(),
+        );
+
+        // sharpインスタンスを使い捨てにしてメモリリークを防ぐ
+        const metadata = await sharp(photoPath).metadata();
+        const height = metadata.height ?? 720;
+        const width = metadata.width ?? 1280;
+
+        return {
+          photoPath,
+          takenAt,
+          width,
+          height,
+        };
       } catch (error) {
         logger.error({
-          message: `Failed to get stats for ${photoPath}`,
+          message: `Failed to process photo metadata for ${photoPath}`,
           stack: error instanceof Error ? error : new Error(String(error)),
         });
         return null;
       }
     });
 
-    // 並列処理の結果を待機
-    const statsResults = (await Promise.all(statsPromises)).filter(
-      (result): result is NonNullable<typeof result> => result !== null,
+    const subResults = (await Promise.all(photoInfoPromises)).filter(
+      (
+        info,
+      ): info is {
+        photoPath: string;
+        takenAt: Date;
+        width: number;
+        height: number;
+      } => info !== null,
     );
 
-    targetPhotoPathList = statsResults
-      .filter((r) => r.stats.mtime > lastProcessedDate)
-      .map((r) => r.photoPath);
-  } else {
-    targetPhotoPathList = allPhotoPathList;
+    results.push(...subResults);
   }
 
-  // 差分ファイルリストからメタデータを並列取得
-  const photoInfoPromises = targetPhotoPathList.map(async (photoPath) => {
-    const matchResult = photoPath.match(
-      /VRChat_(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.\d{3})/,
-    );
-    if (!matchResult) {
-      return null;
-    }
-    const takenAt = dateFns.parse(
-      matchResult[1],
-      'yyyy-MM-dd_HH-mm-ss.SSS',
-      new Date(),
-    );
-    const metadata = await sharp(photoPath).metadata();
-    const height = metadata.height ?? 720;
-    const width = metadata.width ?? 1280;
-    return {
-      photoPath,
-      takenAt,
-      width,
-      height,
-    };
-  });
-  const photoList = (await Promise.all(photoInfoPromises)).filter(
-    (info): info is VRChatPhotoInfo => info !== null,
-  );
-  return photoList;
-};
+  return results;
+}
 
 /**
  * 写真ディレクトリを走査してインデックスを更新する
@@ -152,36 +213,95 @@ export const getVRChatPhotoList = async (
 export const createVRChatPhotoPathIndex = async (
   lastProcessedDate?: Date | null,
 ) => {
+  const startTime = performance.now();
   const targetDir = getVRChatPhotoDirPath();
-  // lastProcessedDate を getVRChatPhotoList に渡す
-  const mainPhotoList = await getVRChatPhotoList(targetDir, lastProcessedDate);
   const settingStore = getSettingStore();
   const extraDirs = settingStore.getVRChatPhotoExtraDirList();
 
-  // 追加ディレクトリからの写真リストを取得 (同様に lastProcessedDate を渡す)
-  const extraPhotoLists = await Promise.all(
-    extraDirs.map(async (dir: VRChatPhotoDirPath) => {
-      return getVRChatPhotoList(dir, lastProcessedDate);
-    }),
+  const allDirs = [targetDir, ...extraDirs];
+  let totalProcessed = 0;
+  let batchNumber = 0;
+  const allCreatedModels: model.VRChatPhotoPathModel[] = [];
+
+  logger.info(
+    `Starting photo index creation with ${allDirs.length} directories`,
   );
 
-  // メインディレクトリと追加ディレクトリの写真リストを結合
-  const allPhotoList = [...mainPhotoList, ...extraPhotoLists.flat()];
+  // 各ディレクトリを順番に処理
+  for (const dir of allDirs) {
+    logger.debug(`Processing photos from directory: ${dir.value}`);
 
-  if (allPhotoList.length === 0) {
-    logger.debug('No new photos found to index.');
-    return; // 更新する写真がない場合はここで終了
+    // バッチごとに処理
+    for await (const photoBatch of getPhotoPathBatches(
+      dir,
+      lastProcessedDate,
+    )) {
+      if (photoBatch.length === 0) continue;
+
+      batchNumber++;
+      const batchStartTime = performance.now();
+
+      // バッチ内の写真情報を処理
+      const processedBatch = await processPhotoBatch(photoBatch);
+
+      if (processedBatch.length > 0) {
+        // DBに保存
+        const dbStartTime = performance.now();
+        const createdModels = await model.createOrUpdateListVRChatPhotoPath(
+          processedBatch.map((photo) => ({
+            photoPath: photo.photoPath,
+            photoTakenAt: photo.takenAt,
+            width: photo.width,
+            height: photo.height,
+          })),
+        );
+        const dbEndTime = performance.now();
+
+        allCreatedModels.push(...createdModels);
+        totalProcessed += processedBatch.length;
+
+        const batchEndTime = performance.now();
+        logger.debug(
+          `Batch ${batchNumber}: Processed ${
+            processedBatch.length
+          } photos in ${(batchEndTime - batchStartTime).toFixed(
+            2,
+          )} ms (metadata: ${(dbStartTime - batchStartTime).toFixed(
+            2,
+          )} ms, DB: ${(dbEndTime - dbStartTime).toFixed(2)} ms)`,
+        );
+
+        // メモリ使用量のログ（デバッグ用）
+        if (batchNumber % 10 === 0) {
+          const memUsage = process.memoryUsage();
+          logger.debug(
+            `Memory usage after batch ${batchNumber}: RSS=${(
+              memUsage.rss /
+              1024 /
+              1024
+            ).toFixed(2)}MB, Heap=${(memUsage.heapUsed / 1024 / 1024).toFixed(
+              2,
+            )}MB`,
+          );
+        }
+      }
+    }
   }
 
-  // DBに保存
-  return model.createOrUpdateListVRChatPhotoPath(
-    allPhotoList.map((photo) => ({
-      photoPath: photo.photoPath,
-      photoTakenAt: photo.takenAt,
-      width: photo.width,
-      height: photo.height,
-    })),
+  const totalEndTime = performance.now();
+
+  if (totalProcessed === 0) {
+    logger.debug('No new photos found to index.');
+    return [];
+  }
+
+  logger.info(
+    `Photo index creation completed: ${totalProcessed} photos processed in ${
+      totalEndTime - startTime
+    } ms (${batchNumber} batches)`,
   );
+
+  return allCreatedModels;
 };
 
 /**
