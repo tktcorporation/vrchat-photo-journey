@@ -86,16 +86,16 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
         },
       });
     const copySingleMutation =
-      trpcReact.electronUtil.copyImageDataByPath.useMutation();
+      trpcReact.electronUtil.copySingleImagePath.useMutation();
     const copyMultipleMutation =
-      trpcReact.electronUtil.copyMultipleImageDataByPath.useMutation();
+      trpcReact.electronUtil.copyMultipleImagePaths.useMutation();
     const openInPhotoAppMutation =
       trpcReact.electronUtil.openPhotoPathWithPhotoApp.useMutation();
     const openDirOnExplorerMutation = trpcReact.openDirOnExplorer.useMutation();
 
     // --- Event Handlers ---
 
-    /** コンテキストメニュー: 写真データコピー (単一/複数対応) */
+    /** コンテキストメニュー: 写真パスコピー (単一/複数対応) */
     const handleCopyPhotoData = (e: React.MouseEvent) => {
       e.stopPropagation();
       if (selectedPhotos.size > 1) {
@@ -302,7 +302,7 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
               disabled={selectedPhotos.size === 0 && !isSelected}
             >
               {selectedPhotos.size > 1
-                ? t('common.contextMenu.copyPhotoData')
+                ? `${selectedPhotos.size}枚の写真をコピー`
                 : t('common.contextMenu.copyPhotoData')}
             </ContextMenuItem>
             <ContextMenuItem

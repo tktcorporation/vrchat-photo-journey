@@ -5,13 +5,21 @@ const config: KnipConfig = {
     'src/main.tsx',
     'electron/index.ts',
     'electron/preload.ts',
+    'electron/api.ts',
     'electron/vite.config.ts',
     'vitest.config.ts',
+    // Add tRPC controllers as entry points since they're used dynamically
+    'electron/module/**/controller/*.ts',
+    'electron/module/**/*Controller.ts',
   ],
   project: ['src/**/*.ts', 'src/**/*.tsx', 'electron/**/*.ts'],
   ignoreBinaries: [],
   ignoreDependencies: ['@types/sharp', '@tktco/node-actionlint'],
   ignore: ['src/components/ui/**'],
+  // Don't report unused exports in entry files (tRPC routers)
+  includeEntryExports: false,
+  // Ignore exports that are used within the same file
+  ignoreExportsUsedInFile: true,
 };
 
 export default config;
