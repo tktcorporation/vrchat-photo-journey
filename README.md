@@ -1,11 +1,11 @@
 # VRChat Albums
 
 <p align="center">
-  <img src="README-image/logo.png" alt="VRChat Albums Logo" width="128" height="128">
+  <img src="./assets/icons/256x256.png" alt="VRChat Albums Logo" width="128" height="128">
 </p>
 
 <p align="center">
-  <strong>VRChatの思い出を美しく整理</strong><br>
+  <strong>VRChatの思い出を整理しよう</strong><br>
   VRChatで撮影した写真を自動的に整理し、ワールドやフレンドとの思い出を簡単に振り返ることができるデスクトップアプリケーション
 </p>
 
@@ -21,7 +21,7 @@
   </a>
 </p>
 
-![Screenshot](README-image/Screenshot.jpg)
+![Screenshot](playwright/previews/VRChatAlbums-finalized.png)
 
 ## ✨ 特徴
 
@@ -29,8 +29,8 @@
 - 🌍 **ワールド情報** - いつ、どのワールドで撮影したかを記録
 - 👥 **フレンド管理** - 一緒にいたフレンドの情報も記録
 - 💾 **バックアップ** - 大切な思い出を安全にエクスポート・インポート
-- 🔍 **高速検索** - 日付、ワールド名、フレンド名で瞬時に検索
-- 🎨 **美しいUI** - ダークモード対応の直感的なインターフェース
+- 🔍 **高速検索** - ワールド名、フレンド名で瞬時に検索
+- 🎨 **直感的なUI** - ダークモード対応の操作しやすいなインターフェース
 
 ## 🖥️ 対応プラットフォーム
 
@@ -80,8 +80,6 @@
    - バッチ操作 - 複数の写真を選択して一括コピー
 2. **写真を探す**
    - 上部の検索バーでワールド名やフレンド名を入力
-   - サイドバーから日付やワールドでフィルタリング
-   - 「空のグループを表示」のチェックで写真のないグループも表示
 
 3. **データをバックアップ**
    - メニューから「エクスポート」を選択
