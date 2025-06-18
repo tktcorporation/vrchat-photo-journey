@@ -57,7 +57,7 @@ const PhotoGallery = memo((props: PhotoGalleryProps) => {
 
   // 複数画像をクリップボードにコピーするミューテーション
   const { mutate: copyMultipleImagesToClipboard } =
-    trpcReact.electronUtil.copyMultipleImageDataByPath.useMutation({
+    trpcReact.electronUtil.copyMultipleImagePaths.useMutation({
       onSuccess: (_, variables) => {
         const count = variables.length;
         const _isWindows = navigator.platform.includes('Win');
