@@ -6,6 +6,20 @@ All notable changes to this project will be documented in this file.
 
 ### 🚀 Features
 
+- 検索候補選択時の検索タイプ明示的指定機能を追加 (#458)
+- 旧アプリからのデータ移行機能を実装 (#463)
+- ローディングアニメーションを追加 (#466)
+- 初回起動時の自動起動設定をデフォルトTrueに変更 (#467)
+
+### 🐛 Bug Fixes
+
+- PlayerName検索のパフォーマンス最適化 (#457)
+- ワールドリンクのURL構造を修正 (#460)
+
+## [0.15.0] - 2025-06-16
+
+### 🚀 Features
+
 - Add player name search (#415)
 - Add frequently played players to search overlay (#416)
 - DB→logStore逆変換機能とエクスポート機能の実装 (#440) (#441)
