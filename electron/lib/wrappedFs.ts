@@ -2,7 +2,7 @@ import * as fs from 'node:fs';
 import { promisify } from 'node:util';
 import type { Result } from 'neverthrow';
 import { err, ok } from 'neverthrow';
-import { P, match } from 'ts-pattern';
+import { match, P } from 'ts-pattern';
 
 /**
  * 同期的にファイルを読み込み、存在しない場合はエラー情報を返す。

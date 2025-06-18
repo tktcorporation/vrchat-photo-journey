@@ -5,7 +5,7 @@ import { writeClipboardFilePaths } from 'clip-filepaths';
 import { app, clipboard, dialog, nativeImage, shell } from 'electron';
 import * as neverthrow from 'neverthrow';
 import sharp from 'sharp';
-import { P, match } from 'ts-pattern';
+import { match, P } from 'ts-pattern';
 
 /**
  * OS のエクスプローラーで指定パスを開くユーティリティ。

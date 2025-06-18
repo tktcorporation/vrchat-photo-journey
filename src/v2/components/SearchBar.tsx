@@ -1,5 +1,5 @@
 import { Search } from 'lucide-react';
-import React, { memo } from 'react';
+import { memo } from 'react';
 import { useI18n } from '../i18n/store';
 
 interface SearchBarProps {

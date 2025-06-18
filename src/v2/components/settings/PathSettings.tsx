@@ -1,4 +1,3 @@
-import { trpcReact } from '@/trpc';
 import {
   AlertCircle,
   FolderOpen,
@@ -7,8 +6,9 @@ import {
   Save,
   Trash,
 } from 'lucide-react';
-import React, { memo, useState, useEffect } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import { match } from 'ts-pattern';
+import { trpcReact } from '@/trpc';
 import { LOG_SYNC_MODE, useLogSync } from '../../hooks/useLogSync';
 import { useVRChatPhotoExtraDirList } from '../../hooks/useVRChatPhotoExtraDirList';
 import { useI18n } from '../../i18n/store';

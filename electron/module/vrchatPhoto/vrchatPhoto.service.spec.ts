@@ -2,7 +2,7 @@ import { app } from 'electron';
 import { glob } from 'glob';
 import sharp, { type Metadata, type Sharp } from 'sharp';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { type SettingStore, getSettingStore } from '../settingStore';
+import { getSettingStore, type SettingStore } from '../settingStore';
 import { VRChatPhotoDirPathSchema } from './valueObjects';
 import {
   getVRChatPhotoItemData,
