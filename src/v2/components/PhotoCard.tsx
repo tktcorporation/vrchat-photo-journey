@@ -25,8 +25,6 @@ interface PhotoCardProps {
   photo: Photo;
   /** 画像を優先的に読み込むか (ビューポート内の最初の要素など) */
   priority?: boolean;
-  /** 写真本体がクリックされたときに呼び出されるコールバック (通常モード時、モーダル表示用) */
-  onSelect: (photo: Photo) => void;
   /** 現在選択されている写真のIDセット */
   selectedPhotos: Set<string>;
   /** 選択されている写真のIDセットを更新する関数 */
@@ -51,7 +49,6 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
   ({
     photo,
     priority = false,
-    onSelect,
     selectedPhotos,
     setSelectedPhotos,
     photos,
@@ -141,10 +138,16 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
           return newSelected;
         });
       } else {
-        // 通常モード中: モーダル表示
-        onSelect(photo);
+        // 通常モード中: システムの写真ビューアで開く
+        openInPhotoAppMutation.mutate(photo.url);
       }
-    }, [isMultiSelectMode, currentPhotoId, setSelectedPhotos, onSelect, photo]);
+    }, [
+      isMultiSelectMode,
+      currentPhotoId,
+      setSelectedPhotos,
+      photo.url,
+      openInPhotoAppMutation,
+    ]);
 
     /** 左上の選択アイコンのクリックハンドラ */
     const handleSelectIconClick = useCallback(

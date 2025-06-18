@@ -7,7 +7,6 @@ import { AppHeader } from '../AppHeader';
 import { LocationGroupHeader } from '../LocationGroupHeader';
 import type { PhotoGalleryData } from '../PhotoGallery';
 import PhotoGrid from '../PhotoGrid';
-import PhotoModal from '../PhotoModal';
 import { GalleryErrorBoundary } from './GalleryErrorBoundary';
 import { MeasurePhotoGroup } from './MeasurePhotoGroup';
 import { usePhotoGallery } from './usePhotoGallery';
@@ -89,8 +88,6 @@ const GalleryContent = memo(
   }: GalleryContentProps) => {
     const {
       groupedPhotos,
-      selectedPhoto,
-      setSelectedPhoto,
       selectedPhotos,
       setSelectedPhotos,
       isMultiSelectMode,
@@ -219,7 +216,6 @@ const GalleryContent = memo(
                       <div className="w-full rounded-b-lg overflow-hidden">
                         <PhotoGrid
                           photos={group.photos}
-                          onPhotoSelect={setSelectedPhoto}
                           selectedPhotos={selectedPhotos}
                           setSelectedPhotos={setSelectedPhotos}
                           isMultiSelectMode={isMultiSelectMode}
@@ -246,12 +242,6 @@ const GalleryContent = memo(
             </div>
           )}
         </div>
-        {selectedPhoto && (
-          <PhotoModal
-            photo={selectedPhoto}
-            onClose={() => setSelectedPhoto(null)}
-          />
-        )}
       </GalleryErrorBoundary>
     );
   },
