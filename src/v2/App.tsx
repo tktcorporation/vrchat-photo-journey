@@ -5,11 +5,19 @@ import TrpcWrapper from '@/trpcWrapper';
 import type { Event, EventHint } from '@sentry/electron/main';
 import { init as initSentry } from '@sentry/electron/renderer';
 import { useEffect, useState } from 'react';
+import { match } from 'ts-pattern';
+import './App.css';
+import {
+  ERROR_CATEGORIES,
+  parseErrorFromTRPC,
+  parseErrorMessage,
+} from './types/errors';
 
 // Electron レンダラープロセスでの開発環境検出
 const isDev = process.env.NODE_ENV === 'development';
 import { AppHeader } from './components/AppHeader';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { useMigrationNotice } from './components/MigrationNotice';
 import PhotoGallery from './components/PhotoGallery';
 import { TermsModal } from './components/TermsModal';
 import PathSettings from './components/settings/PathSettings';
@@ -192,23 +200,92 @@ function App() {
 }
 
 /**
+ * 構造化エラー情報を持つトーストメッセージの型定義
+ */
+interface StructuredToastMessage {
+  message: string;
+  errorInfo?: {
+    code: string;
+    category: string;
+    userMessage: string;
+  };
+}
+
+/**
+ * エラーカテゴリーに基づいてトーストのvariantを決定
+ */
+function getToastVariant(
+  category?: string,
+): 'default' | 'destructive' | 'warning' {
+  if (!category) return 'default';
+
+  return match(category)
+    .with(ERROR_CATEGORIES.FILE_NOT_FOUND, () => 'warning' as const)
+    .with(ERROR_CATEGORIES.VALIDATION_ERROR, () => 'warning' as const)
+    .with(ERROR_CATEGORIES.SETUP_REQUIRED, () => 'default' as const)
+    .with(ERROR_CATEGORIES.PERMISSION_DENIED, () => 'destructive' as const)
+    .with(ERROR_CATEGORIES.DATABASE_ERROR, () => 'destructive' as const)
+    .with(ERROR_CATEGORIES.NETWORK_ERROR, () => 'destructive' as const)
+    .otherwise(() => 'destructive' as const);
+}
+
+/**
  * トーストイベントを購読して `Toaster` コンポーネントを表示するラッパー。
+ * 構造化エラー情報に基づいて適切なトーストvariantを選択する。
  */
 const ToasterWrapper = () => {
   const { toast } = useToast();
   trpcReact.subscribeToast.useSubscription(undefined, {
     onData: (content: unknown) => {
-      if (typeof content === 'string') {
-        console.log('toast', content);
+      // 構造化トーストメッセージの処理
+      if (
+        typeof content === 'object' &&
+        content !== null &&
+        'message' in content
+      ) {
+        const structuredMessage = content as StructuredToastMessage;
+        const variant = getToastVariant(structuredMessage.errorInfo?.category);
+
+        console.log('structured toast', structuredMessage);
         toast({
-          description: content,
+          variant,
+          description:
+            structuredMessage.errorInfo?.userMessage ||
+            structuredMessage.message,
+          title:
+            variant === 'destructive'
+              ? 'エラー'
+              : variant === 'warning'
+                ? '警告'
+                : undefined,
         });
         return;
       }
-      console.log('toast', JSON.stringify(content));
-      toast({
-        description: JSON.stringify(content),
-      });
+
+      // 従来の文字列メッセージの処理
+      if (typeof content === 'string') {
+        console.log('toast', content);
+
+        // 「予期しないエラー」以外は通常のトーストとして表示
+        const isUnexpectedError = content.includes(
+          '予期しないエラーが発生しました',
+        );
+
+        toast({
+          variant: isUnexpectedError ? 'destructive' : 'default',
+          description: content,
+          title: isUnexpectedError ? 'エラー' : undefined,
+        });
+        return;
+      }
+
+      // その他の場合 - 予期しないデータ型は無視
+      console.warn(
+        'Unexpected toast data type received:',
+        typeof content,
+        content,
+      );
+      // 予期しないデータ型のトーストは表示しない
     },
   });
   return (
@@ -223,9 +300,10 @@ const ToasterWrapper = () => {
  * 初期同期やエラー状態を監視しながら各画面を表示する。
  */
 const Contents = () => {
-  const { toast } = useToast();
-  const { stage, error, retry } = useStartup();
+  // const { toast } = useToast(); // スタートアップエラーはbackendから送信されるため不要
+  const { stage, error, originalError, retry } = useStartup();
   const loadingState = useLoadingState();
+  const { MigrationDialog } = useMigrationNotice();
 
   useEffect(() => {
     if (stage === 'syncing') {
@@ -235,112 +313,165 @@ const Contents = () => {
     }
   }, [stage, loadingState]);
 
-  // エラー表示時にtoast表示
-  useEffect(() => {
-    if (error) {
-      toast({
-        variant: 'destructive',
-        title: 'スタートアップエラー',
-        description: error,
-      });
-    }
-  }, [error, toast]);
+  // スタートアップエラーは backend の logError 関数からトースト送信されるため
+  // ここでの重複toast表示は無効化
+  // useEffect(() => {
+  //   if (error) {
+  //     // 構造化エラー情報がある場合は適切に処理
+  //     const errorInfo = originalError
+  //       ? parseErrorFromTRPC(originalError)
+  //       : parseErrorMessage(error);
+
+  //     const variant = getToastVariant(errorInfo?.category);
+
+  //     toast({
+  //       variant,
+  //       title: variant === 'destructive'
+  //         ? 'スタートアップエラー'
+  //         : variant === 'warning'
+  //           ? 'スタートアップ警告'
+  //           : 'スタートアップ',
+  //       description: errorInfo?.userMessage || error,
+  //     });
+  //   }
+  // }, [error, originalError, toast]);
 
   if (stage === 'error') {
-    // より精密なエラータイプ判定
-    const isDataError =
-      error?.includes('LOG_DIRECTORY_ERROR') ||
-      error?.includes('ログフォルダ') ||
-      error?.includes('フォルダ') ||
-      error?.includes('初期セットアップが必要');
+    // 型安全なエラー解析 - tRPCエラーオブジェクトがある場合は優先的に使用
+    const errorInfo = originalError
+      ? parseErrorFromTRPC(originalError)
+      : error
+        ? parseErrorMessage(error)
+        : null;
+
+    // ts-patternを使用した型安全なエラー判定
+    const errorDisplayType = match(errorInfo?.category)
+      .with(ERROR_CATEGORIES.SETUP_REQUIRED, () => 'setup' as const)
+      .with(ERROR_CATEGORIES.PERMISSION_DENIED, () => 'permission' as const)
+      .with(ERROR_CATEGORIES.DATABASE_ERROR, () => 'database' as const)
+      .with(ERROR_CATEGORIES.NETWORK_ERROR, () => 'network' as const)
+      .otherwise(() => 'generic' as const);
 
     return (
       <div className="h-screen flex flex-col overflow-hidden">
         <AppHeader showGalleryControls={false} />
         <div className="flex items-center justify-center flex-1">
-          {isDataError ? (
-            <div className="w-full max-w-2xl mx-auto p-6">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                初期セットアップ
-              </h2>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
-                VRChatのログフォルダと写真フォルダを設定して、アプリケーションを使用する準備をしましょう。
-              </p>
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                <div className="space-y-4">
-                  <div className="flex items-start space-x-3">
-                    <div className="flex-shrink-0">
-                      <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                        <span className="text-blue-600 dark:text-blue-300">
-                          1
-                        </span>
+          {match(errorDisplayType)
+            .with('setup', () => (
+              <div className="w-full max-w-2xl mx-auto p-6">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                  初期セットアップ
+                </h2>
+                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                  VRChatのログフォルダと写真フォルダを設定して、アプリケーションを使用する準備をしましょう。
+                </p>
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                  <div className="space-y-4">
+                    <div className="flex items-start space-x-3">
+                      <div className="flex-shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                          <span className="text-blue-600 dark:text-blue-300">
+                            1
+                          </span>
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                          フォルダを設定
+                        </h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          以下の設定画面からVRChatのログフォルダと写真フォルダを選択してください。
+                        </p>
                       </div>
                     </div>
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                        フォルダを設定
-                      </h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        以下の設定画面からVRChatのログフォルダと写真フォルダを選択してください。
-                      </p>
-                    </div>
-                  </div>
-                  <PathSettings showRefreshAll={false} />
-                  <div className="flex items-start space-x-3">
-                    <div className="flex-shrink-0">
-                      <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                        <span className="text-blue-600 dark:text-blue-300">
-                          2
-                        </span>
+                    <PathSettings showRefreshAll={false} />
+                    <div className="flex items-start space-x-3">
+                      <div className="flex-shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                          <span className="text-blue-600 dark:text-blue-300">
+                            2
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                        設定を確認
-                      </h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        フォルダを設定したら、下のボタンをクリックして設定を確認します。
-                      </p>
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                          設定を確認
+                        </h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          フォルダを設定したら、下のボタンをクリックして設定を確認します。
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
+                <div className="mt-6 text-right">
+                  <button
+                    type="button"
+                    onClick={retry}
+                    className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                  >
+                    設定を確認して続ける
+                  </button>
+                </div>
               </div>
-              <div className="mt-6 text-right">
+            ))
+            .otherwise(() => (
+              <div className="text-center p-4 max-w-md mx-auto">
+                <h2 className="text-xl font-semibold text-red-600 dark:text-red-400">
+                  {match(errorDisplayType)
+                    .with('permission', () => 'アクセス許可エラー')
+                    .with('database', () => 'データベースエラー')
+                    .with('network', () => 'ネットワークエラー')
+                    .otherwise(() => 'アプリケーションエラー')}
+                </h2>
+                <p className="mt-2 text-gray-600 dark:text-gray-400">
+                  {match(errorDisplayType)
+                    .with(
+                      'permission',
+                      () => 'ファイルやフォルダへのアクセス許可が必要です。',
+                    )
+                    .with(
+                      'database',
+                      () => 'データベースに接続できませんでした。',
+                    )
+                    .with(
+                      'network',
+                      () => 'ネットワーク接続を確認してください。',
+                    )
+                    .otherwise(() => (
+                      <>
+                        予期せぬエラーが発生しました。
+                        <br />
+                        <a
+                          href="https://github.com/your-repo/issues/new"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-500 hover:underline"
+                        >
+                          バグを報告する
+                        </a>
+                      </>
+                    ))}
+                </p>
+                {errorInfo && (
+                  <details className="mt-4 text-left" open>
+                    <summary className="cursor-pointer text-sm text-gray-500">
+                      エラー詳細
+                    </summary>
+                    <pre className="mt-2 p-2 bg-gray-100 dark:bg-gray-800 rounded text-xs overflow-auto">
+                      {errorInfo.userMessage}
+                    </pre>
+                  </details>
+                )}
                 <button
                   type="button"
                   onClick={retry}
-                  className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                  className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
                 >
-                  設定を確認して続ける
+                  再試行
                 </button>
               </div>
-            </div>
-          ) : (
-            <div className="text-center p-4 max-w-md mx-auto">
-              <h2 className="text-xl font-semibold text-red-600 dark:text-red-400">
-                アプリケーションエラー
-              </h2>
-              <p className="mt-2 text-gray-600 dark:text-gray-400">
-                予期せぬエラーが発生しました。
-                <br />
-                <a
-                  href="https://github.com/your-repo/issues/new"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-500 hover:underline"
-                >
-                  バグを報告する
-                </a>
-              </p>
-              <button
-                type="button"
-                onClick={retry}
-                className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-              >
-                再試行
-              </button>
-            </div>
-          )}
+            ))}
         </div>
       </div>
     );
@@ -350,21 +481,96 @@ const Contents = () => {
     const currentStage = 'アプリケーションを初期化中...';
 
     return (
-      <div className="h-screen flex flex-col overflow-hidden">
+      <div className="h-screen flex flex-col overflow-hidden bg-[#f9f9fa] dark:bg-[#1c1c1e]">
         <AppHeader showGalleryControls={false} />
         <div className="flex items-center justify-center flex-1">
-          <div className="text-center p-4">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white mx-auto" />
-            <p className="mt-4 text-gray-600 dark:text-gray-400">
-              {currentStage}
-            </p>
+          <div className="text-center p-8 max-w-md">
+            {/* ローディングアニメーション */}
+            <div className="relative mb-8">
+              <div className="mx-auto w-20 h-20 relative">
+                {/* ベースの円 */}
+                <div className="absolute inset-0 rounded-full bg-gray-100 dark:bg-gray-800" />
+
+                {/* プログレス */}
+                <svg
+                  className="absolute inset-0 w-full h-full -rotate-90"
+                  viewBox="0 0 80 80"
+                  aria-label="ローディングインジケーター"
+                >
+                  <title>ローディングインジケーター</title>
+                  <circle
+                    cx="40"
+                    cy="40"
+                    r="36"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                    className="text-[#4c4cff] dark:text-[#7c7cff] animate-arc-loading"
+                    strokeDasharray="226"
+                    strokeDashoffset="226"
+                    strokeLinecap="round"
+                  />
+                </svg>
+
+                {/* 中央のアイコン */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-8 h-8 text-gray-600 dark:text-gray-400 animate-fade-in-out">
+                    <svg
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      aria-label="写真アイコン"
+                    >
+                      <title>写真アイコン</title>
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.5}
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* テキストエリア - タイポグラフィ */}
+            <div className="space-y-3">
+              <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100 tracking-tight">
+                {currentStage}
+              </h2>
+              <p className="text-sm text-gray-500 dark:text-gray-500">
+                写真とログファイルを準備しています
+              </p>
+            </div>
+
+            {/* シンプルなドットインジケーター */}
+            <div className="mt-8 flex justify-center items-center space-x-1.5">
+              <div
+                className="w-1.5 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full animate-dot-fade"
+                style={{ animationDelay: '0ms' }}
+              />
+              <div
+                className="w-1.5 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full animate-dot-fade"
+                style={{ animationDelay: '200ms' }}
+              />
+              <div
+                className="w-1.5 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full animate-dot-fade"
+                style={{ animationDelay: '400ms' }}
+              />
+            </div>
           </div>
         </div>
       </div>
     );
   }
 
-  return <PhotoGallery {...loadingState} />;
+  return (
+    <>
+      <PhotoGallery {...loadingState} />
+      <MigrationDialog />
+    </>
+  );
 };
 
 export default App;

@@ -2,6 +2,11 @@ import * as neverthrow from 'neverthrow';
 import { P, match } from 'ts-pattern';
 import z from 'zod';
 import { BATCH_CONFIG } from '../../constants/batchConfig';
+import {
+  ERROR_CATEGORIES,
+  ERROR_CODES,
+  UserFacingError,
+} from '../../lib/errors';
 import * as playerJoinLogService from '../VRChatPlayerJoinLogModel/playerJoinLog.service';
 import * as worldJoinLogService from '../vrchatWorldJoinLog/service';
 import { findVRChatWorldJoinLogFromPhotoList } from '../vrchatWorldJoinLogFromPhoto/service';
@@ -17,6 +22,7 @@ import {
   getPlayerNameSuggestions,
   getWorldNameSuggestions,
   loadLogInfoIndexFromVRChatLog,
+  searchSessionsByPlayerName,
 } from './service';
 
 /**
@@ -107,7 +113,13 @@ const findRecentMergedWorldJoinLog = async (datetime: Date) => {
       message: `Error in findRecentMergedWorldJoinLog for datetime ${datetime.toISOString()}: ${error}`,
       stack: error instanceof Error ? error : new Error(String(error)),
     });
-    throw error;
+    throw UserFacingError.withStructuredInfo({
+      code: ERROR_CODES.DATABASE_ERROR,
+      category: ERROR_CATEGORIES.DATABASE_ERROR,
+      message: `Failed to find recent world join log: ${error}`,
+      userMessage: 'ワールド参加ログの取得中にエラーが発生しました。',
+      cause: error instanceof Error ? error : new Error(String(error)),
+    });
   }
 };
 
@@ -137,7 +149,13 @@ const findNextMergedWorldJoinLog = async (datetime: Date) => {
       message: `Error in findNextMergedWorldJoinLog for datetime ${datetime.toISOString()}: ${error}`,
       stack: error instanceof Error ? error : new Error(String(error)),
     });
-    throw error;
+    throw UserFacingError.withStructuredInfo({
+      code: ERROR_CODES.DATABASE_ERROR,
+      category: ERROR_CATEGORIES.DATABASE_ERROR,
+      message: `Failed to find next world join log: ${error}`,
+      userMessage: 'ワールド参加ログの取得中にエラーが発生しました。',
+      cause: error instanceof Error ? error : new Error(String(error)),
+    });
   }
 };
 
@@ -396,7 +414,13 @@ const getPlayerJoinListInSameWorldCore = async (
     });
 
     // Re-throw the error to be caught by the cache layer
-    throw error;
+    throw UserFacingError.withStructuredInfo({
+      code: ERROR_CODES.DATABASE_ERROR,
+      category: ERROR_CATEGORIES.DATABASE_ERROR,
+      message: `Failed to get player join list: ${error}`,
+      userMessage: 'プレイヤー情報の取得中にエラーが発生しました。',
+      cause: error instanceof Error ? error : new Error(String(error)),
+    });
   }
 };
 
@@ -443,7 +467,13 @@ export const logInfoRouter = () =>
             return value;
           },
           (error) => {
-            throw error;
+            throw UserFacingError.withStructuredInfo({
+              code: ERROR_CODES.DATABASE_ERROR,
+              category: ERROR_CATEGORIES.DATABASE_ERROR,
+              message: `Failed to get recent world join log: ${error}`,
+              userMessage: '写真に関連するワールド情報の取得に失敗しました。',
+              cause: new Error(String(error)),
+            });
           },
         );
       }),
@@ -510,6 +540,42 @@ export const logInfoRouter = () =>
       }),
 
     /**
+     * プレイヤー名で検索して、そのプレイヤーがいたセッションの参加日時を返す
+     * 効率的なサーバーサイド検索により、該当するセッションのみを返します。
+     * @param playerName - 検索するプレイヤー名（部分一致）
+     * @returns 該当するセッションの参加日時の配列
+     */
+    searchSessionsByPlayerName: procedure
+      .input(
+        z.object({
+          playerName: z.string().min(1),
+        }),
+      )
+      .query(async ({ input }) => {
+        try {
+          const sessionDates = await searchSessionsByPlayerName(
+            input.playerName,
+          );
+          logger.debug(
+            `searchSessionsByPlayerName: Found ${sessionDates.length} sessions for player "${input.playerName}"`,
+          );
+          return sessionDates;
+        } catch (error) {
+          logger.error({
+            message: `Failed to search sessions by player name: ${error}`,
+            stack: error instanceof Error ? error : new Error(String(error)),
+          });
+          throw UserFacingError.withStructuredInfo({
+            code: ERROR_CODES.DATABASE_ERROR,
+            category: ERROR_CATEGORIES.DATABASE_ERROR,
+            message: `Failed to search sessions by player name: ${error}`,
+            userMessage: 'プレイヤー検索中にエラーが発生しました。',
+            cause: error instanceof Error ? error : new Error(String(error)),
+          });
+        }
+      }),
+
+    /**
      * セッション情報（ワールド情報+プレイヤー情報）を効率的にバッチ取得
      * フロントエンドのバッチマネージャーからの複数リクエストを一つのDBクエリで処理
      * @param joinDateTimes - 参加日時の配列
@@ -564,14 +630,29 @@ export const logInfoRouter = () =>
           const maxDateTime = Math.max(...ctx.input.map((d) => d.getTime()));
           const searchEndTime = new Date(maxDateTime + 1000);
 
-          // 共通関数を使用して統合・ソート済みログを取得
-          const sortedLogs = await fetchAndMergeSortedWorldJoinLogs(
+          // 要求された時刻までのログを取得
+          const logsBeforeRequest = await fetchAndMergeSortedWorldJoinLogs(
             {
               ltJoinDateTime: searchEndTime,
               orderByJoinDateTime: 'desc',
             },
             'desc',
           );
+
+          // 次のワールド参加ログを1件だけ追加で取得（セッション境界判定のため）
+          const nextLogResult = await fetchAndMergeSortedWorldJoinLogs(
+            {
+              gtJoinDateTime: searchEndTime,
+              orderByJoinDateTime: 'asc',
+            },
+            'asc',
+          );
+
+          // 2つの結果を統合してソート
+          const sortedLogs = [
+            ...logsBeforeRequest,
+            ...(nextLogResult.length > 0 ? [nextLogResult[0]] : []),
+          ].sort((a, b) => b.joinDateTime.getTime() - a.joinDateTime.getTime());
 
           const worldLogTime = performance.now() - worldLogStartTime;
           logger.debug(
@@ -601,10 +682,12 @@ export const logInfoRouter = () =>
               continue;
             }
 
-            // 次のワールド参加ログを検索（元のfindNextMergedWorldJoinLogと同じロジック）
-            const nextWorldJoin = sortedLogs.find(
-              (log) => log.joinDateTime > recentWorldJoin.joinDateTime,
-            );
+            // 次のワールド参加ログを検索（時系列順で最初に見つかるもの）
+            const nextWorldJoin = sortedLogs
+              .filter((log) => log.joinDateTime > recentWorldJoin.joinDateTime)
+              .sort(
+                (a, b) => a.joinDateTime.getTime() - b.joinDateTime.getTime(),
+              )[0];
 
             const endDateTime = nextWorldJoin?.joinDateTime;
 
@@ -616,6 +699,12 @@ export const logInfoRouter = () =>
               worldName: recentWorldJoin.worldName,
               worldInstanceId: recentWorldJoin.worldInstanceId,
             });
+
+            logger.debug(
+              `[SessionInfoBatch] Session range for ${dateKey}: ${recentWorldJoin.joinDateTime.toISOString()} to ${
+                endDateTime?.toISOString() || 'undefined'
+              } (${recentWorldJoin.worldName})`,
+            );
 
             // 初期化（プレイヤー情報は後で追加）
             results[dateKey] = {

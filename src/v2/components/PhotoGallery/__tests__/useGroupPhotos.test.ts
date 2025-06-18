@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest';
 import { VRChatPhotoFileNameWithExtSchema } from '../../../../valueObjects';
 import type { Photo } from '../../../types/photo';
 import { groupPhotosBySession } from '../useGroupPhotos';

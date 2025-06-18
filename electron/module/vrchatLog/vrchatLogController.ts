@@ -1,5 +1,5 @@
 import * as neverthrow from 'neverthrow';
-import { match } from 'ts-pattern';
+import { P, match } from 'ts-pattern';
 import z from 'zod';
 import { logger } from './../../lib/logger';
 import { eventEmitter, procedure, router as trpcRouter } from './../../trpc';
@@ -7,8 +7,12 @@ import * as playerJoinLogService from './../VRChatPlayerJoinLogModel/playerJoinL
 import * as playerLeaveLogService from './../VRChatPlayerLeaveLogModel/playerLeaveLog.service';
 import * as vrchatLogFileDirService from './../vrchatLogFileDir/service';
 import * as worldJoinLogService from './../vrchatWorldJoinLog/service';
+import { backupService } from './backupService/backupService';
+import { rollbackService } from './backupService/rollbackService';
+import { FILTER_PATTERNS } from './constants/logPatterns';
 import type { LogRecord } from './converters/dbToLogStore';
 import { exportLogStoreFromDB } from './exportService/exportService';
+import { importService } from './importService/importService';
 import * as vrchatLogService from './service';
 
 /**
@@ -74,13 +78,7 @@ export const appendLoglinesToFileFromLogFilePathList = async (
 
   const logLineList = await vrchatLogService.getLogLinesByLogFilePathList({
     logFilePathList: logFilePathList.value,
-    includesList: [
-      'VRC Analytics Initialized',
-      '[Behaviour] Joining ',
-      '[Behaviour] OnPlayerJoined ',
-      '[Behaviour] OnPlayerLeft ',
-      'VRCApplication: HandleApplicationQuit',
-    ],
+    includesList: [...FILTER_PATTERNS],
   });
   if (logLineList.isErr()) {
     return neverthrow.err(logLineList.error);
@@ -111,19 +109,32 @@ export const appendLoglinesToFileFromLogFilePathList = async (
 
 /**
  * DBからlogStore形式でエクスポートする
+ * 期間指定がない場合は全データを取得
  */
 const getDBLogsFromDatabase = async (
-  startDate: Date,
-  endDate: Date,
+  startDate?: Date,
+  endDate?: Date,
 ): Promise<LogRecord[]> => {
   const logRecords: LogRecord[] = [];
 
   // ワールド参加ログを取得
-  const worldJoinResult = await worldJoinLogService.findVRChatWorldJoinLogList({
-    gtJoinDateTime: startDate,
-    ltJoinDateTime: endDate,
+  const worldJoinQueryOptions: Parameters<
+    typeof worldJoinLogService.findVRChatWorldJoinLogList
+  >[0] = {
     orderByJoinDateTime: 'asc',
-  });
+  };
+
+  // 期間指定がある場合のみフィルタを追加
+  if (startDate) {
+    worldJoinQueryOptions.gtJoinDateTime = startDate;
+  }
+  if (endDate) {
+    worldJoinQueryOptions.ltJoinDateTime = endDate;
+  }
+
+  const worldJoinResult = await worldJoinLogService.findVRChatWorldJoinLogList(
+    worldJoinQueryOptions,
+  );
 
   for (const log of worldJoinResult) {
     logRecords.push({
@@ -141,11 +152,27 @@ const getDBLogsFromDatabase = async (
   }
 
   // プレイヤー参加ログを取得
-  const playerJoinResult =
-    await playerJoinLogService.getVRChatPlayerJoinLogListByJoinDateTime({
-      startJoinDateTime: startDate,
-      endJoinDateTime: endDate,
-    });
+  let playerJoinResult: Awaited<
+    ReturnType<
+      typeof playerJoinLogService.getVRChatPlayerJoinLogListByJoinDateTime
+    >
+  >;
+
+  if (startDate) {
+    playerJoinResult =
+      await playerJoinLogService.getVRChatPlayerJoinLogListByJoinDateTime({
+        startJoinDateTime: startDate,
+        endJoinDateTime: endDate || null,
+      });
+  } else {
+    // 期間指定がない場合は、最古の日付から現在までを取得
+    const oldestDate = new Date('2017-01-01'); // VRChatリリース日程度
+    playerJoinResult =
+      await playerJoinLogService.getVRChatPlayerJoinLogListByJoinDateTime({
+        startJoinDateTime: oldestDate,
+        endJoinDateTime: endDate || new Date(),
+      });
+  }
 
   if (playerJoinResult.isOk()) {
     for (const log of playerJoinResult.value) {
@@ -164,12 +191,24 @@ const getDBLogsFromDatabase = async (
   }
 
   // プレイヤー退出ログを取得
+  const playerLeaveQueryOptions: Parameters<
+    typeof playerLeaveLogService.findVRChatPlayerLeaveLogList
+  >[0] = {
+    orderByLeaveDateTime: 'asc',
+  };
+
+  // 期間指定がある場合のみフィルタを追加
+  if (startDate) {
+    playerLeaveQueryOptions.gtLeaveDateTime = startDate;
+  }
+  if (endDate) {
+    playerLeaveQueryOptions.ltLeaveDateTime = endDate;
+  }
+
   const playerLeaveResult =
-    await playerLeaveLogService.findVRChatPlayerLeaveLogList({
-      gtLeaveDateTime: startDate,
-      ltLeaveDateTime: endDate,
-      orderByLeaveDateTime: 'asc',
-    });
+    await playerLeaveLogService.findVRChatPlayerLeaveLogList(
+      playerLeaveQueryOptions,
+    );
 
   for (const log of playerLeaveResult) {
     logRecords.push({
@@ -184,6 +223,13 @@ const getDBLogsFromDatabase = async (
       },
     });
   }
+
+  // TODO: アプリイベントログの取得は今後実装
+  // const appEventRecords = await appEventService.getAppEventLogRecords(
+  //   startDate,
+  //   endDate,
+  // );
+  // logRecords.push(...appEventRecords);
 
   return logRecords;
 };
@@ -215,16 +261,18 @@ export const vrchatLogRouter = () =>
     exportLogStoreData: procedure
       .input(
         z.object({
-          startDate: z.date(),
-          endDate: z.date(),
+          startDate: z.date().optional(),
+          endDate: z.date().optional(),
           outputPath: z.string().optional(),
         }),
       )
       .mutation(async (opts) => {
         const { input } = opts;
-        logger.info(
-          `exportLogStoreData: ${input.startDate.toISOString()} to ${input.endDate.toISOString()}`,
-        );
+        const dateRangeMsg =
+          input.startDate && input.endDate
+            ? `${input.startDate.toISOString()} to ${input.endDate.toISOString()} (received as local time, converted to UTC for DB query)`
+            : '全期間';
+        logger.info(`exportLogStoreData: ${dateRangeMsg}`);
 
         try {
           const result = await exportLogStoreFromDB(
@@ -250,11 +298,188 @@ export const vrchatLogRouter = () =>
           logger.error({
             message: `Export failed: ${String(error)}`,
           });
-          const errorMessage =
-            error instanceof Error ? error.message : String(error);
+          const errorMessage = match(error)
+            .with(P.instanceOf(Error), (err) => err.message)
+            .otherwise((err) => String(err));
           eventEmitter.emit(
             'toast',
             `エクスポートに失敗しました: ${errorMessage}`,
+          );
+          throw error;
+        }
+      }),
+    createPreImportBackup: procedure.mutation(async () => {
+      logger.info('Creating pre-import backup');
+
+      try {
+        const backupResult = await backupService.createPreImportBackup(
+          getDBLogsFromDatabase,
+        );
+
+        if (backupResult.isErr()) {
+          logger.error({
+            message: `Pre-import backup failed: ${backupResult.error.message}`,
+          });
+          eventEmitter.emit(
+            'toast',
+            `バックアップ作成に失敗しました: ${backupResult.error.message}`,
+          );
+          throw backupResult.error;
+        }
+
+        const backup = backupResult.value;
+
+        logger.info(`Pre-import backup created successfully: ${backup.id}`);
+        eventEmitter.emit(
+          'toast',
+          `バックアップ作成完了: ${backup.exportFolderPath}`,
+        );
+
+        return backup;
+      } catch (error) {
+        logger.error({
+          message: `Pre-import backup failed: ${String(error)}`,
+        });
+        const errorMessage = match(error)
+          .with(P.instanceOf(Error), (err) => err.message)
+          .otherwise((err) => String(err));
+        eventEmitter.emit(
+          'toast',
+          `バックアップ作成に失敗しました: ${errorMessage}`,
+        );
+        throw error;
+      }
+    }),
+    importLogStoreFiles: procedure
+      .input(
+        z.object({
+          filePaths: z.array(z.string()),
+        }),
+      )
+      .mutation(async (opts) => {
+        const { input } = opts;
+        logger.info(
+          `Starting logStore import for ${input.filePaths.length} files`,
+        );
+
+        try {
+          const importResult = await importService.importLogStoreFiles(
+            input.filePaths,
+            getDBLogsFromDatabase,
+          );
+
+          if (importResult.isErr()) {
+            logger.error({
+              message: `LogStore import failed: ${importResult.error.message}`,
+            });
+            eventEmitter.emit(
+              'toast',
+              `インポートに失敗しました: ${importResult.error.message}`,
+            );
+            throw importResult.error;
+          }
+
+          const result = importResult.value;
+
+          logger.info(
+            `LogStore import completed: ${result.importedData.totalLines} lines from ${result.importedData.processedFiles.length} files`,
+          );
+
+          eventEmitter.emit(
+            'toast',
+            `インポート完了: ${result.importedData.totalLines}行、${result.importedData.processedFiles.length}ファイル`,
+          );
+
+          return result;
+        } catch (error) {
+          logger.error({
+            message: `LogStore import failed: ${String(error)}`,
+          });
+          const errorMessage = match(error)
+            .with(P.instanceOf(Error), (err) => err.message)
+            .otherwise((err) => String(err));
+          eventEmitter.emit(
+            'toast',
+            `インポートに失敗しました: ${errorMessage}`,
+          );
+          throw error;
+        }
+      }),
+    getImportBackupHistory: procedure.query(async () => {
+      logger.info('Getting import backup history');
+
+      try {
+        const historyResult = await backupService.getBackupHistory();
+
+        if (historyResult.isErr()) {
+          logger.error({
+            message: `Failed to get backup history: ${historyResult.error.message}`,
+          });
+          throw historyResult.error;
+        }
+
+        return historyResult.value;
+      } catch (error) {
+        logger.error({
+          message: `Failed to get backup history: ${String(error)}`,
+        });
+        throw error;
+      }
+    }),
+    rollbackToBackup: procedure
+      .input(
+        z.object({
+          backupId: z.string(),
+        }),
+      )
+      .mutation(async (opts) => {
+        const { input } = opts;
+        logger.info(`Starting rollback to backup: ${input.backupId}`);
+
+        try {
+          const backupResult = await backupService.getBackup(input.backupId);
+          if (backupResult.isErr()) {
+            logger.error({
+              message: `Failed to get backup: ${backupResult.error.message}`,
+            });
+            eventEmitter.emit(
+              'toast',
+              `バックアップが見つかりません: ${backupResult.error.message}`,
+            );
+            throw backupResult.error;
+          }
+
+          const backup = backupResult.value;
+
+          const rollbackResult = await rollbackService.rollbackToBackup(backup);
+          if (rollbackResult.isErr()) {
+            logger.error({
+              message: `Rollback failed: ${rollbackResult.error.message}`,
+            });
+            eventEmitter.emit(
+              'toast',
+              `ロールバックに失敗しました: ${rollbackResult.error.message}`,
+            );
+            throw rollbackResult.error;
+          }
+
+          logger.info(`Rollback completed successfully: ${input.backupId}`);
+          eventEmitter.emit(
+            'toast',
+            `ロールバック完了: ${backup.exportFolderPath}に復帰しました`,
+          );
+
+          return { success: true, backup };
+        } catch (error) {
+          logger.error({
+            message: `Rollback failed: ${String(error)}`,
+          });
+          const errorMessage = match(error)
+            .with(P.instanceOf(Error), (err) => err.message)
+            .otherwise((err) => String(err));
+          eventEmitter.emit(
+            'toast',
+            `ロールバックに失敗しました: ${errorMessage}`,
           );
           throw error;
         }

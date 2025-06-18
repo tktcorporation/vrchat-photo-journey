@@ -1,6 +1,11 @@
 import type { UpdateCheckResult } from 'electron-updater';
+import { P, match } from 'ts-pattern';
 import { getWindow } from '../../electronUtil';
-import { UserFacingError } from '../../lib/errors';
+import {
+  ERROR_CATEGORIES,
+  ERROR_CODES,
+  UserFacingError,
+} from '../../lib/errors';
 import { logger } from '../../lib/logger';
 import * as sequelizeClient from '../../lib/sequelize';
 import * as electronUtilService from '../electronUtil/service';
@@ -143,6 +148,21 @@ export const settingsRouter = () =>
       try {
         logger.info('=== Starting application data initialization ===');
 
+        // Step 0: 旧アプリからのデータ移行チェック（ユーザー確認待ちのため実行はしない）
+        logger.debug('Step 0: Checking for data migration from old app...');
+        const migrationModule = await import('../migration/service');
+        const migrationNeeded = await migrationModule.isMigrationNeeded();
+
+        if (migrationNeeded) {
+          logger.info(
+            'Migration needed from vrchat-photo-journey (waiting for user confirmation)',
+          );
+          // ユーザー確認が必要なため、ここでは移行を実行しない
+          // フロントエンドで確認ダイアログを表示し、承認後に performMigration エンドポイントを呼ぶ
+        } else {
+          logger.debug('No migration needed');
+        }
+
         // Step 1: データベース同期
         logger.info('Step 1: Syncing database schema...');
         await sequelizeClient.syncRDBClient();
@@ -196,6 +216,24 @@ export const settingsRouter = () =>
           }, using ${syncMode} sync mode`,
         );
 
+        // Step 3.5: 初回起動時に自動起動を有効化
+        if (isFirstLaunch) {
+          logger.info(
+            'Step 3.5: Setting default auto-start enabled for first launch...',
+          );
+          try {
+            const { app } = await import('electron');
+            app.setLoginItemSettings({
+              openAtLogin: true,
+              openAsHidden: true,
+            });
+            logger.info('Auto-start enabled by default for first launch');
+          } catch (error) {
+            logger.warn('Failed to set default auto-start:', error);
+            // 自動起動の設定に失敗してもアプリの初期化は続行
+          }
+        }
+
         // Step 4: ログ同期実行
         logger.info('Step 4: Starting log sync...');
         const logSyncResult = await syncLogs(syncMode);
@@ -204,12 +242,24 @@ export const settingsRouter = () =>
           // ログ同期エラーの場合、詳細なエラータイプを特定
           const errorCode = logSyncResult.error.code;
 
-          if (errorCode === 'APPEND_LOGS_FAILED') {
-            // VRChatログファイル関連のエラー（初期セットアップが必要）
-            throw new UserFacingError(
-              'LOG_DIRECTORY_ERROR: VRChatのログフォルダが見つからないか、アクセスできません。初期セットアップが必要です。',
-            );
-          }
+          match(errorCode)
+            .with('APPEND_LOGS_FAILED', () => {
+              // VRChatログファイル関連の設定（初期セットアップが必要）
+              throw UserFacingError.withStructuredInfo({
+                code: ERROR_CODES.VRCHAT_DIRECTORY_SETUP_REQUIRED,
+                category: ERROR_CATEGORIES.SETUP_REQUIRED,
+                message:
+                  'VRChat directory setup is required for initial configuration',
+                userMessage:
+                  'VRChatフォルダの設定が必要です。初期セットアップを開始します。',
+                details: {
+                  syncError: logSyncResult.error,
+                },
+              });
+            })
+            .otherwise(() => {
+              // その他のエラーは何もしない（後続の処理で警告ログ出力）
+            });
 
           // 開発環境ではwarnレベルでログ記録（Sentryに送信されない）
           logger.warn(
@@ -226,16 +276,149 @@ export const settingsRouter = () =>
       } catch (error) {
         logger.error({
           message: 'Application data initialization failed',
-          stack: error instanceof Error ? error : undefined,
+          stack: match(error)
+            .with(P.instanceOf(Error), (err) => err)
+            .otherwise(() => undefined),
         });
-        const errorMessage =
-          error instanceof Error
-            ? error.message
-            : 'Unknown initialization error';
+
+        // UserFacingErrorの場合は構造化情報を保持して再スロー
+        if (error instanceof UserFacingError) {
+          throw error;
+        }
+
+        // その他のエラーの場合は新しいUserFacingErrorでラップ
+        const errorMessage = match(error)
+          .with(P.instanceOf(Error), (err) => err.message)
+          .otherwise(() => 'Unknown initialization error');
         throw new UserFacingError(`初期化に失敗しました: ${errorMessage}`);
       } finally {
         // 処理完了後にフラグをリセット
         isInitializing = false;
       }
+    }),
+
+    /**
+     * 旧アプリからの移行が必要かどうかをチェックする
+     */
+    checkMigrationStatus: procedure.query(async () => {
+      logger.debug('[Settings] Checking migration status...');
+      const migrationModule = await import('../migration/service');
+      const isNeeded = await migrationModule.isMigrationNeeded();
+      const result = {
+        migrationNeeded: isNeeded,
+        oldAppName: 'vrchat-photo-journey',
+        newAppName: 'VRChatAlbums',
+      };
+      logger.debug('[Settings] Migration status check result:', result);
+      return result;
+    }),
+
+    /**
+     * ユーザーの承認を得て旧アプリからのデータ移行を実行する
+     */
+    performMigration: procedure.mutation(async () => {
+      const migrationModule = await import('../migration/service');
+
+      // 再度移行が必要かチェック
+      const isNeeded = await migrationModule.isMigrationNeeded();
+      if (!isNeeded) {
+        throw new UserFacingError('データ移行は不要です');
+      }
+
+      logger.info('User approved migration, starting migration process...');
+      const migrationResult = await migrationModule.performMigration();
+
+      if (migrationResult.isErr()) {
+        logger.error({
+          message: `Migration failed: ${migrationResult.error.message}`,
+          stack: migrationResult.error,
+        });
+        throw UserFacingError.withStructuredInfo({
+          code: ERROR_CODES.MIGRATION_FAILED,
+          category: ERROR_CATEGORIES.DATABASE_ERROR,
+          message: 'Data migration failed',
+          userMessage: `データ移行に失敗しました: ${migrationResult.error.message}`,
+        });
+      }
+
+      logger.info('Migration completed successfully:', migrationResult.value);
+
+      // 移行結果を返す
+      const { details, errors } = migrationResult.value;
+      const migratedItems = [];
+      if (details.logStore) migratedItems.push('ログデータ');
+      if (details.settings) migratedItems.push('設定');
+
+      return {
+        success: true,
+        migratedItems,
+        errors,
+        details,
+      };
+    }),
+
+    /**
+     * 移行通知が表示されたかどうかを取得する
+     */
+    getMigrationNoticeShown: procedure.query(async () => {
+      const settingStore = getSettingStore();
+      const shown = settingStore.getMigrationNoticeShown();
+      logger.debug('[Settings] getMigrationNoticeShown:', shown);
+      return shown;
+    }),
+
+    /**
+     * 移行通知が表示されたことを記録する
+     */
+    setMigrationNoticeShown: procedure.mutation(async () => {
+      const settingStore = getSettingStore();
+      settingStore.setMigrationNoticeShown(true);
+      return { success: true };
+    }),
+
+    /**
+     * デバッグ用：アプリのディレクトリ情報を取得
+     */
+    getAppDirectories: procedure.query(async () => {
+      const { app } = await import('electron');
+      const currentUserDataPath = app.getPath('userData');
+      const parentDir = require('node:path').dirname(currentUserDataPath);
+      const fs = require('node:fs');
+
+      // 親ディレクトリの内容を確認
+      let siblingDirs: string[] = [];
+      try {
+        siblingDirs = fs.readdirSync(parentDir).filter((name: string) => {
+          const fullPath = require('node:path').join(parentDir, name);
+          return fs.statSync(fullPath).isDirectory();
+        });
+      } catch (error) {
+        logger.error({
+          message: 'Failed to read parent directory',
+          stack: error instanceof Error ? error : new Error(String(error)),
+        });
+      }
+
+      return {
+        currentUserDataPath,
+        parentDir,
+        siblingDirs,
+        migrationMarkerExists: fs.existsSync(
+          require('node:path').join(
+            currentUserDataPath,
+            '.migration-completed',
+          ),
+        ),
+      };
+    }),
+
+    /**
+     * デバッグ用：移行通知フラグをリセット
+     */
+    resetMigrationNotice: procedure.mutation(async () => {
+      const settingStore = getSettingStore();
+      settingStore.setMigrationNoticeShown(false);
+      logger.info('[Settings] Reset migration notice flag');
+      return { success: true };
     }),
   });

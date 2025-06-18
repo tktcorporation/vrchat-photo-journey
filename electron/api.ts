@@ -7,7 +7,7 @@ import {
   handleResultError,
   handleResultErrorWithSilent,
 } from './lib/errorHelpers';
-import { UserFacingError } from './lib/errors';
+import { ERROR_CATEGORIES, ERROR_CODES, UserFacingError } from './lib/errors';
 import { logger } from './lib/logger';
 import { backgroundSettingsRouter } from './module/backgroundSettings/controller/backgroundSettingsController';
 import { debugRouter } from './module/debug/debugController';
@@ -47,10 +47,22 @@ export const router = trpcRouter({
     return observable((emit) => {
       /**
        * メインプロセスの `toast` イベントを受け取り
-       * サブスクライバーへ文字列を送信する内部関数。
+       * サブスクライバーへ文字列または構造化メッセージを送信する内部関数。
        * subscribeToast の Observable 内でのみ使用される。
        */
-      function onToast(text: string) {
+      function onToast(text: string | Record<string, unknown>) {
+        // 予期しないデータ型の場合はログを出力して無視
+        if (
+          typeof text !== 'string' &&
+          !(typeof text === 'object' && text !== null && 'message' in text)
+        ) {
+          console.warn(
+            '[subscribeToast] Unexpected toast data type received:',
+            typeof text,
+            text,
+          );
+          return;
+        }
         emit.next(text);
       }
 
@@ -192,12 +204,13 @@ export const router = trpcRouter({
             };
           }
           // canceledでない場合は予期しないエラーとして扱う
-          throw new UserFacingError(
-            'ファイル選択ダイアログでエラーが発生しました。',
-            {
-              cause: new Error(String(error)),
-            },
-          );
+          throw UserFacingError.withStructuredInfo({
+            code: ERROR_CODES.UNKNOWN,
+            category: ERROR_CATEGORIES.UNKNOWN_ERROR,
+            message: 'File dialog error',
+            userMessage: 'ファイル選択ダイアログでエラーが発生しました。',
+            cause: new Error(String(error)),
+          });
         },
       );
     }),

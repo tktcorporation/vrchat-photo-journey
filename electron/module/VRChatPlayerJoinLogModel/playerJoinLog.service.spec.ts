@@ -1,3 +1,4 @@
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import * as service from './playerJoinLog.service';
 
 import * as datefns from 'date-fns';
@@ -19,13 +20,13 @@ describe('VRChatPlayerJoinLogModel', () => {
       const playerJoinLogList = [
         {
           joinDate: datefns.parseISO('2021-01-01T00:00:00Z'),
-          playerName: 'player1',
+          playerName: VRChatPlayerNameSchema.parse('player1'),
           logType: 'playerJoin' as const,
           playerId: null,
         },
         {
           joinDate: datefns.parseISO('2021-01-02T00:00:00Z'),
-          playerName: 'player2',
+          playerName: VRChatPlayerNameSchema.parse('player2'),
           logType: 'playerJoin' as const,
           playerId: null,
         },
@@ -68,31 +69,31 @@ describe('VRChatPlayerJoinLogModel', () => {
       const playerJoinLogList = [
         {
           joinDate: datefns.parseISO('2021-01-03T00:00:00Z'),
-          playerName: 'player1',
+          playerName: VRChatPlayerNameSchema.parse('player1'),
           logType: 'playerJoin' as const,
           playerId: null,
         },
         {
           joinDate: datefns.parseISO('2021-01-03T00:00:00Z'),
-          playerName: 'player1',
+          playerName: VRChatPlayerNameSchema.parse('player1'),
           logType: 'playerJoin' as const,
           playerId: null,
         },
         {
           joinDate: datefns.parseISO('2021-01-03T00:00:00Z'),
-          playerName: 'player2',
+          playerName: VRChatPlayerNameSchema.parse('player2'),
           logType: 'playerJoin' as const,
           playerId: null,
         },
         {
           joinDate: datefns.parseISO('2021-01-03T00:00:00Z'),
-          playerName: 'player1',
+          playerName: VRChatPlayerNameSchema.parse('player1'),
           logType: 'playerJoin' as const,
           playerId: null,
         },
         {
           joinDate: datefns.parseISO('2021-01-03T00:00:00Z'),
-          playerName: 'player2',
+          playerName: VRChatPlayerNameSchema.parse('player2'),
           logType: 'playerJoin' as const,
           playerId: null,
         },
@@ -124,13 +125,13 @@ describe('VRChatPlayerJoinLogModel', () => {
       const playerJoinLogList = [
         {
           joinDate: datefns.parseISO('2021-01-01T00:00:00Z'),
-          playerName: 'player1',
+          playerName: VRChatPlayerNameSchema.parse('player1'),
           logType: 'playerJoin' as const,
           playerId: null,
         },
         {
           joinDate: datefns.parseISO('2021-01-01T00:00:00Z'),
-          playerName: 'player1',
+          playerName: VRChatPlayerNameSchema.parse('player1'),
           logType: 'playerJoin' as const,
           playerId: null,
         },
@@ -180,13 +181,13 @@ describe('VRChatPlayerJoinLogModel', () => {
       const playerJoinLogList = [
         {
           joinDate: datefns.parseISO('2021-01-01T00:00:00Z'),
-          playerName: 'player1',
+          playerName: VRChatPlayerNameSchema.parse('player1'),
           logType: 'playerJoin' as const,
           playerId: null,
         },
         {
           joinDate: datefns.parseISO('2021-01-02T00:00:00Z'),
-          playerName: 'player2',
+          playerName: VRChatPlayerNameSchema.parse('player2'),
           logType: 'playerJoin' as const,
           playerId: null,
         },
@@ -204,13 +205,13 @@ describe('VRChatPlayerJoinLogModel', () => {
       const playerJoinLogList = [
         {
           joinDate: datefns.parseISO('2021-01-01T00:00:00Z'),
-          playerName: 'player1',
+          playerName: VRChatPlayerNameSchema.parse('player1'),
           logType: 'playerJoin' as const,
           playerId: null,
         },
         {
           joinDate: datefns.parseISO('2021-01-02T00:00:00Z'),
-          playerName: 'player2',
+          playerName: VRChatPlayerNameSchema.parse('player2'),
           logType: 'playerJoin' as const,
           playerId: null,
         },

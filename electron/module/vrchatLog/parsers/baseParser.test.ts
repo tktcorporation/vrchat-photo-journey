@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { VRChatLogLineSchema, VRChatPlayerId, VRChatWorldId } from '../model';
+import {
+  VRChatLogLineSchema,
+  isValidVRChatPlayerId,
+  isValidVRChatWorldId,
+} from '../model';
 import { filterLogLinesByDate, parseLogDateTime } from './baseParser';
 
 describe('baseParser', () => {
@@ -13,46 +17,46 @@ describe('baseParser', () => {
   describe('VRChatWorldId.isValid', () => {
     it('有効なワールドIDを正しく判定する', () => {
       expect(
-        VRChatWorldId.isValid('wrld_12345678-1234-1234-1234-123456789abc'),
+        isValidVRChatWorldId('wrld_12345678-1234-1234-1234-123456789abc'),
       ).toBe(true);
       expect(
-        VRChatWorldId.isValid('wrld_abcdef12-3456-7890-abcd-ef1234567890'),
+        isValidVRChatWorldId('wrld_abcdef12-3456-7890-abcd-ef1234567890'),
       ).toBe(true);
     });
 
     it('無効なワールドIDを正しく判定する', () => {
-      expect(VRChatWorldId.isValid('invalid-world-id')).toBe(false);
+      expect(isValidVRChatWorldId('invalid-world-id')).toBe(false);
       expect(
-        VRChatWorldId.isValid('world_12345678-1234-1234-1234-123456789abc'),
+        isValidVRChatWorldId('world_12345678-1234-1234-1234-123456789abc'),
       ).toBe(false);
-      expect(VRChatWorldId.isValid('wrld_invalid-format')).toBe(false);
+      expect(isValidVRChatWorldId('wrld_invalid-format')).toBe(false);
       expect(
-        VRChatWorldId.isValid('wrld_12345678-1234-1234-1234-123456789abcdef'),
+        isValidVRChatWorldId('wrld_12345678-1234-1234-1234-123456789abcdef'),
       ).toBe(false); // too long
-      expect(VRChatWorldId.isValid('')).toBe(false);
+      expect(isValidVRChatWorldId('')).toBe(false);
     });
   });
 
   describe('VRChatPlayerId.isValid', () => {
     it('有効なプレイヤーIDを正しく判定する', () => {
       expect(
-        VRChatPlayerId.isValid('usr_12345678-1234-1234-1234-123456789abc'),
+        isValidVRChatPlayerId('usr_12345678-1234-1234-1234-123456789abc'),
       ).toBe(true);
       expect(
-        VRChatPlayerId.isValid('usr_abcdef12-3456-7890-abcd-ef1234567890'),
+        isValidVRChatPlayerId('usr_abcdef12-3456-7890-abcd-ef1234567890'),
       ).toBe(true);
     });
 
     it('無効なプレイヤーIDを正しく判定する', () => {
-      expect(VRChatPlayerId.isValid('invalid-player-id')).toBe(false);
+      expect(isValidVRChatPlayerId('invalid-player-id')).toBe(false);
       expect(
-        VRChatPlayerId.isValid('user_12345678-1234-1234-1234-123456789abc'),
+        isValidVRChatPlayerId('user_12345678-1234-1234-1234-123456789abc'),
       ).toBe(false);
-      expect(VRChatPlayerId.isValid('usr_invalid-format')).toBe(false);
+      expect(isValidVRChatPlayerId('usr_invalid-format')).toBe(false);
       expect(
-        VRChatPlayerId.isValid('usr_12345678-1234-1234-1234-123456789abcdef'),
+        isValidVRChatPlayerId('usr_12345678-1234-1234-1234-123456789abcdef'),
       ).toBe(false); // too long
-      expect(VRChatPlayerId.isValid('')).toBe(false);
+      expect(isValidVRChatPlayerId('')).toBe(false);
     });
   });
 

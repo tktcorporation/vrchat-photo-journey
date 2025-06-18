@@ -83,10 +83,9 @@ export const getVRChatPhotoList = async (
   if (!targetDir) {
     return [];
   }
-  const normalizedTargetDir = path
-    .normalize(targetDir)
-    .split(path.sep)
-    .join('/');
+  // Convert to POSIX format for glob pattern matching
+  // glob always expects forward slashes regardless of platform
+  const normalizedTargetDir = path.normalize(targetDir).replace(/\\/g, '/');
   const allPhotoPathList = await glob(`${normalizedTargetDir}/**/VRChat_*.png`);
 
   let targetPhotoPathList: string[];

@@ -11,6 +11,7 @@ import {
 import { clearAllCaches } from '../../lib/queryCache';
 import * as client from '../../lib/sequelize';
 import * as playerJoinLogService from '../VRChatPlayerJoinLogModel/playerJoinLog.service';
+import { VRChatPlayerNameSchema } from '../vrchatLog/model';
 
 describe('getFrequentPlayerNames tRPC endpoint integration tests', () => {
   beforeAll(async () => {
@@ -34,61 +35,61 @@ describe('getFrequentPlayerNames tRPC endpoint integration tests', () => {
     const testData = [
       {
         joinDate: datefns.parseISO('2024-01-01T00:00:00Z'),
-        playerName: 'PopularPlayer',
+        playerName: VRChatPlayerNameSchema.parse('PopularPlayer'),
         logType: 'playerJoin' as const,
         playerId: null,
       },
       {
         joinDate: datefns.parseISO('2024-01-02T00:00:00Z'),
-        playerName: 'PopularPlayer',
+        playerName: VRChatPlayerNameSchema.parse('PopularPlayer'),
         logType: 'playerJoin' as const,
         playerId: null,
       },
       {
         joinDate: datefns.parseISO('2024-01-03T00:00:00Z'),
-        playerName: 'PopularPlayer',
+        playerName: VRChatPlayerNameSchema.parse('PopularPlayer'),
         logType: 'playerJoin' as const,
         playerId: null,
       },
       {
         joinDate: datefns.parseISO('2024-01-04T00:00:00Z'),
-        playerName: 'PopularPlayer',
+        playerName: VRChatPlayerNameSchema.parse('PopularPlayer'),
         logType: 'playerJoin' as const,
         playerId: null,
       },
       {
         joinDate: datefns.parseISO('2024-01-01T00:00:00Z'),
-        playerName: 'RegularPlayer',
+        playerName: VRChatPlayerNameSchema.parse('RegularPlayer'),
         logType: 'playerJoin' as const,
         playerId: null,
       },
       {
         joinDate: datefns.parseISO('2024-01-02T00:00:00Z'),
-        playerName: 'RegularPlayer',
+        playerName: VRChatPlayerNameSchema.parse('RegularPlayer'),
         logType: 'playerJoin' as const,
         playerId: null,
       },
       {
         joinDate: datefns.parseISO('2024-01-03T00:00:00Z'),
-        playerName: 'RegularPlayer',
+        playerName: VRChatPlayerNameSchema.parse('RegularPlayer'),
         logType: 'playerJoin' as const,
         playerId: null,
       },
       {
         joinDate: datefns.parseISO('2024-01-01T00:00:00Z'),
-        playerName: 'CasualPlayer',
+        playerName: VRChatPlayerNameSchema.parse('CasualPlayer'),
         logType: 'playerJoin' as const,
         playerId: null,
       },
       {
         joinDate: datefns.parseISO('2024-01-02T00:00:00Z'),
-        playerName: 'CasualPlayer',
+        playerName: VRChatPlayerNameSchema.parse('CasualPlayer'),
         logType: 'playerJoin' as const,
         playerId: null,
       },
       {
         joinDate: datefns.parseISO('2024-01-01T00:00:00Z'),
-        playerName: 'NewPlayer',
+        playerName: VRChatPlayerNameSchema.parse('NewPlayer'),
         logType: 'playerJoin' as const,
         playerId: null,
       },
@@ -120,49 +121,49 @@ describe('getFrequentPlayerNames tRPC endpoint integration tests', () => {
     const testData = [
       {
         joinDate: datefns.parseISO('2024-01-01T00:00:00Z'),
-        playerName: 'Player1',
+        playerName: VRChatPlayerNameSchema.parse('Player1'),
         logType: 'playerJoin' as const,
         playerId: null,
       },
       {
         joinDate: datefns.parseISO('2024-01-02T00:00:00Z'),
-        playerName: 'Player1',
+        playerName: VRChatPlayerNameSchema.parse('Player1'),
         logType: 'playerJoin' as const,
         playerId: null,
       },
       {
         joinDate: datefns.parseISO('2024-01-03T00:00:00Z'),
-        playerName: 'Player1',
+        playerName: VRChatPlayerNameSchema.parse('Player1'),
         logType: 'playerJoin' as const,
         playerId: null,
       },
       {
         joinDate: datefns.parseISO('2024-01-01T00:00:00Z'),
-        playerName: 'Player2',
+        playerName: VRChatPlayerNameSchema.parse('Player2'),
         logType: 'playerJoin' as const,
         playerId: null,
       },
       {
         joinDate: datefns.parseISO('2024-01-02T00:00:00Z'),
-        playerName: 'Player2',
+        playerName: VRChatPlayerNameSchema.parse('Player2'),
         logType: 'playerJoin' as const,
         playerId: null,
       },
       {
         joinDate: datefns.parseISO('2024-01-01T00:00:00Z'),
-        playerName: 'Player3',
+        playerName: VRChatPlayerNameSchema.parse('Player3'),
         logType: 'playerJoin' as const,
         playerId: null,
       },
       {
         joinDate: datefns.parseISO('2024-01-01T00:00:00Z'),
-        playerName: 'Player4',
+        playerName: VRChatPlayerNameSchema.parse('Player4'),
         logType: 'playerJoin' as const,
         playerId: null,
       },
       {
         joinDate: datefns.parseISO('2024-01-01T00:00:00Z'),
-        playerName: 'Player5',
+        playerName: VRChatPlayerNameSchema.parse('Player5'),
         logType: 'playerJoin' as const,
         playerId: null,
       },
@@ -210,37 +211,37 @@ describe('getFrequentPlayerNames tRPC endpoint integration tests', () => {
     const testData = [
       {
         joinDate: datefns.parseISO('2024-01-01T00:00:00Z'),
-        playerName: 'Player1',
+        playerName: VRChatPlayerNameSchema.parse('Player1'),
         logType: 'playerJoin' as const,
         playerId: null,
       },
       {
         joinDate: datefns.parseISO('2024-01-01T00:00:00Z'),
-        playerName: 'Player2',
+        playerName: VRChatPlayerNameSchema.parse('Player2'),
         logType: 'playerJoin' as const,
         playerId: null,
       },
       {
         joinDate: datefns.parseISO('2024-01-01T00:00:00Z'),
-        playerName: 'Player3',
+        playerName: VRChatPlayerNameSchema.parse('Player3'),
         logType: 'playerJoin' as const,
         playerId: null,
       },
       {
         joinDate: datefns.parseISO('2024-01-01T00:00:00Z'),
-        playerName: 'Player4',
+        playerName: VRChatPlayerNameSchema.parse('Player4'),
         logType: 'playerJoin' as const,
         playerId: null,
       },
       {
         joinDate: datefns.parseISO('2024-01-01T00:00:00Z'),
-        playerName: 'Player5',
+        playerName: VRChatPlayerNameSchema.parse('Player5'),
         logType: 'playerJoin' as const,
         playerId: null,
       },
       {
         joinDate: datefns.parseISO('2024-01-01T00:00:00Z'),
-        playerName: 'Player6',
+        playerName: VRChatPlayerNameSchema.parse('Player6'),
         logType: 'playerJoin' as const,
         playerId: null,
       },

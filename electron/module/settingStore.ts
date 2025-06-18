@@ -1,6 +1,7 @@
 import type { Rectangle } from 'electron';
 import Store from 'electron-store';
 import * as neverthrow from 'neverthrow';
+import { match } from 'ts-pattern';
 
 type TestPlaywrightStoreName = `test-playwright-settings-${string}`;
 type StoreName = 'v0-settings' | 'test-settings' | TestPlaywrightStoreName;
@@ -13,6 +14,7 @@ const settingStoreKey = [
   'backgroundFileCreateFlag',
   'termsAccepted',
   'termsVersion',
+  'migrationNoticeShown',
 ] as const;
 type SettingStoreKey = (typeof settingStoreKey)[number];
 
@@ -32,20 +34,24 @@ const getStr =
   (get: (key: SettingStoreKey) => unknown) =>
   (key: SettingStoreKey): string | null => {
     const value = get(key);
-    if (typeof value !== 'string') {
-      return null;
-    }
-    return value;
+    return match(value)
+      .when(
+        (v): v is string => typeof v === 'string',
+        (v) => v,
+      )
+      .otherwise(() => null);
   };
 
 const getBool =
   (get: (key: SettingStoreKey) => unknown) =>
   (key: SettingStoreKey): boolean | null => {
     const value = get(key);
-    if (typeof value !== 'boolean') {
-      return null;
-    }
-    return value;
+    return match(value)
+      .when(
+        (v): v is boolean => typeof v === 'boolean',
+        (v) => v,
+      )
+      .otherwise(() => null);
   };
 
 const getLogFilesDir =
@@ -74,10 +80,12 @@ const setVRChatPhotoDir =
 const getRemoveAdjacentDuplicateWorldEntriesFlag =
   (getB: (key: SettingStoreKey) => boolean | null) => (): boolean | null => {
     const value = getB('removeAdjacentDuplicateWorldEntriesFlag');
-    if (typeof value !== 'boolean') {
-      return null;
-    }
-    return value;
+    return match(value)
+      .when(
+        (v): v is boolean => typeof v === 'boolean',
+        (v) => v,
+      )
+      .otherwise(() => null);
   };
 const setRemoveAdjacentDuplicateWorldEntriesFlag =
   (set: (key: SettingStoreKey, value: unknown) => void) => (flag: boolean) => {
@@ -95,10 +103,12 @@ const setBackgroundFileCreateFlag =
 const getBackgroundFileCreateFlag =
   (getB: (key: SettingStoreKey) => boolean | null) => (): boolean | null => {
     const value = getB('backgroundFileCreateFlag');
-    if (typeof value !== 'boolean') {
-      return null;
-    }
-    return value;
+    return match(value)
+      .when(
+        (v): v is boolean => typeof v === 'boolean',
+        (v) => v,
+      )
+      .otherwise(() => null);
   };
 
 /**
@@ -128,6 +138,20 @@ const setTermsVersion =
   };
 
 /**
+ * Migration notice shown flag
+ */
+const getMigrationNoticeShown =
+  (getB: (key: SettingStoreKey) => boolean | null) => (): boolean => {
+    const value = getB('migrationNoticeShown');
+    return value ?? false;
+  };
+
+const setMigrationNoticeShown =
+  (set: (key: SettingStoreKey, value: unknown) => void) => (flag: boolean) => {
+    set('migrationNoticeShown', flag);
+  };
+
+/**
  * Clear all settings
  */
 const clearAllStoredSettings = (settingsStore: Store) => () => {
@@ -143,10 +167,14 @@ const clearStoredSetting =
     try {
       return neverthrow.ok(settingsStore.delete(key));
     } catch (error) {
-      if (error instanceof Error) {
-        return neverthrow.err(error);
-      }
-      throw error;
+      return match(error)
+        .when(
+          (e): e is Error => e instanceof Error,
+          (e) => neverthrow.err(e),
+        )
+        .otherwise((e) => {
+          throw e;
+        });
     }
   };
 
@@ -170,13 +198,19 @@ const setSettingStore = (name: StoreName) => {
   };
   const getVRChatPhotoExtraDirList = () => (): VRChatPhotoDirPath[] => {
     const value = get('vrchatPhotoExtraDirList');
-    if (!Array.isArray(value)) {
-      return [];
-    }
-    const parsedValue = value.filter(
-      (item): item is string => typeof item === 'string',
-    );
-    return parsedValue.map((item) => VRChatPhotoDirPathSchema.parse(item));
+    return match(value)
+      .when(
+        (v): v is unknown[] => Array.isArray(v),
+        (v) => {
+          const parsedValue = v.filter(
+            (item): item is string => typeof item === 'string',
+          );
+          return parsedValue.map((item) =>
+            VRChatPhotoDirPathSchema.parse(item),
+          );
+        },
+      )
+      .otherwise(() => []);
   };
 
   const setVRChatPhotoExtraDirList =
@@ -206,22 +240,25 @@ const setSettingStore = (name: StoreName) => {
     },
     getWindowBounds: (): Rectangle | undefined => {
       const bounds = store.get('windowBounds');
-      if (
-        bounds &&
-        typeof bounds === 'object' &&
-        'x' in bounds &&
-        'y' in bounds &&
-        'width' in bounds &&
-        'height' in bounds
-      ) {
-        return bounds as Rectangle;
-      }
-      return undefined;
+      return match(bounds)
+        .when(
+          (b): b is Rectangle =>
+            b !== null &&
+            typeof b === 'object' &&
+            'x' in b &&
+            'y' in b &&
+            'width' in b &&
+            'height' in b,
+          (b) => b,
+        )
+        .otherwise(() => undefined);
     },
     getTermsAccepted: getTermsAccepted(getB),
     setTermsAccepted: setTermsAccepted(set),
     getTermsVersion: getTermsVersion(getS),
     setTermsVersion: setTermsVersion(set),
+    getMigrationNoticeShown: getMigrationNoticeShown(getB),
+    setMigrationNoticeShown: setMigrationNoticeShown(set),
   };
   settingStore = _settingStore;
   return _settingStore;
@@ -282,6 +319,8 @@ export interface SettingStore {
   setTermsAccepted: (accepted: boolean) => void;
   getTermsVersion: () => string;
   setTermsVersion: (version: string) => void;
+  getMigrationNoticeShown: () => boolean;
+  setMigrationNoticeShown: (shown: boolean) => void;
 }
 
 export { getSettingStore, initSettingStore, initSettingStoreForTest };

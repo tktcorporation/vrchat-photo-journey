@@ -1,22 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import type { VRChatLogLine } from '../model';
+import { VRChatLogLineSchema } from '../model';
 import {
   extractWorldLeaveInfoFromLog,
   inferWorldLeaveEvents,
 } from './worldLeaveParser';
 
-const createLogLine = (value: string): VRChatLogLine => ({
-  id: Math.random().toString(),
-  value,
-  logFileId: 'test',
-  createdAt: new Date(),
-  updatedAt: null,
-});
+const createLogLine = (value: string) => VRChatLogLineSchema.parse(value);
 
 describe('extractWorldLeaveInfoFromLog', () => {
   it('アプリケーション終了ログを正しく検出する', () => {
     const logEntry = createLogLine(
-      '2024.01.01 10:30:00 Debug - OnApplicationQuit called',
+      '2024.01.01 10:30:00 Debug - VRCApplication: HandleApplicationQuit',
     );
 
     const result = extractWorldLeaveInfoFromLog(logEntry);
@@ -40,18 +34,19 @@ describe('extractWorldLeaveInfoFromLog', () => {
     expect(result?.leaveDate).toEqual(new Date('2024-01-01T10:25:00'));
   });
 
-  it('手動退出ログを正しく検出する', () => {
-    const logEntry = createLogLine(
-      '2024.01.01 10:20:00 Debug - Left Room manually',
-    );
-
-    const result = extractWorldLeaveInfoFromLog(logEntry);
-
-    expect(result).not.toBeNull();
-    expect(result?.logType).toBe('worldLeave');
-    expect(result?.reason).toBe('userAction');
-    expect(result?.leaveDate).toEqual(new Date('2024-01-01T10:20:00'));
-  });
+  // TODO: 実際のVRChatログパターンが見つかったらテストを追加
+  // it('手動退出ログを正しく検出する', () => {
+  //   const logEntry = createLogLine(
+  //     '2024.01.01 10:20:00 Debug - Left Room manually',
+  //   );
+  //
+  //   const result = extractWorldLeaveInfoFromLog(logEntry);
+  //
+  //   expect(result).not.toBeNull();
+  //   expect(result?.logType).toBe('worldLeave');
+  //   expect(result?.reason).toBe('userAction');
+  //   expect(result?.leaveDate).toEqual(new Date('2024-01-01T10:20:00'));
+  // });
 
   it('無関係なログは無視される', () => {
     const logEntry = createLogLine(
@@ -65,7 +60,7 @@ describe('extractWorldLeaveInfoFromLog', () => {
 
   it('日時フォーマットが不正な場合はnullを返す', () => {
     const logEntry = createLogLine(
-      'Invalid date format - OnApplicationQuit called',
+      'Invalid date format - VRCApplication: HandleApplicationQuit',
     );
 
     const result = extractWorldLeaveInfoFromLog(logEntry);
@@ -126,7 +121,7 @@ describe('inferWorldLeaveEvents', () => {
 
     const result = inferWorldLeaveEvents(logLines, worldJoinIndices);
 
-    expect(result).toHaveLength(0);
+    expect(result).toEqual([]);
   });
 
   it('日時が抽出できないログ行は無視される', () => {

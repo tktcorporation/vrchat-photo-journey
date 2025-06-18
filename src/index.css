@@ -229,7 +229,6 @@
     background: hsl(var(--card));
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid hsl(var(--border));
     box-shadow: 
       0 4px 16px rgba(31, 38, 135, 0.15),
       inset 0 1px 0 rgba(255, 255, 255, 0.05);

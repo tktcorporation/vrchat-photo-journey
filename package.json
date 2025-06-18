@@ -1,6 +1,6 @@
 {
   "name": "vrchat-albums",
-  "version": "0.14.0",
+  "version": "0.16.0",
   "main": "main/index.cjs",
   "author": {
     "name": "tktcorporation"
@@ -43,8 +43,9 @@
     "test": "nr vitest run",
     "test:web": "vitest run --project web",
     "test:electron": "vitest run --project electron",
-    "test:playwright": "nr build && playwright install --with-deps && playwright test",
-    "lint": "nr lint:biome && nr lint:type-check && nr lint:actionlint",
+    "test:playwright": "nr build && playwright install --with-deps && playwright test --timeout=60000",
+    "lint": "nr lint:biome && nr lint:type-check && nr lint:actionlint && nr lint:valueobjects",
+    "lint:valueobjects": "nlx tsx scripts/lint-valueobjects.ts",
     "lint:biome": "biome check .",
     "lint:type-check": "nr lint:type-check:tsgo:electron && nr lint:type-check:tsgo:src",
     "lint:type-check:tsc": "nr lint:type-check:tsc:electron && nr lint:type-check:tsc:src",
@@ -143,7 +144,8 @@
     "@types/react": "18.2.33",
     "@types/react-dom": "18.2.14",
     "@types/sharp": "0.32.0",
-    "@typescript/native-preview": "^7.0.0-dev.20250523.1",
+    "@types/uuid": "^10.0.0",
+    "@typescript/native-preview": "^7.0.0-dev.20250617.1",
     "@vitest/coverage-v8": "^2.1.8",
     "@welldone-software/why-did-you-render": "^8.0.3",
     "autoprefixer": "10.4.19",

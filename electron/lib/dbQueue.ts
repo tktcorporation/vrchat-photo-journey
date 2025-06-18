@@ -80,8 +80,8 @@ class DBQueue {
    * @returns タスクの実行結果
    */
   async add<T>(task: () => Promise<T>): Promise<T> {
-    // キューが一杯かどうかをチェック
-    if (this.queue.size >= this.options.maxSize) {
+    // キューが一杯かどうかをチェック（実行中＋待機中の合計）
+    if (this.totalTasks >= this.options.maxSize) {
       if (this.options.onFull === 'throw') {
         throw new Error('DBQueue: キューが一杯です');
       }
@@ -108,7 +108,7 @@ class DBQueue {
     task: () => Promise<T>,
   ): Promise<Result<T, DBQueueError>> {
     try {
-      if (this.queue.size >= this.options.maxSize) {
+      if (this.totalTasks >= this.options.maxSize) {
         if (this.options.onFull === 'throw') {
           return err({
             type: 'QUEUE_FULL',
@@ -231,7 +231,7 @@ class DBQueue {
   private async waitForSpace(): Promise<void> {
     return new Promise((resolve) => {
       const checkQueue = () => {
-        if (this.queue.size < this.options.maxSize) {
+        if (this.totalTasks < this.options.maxSize) {
           resolve();
         } else {
           setTimeout(checkQueue, 100);
@@ -249,10 +249,18 @@ class DBQueue {
   }
 
   /**
-   * 処理中のタスク数を取得する
+   * 処理中のタスク数を取得する（実行中のタスク数）
    */
   get pending(): number {
     return this.queue.pending;
+  }
+
+  /**
+   * 実行中と待機中の合計タスク数を取得する
+   */
+  private get totalTasks(): number {
+    // p-queueのpendingは実行中のタスク数、sizeは待機中のタスク数
+    return this.queue.pending + this.queue.size;
   }
 
   /**

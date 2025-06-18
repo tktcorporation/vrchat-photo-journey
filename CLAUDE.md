@@ -35,10 +35,41 @@ Electron desktop app for organizing VRChat photos by automatically associating t
 
 1. **tRPC Communication**: All communication between Electron main and renderer processes goes through tRPC routers defined in `electron/api.ts`
 
-2. **Error Handling**: 
-   - Service layer uses neverthrow Result pattern for detailed error handling
-   - tRPC layer uses UserFacingError pattern for user-friendly messages
-   - Helper functions in `electron/lib/errorHelpers.ts` bridge Result types to UserFacingErrors
+2. **Error Handling** (型安全・構造化システム): 
+   - **3層エラーアーキテクチャ**:
+     - Service層: neverthrow Result pattern (`Result<T, E>`)
+     - tRPC層: UserFacingError with structured info (`code`/`category`/`userMessage`)
+     - Frontend層: parseErrorFromTRPC + Toast variant selection
+   - **構造化エラー情報**:
+     ```typescript
+     interface StructuredErrorInfo {
+       code: string;           // 'FILE_NOT_FOUND', 'DATABASE_ERROR', etc.
+       category: string;       // ERROR_CATEGORIES enum値
+       userMessage: string;    // ユーザー向けメッセージ
+     }
+     ```
+   - **エラーマッピング with ts-pattern**: 
+     - `electron/lib/errorHelpers.ts`: Result→UserFacingError bridging
+     - ALL mappings MUST have `default` case (prevent "予期しないエラー")
+     - Type-safe error handling with `match()` from ts-pattern
+   - **Frontend Error Processing**:
+     - `parseErrorFromTRPC()`: Extract structured error info from tRPC responses
+     - Toast variant mapping: `getToastVariant(category)` with ts-pattern
+     - Categories: `FILE_NOT_FOUND`→warning, `DATABASE_ERROR`→destructive, etc.
+   - **Technical Detail Hiding**:
+     - UserFacingError: Hide stack traces from user-facing messages
+     - tRPC errorFormatter: Include debug info only for non-UserFacingErrors
+     - Frontend: Show only `userMessage`, not technical details
+   - **Error Category → Toast Variant Mapping**:
+     ```typescript
+     // src/v2/App.tsx getToastVariant()
+     FILE_NOT_FOUND → 'warning'        // 準正常系
+     VALIDATION_ERROR → 'warning'      // ユーザー入力問題
+     SETUP_REQUIRED → 'default'        // 初期設定
+     PERMISSION_DENIED → 'destructive' // システムエラー
+     DATABASE_ERROR → 'destructive'    // 重大エラー
+     NETWORK_ERROR → 'destructive'     // 重大エラー
+     ```
 
 3. **Database Access**: 
    - Sequelize models in `/electron/module/*/model.ts` files
@@ -60,6 +91,38 @@ Electron desktop app for organizing VRChat photos by automatically associating t
    - **Initial Launch Detection**: 既存ログ件数によるDB状態判定
    - **Cache Strategy**: startup detection (staleTime: 0) vs regular data (5min)
    - **Reference**: `docs/log-sync-architecture.md` (詳細実装パターン)
+
+6. **🚨 Timezone Handling Architecture** (CRITICAL - 日時データ整合性必須):
+   - **Consistent Local Time Processing**: 全ての日時データをローカルタイムとして統一処理
+   - **Log Parsing**: `parseLogDateTime()` でVRChatログをローカルタイムとして解釈
+   - **Frontend Dates**: フロントエンド日付入力は `new Date('YYYY-MM-DDTHH:mm:ss')` でローカルタイム処理
+   - **Database Storage**: SequelizeがDateオブジェクトを自動的にUTCで保存
+   - **UTC Conversion**: JavaScript Dateオブジェクトがローカルタイム→UTC変換を自動実行
+   - **Photo Timestamps**: 写真ファイル名の日時もローカルタイムとして処理
+   - **Test Pattern**: `electron/module/vrchatLog/parsers/timezone.test.ts` に統一パターン
+   - **Critical Rule**: 日時処理では常にローカルタイムベースで実装、UTC変換はSequelize/JSに委ねる
+
+7. **🚨 Conditional Logic with ts-pattern** (型安全・表現力向上必須):
+   - **Mandatory Usage**: Replace ALL `if` statements with `match()` from ts-pattern
+   - **Priority Targets**:
+     - Error handling conditionals (`instanceof Error`, error code comparison)
+     - Enum/string literal comparisons (`match(status).with('pending', ...)`)
+     - Type guards and `instanceof` checks (`match(obj).with(P.instanceOf(Error), ...)`)
+     - Nested if-else chains
+   - **Required Pattern**:
+     ```typescript
+     import { match, P } from 'ts-pattern';
+     
+     // Replace: if (error instanceof Error) return handleError(error);
+     return match(error)
+       .with(P.instanceOf(Error), (err) => handleError(err))
+       .otherwise((err) => { throw err; });
+     ```
+   - **Exceptions (NO ts-pattern needed)**:
+     - Simple boolean checks (`if (isLoading)`)
+     - Complex business logic conditions
+     - Test assertions
+   - **Benefits**: Type inference, exhaustiveness checking, better readability
 
 
 ### Auto-Generated Files (変更禁止)
@@ -123,6 +186,25 @@ Example: `logInfoController.test.ts` (mocked) vs `logInfoController.integration.
 - **症状**: `TypeError: The "path" argument must be of type string. Received undefined`
 - **原因**: モックされた関数が `undefined` を返す（パスが間違っているため）
 - **解決**: import パスと vi.mock() パスの両方を修正
+
+### 🚨 ValueObject Pattern (型安全・カプセル化必須)
+- **Type-Only Export Pattern**: ValueObjectクラスは型のみエクスポート
+  ```typescript
+  class MyValueObject extends BaseValueObject<'MyValueObject', string> {}
+  export type { MyValueObject };  // ✅ 型のみエクスポート
+  export { MyValueObject };        // ❌ クラスエクスポート禁止
+  ```
+- **Instance Creation**: Zodスキーマ経由でのみインスタンス化
+  ```typescript
+  const obj = MyValueObjectSchema.parse(value);  // ✅
+  const obj = new MyValueObject(value);          // ❌ 直接new禁止
+  ```
+- **Validation Functions**: 静的メソッドは独立関数として定義
+  ```typescript
+  export const isValidMyValueObject = (value: string): boolean => {...}
+  ```
+- **Lint Enforcement**: `yarn lint:valueobjects` で自動検証
+- **Benefits**: カプセル化強化、不正なインスタンス生成防止
 
 ## CLAUDE.md 更新ルール
 

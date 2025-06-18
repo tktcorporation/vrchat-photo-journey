@@ -1,6 +1,5 @@
 import * as nodeFs from 'node:fs';
 import * as path from 'node:path';
-import * as datefns from 'date-fns';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getAppUserDataPath } from '../../lib/wrappedApp';
 import { VRChatLogLineSchema } from './model';

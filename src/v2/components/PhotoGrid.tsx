@@ -11,8 +11,6 @@ import PhotoCard from './PhotoCard';
 interface PhotoGridProps {
   /** 表示する写真オブジェクトの配列 */
   photos: Photo[];
-  /** 写真がクリックされたときに呼び出されるコールバック (モーダル表示用) */
-  onPhotoSelect: (photo: Photo) => void;
   /** 現在選択されている写真のIDセット */
   selectedPhotos: Set<string>;
   /** 選択されている写真のIDセットを更新する関数 */
@@ -59,7 +57,6 @@ interface PhotoGridProps {
  */
 export default function PhotoGrid({
   photos,
-  onPhotoSelect,
   selectedPhotos,
   setSelectedPhotos,
   isMultiSelectMode,
@@ -100,7 +97,6 @@ export default function PhotoGrid({
                   >
                     <PhotoCard
                       photo={photo}
-                      onSelect={onPhotoSelect}
                       priority={index === 0}
                       selectedPhotos={selectedPhotos}
                       setSelectedPhotos={setSelectedPhotos}

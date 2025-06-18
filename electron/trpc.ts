@@ -14,10 +14,19 @@ const t = initTRPC.context<{ eventEmitter: EventEmitter }>().create({
   errorFormatter: (opts) => {
     const { shape, error } = opts;
     let userMessage = '予期しないエラーが発生しました。';
+    let structuredErrorInfo = null;
     const cause = error.cause;
 
     if (cause instanceof UserFacingError) {
       userMessage = cause.message;
+      // 構造化エラー情報をフロントエンドに渡す
+      if (cause.code && cause.category) {
+        structuredErrorInfo = {
+          code: cause.code,
+          category: cause.category,
+          userMessage: cause.userMessage || cause.message,
+        };
+      }
     } else if (
       cause instanceof Error &&
       cause.name === 'ZodError' &&
@@ -25,6 +34,11 @@ const t = initTRPC.context<{ eventEmitter: EventEmitter }>().create({
       (cause as ZodError).issues.length > 0
     ) {
       userMessage = (cause as ZodError).issues[0].message;
+      structuredErrorInfo = {
+        code: 'VALIDATION_ERROR',
+        category: 'VALIDATION_ERROR',
+        userMessage: (cause as ZodError).issues[0].message,
+      };
     } else if (
       cause instanceof Error &&
       cause.message.includes('test error for Sentry')
@@ -32,9 +46,9 @@ const t = initTRPC.context<{ eventEmitter: EventEmitter }>().create({
       userMessage = 'Sentryテスト用のエラーが発生しました。';
     }
 
-    // 詳細なエラー情報を含める（本番環境でもstacktraceを表示）
+    // UserFacingErrorの場合は詳細情報を表示しない（構造化エラー情報で十分）
     let debugInfo = '';
-    if (cause instanceof Error) {
+    if (cause instanceof Error && !(cause instanceof UserFacingError)) {
       debugInfo = ` [詳細: ${cause.message}${
         cause.stack
           ? `\nStack: ${cause.stack.split('\n').slice(0, 3).join('\n')}`
@@ -47,6 +61,8 @@ const t = initTRPC.context<{ eventEmitter: EventEmitter }>().create({
       message: userMessage + debugInfo,
       data: {
         ...shape.data,
+        // 構造化エラー情報を含める（フロントエンドでの解析用）
+        ...(structuredErrorInfo && { structuredError: structuredErrorInfo }),
         // 原因エラーの詳細も含める
         ...(cause instanceof Error && {
           originalError: {
@@ -63,6 +79,7 @@ const t = initTRPC.context<{ eventEmitter: EventEmitter }>().create({
 /**
  * tRPC ミドルウェアから呼び出されるエラーログ用関数
  * バージョン情報とリクエスト内容を付加して Sentry へ送信する
+ * 構造化エラー情報に基づいてトーストメッセージを送信する
  */
 const logError = (
   err: Error | string,
@@ -78,24 +95,48 @@ const logError = (
     stack: errorToLog,
   });
 
-  let toastMessage = '予期しないエラーが発生しました。';
-  if (err instanceof UserFacingError) {
-    toastMessage = err.message;
+  // 構造化エラー情報を含むトーストメッセージを生成
+  if (err instanceof UserFacingError && err.code && err.category) {
+    // 構造化エラー情報がある場合
+    const structuredToastMessage = {
+      message: err.message,
+      errorInfo: {
+        code: err.code,
+        category: err.category,
+        userMessage: err.userMessage || err.message,
+      },
+    };
+    eventEmitter.emit('toast', structuredToastMessage);
   } else if (
     err instanceof Error &&
     err.name === 'ZodError' &&
     Array.isArray((err as ZodError).issues) &&
     (err as ZodError).issues.length > 0
   ) {
-    toastMessage = (err as ZodError).issues[0].message;
+    // Zodバリデーションエラーの場合
+    const validationMessage = (err as ZodError).issues[0].message;
+    const structuredToastMessage = {
+      message: validationMessage,
+      errorInfo: {
+        code: 'VALIDATION_ERROR',
+        category: 'VALIDATION_ERROR',
+        userMessage: validationMessage,
+      },
+    };
+    eventEmitter.emit('toast', structuredToastMessage);
   } else if (
     err instanceof Error &&
     err.message.includes('test error for Sentry')
   ) {
-    toastMessage = 'Sentryテスト用のエラーが発生しました。';
+    // Sentryテスト用エラーの場合
+    eventEmitter.emit('toast', 'Sentryテスト用のエラーが発生しました。');
+  } else if (err instanceof UserFacingError) {
+    // UserFacingErrorだが構造化情報がない場合
+    eventEmitter.emit('toast', err.message);
+  } else {
+    // その他のエラー（予期しないエラー）
+    eventEmitter.emit('toast', '予期しないエラーが発生しました。');
   }
-
-  eventEmitter.emit('toast', toastMessage);
 };
 
 const errorHandler = t.middleware(async (opts) => {

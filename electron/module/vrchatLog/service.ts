@@ -18,6 +18,11 @@ import {
   extractPlayerJoinInfoFromLog,
   filterLogLinesByDate,
 } from './parsers';
+// TODO: アプリイベントの型は今後実装
+// import type {
+//   VRChatAppExitLog,
+//   VRChatAppStartLog,
+// } from './parsers/appEventParser';
 
 // ファイルハンドラー機能のインポート
 import {
@@ -49,11 +54,15 @@ export const getVRChaLogInfoFromLogPath = async (
       | VRChatPlayerJoinLog
       | VRChatPlayerLeaveLog
     )[],
+    // TODO: アプリイベントの型は今後実装
+    // | VRChatAppStartLog
+    // | VRChatAppExitLog
     VRChatLogFileError
   >
 > => {
   const logFilePathList =
     await vrchatLogFileDirService.getVRChatLogFilePathList(logFilesDir);
+
   if (logFilePathList.isErr()) {
     return neverthrow.err(
       match(logFilePathList.error)
@@ -65,9 +74,11 @@ export const getVRChaLogInfoFromLogPath = async (
   const logInfoList = await getVRChaLogInfoByLogFilePathList(
     logFilePathList.value,
   );
+
   if (logInfoList.isErr()) {
     return neverthrow.err(logInfoList.error);
   }
+
   return neverthrow.ok(logInfoList.value);
 };
 
@@ -86,29 +97,30 @@ export const getVRChaLogInfoByLogFilePathList = async (
       | VRChatPlayerJoinLog
       | VRChatPlayerLeaveLog
     )[],
+    // TODO: アプリイベントの型は今後実装
+    // | VRChatAppStartLog
+    // | VRChatAppExitLog
     VRChatLogFileError
   >
 > => {
   const logLineList = await getLogLinesByLogFilePathList({
     logFilePathList,
     includesList: [
-      'VRC Analytics Initialized',
+      'VRC Analytics Initialized', // TODO: 今後実装
       '[Behaviour] Joining ',
       '[Behaviour] OnPlayerJoined ',
       '[Behaviour] OnPlayerLeft ',
-      'VRCApplication: HandleApplicationQuit',
+      'VRCApplication: HandleApplicationQuit', // worldLeaveParserで処理
     ],
   });
+
   if (logLineList.isErr()) {
     return neverthrow.err(logLineList.error);
   }
 
-  const logInfoList: (
-    | VRChatWorldJoinLog
-    | VRChatWorldLeaveLog
-    | VRChatPlayerJoinLog
-    | VRChatPlayerLeaveLog
-  )[] = convertLogLinesToWorldAndPlayerJoinLogInfos(logLineList.value);
+  const logInfoList = convertLogLinesToWorldAndPlayerJoinLogInfos(
+    logLineList.value,
+  );
 
   return neverthrow.ok(logInfoList);
 };
@@ -124,7 +136,15 @@ export {
 };
 
 // 型定義の再エクスポート
-export type { VRChatWorldJoinLog, VRChatPlayerJoinLog, VRChatPlayerLeaveLog };
+export type {
+  VRChatWorldJoinLog,
+  VRChatWorldLeaveLog,
+  VRChatPlayerJoinLog,
+  VRChatPlayerLeaveLog,
+  // TODO: アプリイベントの型は今後実装
+  // VRChatAppStartLog,
+  // VRChatAppExitLog,
+};
 
 // パーサー機能の再エクスポート
 export { extractPlayerJoinInfoFromLog, filterLogLinesByDate };

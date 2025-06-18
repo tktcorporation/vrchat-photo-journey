@@ -160,14 +160,41 @@ vi.mock('./../../../../trpc', () => ({
       getSessionInfoBatch: {
         useQuery: (joinDates: Date[]) => {
           // 検索クエリが存在する場合のみプレイヤーデータを返す
-          const data: Record<string, { players: typeof mockPlayers }> = {};
+          const data: Record<
+            string,
+            {
+              worldId: string | null;
+              worldName: string | null;
+              worldInstanceId: string | null;
+              players: typeof mockPlayers;
+            }
+          > = {};
           for (const date of joinDates) {
             data[date.toISOString()] = {
+              worldId: null,
+              worldName: null,
+              worldInstanceId: null,
               players: mockPlayers,
             };
           }
           return {
             data,
+            isLoading: false,
+          };
+        },
+      },
+      searchSessionsByPlayerName: {
+        useQuery: ({ playerName }: { playerName: string }) => {
+          // プレイヤー名検索をモック
+          if (playerName.toLowerCase().includes('test player')) {
+            // グループの参加日時を返す
+            return {
+              data: [new Date('2024-01-01T01:00:00Z')],
+              isLoading: false,
+            };
+          }
+          return {
+            data: [],
             isLoading: false,
           };
         },

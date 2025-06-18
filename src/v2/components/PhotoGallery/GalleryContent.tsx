@@ -7,7 +7,6 @@ import { AppHeader } from '../AppHeader';
 import { LocationGroupHeader } from '../LocationGroupHeader';
 import type { PhotoGalleryData } from '../PhotoGallery';
 import PhotoGrid from '../PhotoGrid';
-import PhotoModal from '../PhotoModal';
 import { GalleryErrorBoundary } from './GalleryErrorBoundary';
 import { MeasurePhotoGroup } from './MeasurePhotoGroup';
 import { usePhotoGallery } from './usePhotoGallery';
@@ -22,6 +21,8 @@ interface GalleryContentProps
   > {
   /** ヘッダーから渡される検索クエリ */
   searchQuery: string;
+  /** 検索タイプ（world | player | undefined） */
+  searchType?: 'world' | 'player';
   /** ギャラリーデータ（統合AppHeaderに渡す） */
   galleryData?: PhotoGalleryData;
 }
@@ -79,6 +80,7 @@ const SkeletonGroup = () => (
 const GalleryContent = memo(
   ({
     searchQuery,
+    searchType,
     isLoadingStartupSync,
     isLoadingGrouping,
     finishLoadingGrouping,
@@ -86,13 +88,13 @@ const GalleryContent = memo(
   }: GalleryContentProps) => {
     const {
       groupedPhotos,
-      selectedPhoto,
-      setSelectedPhoto,
       selectedPhotos,
       setSelectedPhotos,
       isMultiSelectMode,
       setIsMultiSelectMode,
-    } = usePhotoGallery(searchQuery, { onGroupingEnd: finishLoadingGrouping });
+    } = usePhotoGallery(searchQuery, searchType, {
+      onGroupingEnd: finishLoadingGrouping,
+    });
     const containerRef = useRef<HTMLDivElement>(null);
     const groupSizesRef = useRef<Map<string, number>>(new Map());
 
@@ -214,7 +216,6 @@ const GalleryContent = memo(
                       <div className="w-full rounded-b-lg overflow-hidden">
                         <PhotoGrid
                           photos={group.photos}
-                          onPhotoSelect={setSelectedPhoto}
                           selectedPhotos={selectedPhotos}
                           setSelectedPhotos={setSelectedPhotos}
                           isMultiSelectMode={isMultiSelectMode}
@@ -241,12 +242,6 @@ const GalleryContent = memo(
             </div>
           )}
         </div>
-        {selectedPhoto && (
-          <PhotoModal
-            photo={selectedPhoto}
-            onClose={() => setSelectedPhoto(null)}
-          />
-        )}
       </GalleryErrorBoundary>
     );
   },

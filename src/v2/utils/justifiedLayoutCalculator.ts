@@ -1,4 +1,7 @@
-import { LAYOUT_CONSTANTS } from '../constants/layoutConstants';
+import {
+  LAYOUT_CONSTANTS,
+  type LayoutConstants,
+} from '../constants/layoutConstants';
 import type { Photo } from '../types/photo';
 
 /** レイアウト計算用の中間的な写真データ型 */
@@ -39,9 +42,9 @@ export interface LayoutResult {
  * ```
  */
 export class JustifiedLayoutCalculator {
-  private readonly constants: typeof LAYOUT_CONSTANTS;
+  private readonly constants: LayoutConstants;
 
-  constructor(constants: typeof LAYOUT_CONSTANTS = LAYOUT_CONSTANTS) {
+  constructor(constants: LayoutConstants = LAYOUT_CONSTANTS) {
     this.constants = constants;
   }
 

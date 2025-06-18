@@ -1,9 +1,30 @@
+import { createQueryStub } from '@/v2/helpers/testing/createQueryStub';
 import { render, screen } from '@testing-library/react';
+import { ok } from 'neverthrow';
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { LocationGroupHeader } from '../index';
 
-// tRPCモック
+// バックエンドサービスのモック
+const mockWorldJoinLogService = {
+  findVRChatWorldJoinLogList: vi.fn(),
+  mergeVRChatWorldJoinLogs: vi.fn(),
+};
+
+const mockWorldJoinLogFromPhotoService = {
+  findVRChatWorldJoinLogFromPhotoList: vi.fn(),
+};
+
+const mockPlayerJoinLogService = {
+  getVRChatPlayerJoinLogListByMultipleDateRanges: vi.fn(),
+};
+
+const mockPlayerListCache = {
+  get: vi.fn(),
+  set: vi.fn(),
+};
+
+// tRPCモック（サービスレイヤーの結果を返すように設定）
 vi.mock('@/trpc', () => ({
   trpcReact: {
     vrchatApi: {
@@ -91,10 +112,23 @@ const mockProps = {
 describe('LocationGroupHeader - Player Uniqueness', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+
+    // デフォルトのサービスモック設定
+    mockWorldJoinLogService.findVRChatWorldJoinLogList.mockResolvedValue(
+      ok([]),
+    );
+    mockWorldJoinLogFromPhotoService.findVRChatWorldJoinLogFromPhotoList.mockResolvedValue(
+      ok([]),
+    );
+    mockWorldJoinLogService.mergeVRChatWorldJoinLogs.mockReturnValue([]);
+    mockPlayerJoinLogService.getVRChatPlayerJoinLogListByMultipleDateRanges.mockResolvedValue(
+      ok([]),
+    );
+    mockPlayerListCache.get.mockReturnValue(null);
   });
 
   it('rejoinしたプレイヤーの重複を除去する', async () => {
-    const { trpcReact } = await import('@/trpc');
+    const { trpcReact, trpcClient } = await import('@/trpc');
     const { useSessionInfoBatch } = await import(
       '../hooks/useSessionInfoBatch'
     );
@@ -127,10 +161,33 @@ describe('LocationGroupHeader - Player Uniqueness', () => {
       },
     ];
 
+    // サービスレイヤーのモック設定
+    mockPlayerJoinLogService.getVRChatPlayerJoinLogListByMultipleDateRanges.mockResolvedValue(
+      ok(duplicatePlayersData),
+    );
+
+    // tRPCクライアントのモック設定（サービスの結果を返す）
+    vi.mocked(trpcClient.logInfo.getSessionInfoBatch.query).mockResolvedValue({
+      '2023-01-01T12:00:00.000Z': {
+        worldId: 'wrld_12345',
+        worldName: 'Test World',
+        worldInstanceId: 'instance123',
+        players: duplicatePlayersData,
+      },
+    });
+
     // VRChatワールド情報のモック
     vi.mocked(
       trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery,
-    ).mockReturnValue({ data: null });
+    ).mockReturnValue(
+      createQueryStub({
+        data: undefined,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+        isFetching: false,
+      }),
+    );
 
     // プレイヤー情報のモック
     vi.mocked(useSessionInfoBatch).mockReturnValue({
@@ -153,7 +210,7 @@ describe('LocationGroupHeader - Player Uniqueness', () => {
   });
 
   it('異なるプレイヤー名は正常に表示される', async () => {
-    const { trpcReact } = await import('@/trpc');
+    const { trpcReact, trpcClient } = await import('@/trpc');
     const { useSessionInfoBatch } = await import(
       '../hooks/useSessionInfoBatch'
     );
@@ -185,10 +242,33 @@ describe('LocationGroupHeader - Player Uniqueness', () => {
       },
     ];
 
+    // サービスレイヤーのモック設定
+    mockPlayerJoinLogService.getVRChatPlayerJoinLogListByMultipleDateRanges.mockResolvedValue(
+      ok(uniquePlayersData),
+    );
+
+    // tRPCクライアントのモック設定
+    vi.mocked(trpcClient.logInfo.getSessionInfoBatch.query).mockResolvedValue({
+      '2023-01-01T12:00:00.000Z': {
+        worldId: 'wrld_12345',
+        worldName: 'Test World',
+        worldInstanceId: 'instance123',
+        players: uniquePlayersData,
+      },
+    });
+
     // VRChatワールド情報のモック
     vi.mocked(
       trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery,
-    ).mockReturnValue({ data: null });
+    ).mockReturnValue(
+      createQueryStub({
+        data: undefined,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+        isFetching: false,
+      }),
+    );
 
     // プレイヤー情報のモック
     vi.mocked(useSessionInfoBatch).mockReturnValue({
@@ -207,15 +287,38 @@ describe('LocationGroupHeader - Player Uniqueness', () => {
   });
 
   it('空のプレイヤーリストを正しく処理する', async () => {
-    const { trpcReact } = await import('@/trpc');
+    const { trpcReact, trpcClient } = await import('@/trpc');
     const { useSessionInfoBatch } = await import(
       '../hooks/useSessionInfoBatch'
     );
 
+    // サービスレイヤーのモック設定（空のプレイヤーリスト）
+    mockPlayerJoinLogService.getVRChatPlayerJoinLogListByMultipleDateRanges.mockResolvedValue(
+      ok([]),
+    );
+
+    // tRPCクライアントのモック設定
+    vi.mocked(trpcClient.logInfo.getSessionInfoBatch.query).mockResolvedValue({
+      '2023-01-01T12:00:00.000Z': {
+        worldId: 'wrld_12345',
+        worldName: 'Test World',
+        worldInstanceId: 'instance123',
+        players: [],
+      },
+    });
+
     // VRChatワールド情報のモック
     vi.mocked(
       trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery,
-    ).mockReturnValue({ data: null });
+    ).mockReturnValue(
+      createQueryStub({
+        data: undefined,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+        isFetching: false,
+      }),
+    );
 
     // 空のプレイヤー情報のモック
     vi.mocked(useSessionInfoBatch).mockReturnValue({
@@ -254,9 +357,15 @@ describe('LocationGroupHeader - Query Optimization', () => {
 
     vi.mocked(
       trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery,
-    ).mockReturnValue({
-      data: null,
-    });
+    ).mockReturnValue(
+      createQueryStub({
+        data: undefined,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+        isFetching: false,
+      }),
+    );
     vi.mocked(useSessionInfoBatch).mockReturnValue({
       players: null,
       isLoading: false,
@@ -282,7 +391,15 @@ describe('LocationGroupHeader - Query Optimization', () => {
       '../hooks/useSessionInfoBatch'
     );
 
-    const mockWorldQuery = vi.fn().mockReturnValue({ data: null });
+    const mockWorldQuery = vi.fn().mockReturnValue(
+      createQueryStub({
+        data: undefined,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+        isFetching: false,
+      }),
+    );
 
     vi.mocked(
       trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery,
@@ -325,7 +442,15 @@ describe('LocationGroupHeader - Query Optimization', () => {
 
     vi.mocked(
       trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery,
-    ).mockReturnValue({ data: null });
+    ).mockReturnValue(
+      createQueryStub({
+        data: undefined,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+        isFetching: false,
+      }),
+    );
     vi.mocked(useSessionInfoBatch).mockReturnValue({
       players: null,
       isLoading: false,
@@ -357,9 +482,15 @@ describe('LocationGroupHeader - Query Optimization', () => {
 
     vi.mocked(
       trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery,
-    ).mockReturnValue({
-      data: null,
-    });
+    ).mockReturnValue(
+      createQueryStub({
+        data: undefined,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+        isFetching: false,
+      }),
+    );
     vi.mocked(useSessionInfoBatch).mockReturnValue({
       players: null,
       isLoading: false,
@@ -379,7 +510,15 @@ describe('LocationGroupHeader - Query Optimization', () => {
       '../hooks/useSessionInfoBatch'
     );
 
-    const mockWorldQuery = vi.fn().mockReturnValue({ data: null });
+    const mockWorldQuery = vi.fn().mockReturnValue(
+      createQueryStub({
+        data: undefined,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+        isFetching: false,
+      }),
+    );
     vi.mocked(
       trpcReact.vrchatApi.getVrcWorldInfoByWorldId.useQuery,
     ).mockImplementation(mockWorldQuery);

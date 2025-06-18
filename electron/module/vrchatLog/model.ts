@@ -1,25 +1,9 @@
-const opaqueSymbol: unique symbol = Symbol('opaqueSymbol');
-
 import * as path from 'node:path';
 import * as datefns from 'date-fns';
 import { z } from 'zod';
+import { BaseValueObject } from '../../lib/baseValueObject.js';
 
-export abstract class BaseValueObject<T extends string, K> {
-  // @ts-ignore TS1338
-  private readonly [opaqueSymbol]: T;
-  readonly value: K;
-
-  constructor(value: K) {
-    this.value = value;
-  }
-  /**
-   * 値オブジェクト同士の等価性を比較する
-   * ログ解析処理で識別子比較に使用される
-   */
-  equals(other: BaseValueObject<T, K>): boolean {
-    return this === other || this.value === other.value;
-  }
-}
+export { BaseValueObject }; // Re-export for backward compatibility
 
 /**
  * VRChatのログ行
@@ -85,85 +69,80 @@ export const createTimestampedLogFilePath = (
 };
 
 /**
- * VRChatプレイヤーID
+ * VRChatプレイヤーIDの検証関数
  * usr_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx形式
  */
-// biome-ignore lint/complexity/noStaticOnlyClass: valueObjectパターンの実装に静的メソッドが必要
-class VRChatPlayerId extends BaseValueObject<'VRChatPlayerId', string> {
-  /**
-   * プレイヤーIDが有効な形式かを検証
-   */
-  public static isValid(value: string): boolean {
-    const regex =
-      /^usr_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
-    return regex.test(value);
-  }
-}
+export const isValidVRChatPlayerId = (value: string): boolean => {
+  const regex =
+    /^usr_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+  return regex.test(value);
+};
+
+/**
+ * VRChatプレイヤーID
+ */
+class VRChatPlayerId extends BaseValueObject<'VRChatPlayerId', string> {}
+
+/**
+ * VRChatワールドIDの検証関数
+ * wrld_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx形式
+ */
+export const isValidVRChatWorldId = (value: string): boolean => {
+  const regex =
+    /^wrld_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+  return regex.test(value);
+};
 
 /**
  * VRChatワールドID
- * wrld_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx形式
  */
-// biome-ignore lint/complexity/noStaticOnlyClass: valueObjectパターンの実装に静的メソッドが必要
-class VRChatWorldId extends BaseValueObject<'VRChatWorldId', string> {
-  /**
-   * ワールドIDが有効な形式かを検証
-   */
-  public static isValid(value: string): boolean {
-    const regex =
-      /^wrld_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
-    return regex.test(value);
-  }
-}
+class VRChatWorldId extends BaseValueObject<'VRChatWorldId', string> {}
+
+/**
+ * VRChatワールドインスタンスIDの検証関数
+ * 英数字のみ、または英数字~region(region_code)形式を許可
+ */
+export const isValidVRChatWorldInstanceId = (value: string): boolean => {
+  return /^[a-zA-Z0-9]+(\~.+)?$/.test(value);
+};
 
 /**
  * VRChatワールドインスタンスID
- * 数値のみで構成される
  */
-// biome-ignore lint/complexity/noStaticOnlyClass: valueObjectパターンの実装に静的メソッドが必要
 class VRChatWorldInstanceId extends BaseValueObject<
   'VRChatWorldInstanceId',
   string
-> {
-  /**
-   * インスタンスIDが有効な形式かを検証
-   * 英数字のみ、または英数字~region(region_code)形式を許可
-   */
-  public static isValid(value: string): boolean {
-    return /^[a-zA-Z0-9]+(\~.+)?$/.test(value);
-  }
-}
+> {}
+
+/**
+ * VRChatプレイヤー名の検証関数
+ * 空文字列ではない文字列
+ */
+export const isValidVRChatPlayerName = (value: string): boolean => {
+  return value.trim().length > 0;
+};
 
 /**
  * VRChatプレイヤー名
+ */
+class VRChatPlayerName extends BaseValueObject<'VRChatPlayerName', string> {}
+
+/**
+ * VRChatワールド名の検証関数
  * 空文字列ではない文字列
  */
-// biome-ignore lint/complexity/noStaticOnlyClass: valueObjectパターンの実装に静的メソッドが必要
-class VRChatPlayerName extends BaseValueObject<'VRChatPlayerName', string> {
-  /**
-   * プレイヤー名が有効かを検証（空文字列でない）
-   */
-  public static isValid(value: string): boolean {
-    return value.trim().length > 0;
-  }
-}
+export const isValidVRChatWorldName = (value: string): boolean => {
+  return value.trim().length > 0;
+};
 
 /**
  * VRChatワールド名
- * 空文字列ではない文字列
  */
-// biome-ignore lint/complexity/noStaticOnlyClass: valueObjectパターンの実装に静的メソッドが必要
-class VRChatWorldName extends BaseValueObject<'VRChatWorldName', string> {
-  /**
-   * ワールド名が有効かを検証（空文字列でない）
-   */
-  public static isValid(value: string): boolean {
-    return value.trim().length > 0;
-  }
-}
+class VRChatWorldName extends BaseValueObject<'VRChatWorldName', string> {}
 
-export type { VRChatLogLine, VRChatLogStoreFilePath };
-export {
+export type {
+  VRChatLogLine,
+  VRChatLogStoreFilePath,
   VRChatPlayerId,
   VRChatWorldId,
   VRChatWorldInstanceId,
@@ -190,7 +169,7 @@ export const VRChatLogStoreFilePathSchema = z
 // ID検証用のZodスキーマ
 export const VRChatPlayerIdSchema = z
   .string()
-  .refine(VRChatPlayerId.isValid, {
+  .refine(isValidVRChatPlayerId, {
     message:
       'Invalid VRChat Player ID format. Expected: usr_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
   })
@@ -198,7 +177,7 @@ export const VRChatPlayerIdSchema = z
 
 export const VRChatWorldIdSchema = z
   .string()
-  .refine(VRChatWorldId.isValid, {
+  .refine(isValidVRChatWorldId, {
     message:
       'Invalid VRChat World ID format. Expected: wrld_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
   })
@@ -206,21 +185,21 @@ export const VRChatWorldIdSchema = z
 
 export const VRChatWorldInstanceIdSchema = z
   .string()
-  .refine(VRChatWorldInstanceId.isValid, (value) => ({
+  .refine(isValidVRChatWorldInstanceId, (value) => ({
     message: `Invalid VRChat World Instance ID format. Expected: alphanumeric string or alphanumeric~region(region_code). received: ${value}`,
   }))
   .transform((value) => new VRChatWorldInstanceId(value));
 
 export const VRChatPlayerNameSchema = z
   .string()
-  .refine(VRChatPlayerName.isValid, {
+  .refine(isValidVRChatPlayerName, {
     message: 'Invalid VRChat Player Name. Cannot be empty',
   })
   .transform((value) => new VRChatPlayerName(value));
 
 export const VRChatWorldNameSchema = z
   .string()
-  .refine(VRChatWorldName.isValid, {
+  .refine(isValidVRChatWorldName, {
     message: 'Invalid VRChat World Name. Cannot be empty',
   })
   .transform((value) => new VRChatWorldName(value));
@@ -231,7 +210,7 @@ export const OptionalVRChatPlayerIdSchema = z
   .nullable()
   .transform((value) => {
     if (!value) return null;
-    if (!VRChatPlayerId.isValid(value)) {
+    if (!isValidVRChatPlayerId(value)) {
       throw new Error('Invalid VRChat Player ID format');
     }
     return new VRChatPlayerId(value);

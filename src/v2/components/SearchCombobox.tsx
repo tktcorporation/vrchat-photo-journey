@@ -5,7 +5,7 @@ import SearchOverlay from './SearchOverlay';
 
 interface SearchComboboxProps {
   searchQuery: string;
-  onSearch: (query: string) => void;
+  onSearch: (query: string, type?: 'world' | 'player') => void;
   className?: string;
 }
 
@@ -26,8 +26,8 @@ const SearchCombobox = memo(
       setIsOverlayOpen(false);
     };
 
-    const handleSearch = (query: string) => {
-      onSearch(query);
+    const handleSearch = (query: string, type?: 'world' | 'player') => {
+      onSearch(query, type);
       setIsOverlayOpen(false);
     };
 

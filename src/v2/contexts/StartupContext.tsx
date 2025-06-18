@@ -7,6 +7,7 @@ type Stage = 'idle' | 'syncing' | 'ready' | 'error';
 interface StartupContextValue {
   stage: Stage;
   error: string | null;
+  originalError?: unknown; // tRPCエラーオブジェクト全体
   isReady: boolean;
   retry: () => void;
 }
@@ -24,7 +25,8 @@ interface StartupProviderProps {
 export const StartupProvider: React.FC<StartupProviderProps> = ({
   children,
 }) => {
-  const { stages, errorMessage, retryProcess, completed } = useStartupStage();
+  const { stages, errorMessage, originalError, retryProcess, completed } =
+    useStartupStage();
 
   // ステージマッピング
   const stage: Stage = (() => {
@@ -38,6 +40,7 @@ export const StartupProvider: React.FC<StartupProviderProps> = ({
   const value: StartupContextValue = {
     stage,
     error: errorMessage || null,
+    originalError,
     isReady: completed,
     retry: retryProcess,
   };

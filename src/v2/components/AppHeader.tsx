@@ -20,7 +20,7 @@ import SearchCombobox from './SearchCombobox';
 
 interface AppHeaderProps {
   searchQuery?: string;
-  setSearchQuery?: (query: string) => void;
+  setSearchQuery?: (query: string, type?: 'world' | 'player') => void;
   onOpenSettings?: () => void;
   selectedPhotoCount?: number;
   onClearSelection?: () => void;

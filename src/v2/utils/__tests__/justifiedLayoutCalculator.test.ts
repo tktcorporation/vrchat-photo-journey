@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { VRChatPhotoFileNameWithExtSchema } from '../../../valueObjects';
 import { LAYOUT_CONSTANTS } from '../../constants/layoutConstants';
 import type { Photo } from '../../types/photo';
 import { JustifiedLayoutCalculator } from '../justifiedLayoutCalculator';
@@ -17,11 +18,16 @@ describe('JustifiedLayoutCalculator', () => {
   const createMockPhotos = (count: number): Photo[] =>
     Array.from({ length: count }, (_, i) => ({
       id: `photo-${i}`,
-      filePath: `/path/photo-${i}.jpg`,
+      url: `/path/photo-${i}.jpg`,
+      fileNameWithExt: VRChatPhotoFileNameWithExtSchema.parse(
+        'VRChat_2025-05-25_12-00-00.000_1920x1080.png',
+      ),
       width: 1920,
       height: 1080,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      takenAt: new Date(),
+      location: {
+        joinedAt: new Date(),
+      },
     }));
 
   describe('calculateLayout', () => {
@@ -88,19 +94,29 @@ describe('JustifiedLayoutCalculator', () => {
       const photos: Photo[] = [
         {
           id: 'portrait',
-          filePath: '/portrait.jpg',
+          url: '/portrait.jpg',
+          fileNameWithExt: VRChatPhotoFileNameWithExtSchema.parse(
+            'VRChat_2025-05-25_12-00-00.000_1080x1920.png',
+          ),
           width: 1080,
           height: 1920, // 縦長
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          takenAt: new Date(),
+          location: {
+            joinedAt: new Date(),
+          },
         },
         {
           id: 'landscape',
-          filePath: '/landscape.jpg',
+          url: '/landscape.jpg',
+          fileNameWithExt: VRChatPhotoFileNameWithExtSchema.parse(
+            'VRChat_2025-05-25_12-00-00.000_1920x1080.png',
+          ),
           width: 1920,
           height: 1080, // 横長
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          takenAt: new Date(),
+          location: {
+            joinedAt: new Date(),
+          },
         },
       ];
 
@@ -186,7 +202,7 @@ describe('JustifiedLayoutCalculator', () => {
         GAP: 8,
         HEADER_HEIGHT: 120,
         SPACING: 16,
-      };
+      } as const;
 
       const customCalculator = new JustifiedLayoutCalculator(customConstants);
       const photos = createMockPhotos(3);
@@ -205,11 +221,16 @@ describe('JustifiedLayoutCalculator', () => {
       const photos: Photo[] = [
         {
           id: 'no-dimensions',
-          filePath: '/test.jpg',
-          width: null,
-          height: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          url: '/test.jpg',
+          fileNameWithExt: VRChatPhotoFileNameWithExtSchema.parse(
+            'VRChat_2025-05-25_12-00-00.000_1920x1080.png',
+          ),
+          width: 0,
+          height: 0,
+          takenAt: new Date(),
+          location: {
+            joinedAt: new Date(),
+          },
         },
       ];
 

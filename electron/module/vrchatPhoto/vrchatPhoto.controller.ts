@@ -1,6 +1,7 @@
 import * as neverthrow from 'neverthrow';
 import z from 'zod';
 import {
+  handlePhotoOperationError,
   handleResultError,
   photoOperationErrorMappings,
 } from '../../lib/errorHelpers';
@@ -113,18 +114,15 @@ export const vrchatPhotoRouter = () =>
       )
       .query(async (ctx) => {
         const result = await getVRChatLogFilePathModelList(ctx.input);
-        if (result.isErr()) {
-          throw result.error;
-        }
-        return result.value;
+        return handleResultError(result, {
+          default: (error) => photoOperationErrorMappings.default(error),
+        });
       }),
     getCountByYearMonthList: procedure.query(async () => {
       const result = await getCountByYearMonthList();
-      if (result.isErr()) {
-        throw result.error;
-      }
-      console.log(result.value);
-      return result.value;
+      return handleResultError(result, {
+        default: (error) => photoOperationErrorMappings.default(error),
+      });
     }),
     getVRChatPhotoItemDataMutation: procedure
       .input(z.object({ photoPath: z.string(), width: z.number().optional() }))
@@ -132,7 +130,7 @@ export const vrchatPhotoRouter = () =>
         const result = await vrchatPhotoService.getVRChatPhotoItemData(
           ctx.input,
         );
-        return handleResultError(result, photoOperationErrorMappings);
+        return handlePhotoOperationError(result);
       }),
     getVRChatPhotoItemData: procedure.input(z.string()).query(async (ctx) => {
       const result = await vrchatPhotoService.getVRChatPhotoItemData({

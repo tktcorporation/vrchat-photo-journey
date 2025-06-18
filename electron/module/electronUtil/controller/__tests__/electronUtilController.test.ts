@@ -30,18 +30,18 @@ describe('electronUtilController', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (fs.mkdtemp as jest.Mock).mockResolvedValue(
+    (fs.mkdtemp as ReturnType<typeof vi.fn>).mockResolvedValue(
       path.join(os.tmpdir(), 'test-dir'),
     );
-    (fs.writeFile as jest.Mock).mockResolvedValue(undefined);
-    (fs.copyFile as jest.Mock).mockResolvedValue(undefined);
-    (fs.rm as jest.Mock).mockResolvedValue(undefined);
+    (fs.writeFile as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
+    (fs.copyFile as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
+    (fs.rm as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
   });
 
   describe('downloadImageAsPng', () => {
     it('should download image as png', async () => {
       const mockPath = path.join(os.homedir(), 'Downloads', 'test.png');
-      (dialog.showSaveDialog as jest.Mock).mockResolvedValue({
+      (dialog.showSaveDialog as ReturnType<typeof vi.fn>).mockResolvedValue({
         canceled: false,
         filePath: mockPath,
       });
@@ -88,7 +88,7 @@ describe('electronUtilController', () => {
     });
 
     it('should handle dialog cancel', async () => {
-      (dialog.showSaveDialog as jest.Mock).mockResolvedValue({
+      (dialog.showSaveDialog as ReturnType<typeof vi.fn>).mockResolvedValue({
         canceled: true,
       });
 
@@ -118,12 +118,12 @@ describe('electronUtilController', () => {
 
     it('should handle write error', async () => {
       const mockPath = path.join(os.homedir(), 'Downloads', 'test.png');
-      (dialog.showSaveDialog as jest.Mock).mockResolvedValue({
+      (dialog.showSaveDialog as ReturnType<typeof vi.fn>).mockResolvedValue({
         canceled: false,
         filePath: mockPath,
       });
       const mockError = new Error('Write error');
-      (fs.copyFile as jest.Mock).mockRejectedValue(mockError);
+      (fs.copyFile as ReturnType<typeof vi.fn>).mockRejectedValue(mockError);
 
       const resolver = router.downloadImageAsPng._def.resolver as (opts: {
         ctx: Record<string, unknown>;
