@@ -378,7 +378,7 @@ describe('LocationGroupHeader - Query Optimization', () => {
       expect.any(Function),
       expect.objectContaining({
         root: null,
-        rootMargin: '50px',
+        rootMargin: '200px',
         threshold: 0.1,
       }),
     );

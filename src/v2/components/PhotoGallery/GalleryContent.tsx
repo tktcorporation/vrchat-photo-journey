@@ -116,7 +116,7 @@ const GalleryContent = memo(
         },
         [filteredGroups],
       ),
-      overscan: 1, // 適度なオーバースキャンでバッチ効果を活用
+      overscan: 3, // 画面外のデータをより多く保持してスクロール時の再ロードを抑制
       measureElement: useCallback((element: HTMLElement) => {
         const height = element.getBoundingClientRect().height;
         const key = element.getAttribute('data-key');

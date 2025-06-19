@@ -11,7 +11,7 @@ export const BATCH_CONFIG = {
   /**
    * バッチ処理のウィンドウ時間（ミリ秒）
    */
-  BATCH_DELAY_MS: 500,
+  BATCH_DELAY_MS: 150,
 
   /**
    * 重複リクエストとみなす時間閾値（ミリ秒）

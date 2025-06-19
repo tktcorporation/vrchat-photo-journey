@@ -75,7 +75,7 @@ export const LocationGroupHeader = ({
   const canExecuteQuery = useQueryQueue(
     isVisible && shouldLoadDetails,
     queryPriority,
-    100,
+    20,
   );
 
   // Query enablement state for cancellation control
@@ -142,7 +142,7 @@ export const LocationGroupHeader = ({
             visibilityTimeoutRef.current = setTimeout(() => {
               setShouldLoadDetails(true);
               setQueryEnabled(true);
-            }, 200); // 適度なデバウンス時間
+            }, 20); // 最小限のデバウンスで最高速レスポンス
           } else {
             // Clear timeout if element becomes invisible before timeout
             if (visibilityTimeoutRef.current) {
@@ -155,13 +155,13 @@ export const LocationGroupHeader = ({
             // This prevents queries from being cancelled and restarted rapidly
             visibilityTimeoutRef.current = setTimeout(() => {
               setShouldLoadDetails(false);
-            }, 500); // Keep details loading enabled for a bit after leaving viewport
+            }, 300); // バランスの取れた遅延でちらつき防止
           }
         }
       },
       {
         root: null, // Use viewport as root
-        rootMargin: '50px', // 適度なプリロード
+        rootMargin: '200px', // 早期読み込みのための拡張マージン
         threshold: 0.1, // 10%表示で反応
       },
     );
