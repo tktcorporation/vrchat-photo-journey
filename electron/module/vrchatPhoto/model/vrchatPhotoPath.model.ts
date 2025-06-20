@@ -93,6 +93,8 @@ export const getVRChatPhotoPathList = async (query?: {
   gtPhotoTakenAt?: Date;
   ltPhotoTakenAt?: Date;
   orderByPhotoTakenAt: 'asc' | 'desc';
+  limit?: number;
+  offset?: number;
 }): Promise<VRChatPhotoPathModel[]> => {
   const photoPathList = await VRChatPhotoPathModel.findAll({
     where: {
@@ -102,9 +104,30 @@ export const getVRChatPhotoPathList = async (query?: {
       },
     },
     order: [['photoTakenAt', query?.orderByPhotoTakenAt ?? 'asc']],
+    ...(query?.limit && { limit: query.limit }),
+    ...(query?.offset && { offset: query.offset }),
   });
 
   return photoPathList;
+};
+
+/**
+ * VRChatの写真の総数を取得する
+ */
+export const getVRChatPhotoCount = async (query?: {
+  gtPhotoTakenAt?: Date;
+  ltPhotoTakenAt?: Date;
+}): Promise<number> => {
+  const count = await VRChatPhotoPathModel.count({
+    where: {
+      photoTakenAt: {
+        ...(query?.gtPhotoTakenAt && { [Op.gt]: query.gtPhotoTakenAt }),
+        ...(query?.ltPhotoTakenAt && { [Op.lt]: query.ltPhotoTakenAt }),
+      },
+    },
+  });
+
+  return count;
 };
 
 /**

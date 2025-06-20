@@ -1,5 +1,5 @@
 import { performance } from 'node:perf_hooks';
-import { Op, col, fn, literal } from '@sequelize/core';
+import { Op, QueryTypes, col, fn, literal } from '@sequelize/core';
 import * as datefns from 'date-fns';
 import * as neverthrow from 'neverthrow';
 import { match } from 'ts-pattern';
@@ -497,48 +497,46 @@ export const searchSessionsByPlayerName = async (
   const startTime = performance.now();
 
   try {
-    // プレイヤー名で部分一致検索（大文字小文字を区別しない）
-    const playerJoinLogs = await VRChatPlayerJoinLogModel.findAll({
-      where: {
-        playerName: {
-          [Op.like]: `%${playerName}%`,
-        },
-      },
-      order: [['joinDateTime', 'DESC']],
+    // SQLクエリで効率的にセッションを取得
+    // 各プレイヤー参加ログに対して、対応するワールド参加ログをサブクエリで取得
+    const query = `
+      SELECT DISTINCT w.joinDateTime
+      FROM VRChatPlayerJoinLogModels p
+      INNER JOIN (
+        SELECT p2.id, (
+          SELECT w2.joinDateTime 
+          FROM VRChatWorldJoinLogModels w2 
+          WHERE w2.joinDateTime <= p2.joinDateTime 
+          ORDER BY w2.joinDateTime DESC 
+          LIMIT 1
+        ) as worldJoinDateTime
+        FROM VRChatPlayerJoinLogModels p2
+        WHERE p2.playerName LIKE :playerName
+      ) AS pw ON p.id = pw.id
+      INNER JOIN VRChatWorldJoinLogModels w ON w.joinDateTime = pw.worldJoinDateTime
+      WHERE pw.worldJoinDateTime IS NOT NULL
+      ORDER BY w.joinDateTime DESC
+    `;
+
+    const results = await VRChatPlayerJoinLogModel.sequelize?.query<{
+      joinDateTime: string;
+    }>(query, {
+      replacements: { playerName: `%${playerName}%` },
+      type: QueryTypes.SELECT,
+      raw: true,
     });
 
-    if (playerJoinLogs.length === 0) {
+    if (!results || results.length === 0) {
       logger.debug(
-        `searchSessionsByPlayerName: No players found for query "${playerName}"`,
+        `searchSessionsByPlayerName: No sessions found for query "${playerName}"`,
       );
       return [];
     }
 
-    // 各プレイヤー参加ログに対して、対応するワールド参加ログを探す
-    const sessionJoinDates: Date[] = [];
-    const processedWorldJoins = new Set<string>();
-
-    for (const playerLog of playerJoinLogs) {
-      // このプレイヤーが参加した時点での最新のワールド参加ログを取得
-      const worldJoinLog = await VRChatWorldJoinLogModel.findOne({
-        where: {
-          joinDateTime: {
-            [Op.lte]: playerLog.joinDateTime,
-          },
-        },
-        order: [['joinDateTime', 'DESC']],
-      });
-
-      if (worldJoinLog) {
-        const worldJoinKey = worldJoinLog.joinDateTime.toISOString();
-
-        // 同じワールドセッションを重複して追加しないようにする
-        if (!processedWorldJoins.has(worldJoinKey)) {
-          processedWorldJoins.add(worldJoinKey);
-          sessionJoinDates.push(worldJoinLog.joinDateTime);
-        }
-      }
-    }
+    // 結果をDateオブジェクトに変換
+    const sessionJoinDates = results.map(
+      (row: { joinDateTime: string }) => new Date(row.joinDateTime),
+    );
 
     const endTime = performance.now();
     logger.debug(
@@ -549,8 +547,7 @@ export const searchSessionsByPlayerName = async (
       ).toFixed(2)}ms`,
     );
 
-    // 新しい順にソートして返す
-    return sessionJoinDates.sort((a, b) => b.getTime() - a.getTime());
+    return sessionJoinDates;
   } catch (error) {
     logger.error({
       message: `Error searching sessions by player name: ${error}`,

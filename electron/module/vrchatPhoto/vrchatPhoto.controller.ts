@@ -43,6 +43,48 @@ const getVRChatLogFilePathModelList = async (query?: {
   );
 };
 
+/**
+ * index 済みの写真ファイルのpath一覧をページネーションで取得する
+ */
+const getVRChatLogFilePathModelListPaginated = async (query?: {
+  gtPhotoTakenAt?: Date;
+  ltPhotoTakenAt?: Date;
+  orderByPhotoTakenAt: 'asc' | 'desc';
+  page?: number;
+  pageSize?: number;
+}): Promise<
+  neverthrow.Result<
+    {
+      photos: {
+        id: string;
+        photoPath: string;
+        photoTakenAt: Date;
+        width: number;
+        height: number;
+      }[];
+      totalCount: number;
+      currentPage: number;
+      totalPages: number;
+    },
+    Error
+  >
+> => {
+  const result =
+    await vrchatPhotoService.getVRChatPhotoPathListPaginated(query);
+  return neverthrow.ok({
+    photos: result.photos.map((photoPathModel) => ({
+      id: photoPathModel.id,
+      photoPath: photoPathModel.photoPath,
+      width: photoPathModel.width,
+      height: photoPathModel.height,
+      photoTakenAt: photoPathModel.photoTakenAt,
+    })),
+    totalCount: result.totalCount,
+    currentPage: result.currentPage,
+    totalPages: result.totalPages,
+  });
+};
+
 const getCountByYearMonthList = async (): Promise<
   neverthrow.Result<
     {
@@ -114,6 +156,24 @@ export const vrchatPhotoRouter = () =>
       )
       .query(async (ctx) => {
         const result = await getVRChatLogFilePathModelList(ctx.input);
+        return handleResultError(result, {
+          default: (error) => photoOperationErrorMappings.default(error),
+        });
+      }),
+    getVrchatPhotoPathModelListPaginated: procedure
+      .input(
+        z
+          .object({
+            gtPhotoTakenAt: z.date().optional(),
+            ltPhotoTakenAt: z.date().optional(),
+            orderByPhotoTakenAt: z.enum(['asc', 'desc']),
+            page: z.number().default(0),
+            pageSize: z.number().default(1000),
+          })
+          .optional(),
+      )
+      .query(async (ctx) => {
+        const result = await getVRChatLogFilePathModelListPaginated(ctx.input);
         return handleResultError(result, {
           default: (error) => photoOperationErrorMappings.default(error),
         });

@@ -72,6 +72,7 @@ export const getVRChatPhotoDirPath = (): VRChatPhotoDirPath => {
 // バッチサイズ定数
 const PHOTO_PATH_BATCH_SIZE = 1000; // パスの取得用（stat情報のチェック）
 const PHOTO_METADATA_BATCH_SIZE = 100; // メタデータ取得用（sharp処理は重いため小さく）
+const PHOTO_QUERY_PAGE_SIZE = 5000; // データベースクエリのページサイズ
 
 /**
  * 写真パスをバッチごとに取得するジェネレータ関数
@@ -314,6 +315,48 @@ export const getVRChatPhotoPathList = async (query?: {
   orderByPhotoTakenAt: 'asc' | 'desc';
 }) => {
   return model.getVRChatPhotoPathList(query);
+};
+
+/**
+ * 写真一覧をページネーション付きで取得する
+ * メモリ効率を考慮してページ単位でデータを取得
+ */
+export const getVRChatPhotoPathListPaginated = async (query?: {
+  gtPhotoTakenAt?: Date;
+  ltPhotoTakenAt?: Date;
+  orderByPhotoTakenAt: 'asc' | 'desc';
+  page?: number;
+  pageSize?: number;
+}): Promise<{
+  photos: model.VRChatPhotoPathModel[];
+  totalCount: number;
+  currentPage: number;
+  totalPages: number;
+}> => {
+  const page = query?.page ?? 0;
+  const pageSize = query?.pageSize ?? PHOTO_QUERY_PAGE_SIZE;
+  const offset = page * pageSize;
+
+  const [photos, totalCount] = await Promise.all([
+    model.getVRChatPhotoPathList({
+      gtPhotoTakenAt: query?.gtPhotoTakenAt,
+      ltPhotoTakenAt: query?.ltPhotoTakenAt,
+      orderByPhotoTakenAt: query?.orderByPhotoTakenAt ?? 'desc',
+      limit: pageSize,
+      offset,
+    }),
+    model.getVRChatPhotoCount({
+      gtPhotoTakenAt: query?.gtPhotoTakenAt,
+      ltPhotoTakenAt: query?.ltPhotoTakenAt,
+    }),
+  ]);
+
+  return {
+    photos,
+    totalCount,
+    currentPage: page,
+    totalPages: Math.ceil(totalCount / pageSize),
+  };
 };
 
 /**
