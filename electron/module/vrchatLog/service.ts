@@ -29,6 +29,7 @@ import {
   appendLoglinesToFile,
   getLegacyLogStoreFilePath,
   getLogLinesByLogFilePathList,
+  getLogLinesByLogFilePathListStreaming,
   getLogStoreFilePathForDate,
   getLogStoreFilePathsInRange,
   importLogLinesFromLogPhotoDirPath,
@@ -128,6 +129,7 @@ export const getVRChaLogInfoByLogFilePathList = async (
 // ファイルハンドラー機能の再エクスポート
 export {
   getLogLinesByLogFilePathList,
+  getLogLinesByLogFilePathListStreaming,
   getLogStoreFilePathForDate,
   getLegacyLogStoreFilePath,
   getLogStoreFilePathsInRange,
