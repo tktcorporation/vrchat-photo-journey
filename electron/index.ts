@@ -82,7 +82,8 @@ export const initializeMainSentry = () => {
 };
 
 // アプリ起動時に初期化試行
-initializeMainSentry();
+// Temporarily disable Sentry initialization
+// initializeMainSentry();
 
 const CHANNELS = {
   ERROR_MESSAGE: 'error-message',

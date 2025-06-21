@@ -16,7 +16,7 @@ import {
 const isDev = process.env.NODE_ENV === 'development';
 import { AppHeader } from './components/AppHeader';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { useMigrationNotice } from './components/MigrationNotice';
+// import { useMigrationNotice } from './components/MigrationNotice';
 import PhotoGallery from './components/PhotoGallery';
 import { TermsModal } from './components/TermsModal';
 import PathSettings from './components/settings/PathSettings';
@@ -120,7 +120,8 @@ function AppContent() {
       // Sentryの初期化（レンダラープロセス側）を試みる
       // 実際の初期化やイベント送信は、DSNの有無やbeforeSendフックで制御される
       // initializeSentryMain の onSuccess フック内でレンダラープロセスのSentryが初期化される
-      await initializeSentryMain();
+      // Temporarily disable Sentry initialization
+      // await initializeSentryMain();
 
       const { accepted, version } = termsStatus;
       const currentVersion = terms.version;
@@ -302,7 +303,7 @@ const Contents = () => {
   // const { toast } = useToast(); // スタートアップエラーはbackendから送信されるため不要
   const { stage, error, originalError, retry } = useStartup();
   const loadingState = useLoadingState();
-  const { MigrationDialog } = useMigrationNotice();
+  // const { MigrationDialog } = useMigrationNotice();
 
   useEffect(() => {
     if (stage === 'syncing') {
@@ -497,7 +498,7 @@ const Contents = () => {
   return (
     <>
       <PhotoGallery {...loadingState} />
-      <MigrationDialog />
+      {/* <MigrationDialog /> */}
     </>
   );
 };

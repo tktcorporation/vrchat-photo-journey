@@ -10,6 +10,22 @@ export const useMigrationNotice = () => {
   const { toast } = useToast();
   const [showMigrationDialog, setShowMigrationDialog] = useState(false);
 
+  // Playwright テスト環境では無効化
+  // Check both PLAYWRIGHT_TEST and NODE_ENV for test environment
+  const isTestEnvironment =
+    process.env.PLAYWRIGHT_TEST === 'true' ||
+    (typeof window !== 'undefined' &&
+      window.location?.href?.includes('localhost:3000'));
+
+  if (isTestEnvironment) {
+    return {
+      showMigrationDialog: false,
+      handleMigrationComplete: () => {},
+      handleMigrationCancel: () => {},
+      MigrationDialog: () => null,
+    };
+  }
+
   // デバッグ用：強制表示（開発時のみ）
   // TODO: 本番環境では削除
   const FORCE_SHOW_MIGRATION_DIALOG = false; // Change to true to force show dialog
@@ -19,6 +35,7 @@ export const useMigrationNotice = () => {
       // Only check once on mount
       staleTime: Number.POSITIVE_INFINITY,
       refetchOnWindowFocus: false,
+      enabled: !isTestEnvironment, // Disable in test environment
     });
 
   const {
@@ -29,6 +46,7 @@ export const useMigrationNotice = () => {
     // Only check once on mount
     staleTime: Number.POSITIVE_INFINITY,
     refetchOnWindowFocus: false,
+    enabled: !isTestEnvironment, // Disable in test environment
   });
 
   // エラーログ

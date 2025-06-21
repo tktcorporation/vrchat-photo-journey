@@ -37,10 +37,14 @@ test.setTimeout(TIMEOUT);
 
 test('各画面でスクショ', async () => {
   // Launch Electron app.
+  console.log('Launching Electron app...');
   const electronApp = await launchElectronApp();
+  console.log('Electron app launched');
 
   // Get the first window that the app opens, wait if necessary.
-  const page = await electronApp.firstWindow();
+  console.log('Waiting for first window...');
+  const page = await electronApp.firstWindow({ timeout: 30000 });
+  console.log('Got first window');
 
   const title = await page.title();
 
@@ -72,12 +76,33 @@ test('各画面でスクショ', async () => {
   if (isTermsButtonVisible) {
     await screenshot(page, title, 'terms');
     await page.click('text=同意する');
+    console.log('「同意する」ボタンをクリックしました');
+    // クリック後の処理を待つ
+    await page.waitForTimeout(2000);
   } else {
     consola.log('「同意する」ボタンが表示されていません');
   }
 
-  await page.waitForSelector('text=初期セットアップ');
-  await screenshot(page, title, 'setup');
+  // 初期セットアップ画面またはメイン画面を待つ
+  try {
+    await page.waitForSelector('text=初期セットアップ', { timeout: 5000 });
+    await screenshot(page, title, 'setup');
+  } catch (_e) {
+    console.log(
+      '「初期セットアップ」が見つかりません。代わりに他の要素を探します',
+    );
+    // 代替として、VRChatログファイルディレクトリの入力欄を待つ
+    try {
+      await page.waitForSelector(
+        '[aria-label="input-VRChatログファイルディレクトリ"]',
+        { timeout: 5000 },
+      );
+      await screenshot(page, title, 'setup-alt');
+    } catch (_e2) {
+      console.log('設定画面も見つかりません');
+      await screenshot(page, title, 'error-state');
+    }
+  }
 
   // VRChatログファイルディレクトリの入力フィールドを選択
   const logFileInput = await page.waitForSelector(

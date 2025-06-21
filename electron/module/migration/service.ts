@@ -43,6 +43,14 @@ export const clearMigrationCache = (): void => {
  * Get the path to the old app's user data directory
  */
 const getOldAppUserDataPath = (): string => {
+  // Skip in Playwright test environment
+  if (process.env.PLAYWRIGHT_TEST === 'true') {
+    logger.debug(
+      '[Migration] Skipping old app path check in Playwright test environment',
+    );
+    return '';
+  }
+
   // Return cached path if available
   if (oldAppPathCache !== null) {
     logger.debug('[Migration] Using cached old app path:', oldAppPathCache);
@@ -86,6 +94,14 @@ const getOldAppUserDataPath = (): string => {
  * Check if migration is needed
  */
 export const isMigrationNeeded = async (): Promise<boolean> => {
+  // Skip migration check in Playwright test environment
+  if (process.env.PLAYWRIGHT_TEST === 'true') {
+    logger.debug(
+      '[Migration] Skipping migration check in Playwright test environment',
+    );
+    return false;
+  }
+
   // Check cache first
   if (migrationCheckCache !== null) {
     const cacheAge = Date.now() - migrationCheckCache.timestamp;
