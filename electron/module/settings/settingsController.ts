@@ -281,4 +281,92 @@ export const settingsRouter = () =>
         isInitializing = false;
       }
     }),
+
+    /**
+     * 旧アプリからの移行が必要かどうかをチェックする
+     */
+    checkMigrationStatus: procedure.query(async () => {
+      try {
+        // 動的インポートで移行サービスを読み込む
+        const { isMigrationNeeded } = await import('../migration/service');
+        const needed = await isMigrationNeeded();
+        
+        return {
+          migrationNeeded: needed,
+          oldAppName: 'vrchat-photo-journey',
+          newAppName: 'VRChatAlbums',
+        };
+      } catch (error) {
+        logger.warn('Failed to check migration status:', error);
+        // エラーが発生した場合は移行不要として扱う
+        return {
+          migrationNeeded: false,
+          oldAppName: 'vrchat-photo-journey',
+          newAppName: 'VRChatAlbums',
+        };
+      }
+    }),
+
+    /**
+     * ユーザーの承認を得て旧アプリからのデータ移行を実行する
+     */
+    performMigration: procedure.mutation(async () => {
+      try {
+        // 動的インポートで移行サービスを読み込む
+        const { performMigration } = await import('../migration/service');
+        const result = await performMigration();
+        
+        if (result.isErr()) {
+          logger.error({
+            message: `Migration failed: ${result.error.message}`,
+            stack: match(result.error)
+              .with(P.instanceOf(Error), (err) => err)
+              .otherwise(() => undefined),
+          });
+          throw new UserFacingError(
+            `データ移行に失敗しました: ${result.error.message}`,
+          );
+        }
+        
+        return result.value;
+      } catch (error) {
+        logger.error({
+          message: `Failed to perform migration: ${match(error)
+            .with(P.instanceOf(Error), (err) => err.message)
+            .otherwise(() => 'Unknown error')}`,
+          stack: match(error)
+            .with(P.instanceOf(Error), (err) => err)
+            .otherwise(() => undefined),
+        });
+        
+        // UserFacingErrorの場合はそのまま再スロー
+        if (error instanceof UserFacingError) {
+          throw error;
+        }
+        
+        // その他のエラーの場合
+        throw new UserFacingError(
+          'データ移行中に予期しないエラーが発生しました',
+        );
+      }
+    }),
+
+    /**
+     * 移行通知が表示されたかどうかを取得する
+     */
+    getMigrationNoticeShown: procedure.query(async () => {
+      const settingStore = getSettingStore();
+      const shown = settingStore.getMigrationNoticeShown();
+      logger.debug('[Settings] getMigrationNoticeShown:', shown);
+      return shown;
+    }),
+
+    /**
+     * 移行通知が表示されたことを記録する
+     */
+    setMigrationNoticeShown: procedure.mutation(async () => {
+      const settingStore = getSettingStore();
+      settingStore.setMigrationNoticeShown(true);
+      return { success: true };
+    }),
   });

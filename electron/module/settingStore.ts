@@ -14,6 +14,7 @@ const settingStoreKey = [
   'backgroundFileCreateFlag',
   'termsAccepted',
   'termsVersion',
+  'migrationNoticeShown',
 ] as const;
 type SettingStoreKey = (typeof settingStoreKey)[number];
 
@@ -137,6 +138,20 @@ const setTermsVersion =
   };
 
 /**
+ * 移行通知表示状態
+ */
+const getMigrationNoticeShown =
+  (getB: (key: SettingStoreKey) => boolean | null) => (): boolean => {
+    const value = getB('migrationNoticeShown');
+    return value ?? false;
+  };
+
+const setMigrationNoticeShown =
+  (set: (key: SettingStoreKey, value: unknown) => void) => (flag: boolean) => {
+    set('migrationNoticeShown', flag);
+  };
+
+/**
  * Clear all settings
  */
 const clearAllStoredSettings = (settingsStore: Store) => () => {
@@ -242,6 +257,8 @@ const setSettingStore = (name: StoreName) => {
     setTermsAccepted: setTermsAccepted(set),
     getTermsVersion: getTermsVersion(getS),
     setTermsVersion: setTermsVersion(set),
+    getMigrationNoticeShown: getMigrationNoticeShown(getB),
+    setMigrationNoticeShown: setMigrationNoticeShown(set),
   };
   settingStore = _settingStore;
   return _settingStore;
@@ -302,6 +319,8 @@ export interface SettingStore {
   setTermsAccepted: (accepted: boolean) => void;
   getTermsVersion: () => string;
   setTermsVersion: (version: string) => void;
+  getMigrationNoticeShown: () => boolean;
+  setMigrationNoticeShown: (shown: boolean) => void;
 }
 
 export { getSettingStore, initSettingStore, initSettingStoreForTest };
