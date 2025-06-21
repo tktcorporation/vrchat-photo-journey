@@ -51,7 +51,12 @@ export const useMigrationNotice = () => {
     if (shouldShowDialog) {
       setShowMigrationDialog(true);
     }
-  }, [migrationStatus, migrationNoticeShown, isLoadingNoticeShown, isInitializing]);
+  }, [
+    migrationStatus,
+    migrationNoticeShown,
+    isLoadingNoticeShown,
+    isInitializing,
+  ]);
 
   const handleMigrationComplete = async () => {
     // Mark the notice as shown after successful migration

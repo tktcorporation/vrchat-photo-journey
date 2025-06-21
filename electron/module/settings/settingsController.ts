@@ -290,7 +290,7 @@ export const settingsRouter = () =>
         // 動的インポートで移行サービスを読み込む
         const { isMigrationNeeded } = await import('../migration/service');
         const needed = await isMigrationNeeded();
-        
+
         return {
           migrationNeeded: needed,
           oldAppName: 'vrchat-photo-journey',
@@ -315,7 +315,7 @@ export const settingsRouter = () =>
         // 動的インポートで移行サービスを読み込む
         const { performMigration } = await import('../migration/service');
         const result = await performMigration();
-        
+
         if (result.isErr()) {
           logger.error({
             message: `Migration failed: ${result.error.message}`,
@@ -327,7 +327,7 @@ export const settingsRouter = () =>
             `データ移行に失敗しました: ${result.error.message}`,
           );
         }
-        
+
         return result.value;
       } catch (error) {
         logger.error({
@@ -338,12 +338,12 @@ export const settingsRouter = () =>
             .with(P.instanceOf(Error), (err) => err)
             .otherwise(() => undefined),
         });
-        
+
         // UserFacingErrorの場合はそのまま再スロー
         if (error instanceof UserFacingError) {
           throw error;
         }
-        
+
         // その他のエラーの場合
         throw new UserFacingError(
           'データ移行中に予期しないエラーが発生しました',

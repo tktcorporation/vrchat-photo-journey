@@ -40,12 +40,13 @@ export const MigrationDialog: React.FC<MigrationDialogProps> = ({
       if (result.details.database) migratedItems.push('データベース');
       if (result.details.logStore) migratedItems.push('ログストア');
       if (result.details.settings) migratedItems.push('設定');
-      
+
       toast({
         title: 'データ移行が完了しました',
-        description: migratedItems.length > 0 
-          ? `移行されたデータ: ${migratedItems.join('、')}`
-          : 'データ移行が完了しました',
+        description:
+          migratedItems.length > 0
+            ? `移行されたデータ: ${migratedItems.join('、')}`
+            : 'データ移行が完了しました',
       });
       onMigrationComplete();
     },
