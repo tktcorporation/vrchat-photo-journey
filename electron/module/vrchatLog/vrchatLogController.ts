@@ -76,33 +76,57 @@ export const appendLoglinesToFileFromLogFilePathList = async (
 
   logger.info(`Found ${logFilePathList.value.length} log files to process`);
 
-  const logLineList = await vrchatLogService.getLogLinesByLogFilePathList({
-    logFilePathList: logFilePathList.value,
-    includesList: [...FILTER_PATTERNS],
-  });
-  if (logLineList.isErr()) {
-    return neverthrow.err(logLineList.error);
+  let totalProcessedLines = 0;
+  let hasProcessedAnyLines = false;
+
+  try {
+    // ストリーミング処理で各バッチを処理
+    for await (const logLineBatch of vrchatLogService.getLogLinesByLogFilePathListStreaming(
+      {
+        logFilePathList: logFilePathList.value,
+        includesList: [...FILTER_PATTERNS],
+        batchSize: 1000, // バッチサイズを指定
+        maxMemoryUsageMB: 500, // メモリ使用量の上限を500MBに制限
+      },
+    )) {
+      // ログ行をフィルタリング（processAll=trueの場合はスキップ）
+      const filteredLogLines = processAll
+        ? logLineBatch
+        : vrchatLogService.filterLogLinesByDate(logLineBatch, startDate);
+
+      if (filteredLogLines.length > 0) {
+        hasProcessedAnyLines = true;
+        totalProcessedLines += filteredLogLines.length;
+
+        logger.debug(
+          `Processing batch of ${filteredLogLines.length} log lines`,
+        );
+
+        // 各バッチを保存
+        const result = await vrchatLogService.appendLoglinesToFile({
+          logLines: filteredLogLines,
+        });
+        if (result.isErr()) {
+          return neverthrow.err(result.error);
+        }
+      }
+    }
+  } catch (error) {
+    return neverthrow.err(
+      match(error)
+        .with(P.instanceOf(Error), (err) => err)
+        .otherwise(
+          () => new Error('Unknown error occurred during log processing'),
+        ),
+    );
   }
 
-  // ログ行をフィルタリング（processAll=trueの場合はスキップ）
-  const filteredLogLines = processAll
-    ? logLineList.value
-    : vrchatLogService.filterLogLinesByDate(logLineList.value, startDate);
-
-  if (filteredLogLines.length === 0) {
+  if (!hasProcessedAnyLines) {
     logger.info('No new log lines to process after filtering');
     return neverthrow.ok(undefined);
   }
 
-  logger.info(`Processing ${filteredLogLines.length} log lines`);
-
-  // 日付ごとに適切なファイルに保存するため、logStoreFilePathは指定しない
-  const result = await vrchatLogService.appendLoglinesToFile({
-    logLines: filteredLogLines,
-  });
-  if (result.isErr()) {
-    return neverthrow.err(result.error);
-  }
+  logger.info(`Processing completed: ${totalProcessedLines} log lines`);
 
   return neverthrow.ok(undefined);
 };
