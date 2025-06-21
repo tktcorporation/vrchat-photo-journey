@@ -1,8 +1,9 @@
-import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { VRChatPhotoFileNameWithExtSchema } from '../../../../valueObjects';
 import { usePhotoGalleryPaginated } from '../usePhotoGalleryPaginated';
 
 // tRPCのモック
@@ -17,7 +18,8 @@ vi.mock('@/trpc', () => ({
                 photos: [
                   {
                     id: '1',
-                    photoPath: '/test/VRChat_1920x1080_2024-01-01_12-00-00.000.png',
+                    photoPath:
+                      '/test/VRChat_1920x1080_2024-01-01_12-00-00.000.png',
                     photoTakenAt: new Date('2024-01-01T12:00:00.000Z'),
                     width: 1920,
                     height: 1080,
@@ -110,10 +112,9 @@ describe('usePhotoGalleryPaginated', () => {
   });
 
   it('should provide pagination info in debug', async () => {
-    const { result } = renderHook(
-      () => usePhotoGalleryPaginated(''),
-      { wrapper: createWrapper() },
-    );
+    const { result } = renderHook(() => usePhotoGalleryPaginated(''), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => {
       expect(result.current.debug.paginationInfo).toBeDefined();
@@ -123,15 +124,16 @@ describe('usePhotoGalleryPaginated', () => {
   });
 
   it('should handle photo selection', () => {
-    const { result } = renderHook(
-      () => usePhotoGalleryPaginated(''),
-      { wrapper: createWrapper() },
-    );
+    const { result } = renderHook(() => usePhotoGalleryPaginated(''), {
+      wrapper: createWrapper(),
+    });
 
     const testPhoto = {
       id: 'test-photo',
       url: '/test/photo.png',
-      fileNameWithExt: { value: 'photo.png' },
+      fileNameWithExt: VRChatPhotoFileNameWithExtSchema.parse(
+        'VRChat_2024-01-01_12-00-00.000_1920x1080.png',
+      ),
       takenAt: new Date(),
       width: 1920,
       height: 1080,
@@ -139,14 +141,20 @@ describe('usePhotoGalleryPaginated', () => {
     };
 
     // Single selection
-    result.current.setSelectedPhoto(testPhoto);
+    act(() => {
+      result.current.setSelectedPhoto(testPhoto);
+    });
     expect(result.current.selectedPhoto).toBe(testPhoto);
 
     // Multi selection
-    result.current.setIsMultiSelectMode(true);
+    act(() => {
+      result.current.setIsMultiSelectMode(true);
+    });
     expect(result.current.isMultiSelectMode).toBe(true);
 
-    result.current.setSelectedPhotos(new Set(['test-photo']));
+    act(() => {
+      result.current.setSelectedPhotos(new Set(['test-photo']));
+    });
     expect(result.current.selectedPhotos).toEqual(new Set(['test-photo']));
   });
 });

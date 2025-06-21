@@ -30,6 +30,9 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
 
+  /* Global setup to capture console errors */
+  globalSetup: './playwright/global-setup.ts',
+
   /* Configure projects for major browsers */
   projects: [
     {

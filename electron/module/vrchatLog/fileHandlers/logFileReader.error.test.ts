@@ -1,7 +1,7 @@
 import * as neverthrow from 'neverthrow';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { VRChatLogFilePathSchema } from '../../vrchatLogFileDir/model';
-import type { VRChatLogFileError } from '../error';
+import { VRChatLogFileError } from '../error';
 import { getLogLinesByLogFilePathListStreaming } from './logFileReader';
 
 // 実際のファイル読み込み関数をモック
@@ -18,23 +18,29 @@ describe('logFileReader - Error Handling', () => {
     vi.clearAllMocks();
 
     // メモリ使用量を安全な範囲に設定
-    process.memoryUsage = vi.fn().mockReturnValue({
-      heapUsed: 100 * 1024 * 1024, // 100MB
-      heapTotal: 1024 * 1024 * 1024,
-      external: 0,
-      arrayBuffers: 0,
-      rss: 1024 * 1024 * 1024,
-    });
+    const mockMemoryUsage = Object.assign(
+      vi.fn(() => ({
+        heapUsed: 100 * 1024 * 1024, // 100MB
+        heapTotal: 1024 * 1024 * 1024,
+        external: 0,
+        arrayBuffers: 0,
+        rss: 1024 * 1024 * 1024,
+      })),
+      {
+        rss: vi.fn(() => 1024 * 1024 * 1024),
+      },
+    );
+    process.memoryUsage = mockMemoryUsage as typeof process.memoryUsage;
   });
 
   describe('ファイル読み込みエラー', () => {
     it('ファイル読み込みでエラーが発生した場合にエラーをスローする', async () => {
       const mockLogFilePaths = [
-        VRChatLogFilePathSchema.parse('/path/to/error.txt'),
+        VRChatLogFilePathSchema.parse('/path/to/output_log_error.txt'),
       ];
 
       // getLogLinesFromLogFileがエラーを返すモック
-      const mockError: VRChatLogFileError = 'ENOENT';
+      const mockError = new VRChatLogFileError('LOG_FILE_NOT_FOUND');
       const mockGetLogLinesFromLogFile = vi
         .fn()
         .mockResolvedValue(neverthrow.err(mockError));
@@ -59,15 +65,17 @@ describe('logFileReader - Error Handling', () => {
 
     it('一部のファイルでエラーが発生しても他のファイルは処理を続行する', async () => {
       const mockLogFilePaths = [
-        VRChatLogFilePathSchema.parse('/path/to/success.txt'),
-        VRChatLogFilePathSchema.parse('/path/to/error.txt'),
-        VRChatLogFilePathSchema.parse('/path/to/success2.txt'),
+        VRChatLogFilePathSchema.parse('/path/to/output_log_success.txt'),
+        VRChatLogFilePathSchema.parse('/path/to/output_log_error.txt'),
+        VRChatLogFilePathSchema.parse('/path/to/output_log_success2.txt'),
       ];
 
       const mockGetLogLinesFromLogFile = vi
         .fn()
         .mockResolvedValueOnce(neverthrow.ok(['success line 1']))
-        .mockResolvedValueOnce(neverthrow.err('ENOENT' as VRChatLogFileError))
+        .mockResolvedValueOnce(
+          neverthrow.err(new VRChatLogFileError('LOG_FILE_NOT_FOUND')),
+        )
         .mockResolvedValueOnce(neverthrow.ok(['success line 2']));
 
       vi.doMock('./logFileReader', () => ({
@@ -94,7 +102,7 @@ describe('logFileReader - Error Handling', () => {
   describe('バリデーションエラー', () => {
     it('無効なログ行形式でVRChatLogLineSchemaパースエラーが発生する', async () => {
       const mockLogFilePaths = [
-        VRChatLogFilePathSchema.parse('/path/to/invalid.txt'),
+        VRChatLogFilePathSchema.parse('/path/to/output_log_invalid.txt'),
       ];
 
       // 無効な形式のログ行を返すモック
@@ -127,9 +135,9 @@ describe('logFileReader - Error Handling', () => {
   describe('Promise.allエラー処理', () => {
     it('並列処理中にエラーが発生した場合に適切に処理する', async () => {
       const mockLogFilePaths = [
-        VRChatLogFilePathSchema.parse('/path/to/file1.txt'),
-        VRChatLogFilePathSchema.parse('/path/to/file2.txt'),
-        VRChatLogFilePathSchema.parse('/path/to/file3.txt'),
+        VRChatLogFilePathSchema.parse('/path/to/output_log_file1.txt'),
+        VRChatLogFilePathSchema.parse('/path/to/output_log_file2.txt'),
+        VRChatLogFilePathSchema.parse('/path/to/output_log_file3.txt'),
       ];
 
       // 2番目のファイルでエラーが発生するモック
@@ -163,7 +171,7 @@ describe('logFileReader - Error Handling', () => {
   describe('システムエラー', () => {
     it('予期しないエラータイプが発生した場合に適切に処理する', async () => {
       const mockLogFilePaths = [
-        VRChatLogFilePathSchema.parse('/path/to/file.txt'),
+        VRChatLogFilePathSchema.parse('/path/to/output_log_file.txt'),
       ];
 
       // 文字列エラーを投げるモック
@@ -192,7 +200,7 @@ describe('logFileReader - Error Handling', () => {
 
     it('nullやundefinedエラーが発生した場合に適切に処理する', async () => {
       const mockLogFilePaths = [
-        VRChatLogFilePathSchema.parse('/path/to/file.txt'),
+        VRChatLogFilePathSchema.parse('/path/to/output_log_file.txt'),
       ];
 
       // nullエラーを投げるモック
@@ -221,7 +229,7 @@ describe('logFileReader - Error Handling', () => {
   describe('リソース制限エラー', () => {
     it('ファイルハンドル不足などのシステムリソースエラーを適切に処理する', async () => {
       const mockLogFilePaths = Array.from({ length: 1000 }, (_, i) =>
-        VRChatLogFilePathSchema.parse(`/path/to/file${i}.txt`),
+        VRChatLogFilePathSchema.parse(`/path/to/output_log_file${i}.txt`),
       );
 
       // EMFILEエラー（Too many open files）をシミュレート
@@ -255,8 +263,8 @@ describe('logFileReader - Error Handling', () => {
   describe('ジェネレータの異常終了', () => {
     it('ジェネレータの途中で停止した場合にリソースが適切にクリーンアップされる', async () => {
       const mockLogFilePaths = [
-        VRChatLogFilePathSchema.parse('/path/to/file1.txt'),
-        VRChatLogFilePathSchema.parse('/path/to/file2.txt'),
+        VRChatLogFilePathSchema.parse('/path/to/output_log_file1.txt'),
+        VRChatLogFilePathSchema.parse('/path/to/output_log_file2.txt'),
       ];
 
       const mockGetLogLinesFromLogFile = vi

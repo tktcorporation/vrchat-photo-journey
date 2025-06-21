@@ -5,7 +5,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { logger } from '../../../lib/logger';
 import * as fs from '../../../lib/wrappedFs';
 import { VRChatLogFilePathSchema } from '../../vrchatLogFileDir/model';
-import { VRChatLogLineSchema } from '../model';
 import {
   getLogLinesByLogFilePathList,
   getLogLinesByLogFilePathListStreaming,
@@ -33,7 +32,7 @@ describe('logFileReader', () => {
       mockNodeFs.existsSync.mockReturnValue(false);
 
       const logFilePath = VRChatLogFilePathSchema.parse(
-        '/path/to/nonexistent.log',
+        '/path/to/output_log_nonexistent.txt',
       );
       const result = await getLogLinesFromLogFile({
         logFilePath,
@@ -41,7 +40,9 @@ describe('logFileReader', () => {
       });
 
       expect(result.isOk()).toBe(true);
-      expect(result.unwrap()).toEqual([]);
+      if (result.isOk()) {
+        expect(result.value).toEqual([]);
+      }
     });
 
     it('ファイルが存在する場合は指定された文字列を含む行を返す', async () => {
@@ -49,52 +50,63 @@ describe('logFileReader', () => {
 
       const mockStream = {
         on: vi.fn(),
-      };
+        pipe: vi.fn(),
+        close: vi.fn(),
+        destroy: vi.fn(),
+      } as unknown as nodeFs.ReadStream;
       const mockReader = {
         on: vi.fn(),
-      };
+        close: vi.fn(),
+        removeAllListeners: vi.fn(),
+      } as unknown as readline.Interface;
 
-      mockFs.createReadStream.mockReturnValue(mockStream as fs.ReadStream);
-      mockReadline.createInterface.mockReturnValue(
-        mockReader as readline.Interface,
-      );
+      mockFs.createReadStream.mockReturnValue(mockStream);
+      mockReadline.createInterface.mockReturnValue(mockReader);
 
       // ストリームの完了をシミュレート
-      mockReader.on.mockImplementation((event, callback) => {
-        if (event === 'line') {
-          // テスト用のログ行を送信
-          callback('2023-01-01 10:00:00 [Info] test line 1');
-          callback('2023-01-01 10:01:00 [Info] other line');
-          callback('2023-01-01 10:02:00 [Info] test line 2');
-        }
-        return mockReader;
-      });
+      (mockReader.on as import('vitest').Mock).mockImplementation(
+        (event: string, callback: (...args: unknown[]) => void) => {
+          if (event === 'line') {
+            // テスト用のログ行を送信
+            callback('2023-01-01 10:00:00 [Info] test line 1');
+            callback('2023-01-01 10:01:00 [Info] other line');
+            callback('2023-01-01 10:02:00 [Info] test line 2');
+          }
+          return mockReader;
+        },
+      );
 
-      mockStream.on.mockImplementation((event, callback) => {
-        if (event === 'close') {
-          setTimeout(callback, 0);
-        }
-        return mockStream;
-      });
+      (mockStream.on as import('vitest').Mock).mockImplementation(
+        (event: string, callback: (...args: unknown[]) => void) => {
+          if (event === 'close') {
+            setTimeout(callback, 0);
+          }
+          return mockStream;
+        },
+      );
 
-      const logFilePath = VRChatLogFilePathSchema.parse('/path/to/test.log');
+      const logFilePath = VRChatLogFilePathSchema.parse(
+        '/path/to/output_log_test.txt',
+      );
       const result = await getLogLinesFromLogFile({
         logFilePath,
         includesList: ['test'],
       });
 
       expect(result.isOk()).toBe(true);
-      const lines = result.unwrap();
-      expect(lines).toHaveLength(2);
-      expect(lines[0]).toContain('test line 1');
-      expect(lines[1]).toContain('test line 2');
+      if (result.isOk()) {
+        const lines = result.value;
+        expect(lines).toHaveLength(2);
+        expect(lines[0]).toContain('test line 1');
+        expect(lines[1]).toContain('test line 2');
+      }
     });
   });
 
   describe('getLogLinesByLogFilePathListStreaming', () => {
     const mockLogFilePaths = [
-      VRChatLogFilePathSchema.parse('/path/to/log1.txt'),
-      VRChatLogFilePathSchema.parse('/path/to/log2.txt'),
+      VRChatLogFilePathSchema.parse('/path/to/output_log1.txt'),
+      VRChatLogFilePathSchema.parse('/path/to/output_log2.txt'),
     ];
 
     beforeEach(() => {
@@ -157,13 +169,19 @@ describe('logFileReader', () => {
     it('メモリ制限を超えた場合はエラーをスローする', async () => {
       // メモリ使用量を監視するモック
       const originalMemoryUsage = process.memoryUsage;
-      process.memoryUsage = vi.fn().mockReturnValue({
-        heapUsed: 600 * 1024 * 1024, // 600MB
-        heapTotal: 0,
-        external: 0,
-        arrayBuffers: 0,
-        rss: 0,
-      });
+      const mockMemoryUsage = Object.assign(
+        vi.fn(() => ({
+          heapUsed: 600 * 1024 * 1024, // 600MB
+          heapTotal: 0,
+          external: 0,
+          arrayBuffers: 0,
+          rss: 0,
+        })),
+        {
+          rss: vi.fn(() => 0),
+        },
+      );
+      process.memoryUsage = mockMemoryUsage as typeof process.memoryUsage;
 
       const generator = getLogLinesByLogFilePathListStreaming({
         logFilePathList: mockLogFilePaths,
@@ -182,13 +200,11 @@ describe('logFileReader', () => {
     });
 
     it('並列処理数を制限して処理する', async () => {
-      const _mockGetLogLinesFromLogFile = vi
-        .fn()
-        .mockResolvedValue(neverthrow.ok(['test line']));
+      vi.fn().mockResolvedValue(neverthrow.ok(['test line']));
 
       // 大量のファイルパスを作成
       const manyFilePaths = Array.from({ length: 10 }, (_, i) =>
-        VRChatLogFilePathSchema.parse(`/path/to/log${i}.txt`),
+        VRChatLogFilePathSchema.parse(`/path/to/output_log${i}.txt`),
       );
 
       const generator = getLogLinesByLogFilePathListStreaming({
@@ -199,7 +215,7 @@ describe('logFileReader', () => {
 
       // ジェネレータの開始をテスト
       const iterator = generator[Symbol.asyncIterator]();
-      const _firstResult = await iterator.next();
+      await iterator.next();
 
       // 並列処理のログが出力されることを確認
       expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -245,7 +261,10 @@ describe('logFileReader', () => {
           }
           return mockStream;
         }),
-      };
+        pipe: vi.fn(),
+        close: vi.fn(),
+        destroy: vi.fn(),
+      } as unknown as nodeFs.ReadStream;
 
       const mockReader = {
         on: vi.fn().mockImplementation((event, callback) => {
@@ -261,24 +280,32 @@ describe('logFileReader', () => {
           }
           return mockReader;
         }),
-      };
+        close: vi.fn(),
+        removeAllListeners: vi.fn(),
+      } as unknown as readline.Interface;
 
-      mockFs.createReadStream.mockReturnValue(mockStream as fs.ReadStream);
-      mockReadline.createInterface.mockReturnValue(
-        mockReader as readline.Interface,
-      );
+      mockFs.createReadStream.mockReturnValue(mockStream);
+      mockReadline.createInterface.mockReturnValue(mockReader);
 
       // メモリ使用量を高く設定
       const originalMemoryUsage = process.memoryUsage;
-      process.memoryUsage = vi.fn().mockReturnValue({
-        heapUsed: 100 * 1024 * 1024, // 100MB
-        heapTotal: 0,
-        external: 0,
-        arrayBuffers: 0,
-        rss: 0,
-      });
+      const mockMemoryUsage = Object.assign(
+        vi.fn(() => ({
+          heapUsed: 100 * 1024 * 1024, // 100MB
+          heapTotal: 0,
+          external: 0,
+          arrayBuffers: 0,
+          rss: 0,
+        })),
+        {
+          rss: vi.fn(() => 0),
+        },
+      );
+      process.memoryUsage = mockMemoryUsage as typeof process.memoryUsage;
 
-      const logFilePaths = [VRChatLogFilePathSchema.parse('/path/to/test.log')];
+      const logFilePaths = [
+        VRChatLogFilePathSchema.parse('/path/to/output_log_test.txt'),
+      ];
       const result = await getLogLinesByLogFilePathList({
         logFilePathList: logFilePaths,
         includesList: ['test'],
@@ -304,7 +331,10 @@ describe('logFileReader', () => {
           }
           return mockStream;
         }),
-      };
+        pipe: vi.fn(),
+        close: vi.fn(),
+        destroy: vi.fn(),
+      } as unknown as nodeFs.ReadStream;
 
       const mockReader = {
         on: vi.fn().mockImplementation((event, callback) => {
@@ -313,15 +343,15 @@ describe('logFileReader', () => {
           }
           return mockReader;
         }),
-      };
+        close: vi.fn(),
+        removeAllListeners: vi.fn(),
+      } as unknown as readline.Interface;
 
-      mockFs.createReadStream.mockReturnValue(mockStream as fs.ReadStream);
-      mockReadline.createInterface.mockReturnValue(
-        mockReader as readline.Interface,
-      );
+      mockFs.createReadStream.mockReturnValue(mockStream);
+      mockReadline.createInterface.mockReturnValue(mockReader);
 
       const logFilePaths = Array.from({ length: 10 }, (_, i) =>
-        VRChatLogFilePathSchema.parse(`/path/to/log${i}.txt`),
+        VRChatLogFilePathSchema.parse(`/path/to/output_log${i}.txt`),
       );
 
       const result = await getLogLinesByLogFilePathList({

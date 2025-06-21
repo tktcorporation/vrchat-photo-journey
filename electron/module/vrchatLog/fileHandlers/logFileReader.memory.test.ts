@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { logger } from '../../../lib/logger';
 import { VRChatLogFilePathSchema } from '../../vrchatLogFileDir/model';
 import {
@@ -34,16 +34,22 @@ describe('logFileReader - Memory Management', () => {
   describe('メモリ制限機能', () => {
     it('メモリ使用量が制限を超えた場合にエラーをスローする', async () => {
       // メモリ使用量を600MBに設定
-      process.memoryUsage = vi.fn().mockReturnValue({
-        heapUsed: 600 * 1024 * 1024, // 600MB
-        heapTotal: 1024 * 1024 * 1024,
-        external: 0,
-        arrayBuffers: 0,
-        rss: 1024 * 1024 * 1024,
-      });
+      const mockMemoryUsage = Object.assign(
+        vi.fn(() => ({
+          heapUsed: 600 * 1024 * 1024, // 600MB
+          heapTotal: 1024 * 1024 * 1024,
+          external: 0,
+          arrayBuffers: 0,
+          rss: 1024 * 1024 * 1024,
+        })),
+        {
+          rss: vi.fn(() => 1024 * 1024 * 1024),
+        },
+      );
+      process.memoryUsage = mockMemoryUsage as typeof process.memoryUsage;
 
       const mockLogFilePaths = [
-        VRChatLogFilePathSchema.parse('/path/to/log1.txt'),
+        VRChatLogFilePathSchema.parse('/path/to/output_log1.txt'),
       ];
 
       const generator = getLogLinesByLogFilePathListStreaming({
@@ -61,16 +67,22 @@ describe('logFileReader - Memory Management', () => {
 
     it('メモリ使用量が制限内の場合は正常に処理する', async () => {
       // メモリ使用量を400MBに設定
-      process.memoryUsage = vi.fn().mockReturnValue({
-        heapUsed: 400 * 1024 * 1024, // 400MB
-        heapTotal: 1024 * 1024 * 1024,
-        external: 0,
-        arrayBuffers: 0,
-        rss: 1024 * 1024 * 1024,
-      });
+      const mockMemoryUsage = Object.assign(
+        vi.fn(() => ({
+          heapUsed: 400 * 1024 * 1024, // 400MB
+          heapTotal: 1024 * 1024 * 1024,
+          external: 0,
+          arrayBuffers: 0,
+          rss: 1024 * 1024 * 1024,
+        })),
+        {
+          rss: vi.fn(() => 1024 * 1024 * 1024),
+        },
+      );
+      process.memoryUsage = mockMemoryUsage as typeof process.memoryUsage;
 
       const mockLogFilePaths = [
-        VRChatLogFilePathSchema.parse('/path/to/log1.txt'),
+        VRChatLogFilePathSchema.parse('/path/to/output_log1.txt'),
       ];
 
       const generator = getLogLinesByLogFilePathListStreaming({
@@ -94,16 +106,22 @@ describe('logFileReader - Memory Management', () => {
 
     it('デフォルトのメモリ制限値（500MB）が適用される', async () => {
       // メモリ使用量を600MBに設定
-      process.memoryUsage = vi.fn().mockReturnValue({
-        heapUsed: 600 * 1024 * 1024, // 600MB
-        heapTotal: 1024 * 1024 * 1024,
-        external: 0,
-        arrayBuffers: 0,
-        rss: 1024 * 1024 * 1024,
-      });
+      const mockMemoryUsage = Object.assign(
+        vi.fn(() => ({
+          heapUsed: 600 * 1024 * 1024, // 600MB
+          heapTotal: 1024 * 1024 * 1024,
+          external: 0,
+          arrayBuffers: 0,
+          rss: 1024 * 1024 * 1024,
+        })),
+        {
+          rss: vi.fn(() => 1024 * 1024 * 1024),
+        },
+      );
+      process.memoryUsage = mockMemoryUsage as typeof process.memoryUsage;
 
       const mockLogFilePaths = [
-        VRChatLogFilePathSchema.parse('/path/to/log1.txt'),
+        VRChatLogFilePathSchema.parse('/path/to/output_log1.txt'),
       ];
 
       const generator = getLogLinesByLogFilePathListStreaming({
@@ -123,16 +141,22 @@ describe('logFileReader - Memory Management', () => {
   describe('メモリ監視とログ出力', () => {
     it('メモリ使用量をログに出力する', async () => {
       // メモリ使用量を200MBに設定
-      process.memoryUsage = vi.fn().mockReturnValue({
-        heapUsed: 200 * 1024 * 1024, // 200MB
-        heapTotal: 1024 * 1024 * 1024,
-        external: 0,
-        arrayBuffers: 0,
-        rss: 1024 * 1024 * 1024,
-      });
+      const mockMemoryUsage = Object.assign(
+        vi.fn(() => ({
+          heapUsed: 200 * 1024 * 1024, // 200MB
+          heapTotal: 1024 * 1024 * 1024,
+          external: 0,
+          arrayBuffers: 0,
+          rss: 1024 * 1024 * 1024,
+        })),
+        {
+          rss: vi.fn(() => 1024 * 1024 * 1024),
+        },
+      );
+      process.memoryUsage = mockMemoryUsage as typeof process.memoryUsage;
 
       const mockLogFilePaths = [
-        VRChatLogFilePathSchema.parse('/path/to/log1.txt'),
+        VRChatLogFilePathSchema.parse('/path/to/output_log1.txt'),
       ];
 
       const generator = getLogLinesByLogFilePathListStreaming({
@@ -155,20 +179,26 @@ describe('logFileReader - Memory Management', () => {
       let memoryUsage = 100 * 1024 * 1024; // 初期100MB
 
       // メモリ使用量が段階的に増加するモック
-      process.memoryUsage = vi.fn().mockImplementation(() => {
-        memoryUsage += 50 * 1024 * 1024; // 50MBずつ増加
-        return {
-          heapUsed: memoryUsage,
-          heapTotal: 1024 * 1024 * 1024,
-          external: 0,
-          arrayBuffers: 0,
-          rss: 1024 * 1024 * 1024,
-        };
-      });
+      const mockMemoryUsage = Object.assign(
+        vi.fn(() => {
+          memoryUsage += 50 * 1024 * 1024; // 50MBずつ増加
+          return {
+            heapUsed: memoryUsage,
+            heapTotal: 1024 * 1024 * 1024,
+            external: 0,
+            arrayBuffers: 0,
+            rss: 1024 * 1024 * 1024,
+          };
+        }),
+        {
+          rss: vi.fn(() => 1024 * 1024 * 1024),
+        },
+      );
+      process.memoryUsage = mockMemoryUsage as typeof process.memoryUsage;
 
       const mockLogFilePaths = [
-        VRChatLogFilePathSchema.parse('/path/to/log1.txt'),
-        VRChatLogFilePathSchema.parse('/path/to/log2.txt'),
+        VRChatLogFilePathSchema.parse('/path/to/output_log1.txt'),
+        VRChatLogFilePathSchema.parse('/path/to/output_log2.txt'),
       ];
 
       const generator = getLogLinesByLogFilePathListStreaming({
@@ -190,13 +220,19 @@ describe('logFileReader - Memory Management', () => {
   describe('getLogLinesByLogFilePathList - メモリ警告', () => {
     it('大量のログ行がメモリに蓄積された場合に警告を出力する', async () => {
       // メモリ使用量を300MBに設定
-      process.memoryUsage = vi.fn().mockReturnValue({
-        heapUsed: 300 * 1024 * 1024, // 300MB
-        heapTotal: 1024 * 1024 * 1024,
-        external: 0,
-        arrayBuffers: 0,
-        rss: 1024 * 1024 * 1024,
-      });
+      const mockMemoryUsage = Object.assign(
+        vi.fn(() => ({
+          heapUsed: 300 * 1024 * 1024, // 300MB
+          heapTotal: 1024 * 1024 * 1024,
+          external: 0,
+          arrayBuffers: 0,
+          rss: 1024 * 1024 * 1024,
+        })),
+        {
+          rss: vi.fn(() => 1024 * 1024 * 1024),
+        },
+      );
+      process.memoryUsage = mockMemoryUsage as typeof process.memoryUsage;
 
       // getLogLinesFromLogFileをモック
       const mockGetLogLinesFromLogFile = vi.fn();
@@ -227,7 +263,7 @@ describe('logFileReader - Memory Management', () => {
       }));
 
       const mockLogFilePaths = [
-        VRChatLogFilePathSchema.parse('/path/to/log1.txt'),
+        VRChatLogFilePathSchema.parse('/path/to/output_log1.txt'),
       ];
 
       const result = await getLogLinesByLogFilePathList({

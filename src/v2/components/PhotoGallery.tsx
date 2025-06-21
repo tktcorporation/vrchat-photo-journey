@@ -4,7 +4,7 @@ import { useToast } from '../hooks/use-toast';
 import { useDebounce } from '../hooks/useDebounce';
 import type { UseLoadingStateResult } from '../hooks/useLoadingState';
 import { useI18n } from '../i18n/store';
-import GalleryContent from './PhotoGallery/GalleryContent';
+import { GalleryContentPaginated } from './PhotoGallery/GalleryContentPaginated';
 import { usePhotoGallery } from './PhotoGallery/usePhotoGallery';
 import SettingsModal from './settings/SettingsModal';
 
@@ -148,7 +148,7 @@ const PhotoGallery = memo((props: PhotoGalleryProps) => {
 
   return (
     <div className="flex flex-col h-full">
-      <GalleryContent
+      <GalleryContentPaginated
         searchQuery={searchQuery}
         searchType={searchType}
         isLoadingStartupSync={props.isLoadingStartupSync}

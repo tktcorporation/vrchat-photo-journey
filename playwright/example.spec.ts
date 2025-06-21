@@ -2,6 +2,10 @@ import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { type Page, _electron, test } from '@playwright/test';
 import consola from 'consola';
+import {
+  reportConsoleCapture,
+  setupConsoleCapture,
+} from './utils/console-capture';
 
 // ESモジュール環境で__dirnameの代わりに使用
 const __filename = fileURLToPath(import.meta.url);
@@ -41,6 +45,9 @@ test('各画面でスクショ', async () => {
 
   // Get the first window that the app opens, wait if necessary.
   const page = await electronApp.firstWindow();
+
+  // Setup console error capturing
+  const consoleCapture = setupConsoleCapture(page);
 
   const title = await page.title();
 
@@ -127,4 +134,7 @@ test('各画面でスクショ', async () => {
 
   // Exit app.
   await electronApp.close();
+
+  // Report console errors summary
+  reportConsoleCapture(consoleCapture);
 });

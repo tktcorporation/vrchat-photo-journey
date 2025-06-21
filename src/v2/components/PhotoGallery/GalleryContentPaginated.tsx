@@ -1,9 +1,10 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { LoaderCircle } from 'lucide-react';
 import type React from 'react';
-import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { UseLoadingStateResult } from '../../hooks/useLoadingState';
 import { AppHeader } from '../AppHeader';
+import { DateJump } from '../DateJump';
 import { LocationGroupHeader } from '../LocationGroupHeader';
 import type { PhotoGalleryData } from '../PhotoGallery';
 import PhotoGrid from '../PhotoGrid';
@@ -89,22 +90,23 @@ const InfiniteScrollTrigger = memo(function InfiniteScrollTrigger({
  * 無限スクロール + バーチャルスクロールの組み合わせで大量写真を効率処理
  */
 export const GalleryContentPaginated = memo(function GalleryContentPaginated({
-  searchQuery,
-  searchType,
+  searchQuery: initialSearchQuery,
+  searchType: initialSearchType,
   isLoadingStartupSync,
   finishLoadingGrouping,
   galleryData,
 }: GalleryContentPaginatedProps) {
+  const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
+  const [searchType, setSearchType] = useState(initialSearchType);
   const {
     groupedPhotos,
     isLoading,
-    selectedPhoto,
-    setSelectedPhoto,
     selectedPhotos,
     setSelectedPhotos,
     isMultiSelectMode,
     setIsMultiSelectMode,
-    debug,
+    setSelectedPhoto: _setSelectedPhoto,
+    debug: _debug,
     loadNextPage,
     hasNextPage,
     isFetchingNextPage,
@@ -115,6 +117,9 @@ export const GalleryContentPaginated = memo(function GalleryContentPaginated({
 
   const containerRef = useRef<HTMLDivElement>(null);
   const groupSizesRef = useRef<Map<string, number>>(new Map());
+  const [currentVisibleGroups, setCurrentVisibleGroups] = useState<Set<string>>(
+    new Set(),
+  );
 
   const filteredGroups = useMemo(() => {
     return Object.entries(groupedPhotos).sort(
@@ -166,12 +171,40 @@ export const GalleryContentPaginated = memo(function GalleryContentPaginated({
     loadNextPage,
   ]);
 
-  const currentGalleryData = useMemo<PhotoGalleryData>(
-    () => ({
-      ...galleryData,
-      debugInfo: debug,
-    }),
-    [galleryData, debug],
+  // 現在表示されているグループを追跡
+  useEffect(() => {
+    const items = virtualizer.getVirtualItems();
+    const visibleGroupKeys = new Set(
+      items.map((item) => filteredGroups[item.index]?.[0]).filter(Boolean),
+    );
+    setCurrentVisibleGroups(visibleGroupKeys);
+  }, [virtualizer.getVirtualItems(), filteredGroups]);
+
+  // 日付ジャンプ機能
+  const handleJumpToDate = useCallback(
+    (_groupKey: string, index: number) => {
+      // 必要に応じて追加データを読み込む
+      if (
+        index >= filteredGroups.length - 10 &&
+        hasNextPage &&
+        !isFetchingNextPage
+      ) {
+        loadNextPage();
+      }
+
+      // 指定されたインデックスにスクロール
+      virtualizer.scrollToIndex(index, {
+        align: 'start',
+        behavior: 'smooth',
+      });
+    },
+    [
+      virtualizer,
+      filteredGroups.length,
+      hasNextPage,
+      isFetchingNextPage,
+      loadNextPage,
+    ],
   );
 
   const showLoadingState =
@@ -182,14 +215,16 @@ export const GalleryContentPaginated = memo(function GalleryContentPaginated({
       <div className="flex h-full flex-col">
         <AppHeader
           searchQuery={searchQuery}
-          searchType={searchType}
-          galleryData={currentGalleryData}
-          selectedPhoto={selectedPhoto}
-          setSelectedPhoto={setSelectedPhoto}
-          selectedPhotos={selectedPhotos}
-          setSelectedPhotos={setSelectedPhotos}
+          setSearchQuery={(query, type) => {
+            setSearchQuery(query);
+            setSearchType(type);
+          }}
+          onOpenSettings={galleryData?.onOpenSettings}
+          selectedPhotoCount={selectedPhotos.size}
+          onClearSelection={() => setSelectedPhotos(new Set())}
           isMultiSelectMode={isMultiSelectMode}
-          setIsMultiSelectMode={setIsMultiSelectMode}
+          onCopySelected={galleryData?.onCopySelected}
+          loadingState={galleryData?.loadingState}
         />
 
         <div
@@ -229,7 +264,9 @@ export const GalleryContentPaginated = memo(function GalleryContentPaginated({
                   <div
                     key={virtualItem.key}
                     data-key={key}
-                    ref={virtualizer.measureElement}
+                    ref={(el) => {
+                      if (el) virtualizer.measureElement(el);
+                    }}
                     style={{
                       position: 'absolute',
                       top: 0,
@@ -240,29 +277,28 @@ export const GalleryContentPaginated = memo(function GalleryContentPaginated({
                   >
                     <div className="mb-8">
                       <LocationGroupHeader
-                        worldInfo={group.worldInfo}
+                        worldId={group.worldInfo?.worldId ?? null}
+                        worldName={group.worldInfo?.worldName ?? null}
+                        worldInstanceId={
+                          group.worldInfo?.worldInstanceId ?? null
+                        }
+                        photoCount={group.photos.length}
                         joinDateTime={group.joinDateTime}
-                        photosCount={group.photos.length}
                       />
 
                       <div className="mt-4">
-                        <MeasurePhotoGroup photos={group.photos} />
+                        <MeasurePhotoGroup
+                          photos={group.photos}
+                          onMeasure={() => {
+                            // Measurement is handled by parent ref
+                          }}
+                        />
                         <PhotoGrid
                           photos={group.photos}
-                          onPhotoClick={setSelectedPhoto}
                           selectedPhotos={selectedPhotos}
-                          onPhotoSelectToggle={(photo, isSelected) => {
-                            setSelectedPhotos((prev) => {
-                              const newSet = new Set(prev);
-                              if (isSelected) {
-                                newSet.add(photo.id);
-                              } else {
-                                newSet.delete(photo.id);
-                              }
-                              return newSet;
-                            });
-                          }}
+                          setSelectedPhotos={setSelectedPhotos}
                           isMultiSelectMode={isMultiSelectMode}
+                          setIsMultiSelectMode={setIsMultiSelectMode}
                         />
                       </div>
                     </div>
@@ -288,6 +324,13 @@ export const GalleryContentPaginated = memo(function GalleryContentPaginated({
             </div>
           )}
         </div>
+
+        {/* 日付ジャンプ */}
+        <DateJump
+          filteredGroups={filteredGroups}
+          onJumpToDate={handleJumpToDate}
+          currentVisibleGroups={currentVisibleGroups}
+        />
       </div>
     </GalleryErrorBoundary>
   );

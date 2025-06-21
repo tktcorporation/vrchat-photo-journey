@@ -2,7 +2,6 @@ import type React from 'react';
 import { memo, useMemo } from 'react';
 import { useLoadingState } from '../hooks/useLoadingState';
 import { GalleryContentPaginated } from './PhotoGallery/GalleryContentPaginated';
-import { PhotoModal } from './PhotoModal';
 
 /**
  * ページネーション対応フォトギャラリーのプロパティ
@@ -52,11 +51,23 @@ export const PhotoGalleryPaginated = memo(function PhotoGalleryPaginated({
 }: PhotoGalleryPaginatedProps) {
   const loadingState = useLoadingState();
 
-  const galleryData = useMemo<PhotoGalleryPaginatedData>(
+  // PhotoGalleryDataの必須プロパティを提供
+  const galleryData = useMemo(
     () => ({
-      debugInfo: undefined, // GalleryContentPaginatedで更新される
+      searchQuery,
+      setSearchQuery: () => {}, // ダミー実装
+      onOpenSettings: () => {}, // ダミー実装
+      selectedPhotoCount: 0,
+      onClearSelection: () => {}, // ダミー実装
+      isMultiSelectMode: false,
+      onCopySelected: () => {}, // ダミー実装
+      loadingState: {
+        isRefreshing: loadingState.isRefreshing,
+        startRefreshing: loadingState.startRefreshing,
+        finishRefreshing: loadingState.finishRefreshing,
+      },
     }),
-    [],
+    [searchQuery, loadingState],
   );
 
   return (
@@ -67,7 +78,6 @@ export const PhotoGalleryPaginated = memo(function PhotoGalleryPaginated({
         galleryData={galleryData}
         {...loadingState}
       />
-      <PhotoModal />
     </>
   );
 });

@@ -23,6 +23,19 @@ interface GalleryDebugInfo {
   };
 }
 
+interface PaginatedResponse {
+  photos: Array<{
+    id: string;
+    photoPath: string;
+    photoTakenAt: Date;
+    width: number;
+    height: number;
+  }>;
+  currentPage: number;
+  totalPages: number;
+  totalCount: number;
+}
+
 const selectedPhotoAtom = atom<Photo | null>(null);
 const selectedPhotosAtom = atom<Set<string>>(new Set<string>());
 const isMultiSelectModeAtom = atom<boolean>(false);
@@ -65,13 +78,31 @@ export function usePhotoGalleryPaginated(
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = trpcReact.vrchatPhoto.getVrchatPhotoPathModelListPaginated.useInfiniteQuery(
+  } = (
+    trpcReact.vrchatPhoto.getVrchatPhotoPathModelListPaginated as unknown as {
+      useInfiniteQuery: (
+        input: { orderByPhotoTakenAt: 'desc'; pageSize: number },
+        options: {
+          getNextPageParam: (lastPage: PaginatedResponse) => number | undefined;
+          staleTime: number;
+          refetchOnWindowFocus: boolean;
+          enabled: boolean;
+        },
+      ) => {
+        data: { pages: PaginatedResponse[] } | undefined;
+        isLoading: boolean;
+        fetchNextPage: () => void;
+        hasNextPage: boolean;
+        isFetchingNextPage: boolean;
+      };
+    }
+  ).useInfiniteQuery(
     {
       orderByPhotoTakenAt: 'desc',
       pageSize: options?.pageSize || 1000,
     },
     {
-      getNextPageParam: (lastPage) => {
+      getNextPageParam: (lastPage: PaginatedResponse) => {
         return lastPage.currentPage < lastPage.totalPages - 1
           ? lastPage.currentPage + 1
           : undefined;
