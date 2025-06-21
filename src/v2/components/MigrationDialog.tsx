@@ -35,9 +35,18 @@ export const MigrationDialog: React.FC<MigrationDialogProps> = ({
       setIsProcessing(true);
     },
     onSuccess: (result) => {
+      // 移行された項目をリストアップ
+      const migratedItems = [];
+      if (result.details.database) migratedItems.push('データベース');
+      if (result.details.logStore) migratedItems.push('ログストア');
+      if (result.details.settings) migratedItems.push('設定');
+
       toast({
         title: 'データ移行が完了しました',
-        description: `移行されたデータ: ${result.migratedItems.join('、')}`,
+        description:
+          migratedItems.length > 0
+            ? `移行されたデータ: ${migratedItems.join('、')}`
+            : 'データ移行が完了しました',
       });
       onMigrationComplete();
     },
@@ -104,7 +113,7 @@ export const MigrationDialog: React.FC<MigrationDialogProps> = ({
                   移行されるデータ
                 </p>
                 <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                  VRChatのログデータ（ワールド訪問履歴）
+                  VRChatのログデータ（ワールド訪問履歴）と設定
                 </p>
               </div>
             </div>

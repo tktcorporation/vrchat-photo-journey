@@ -138,7 +138,7 @@ const setTermsVersion =
   };
 
 /**
- * Migration notice shown flag
+ * 移行通知表示状態
  */
 const getMigrationNoticeShown =
   (getB: (key: SettingStoreKey) => boolean | null) => (): boolean => {

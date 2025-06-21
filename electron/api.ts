@@ -47,22 +47,10 @@ export const router = trpcRouter({
     return observable((emit) => {
       /**
        * メインプロセスの `toast` イベントを受け取り
-       * サブスクライバーへ文字列または構造化メッセージを送信する内部関数。
+       * サブスクライバーへ文字列を送信する内部関数。
        * subscribeToast の Observable 内でのみ使用される。
        */
-      function onToast(text: string | Record<string, unknown>) {
-        // 予期しないデータ型の場合はログを出力して無視
-        if (
-          typeof text !== 'string' &&
-          !(typeof text === 'object' && text !== null && 'message' in text)
-        ) {
-          console.warn(
-            '[subscribeToast] Unexpected toast data type received:',
-            typeof text,
-            text,
-          );
-          return;
-        }
+      function onToast(text: string) {
         emit.next(text);
       }
 

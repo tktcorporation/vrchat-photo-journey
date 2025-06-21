@@ -9,84 +9,53 @@ import { MigrationDialog } from './MigrationDialog';
 export const useMigrationNotice = () => {
   const { toast } = useToast();
   const [showMigrationDialog, setShowMigrationDialog] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
 
-  // デバッグ用：強制表示（開発時のみ）
-  // TODO: 本番環境では削除
-  const FORCE_SHOW_MIGRATION_DIALOG = false; // Change to true to force show dialog
+  // 初期化を遅延実行（アプリの起動を妨げない）
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsInitializing(false);
+    }, 2000); // 2秒後に初期化開始
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const { data: migrationStatus, refetch: refetchMigrationStatus } =
     trpcReact.settings.checkMigrationStatus.useQuery(undefined, {
-      // Only check once on mount
+      // 初期化が完了してから実行
+      enabled: !isInitializing,
       staleTime: Number.POSITIVE_INFINITY,
       refetchOnWindowFocus: false,
     });
 
-  const {
-    data: migrationNoticeShown,
-    isLoading: isLoadingNoticeShown,
-    error: noticeError,
-  } = trpcReact.settings.getMigrationNoticeShown.useQuery(undefined, {
-    // Only check once on mount
-    staleTime: Number.POSITIVE_INFINITY,
-    refetchOnWindowFocus: false,
-  });
-
-  // エラーログ
-  if (noticeError) {
-    console.error(
-      '[MigrationNotice] Error fetching notice shown status:',
-      noticeError,
-    );
-  }
+  const { data: migrationNoticeShown, isLoading: isLoadingNoticeShown } =
+    trpcReact.settings.getMigrationNoticeShown.useQuery(undefined, {
+      enabled: !isInitializing,
+      staleTime: Number.POSITIVE_INFINITY,
+      refetchOnWindowFocus: false,
+    });
 
   const setMigrationNoticeShown =
     trpcReact.settings.setMigrationNoticeShown.useMutation();
 
   useEffect(() => {
-    // Debug logging
-    console.log('[MigrationNotice] Migration check:', {
-      migrationNoticeShown,
-      isLoadingNoticeShown,
-      migrationNeeded: migrationStatus?.migrationNeeded,
-      migrationStatus,
-      showMigrationDialog,
-    });
-
-    // Skip if still loading
-    if (isLoadingNoticeShown || !migrationStatus) {
-      console.log('[MigrationNotice] Skipping - still loading data');
+    // 初期化中はスキップ
+    if (isInitializing || isLoadingNoticeShown || !migrationStatus) {
       return;
     }
 
-    // Check if user has already been notified about migration
-    // 初回起動時（undefined）または false の場合にダイアログを表示
+    // 移行が必要で、まだ通知を表示していない場合
     const shouldShowDialog =
-      FORCE_SHOW_MIGRATION_DIALOG ||
-      ((migrationNoticeShown === false || migrationNoticeShown === undefined) &&
-        migrationStatus.migrationNeeded === true);
-
-    console.log('[MigrationNotice] Should show dialog:', {
-      shouldShowDialog,
-      FORCE_SHOW_MIGRATION_DIALOG,
-      noticeShownCondition:
-        migrationNoticeShown === false || migrationNoticeShown === undefined,
-      migrationNeededCondition: migrationStatus.migrationNeeded === true,
-    });
+      migrationStatus.migrationNeeded === true && !migrationNoticeShown;
 
     if (shouldShowDialog) {
-      console.log('[MigrationNotice] Setting showMigrationDialog to true');
-      // Show migration dialog instead of just a toast
       setShowMigrationDialog(true);
-
-      // Don't mark as shown immediately - wait for user interaction
-      // setMigrationNoticeShown.mutate();
     }
   }, [
     migrationStatus,
     migrationNoticeShown,
     isLoadingNoticeShown,
-    FORCE_SHOW_MIGRATION_DIALOG,
-    // Remove setMigrationNoticeShown from dependencies since we're not calling it here
+    isInitializing,
   ]);
 
   const handleMigrationComplete = async () => {
@@ -116,9 +85,6 @@ export const useMigrationNotice = () => {
       duration: 5000,
     });
   };
-
-  // デバッグ用：ダイアログ表示状態をログ
-  console.log('[MigrationNotice] Dialog state:', { showMigrationDialog });
 
   return {
     showMigrationDialog,
