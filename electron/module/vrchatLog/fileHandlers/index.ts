@@ -6,6 +6,7 @@
 export {
   getLogLinesFromLogFile,
   getLogLinesByLogFilePathList,
+  getLogLinesByLogFilePathListStreaming,
 } from './logFileReader';
 
 // ログストレージ管理

@@ -17,8 +17,8 @@ export const useQueryQueue = (isVisible: boolean, priority = 0, delay = 0) => {
 
   useEffect(() => {
     if (isVisible) {
-      // 優先度に応じて遅延時間を調整
-      const adjustedDelay = delay + priorityRef.current * 100;
+      // 優先度に応じて遅延時間を調整（さらに削減）
+      const adjustedDelay = delay + priorityRef.current * 10;
 
       // クエリ実行の許可を遅延付きで設定
       timeoutRef.current = setTimeout(() => {

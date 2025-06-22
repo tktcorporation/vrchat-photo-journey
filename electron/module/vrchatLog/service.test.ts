@@ -106,26 +106,25 @@ describe('getLogStoreFilePathsInRange', () => {
     const mockDate = new Date('2024-03-20');
     vi.setSystemTime(mockDate);
 
+    // 存在するファイルのみモック
+    vi.mocked(nodeFs.existsSync).mockImplementation((path) => {
+      const pathStr = typeof path === 'string' ? path : path.toString();
+      return pathStr.includes('2024-02') || pathStr.includes('2024-03');
+    });
+
     try {
       const result = await getLogStoreFilePathsInRange(startDate, mockDate);
 
-      // 2024-01から2024-03までの3ヶ月分のパスが生成されることを確認
-      expect(result).toHaveLength(3);
+      // 存在するファイルのみ返されることを確認（2024-02と2024-03のみ）
+      expect(result).toHaveLength(2);
       expect(result[0].value).toBe(
-        path.join(
-          '/mock/user/data/logStore',
-          '2024-01',
-          'logStore-2024-01.txt',
-        ),
-      );
-      expect(result[1].value).toBe(
         path.join(
           '/mock/user/data/logStore',
           '2024-02',
           'logStore-2024-02.txt',
         ),
       );
-      expect(result[2].value).toBe(
+      expect(result[1].value).toBe(
         path.join(
           '/mock/user/data/logStore',
           '2024-03',
@@ -140,6 +139,12 @@ describe('getLogStoreFilePathsInRange', () => {
   it('startDateが指定されない場合は現在の日付のファイルのみを取得する', async () => {
     const mockDate = new Date('2024-04-10');
     vi.setSystemTime(mockDate);
+
+    // 2024-04のファイルが存在することをモック
+    vi.mocked(nodeFs.existsSync).mockImplementation((path) => {
+      const pathStr = typeof path === 'string' ? path : path.toString();
+      return pathStr.includes('2024-04');
+    });
 
     try {
       const result = await getLogStoreFilePathsInRange(mockDate, mockDate);
@@ -274,35 +279,38 @@ describe('vrchatLog service', () => {
   });
 
   describe('getLogStoreFilePathsInRange', () => {
-    it('should include both new and legacy format files when available', async () => {
-      // レガシーファイルが存在すると仮定
-      vi.mocked(nodeFs.existsSync).mockReturnValue(true);
+    it('should include only existing files', async () => {
+      // 特定のファイルのみ存在するとモック
+      vi.mocked(nodeFs.existsSync).mockImplementation((path) => {
+        // 2ヶ月前と現在の月のファイルのみ存在
+        const pathStr = typeof path === 'string' ? path : path.toString();
+        const twoMonthsAgo = datefns.format(
+          datefns.subMonths(new Date(), 2),
+          'yyyy-MM',
+        );
+        const currentMonth = datefns.format(new Date(), 'yyyy-MM');
+        return pathStr.includes(twoMonthsAgo) || pathStr.includes(currentMonth);
+      });
 
       // 3ヶ月前からのログを取得
       const startDate = datefns.subMonths(new Date(), 3);
       const currentDate = new Date();
       const paths = await getLogStoreFilePathsInRange(startDate, currentDate);
 
-      // 新形式のログファイル（4つの月：3ヶ月前、2ヶ月前、1ヶ月前、現在の月）
-      expect(paths.length).toBe(4); // レガシーファイルは含まれていない
+      // 存在するファイルのみ（2つ：2ヶ月前と現在の月）
+      expect(paths.length).toBe(2);
     });
 
-    it('should only include new format files when legacy file does not exist', async () => {
-      // レガシーファイルが存在しないと仮定
+    it('should return empty array when no files exist', async () => {
+      // すべてのファイルが存在しないとモック
       vi.mocked(nodeFs.existsSync).mockReturnValue(false);
 
       const startDate = datefns.subMonths(new Date(), 2);
       const currentDate = new Date();
       const paths = await getLogStoreFilePathsInRange(startDate, currentDate);
 
-      // 新形式のログファイルのみ（3つの月：2ヶ月前、1ヶ月前、現在の月）
-      expect(paths.length).toBe(3);
-
-      // すべてのパスが新形式であることを確認
-      for (const p of paths) {
-        expect(p.value).not.toBe(legacyLogPath);
-        expect(p.value).toMatch(/logStore-\d{4}-\d{2}\.txt$/);
-      }
+      // ファイルが存在しないので空の配列
+      expect(paths.length).toBe(0);
     });
   });
 });

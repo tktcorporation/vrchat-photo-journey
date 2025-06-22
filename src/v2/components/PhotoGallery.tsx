@@ -4,6 +4,7 @@ import { useToast } from '../hooks/use-toast';
 import { useDebounce } from '../hooks/useDebounce';
 import type { UseLoadingStateResult } from '../hooks/useLoadingState';
 import { useI18n } from '../i18n/store';
+import { useMigrationNotice } from './MigrationNotice';
 import GalleryContent from './PhotoGallery/GalleryContent';
 import { usePhotoGallery } from './PhotoGallery/usePhotoGallery';
 import SettingsModal from './settings/SettingsModal';
@@ -38,6 +39,7 @@ const PhotoGallery = memo((props: PhotoGalleryProps) => {
   const [showSettings, setShowSettings] = useState(false);
   const { t } = useI18n();
   const { toast } = useToast();
+  const { MigrationDialog } = useMigrationNotice();
 
   const {
     selectedPhotos,
@@ -57,7 +59,7 @@ const PhotoGallery = memo((props: PhotoGalleryProps) => {
 
   // 複数画像をクリップボードにコピーするミューテーション
   const { mutate: copyMultipleImagesToClipboard } =
-    trpcReact.electronUtil.copyMultipleImageDataByPath.useMutation({
+    trpcReact.electronUtil.copyMultipleImagePaths.useMutation({
       onSuccess: (_, variables) => {
         const count = variables.length;
         const _isWindows = navigator.platform.includes('Win');
@@ -148,6 +150,7 @@ const PhotoGallery = memo((props: PhotoGalleryProps) => {
 
   return (
     <div className="flex flex-col h-full">
+      <MigrationDialog />
       <GalleryContent
         searchQuery={searchQuery}
         searchType={searchType}
