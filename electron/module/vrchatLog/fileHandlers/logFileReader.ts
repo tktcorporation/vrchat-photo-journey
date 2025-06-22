@@ -55,6 +55,40 @@ export const getLogLinesFromLogFile = async (props: {
 };
 
 /**
+ * 単一のログファイルから指定された文字列を含む行を読み込み、パースする内部ヘルパー関数。
+ * @param props.logFilePath ログファイルのパス
+ * @param props.includesList 抽出対象とする文字列のリスト
+ * @returns パースされたVRChatLogLineの配列、またはエラー
+ */
+const _getAndParseLogLinesFromFile = async (props: {
+  logFilePath: VRChatLogFilePath | VRChatLogStoreFilePath;
+  includesList: string[];
+}): Promise<neverthrow.Result<VRChatLogLine[], VRChatLogFileError>> => {
+  const result = await getLogLinesFromLogFile({
+    logFilePath: props.logFilePath,
+    includesList: props.includesList,
+  });
+  if (result.isErr()) {
+    return neverthrow.err(result.error);
+  }
+  try {
+    const parsedLines = result.value.map((line) => VRChatLogLineSchema.parse(line));
+    return neverthrow.ok(parsedLines);
+  } catch (e) {
+    // zodパースエラーなどをキャッチする想定
+    logger.error(`Error parsing log lines from ${props.logFilePath.value}: ${e}`);
+    // VRChatLogFileError 型に合うように具体的なエラーオブジェクトを返すか、型定義を見直す必要がある
+    // ここでは仮のエラーを返す
+    return neverthrow.err({
+      kind: 'ReadFileError', // 仮のエラー種別
+      filePath: props.logFilePath.value,
+      message: e instanceof Error ? e.message : String(e),
+      error: e instanceof Error ? e : new Error(String(e)),
+    } as VRChatLogFileError); // VRChatLogFileError に合わせてキャスト
+  }
+};
+
+/**
  * 複数のログファイルから指定された文字列を含む行を抽出
  * @param props.logFilePathList ログファイルパスのリスト
  * @param props.includesList 抽出対象とする文字列のリスト
@@ -85,20 +119,20 @@ export const getLogLinesByLogFilePathList = async (props: {
     const batch = props.logFilePathList.slice(i, i + concurrency);
     const batchResults = await Promise.all(
       batch.map(async (logFilePath) => {
-        const result = await getLogLinesFromLogFile({
+        const result = await _getAndParseLogLinesFromFile({ // Refactored
           logFilePath,
           includesList: props.includesList,
         });
         if (result.isErr()) {
           errors.push(result.error);
-          return [];
+          return []; // エラー時は空配列を返す
         }
-        return result.value.map((line) => VRChatLogLineSchema.parse(line));
+        return result.value; // 既にパースされた VRChatLogLine[]
       }),
     );
 
     // バッチの結果を統合
-    for (const lines of batchResults) {
+    for (const lines of batchResults) { // lines は VRChatLogLine[]
       logLineList.push(...lines);
 
       // メモリ使用量をチェックし、上限に近づいたら警告
@@ -182,19 +216,20 @@ export async function* getLogLinesByLogFilePathListStreaming(props: {
     const fileBatch = props.logFilePathList.slice(i, i + concurrency);
     const batchResults = await Promise.all(
       fileBatch.map(async (logFilePath) => {
-        const result = await getLogLinesFromLogFile({
+        const result = await _getAndParseLogLinesFromFile({ // Refactored
           logFilePath,
           includesList: props.includesList,
         });
         if (result.isErr()) {
+          // ストリーミング版ではエラー発生時に即座にスローする
           throw result.error;
         }
-        return result.value.map((line) => VRChatLogLineSchema.parse(line));
+        return result.value; // 既にパースされた VRChatLogLine[]
       }),
     );
 
     // 各ファイルの結果を処理
-    for (const lines of batchResults) {
+    for (const lines of batchResults) { // lines は VRChatLogLine[]
       accumulatedLines.push(...lines);
 
       // バッチサイズに達したかメモリ使用量をチェック

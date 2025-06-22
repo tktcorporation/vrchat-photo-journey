@@ -6,36 +6,30 @@ import { ERROR_CATEGORIES, ERROR_CODES, UserFacingError } from './errors';
  * neverthrowのResultパターンとUserFacingErrorパターンを橋渡しするヘルパー関数群
  */
 
+type ErrorMappings<E> = {
+  [key: string]: (error: E) => UserFacingError;
+} & {
+  default?: (error: E) => UserFacingError;
+};
+
 /**
- * Resultがerrの場合に、適切なUserFacingErrorを投げる
- * @param result neverthrowのResult
- * @param errorMappings エラー値をUserFacingErrorにマッピングする関数群
+ * エラーマッピングを処理し、UserFacingErrorを生成する内部ヘルパー関数。
+ * @param error 元のエラー
+ * @param errorMappings エラーマッピング
+ * @returns UserFacingError または null (マッピングが見つからない場合)
  */
-export function handleResultError<T, E>(
-  result: Result<T, E>,
-  errorMappings: {
-    [key: string]: (error: E) => UserFacingError;
-  } & {
-    default?: (error: E) => UserFacingError;
-  },
-): T {
-  if (result.isOk()) {
-    return result.value;
-  }
-
-  const error = result.error;
-
-  // エラーを文字列キーとして変換
-  let errorKey: string;
-  if (error instanceof Error) {
-    errorKey = error.constructor.name;
-  } else {
-    errorKey = String(error);
+function _processErrorMapping<E>(
+  error: E,
+  errorKey: string,
+  errorMappings?: ErrorMappings<E>,
+): UserFacingError | null {
+  if (!errorMappings) {
+    return null;
   }
 
   const mapping = errorMappings[errorKey];
 
-  const userFacingError = match({
+  return match({
     mapping,
     hasDefault: !!errorMappings.default,
   })
@@ -59,6 +53,25 @@ export function handleResultError<T, E>(
       return userError;
     })
     .otherwise(() => null);
+}
+
+/**
+ * Resultがerrの場合に、適切なUserFacingErrorを投げる
+ * @param result neverthrowのResult
+ * @param errorMappings エラー値をUserFacingErrorにマッピングする関数群
+ */
+export function handleResultError<T, E>(
+  result: Result<T, E>,
+  errorMappings: ErrorMappings<E>,
+): T {
+  if (result.isOk()) {
+    return result.value;
+  }
+
+  const error = result.error;
+  const errorKey = error instanceof Error ? error.constructor.name : String(error);
+
+  const userFacingError = _processErrorMapping(error, errorKey, errorMappings);
 
   if (userFacingError) {
     throw userFacingError;
@@ -79,61 +92,21 @@ export function handleResultError<T, E>(
 export function handleResultErrorWithSilent<T, E>(
   result: Result<T, E>,
   silentErrors: string[],
-  errorMappings?: {
-    [key: string]: (error: E) => UserFacingError;
-  } & {
-    default?: (error: E) => UserFacingError;
-  },
+  errorMappings?: ErrorMappings<E>,
 ): T | null {
   if (result.isOk()) {
     return result.value;
   }
 
   const error = result.error;
-
-  // エラーを文字列キーとして変換
-  let errorKey: string;
-  if (error instanceof Error) {
-    errorKey = error.constructor.name;
-  } else {
-    errorKey = String(error);
-  }
+  const errorKey = error instanceof Error ? error.constructor.name : String(error);
 
   // サイレントエラーの場合はnullを返す
   if (silentErrors.includes(errorKey)) {
     return null;
   }
 
-  // エラーマッピングがある場合は適用
-  const userFacingError = match(errorMappings)
-    .with(
-      P.when((mappings) => !!mappings),
-      (mappings) => {
-        const mapping = mappings[errorKey];
-        return match({ mapping, hasDefault: !!mappings.default })
-          .with(
-            { mapping: P.when((m) => m && typeof m === 'function') },
-            ({ mapping }) => {
-              const userError = mapping(error);
-              // Original errorをcauseとして保持
-              if (error instanceof Error && userError && !userError.cause) {
-                Object.assign(userError, { cause: error });
-              }
-              return userError;
-            },
-          )
-          .with({ hasDefault: true }, () => {
-            const userError = mappings.default?.(error);
-            // Original errorをcauseとして保持
-            if (error instanceof Error && userError && !userError.cause) {
-              Object.assign(userError, { cause: error });
-            }
-            return userError;
-          })
-          .otherwise(() => null);
-      },
-    )
-    .otherwise(() => null);
+  const userFacingError = _processErrorMapping(error, errorKey, errorMappings);
 
   if (userFacingError) {
     throw userFacingError;

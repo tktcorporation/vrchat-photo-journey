@@ -1,0 +1,59 @@
+Analyzing code similarity...
+
+=== Function Similarity ===
+Checking 234 files for duplicates...
+
+Found 13 duplicate pairs:
+------------------------------------------------------------
+
+Similarity: 88.70%, Score: 73.2 points (lines 65~100, avg: 82.5)
+  electron/module/vrchatLog/fileHandlers/logFileReader.ts:64-128 getLogLinesByLogFilePathList
+  electron/module/vrchatLog/fileHandlers/logFileReader.ts:139-238 getLogLinesByLogFilePathListStreaming
+
+Similarity: 90.00%, Score: 56.7 points (lines 58~68, avg: 63.0)
+  electron/lib/errorHelpers.ts:14-71 handleResultError
+  electron/lib/errorHelpers.ts:79-146 handleResultErrorWithSilent
+
+Similarity: 90.00%, Score: 56.7 points (lines 46~80, avg: 63.0)
+  electron/electronUtil.ts:237-316 setTray
+  electron/module/vrchatLog/converters/dbToLogStore.ts:221-266 exportLogsToLogStore
+
+Similarity: 96.00%, Score: 32.6 points (lines 32~36, avg: 34.0)
+  electron/module/vrchatLog/parsers/playerActionParser.ts:29-60 extractPlayerJoinInfoFromLog
+  electron/module/vrchatLog/parsers/playerActionParser.ts:68-103 extractPlayerLeaveInfoFromLog
+
+Similarity: 87.11%, Score: 30.1 points (lines 32~37, avg: 34.5)
+  electron/module/vrchatPhoto/model/vrchatPhotoPath.model.ts:135-166 getCountByYearMonthList
+  electron/module/vrchatWorldJoinLog/service.ts:120-156 mergeVRChatWorldJoinLogs
+
+Similarity: 87.93%, Score: 29.5 points (lines 30~37, avg: 33.5)
+  electron/module/vrchatLog/service.ts:91-127 getVRChaLogInfoByLogFilePathList
+  electron/module/vrchatLogFileDir/service.ts:140-169 getVRChatLogFilePathList
+
+Similarity: 96.09%, Score: 27.4 points (lines 24~33, avg: 28.5)
+  electron/module/VRChatPlayerLeaveLogModel/playerLeaveLog.service.ts:4-36 createVRChatPlayerLeaveLogModel
+  electron/module/vrchatWorldJoinLog/VRChatWorldJoinLogModel/s_model.ts:75-98 createVRChatWorldJoinLog
+
+Similarity: 88.48%, Score: 26.5 points (lines 14~46, avg: 30.0)
+  electron/lib/dbHelper.ts:153-166 enqueueTask
+  electron/module/vrchatLog/converters/dbToLogStore.ts:221-266 exportLogsToLogStore
+
+Similarity: 94.87%, Score: 16.1 points (lines 16~18, avg: 17.0)
+  electron/module/vrchatWorldJoinLog/service.ts:53-70 findRecentVRChatWorldJoinLog
+  electron/module/vrchatWorldJoinLog/service.ts:72-87 findNextVRChatWorldJoinLog
+
+Similarity: 87.07%, Score: 13.1 points (lines 12~18, avg: 15.0)
+  electron/module/vrchatWorldJoinLog/service.ts:53-70 findRecentVRChatWorldJoinLog
+  electron/module/vrchatWorldJoinLog/service.ts:93-104 findLatestWorldJoinLog
+
+Similarity: 87.07%, Score: 12.2 points (lines 12~16, avg: 14.0)
+  electron/module/vrchatWorldJoinLog/service.ts:72-87 findNextVRChatWorldJoinLog
+  electron/module/vrchatWorldJoinLog/service.ts:93-104 findLatestWorldJoinLog
+
+Similarity: 87.07%, Score: 9.6 points (lines 11~11, avg: 11.0)
+  electron/module/electronUtil/service.ts:50-60 openGetDirDialog
+  electron/module/electronUtil/service.ts:66-76 openGetFileDialog
+
+Similarity: 89.44%, Score: 8.9 points (lines 10~10, avg: 10.0)
+  electron/module/settingStore.ts:34-43 getStr
+  electron/module/settingStore.ts:46-55 getBool
