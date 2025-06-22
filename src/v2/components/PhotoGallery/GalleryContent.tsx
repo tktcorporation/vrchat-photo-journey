@@ -230,7 +230,7 @@ const GalleryContent = memo(
         )}
         <div
           ref={containerRef}
-          className="flex-1 overflow-y-auto p-4 pr-24"
+          className="flex-1 overflow-y-auto p-4 pr-4"
           onClick={handleBackgroundClick}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
@@ -301,7 +301,7 @@ const GalleryContent = memo(
             })}
           </div>
           {isLoading && (
-            <div className="fixed bottom-4 right-24 flex items-center space-x-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg">
+            <div className="fixed bottom-4 right-6 flex items-center space-x-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg">
               <LoaderCircle className="w-4 h-4 animate-spin text-gray-500" />
               <div className="text-sm text-gray-500">読み込み中...</div>
             </div>
@@ -311,6 +311,7 @@ const GalleryContent = memo(
           groups={groupsArray}
           onJumpToDate={handleJumpToDate}
           currentGroupIndex={currentGroupIndex}
+          scrollContainer={containerRef.current}
         />
       </GalleryErrorBoundary>
     );
