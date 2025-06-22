@@ -136,6 +136,25 @@ export const convertWorldJoinLogToLogLines = (
 // };
 
 /**
+ * プレイヤー参加/退出ログをlogStore形式のログ行に変換する共通関数
+ * @param options 変換に必要な情報
+ * @returns logStore形式のログ行
+ */
+const createPlayerActionLogLine = (options: {
+  dateTime: Date;
+  playerName: string;
+  playerId: string | null;
+  action: 'Joined' | 'Left';
+}): VRChatLogLine => {
+  const dateTimeStr = formatLogDateTime(options.dateTime);
+  const playerIdSuffix = options.playerId ? ` (${options.playerId})` : '';
+
+  return VRChatLogLineSchema.parse(
+    `${dateTimeStr} Log        -  [Behaviour] OnPlayer${options.action} ${options.playerName}${playerIdSuffix}`,
+  );
+};
+
+/**
  * プレイヤー参加ログをlogStore形式のログ行に変換
  * @param playerJoinLog プレイヤー参加ログのDBレコード
  * @returns logStore形式のログ行
@@ -143,16 +162,12 @@ export const convertWorldJoinLogToLogLines = (
 export const convertPlayerJoinLogToLogLine = (
   playerJoinLog: PlayerJoinLogRecord,
 ): VRChatLogLine => {
-  const dateTimeStr = formatLogDateTime(playerJoinLog.joinDateTime);
-  const playerIdSuffix = playerJoinLog.playerId
-    ? ` (${playerJoinLog.playerId})`
-    : '';
-
-  const logLine = VRChatLogLineSchema.parse(
-    `${dateTimeStr} Log        -  [Behaviour] OnPlayerJoined ${playerJoinLog.playerName}${playerIdSuffix}`,
-  );
-
-  return logLine;
+  return createPlayerActionLogLine({
+    dateTime: playerJoinLog.joinDateTime,
+    playerName: playerJoinLog.playerName,
+    playerId: playerJoinLog.playerId,
+    action: 'Joined',
+  });
 };
 
 /**
@@ -163,16 +178,12 @@ export const convertPlayerJoinLogToLogLine = (
 export const convertPlayerLeaveLogToLogLine = (
   playerLeaveLog: PlayerLeaveLogRecord,
 ): VRChatLogLine => {
-  const dateTimeStr = formatLogDateTime(playerLeaveLog.leaveDateTime);
-  const playerIdSuffix = playerLeaveLog.playerId
-    ? ` (${playerLeaveLog.playerId})`
-    : '';
-
-  const logLine = VRChatLogLineSchema.parse(
-    `${dateTimeStr} Log        -  [Behaviour] OnPlayerLeft ${playerLeaveLog.playerName}${playerIdSuffix}`,
-  );
-
-  return logLine;
+  return createPlayerActionLogLine({
+    dateTime: playerLeaveLog.leaveDateTime,
+    playerName: playerLeaveLog.playerName,
+    playerId: playerLeaveLog.playerId,
+    action: 'Left',
+  });
 };
 
 /**
