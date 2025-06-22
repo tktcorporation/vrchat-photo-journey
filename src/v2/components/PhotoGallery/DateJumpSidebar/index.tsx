@@ -177,6 +177,12 @@ export const DateJumpSidebar: FC<DateJumpSidebarProps> = ({
       const summary = dateSummaries[closestIndex];
       const firstGroupIndex = summary.groupIndices[0];
       onJumpToDate(firstGroupIndex);
+
+      // クリック後はスクロール状態をリセット（ホバー状態は維持）
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+      setIsScrolling(false);
     },
     [dateSummaries, onJumpToDate],
   );
@@ -191,224 +197,155 @@ export const DateJumpSidebar: FC<DateJumpSidebarProps> = ({
   };
 
   return (
-    <>
-      {/* メインのタイムラインバー */}
+    <div
+      ref={sidebarRef}
+      className={cn(
+        'fixed right-0 top-0 h-full transition-all duration-300 z-10',
+        isHovering || isScrolling ? 'w-24' : 'w-2',
+        'group cursor-pointer',
+        className,
+      )}
+      onClick={handleSidebarClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          const rect = sidebarRef.current?.getBoundingClientRect();
+          if (rect) {
+            const mockEvent = {
+              clientY: rect.top + rect.height / 2,
+            } as MouseEvent<HTMLDivElement>;
+            handleSidebarClick(mockEvent);
+          }
+        }
+      }}
+      role="navigation"
+      aria-label="日付ジャンプサイドバー"
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => {
+        setIsHovering(false);
+        setHoveredDate(null);
+      }}
+      onMouseMove={(e) => {
+        if (!sidebarRef.current || dateSummaries.length === 0) return;
+
+        const rect = sidebarRef.current.getBoundingClientRect();
+        const mouseY = e.clientY - rect.top;
+        const mousePercent = (mouseY / rect.height) * 100;
+
+        // マウス位置に最も近い日付を見つける
+        let closestDate: string | null = null;
+        let minDistance = Number.POSITIVE_INFINITY;
+
+        dateSummaries.forEach((summary, index) => {
+          const datePercent = getDatePosition(index);
+          const distance = Math.abs(datePercent - mousePercent);
+          if (distance < minDistance) {
+            minDistance = distance;
+            closestDate = summary.date;
+          }
+        });
+
+        setHoveredDate(closestDate);
+      }}
+    >
+      {/* 背景 - 極めて薄いグラデーション */}
       <div
-        ref={sidebarRef}
         className={cn(
-          'fixed right-0 top-0 h-full transition-all duration-300',
-          isHovering || isScrolling ? 'w-24' : 'w-2',
-          'group cursor-pointer',
-          className,
+          'absolute inset-0 transition-all duration-300',
+          isHovering || isScrolling
+            ? 'bg-gradient-to-l from-background/5 to-transparent opacity-100'
+            : 'opacity-0',
         )}
-        onClick={handleSidebarClick}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            const rect = sidebarRef.current?.getBoundingClientRect();
-            if (rect) {
-              const mockEvent = {
-                clientY: rect.top + rect.height / 2,
-              } as MouseEvent<HTMLDivElement>;
-              handleSidebarClick(mockEvent);
+      />
+
+      {/* タイムライン - 透明度でアニメーション */}
+      <div
+        className={cn(
+          'absolute right-0 w-24 h-full py-12 transition-opacity duration-300',
+          isHovering || isScrolling ? 'opacity-100' : 'opacity-0',
+        )}
+      >
+        {/* 年の区切りとラベル - Google Photo風 */}
+        {(() => {
+          // 各年の最初の日付（配列内では最後）を見つける
+          const yearFirstIndices = new Map<string, number>();
+          for (let i = dateSummaries.length - 1; i >= 0; i--) {
+            const year = dateSummaries[i].date.split('-')[0];
+            if (!yearFirstIndices.has(year)) {
+              yearFirstIndices.set(year, i);
             }
           }
-        }}
-        role="navigation"
-        aria-label="日付ジャンプサイドバー"
-        onMouseEnter={() => setIsHovering(true)}
-        onMouseLeave={() => {
-          setIsHovering(false);
-          setHoveredDate(null);
-        }}
-        onMouseMove={(e) => {
-          if (!sidebarRef.current || dateSummaries.length === 0) return;
 
-          const rect = sidebarRef.current.getBoundingClientRect();
-          const mouseY = e.clientY - rect.top;
-          const mousePercent = (mouseY / rect.height) * 100;
-
-          // マウス位置に最も近い日付を見つける
-          let closestDate: string | null = null;
-          let minDistance = Number.POSITIVE_INFINITY;
-
-          dateSummaries.forEach((summary, index) => {
-            const datePercent = getDatePosition(index);
-            const distance = Math.abs(datePercent - mousePercent);
-            if (distance < minDistance) {
-              minDistance = distance;
-              closestDate = summary.date;
-            }
-          });
-
-          setHoveredDate(closestDate);
-        }}
-      >
-        {/* 背景 */}
-        <div
-          className={cn(
-            'absolute inset-0 transition-all duration-300',
-            isHovering || isScrolling
-              ? 'bg-background/98 backdrop-blur-lg border-l border-border shadow-xl'
-              : 'bg-gradient-to-l from-background/50 to-transparent',
-          )}
-        />
-
-        {/* タイムライン */}
-        <div className="relative h-full py-12">
-          {/* 年の区切り線 */}
-          {dateSummaries.map((summary, index) =>
-            summary.year ? (
-              <div
-                key={`year-${summary.date}`}
-                className="absolute left-0 right-0 z-10 pointer-events-none"
-                style={{ top: `${getDatePosition(index)}%` }}
-              >
-                <div
-                  className={cn(
-                    'h-[2px] transition-all duration-300',
-                    isHovering || isScrolling
-                      ? 'bg-foreground/20 w-full'
-                      : 'bg-foreground/40 w-2/3 ml-auto',
-                  )}
-                />
-                {(isHovering || isScrolling) && (
-                  <div className="absolute left-2 -top-4">
-                    <span className="text-xs font-bold bg-black text-white dark:bg-white dark:text-black px-1.5 py-0.5 rounded">
-                      {summary.year}
-                    </span>
-                  </div>
-                )}
-              </div>
-            ) : null,
-          )}
-
-          {/* 月の区切り線 */}
-          {dateSummaries.map((summary, index) =>
-            summary.month && !summary.year ? (
-              <div
-                key={`month-${summary.date}`}
-                className="absolute left-0 right-0 z-10 pointer-events-none"
-                style={{ top: `${getDatePosition(index)}%` }}
-              >
-                <div
-                  className={cn(
-                    'h-[1px] transition-all duration-300',
-                    isHovering || isScrolling
-                      ? 'bg-foreground/10 w-full'
-                      : 'bg-foreground/20 w-1/2 ml-auto',
-                  )}
-                />
-                {(isHovering || isScrolling) && (
-                  <div className="absolute left-2 -top-3">
-                    <span className="text-[10px] font-medium bg-black/80 text-white dark:bg-white/80 dark:text-black px-1 py-0.5 rounded">
-                      {summary.month}
-                    </span>
-                  </div>
-                )}
-              </div>
-            ) : null,
-          )}
-
-          {/* 各日付のビジュアル表現 */}
-          {dateSummaries.map((summary, index) => {
-            const isCurrentDate = currentDate === summary.date;
-            const isHovered = hoveredDate === summary.date;
-
-            return (
-              <div
-                key={summary.date}
-                className="absolute right-0 z-20 pointer-events-none"
-                style={{
-                  top: `${getDatePosition(index)}%`,
-                  transform: 'translateY(-50%)',
-                }}
-              >
-                {/* 日付のビジュアルバー */}
-                <div className="relative">
-                  <div
-                    className={cn(
-                      'transition-all duration-300 ring-1 ring-foreground/10',
-                      isCurrentDate
-                        ? 'bg-primary shadow-lg shadow-primary/30 ring-primary/50'
-                        : isHovered
-                          ? 'bg-accent shadow-md shadow-accent/20 ring-accent/40'
-                          : 'bg-foreground/20 hover:bg-foreground/30',
-                      isHovering || isScrolling ? 'rounded-md' : 'rounded-full',
-                    )}
-                    style={{
-                      width:
-                        isHovering || isScrolling
-                          ? `${Math.max(20, summary.normalizedHeight * 60)}px`
-                          : `${3 + summary.normalizedHeight * 5}px`,
-                      height:
-                        isHovering || isScrolling
-                          ? '4px'
-                          : `${3 + summary.normalizedHeight * 5}px`,
-                      opacity:
-                        isHovering || isScrolling
-                          ? 1
-                          : 0.5 + summary.normalizedHeight * 0.5,
-                    }}
-                  />
-
-                  {/* アクティブな日付の場合は追加のインジケーター */}
-                  {isCurrentDate && !isHovering && !isScrolling && (
-                    <div className="absolute inset-0 rounded-full bg-primary animate-ping opacity-75" />
-                  )}
-                </div>
-
-                {/* ホバー/スクロール時の詳細情報 */}
-                {(isHovering || isScrolling) &&
-                  (isHovered || isCurrentDate) && (
-                    <div
-                      className={cn(
-                        'absolute right-full mr-2 top-1/2 -translate-y-1/2',
-                        'bg-black text-white dark:bg-white dark:text-black',
-                        'rounded-md shadow-lg shadow-black/30',
-                        'px-2.5 py-1.5 text-xs whitespace-nowrap',
-                        'animate-in fade-in-0 slide-in-from-right-2 duration-200',
-                      )}
-                    >
-                      <div className="font-semibold">
-                        {format(new Date(summary.date), 'M/d', {
-                          locale: ja,
-                        })}
-                      </div>
-                      <div className="text-[11px] opacity-80">
-                        {summary.photoCount}枚
-                      </div>
-                    </div>
-                  )}
-              </div>
-            );
-          })}
-
-          {/* 現在位置インジケーター */}
-          {currentDate && dateSummaries.length > 0 && (
+          return Array.from(yearFirstIndices.entries()).map(([year, index]) => (
             <div
-              className={cn(
-                'absolute left-0 right-0 z-5 pointer-events-none',
-                'transition-all duration-500',
+              key={`year-${year}`}
+              className="absolute left-0 right-0 z-10 pointer-events-none"
+              style={{ top: `${getDatePosition(index)}%` }}
+            >
+              {(isHovering || isScrolling) && (
+                <div
+                  className="absolute right-3 -translate-y-1/2"
+                  style={{ top: '50%' }}
+                >
+                  <span className="text-xs font-medium text-foreground/70 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">
+                    {year}
+                  </span>
+                </div>
               )}
+            </div>
+          ));
+        })()}
+
+        {/* 各日付のビジュアル表現 */}
+        {dateSummaries.map((summary, index) => {
+          const isCurrentDate = currentDate === summary.date;
+          const isHovered = hoveredDate === summary.date;
+
+          return (
+            <div
+              key={summary.date}
+              className="absolute right-2 z-20 pointer-events-none"
               style={{
-                top: `${getDatePosition(
-                  dateSummaries.findIndex((s) => s.date === currentDate),
-                )}%`,
+                top: `${getDatePosition(index)}%`,
+                transform: 'translateY(-50%)',
               }}
             >
-              <div
-                className={cn(
-                  'rounded-full transition-all duration-300',
-                  isHovering || isScrolling
-                    ? 'h-12 -mt-6 bg-primary/10 backdrop-blur-sm w-full'
-                    : 'h-6 -mt-3 bg-primary/20 w-2 ml-auto',
-                )}
-              />
+              {/* 日付のドット - Google Photo風の均一サイズ */}
+              <div className="relative">
+                <div
+                  className={cn(
+                    'w-1 h-1 rounded-full transition-all duration-300',
+                    isCurrentDate
+                      ? 'bg-primary scale-150'
+                      : isHovered
+                        ? 'bg-foreground/80 scale-125'
+                        : 'bg-foreground/30',
+                  )}
+                />
+              </div>
+
+              {/* ホバー時の日付表示 - Google Photo風のシンプルなポップアップ */}
+              {(isHovering || isScrolling) && isHovered && (
+                <div
+                  className={cn(
+                    'absolute right-full mr-4 top-1/2 -translate-y-1/2',
+                    'bg-background/95 backdrop-blur-sm bg-gray-100 dark:bg-gray-800',
+                    'rounded-md shadow-sm',
+                    'px-2 py-1',
+                    'text-[11px] font-medium text-foreground',
+                    'whitespace-nowrap',
+                    // 'animate-in fade-in-0 duration-10',
+                  )}
+                >
+                  {format(new Date(summary.date), 'M月d日', {
+                    locale: ja,
+                  })}
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          );
+        })}
       </div>
-    </>
+    </div>
   );
 };
