@@ -1,14 +1,16 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { LoaderCircle } from 'lucide-react';
 import type React from 'react';
-import { memo, useCallback, useMemo, useRef } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { UseLoadingStateResult } from '../../hooks/useLoadingState';
 import { AppHeader } from '../AppHeader';
 import { LocationGroupHeader } from '../LocationGroupHeader';
 import type { PhotoGalleryData } from '../PhotoGallery';
 import PhotoGrid from '../PhotoGrid';
+import { DateJumpSidebar } from './DateJumpSidebar';
 import { GalleryErrorBoundary } from './GalleryErrorBoundary';
 import { MeasurePhotoGroup } from './MeasurePhotoGroup';
+import type { GroupedPhoto } from './useGroupPhotos';
 import { usePhotoGallery } from './usePhotoGallery';
 
 /**
@@ -97,11 +99,20 @@ const GalleryContent = memo(
     });
     const containerRef = useRef<HTMLDivElement>(null);
     const groupSizesRef = useRef<Map<string, number>>(new Map());
+    const [currentGroupIndex, setCurrentGroupIndex] = useState<
+      number | undefined
+    >(undefined);
+    const observerRef = useRef<IntersectionObserver | null>(null);
 
     // 全てのグループを表示（写真があるグループもないグループも）
     const filteredGroups = useMemo(() => {
       return Object.entries(groupedPhotos);
     }, [groupedPhotos]);
+
+    // DateJumpSidebar用のグループ配列
+    const groupsArray = useMemo<GroupedPhoto[]>(() => {
+      return filteredGroups.map(([_, group]) => group);
+    }, [filteredGroups]);
 
     const isLoading = isLoadingGrouping || isLoadingStartupSync;
 
@@ -126,6 +137,54 @@ const GalleryContent = memo(
         return height + GROUP_SPACING;
       }, []),
     });
+
+    // 日付ジャンプハンドラー
+    const handleJumpToDate = useCallback(
+      (groupIndex: number) => {
+        virtualizer.scrollToIndex(groupIndex, {
+          behavior: 'smooth',
+          align: 'start',
+        });
+      },
+      [virtualizer],
+    );
+
+    // IntersectionObserverでビューポート内のグループを検知
+    useEffect(() => {
+      if (!containerRef.current) return;
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          const visibleEntries = entries.filter(
+            (entry) => entry.isIntersecting,
+          );
+          if (visibleEntries.length > 0) {
+            // 最も上にある可視グループを取得
+            const topEntry = visibleEntries.reduce((prev, current) => {
+              return prev.boundingClientRect.top <
+                current.boundingClientRect.top
+                ? prev
+                : current;
+            });
+            const index = topEntry.target.getAttribute('data-index');
+            if (index !== null) {
+              setCurrentGroupIndex(Number.parseInt(index));
+            }
+          }
+        },
+        {
+          root: containerRef.current,
+          rootMargin: '-10% 0px -80% 0px', // 上部10%付近のグループを検知
+          threshold: 0,
+        },
+      );
+
+      observerRef.current = observer;
+
+      return () => {
+        observer.disconnect();
+      };
+    }, []);
 
     /**
      * 背景（コンテナ自身）がクリックされた場合に写真の選択を解除するハンドラ
@@ -171,7 +230,7 @@ const GalleryContent = memo(
         )}
         <div
           ref={containerRef}
-          className="flex-1 overflow-y-auto p-4"
+          className="flex-1 overflow-y-auto p-4 pr-24"
           onClick={handleBackgroundClick}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
@@ -195,7 +254,13 @@ const GalleryContent = memo(
                 <div
                   key={key}
                   data-key={key}
-                  ref={virtualizer.measureElement}
+                  data-index={virtualRow.index}
+                  ref={(el) => {
+                    if (el) {
+                      virtualizer.measureElement(el);
+                      observerRef.current?.observe(el);
+                    }
+                  }}
                   style={{
                     position: 'absolute',
                     top: 0,
@@ -236,12 +301,17 @@ const GalleryContent = memo(
             })}
           </div>
           {isLoading && (
-            <div className="fixed bottom-4 right-4 flex items-center space-x-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg">
+            <div className="fixed bottom-4 right-24 flex items-center space-x-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg">
               <LoaderCircle className="w-4 h-4 animate-spin text-gray-500" />
               <div className="text-sm text-gray-500">読み込み中...</div>
             </div>
           )}
         </div>
+        <DateJumpSidebar
+          groups={groupsArray}
+          onJumpToDate={handleJumpToDate}
+          currentGroupIndex={currentGroupIndex}
+        />
       </GalleryErrorBoundary>
     );
   },
