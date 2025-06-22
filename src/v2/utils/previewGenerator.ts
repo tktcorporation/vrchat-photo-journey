@@ -5,118 +5,8 @@ interface GeneratePreviewParams {
   showAllPlayers: boolean;
 }
 
-interface ColorBucket {
-  r: number;
-  g: number;
-  b: number;
-  count: number;
-  hsl: [number, number, number];
-}
-
-import { rgbToHsl } from './colorUtils';
-
-/**
- * 画像データから支配色を抽出する。
- * generatePreviewSvg で背景色を決める際に使われる。
- */
-async function extractDominantColors(imageBase64: string): Promise<{
-  primary: string;
-  secondary: string;
-  accent: string;
-}> {
-  // 画像を読み込む
-  const img = new Image();
-  img.src = `data:image/png;base64,${imageBase64}`;
-  await new Promise<void>((resolve) => {
-    img.onload = () => resolve();
-  });
-
-  // キャンバスを作成して画像を描画
-  const canvas = document.createElement('canvas');
-  canvas.width = img.width;
-  canvas.height = img.height;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) {
-    throw new Error('Failed to get canvas context');
-  }
-  ctx.drawImage(img, 0, 0);
-
-  // ピクセルデータを取得
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  const data = imageData.data;
-
-  const colorBuckets: { [key: string]: ColorBucket } = {};
-
-  // 5ピクセルごとにサンプリング（処理を軽くするため）
-  for (let i = 0; i < data.length; i += 20) {
-    const r = Math.floor(data[i] / 5) * 5;
-    const g = Math.floor(data[i + 1] / 5) * 5;
-    const b = Math.floor(data[i + 2] / 5) * 5;
-    const alpha = data[i + 3] / 255;
-
-    if (alpha < 0.5) continue;
-
-    const hsl = rgbToHsl(r, g, b);
-    const [, s, l] = hsl;
-
-    // 彩度と明度でフィルタリング
-    if (s < 20 || l < 15 || l > 85) continue;
-
-    const key = `${r},${g},${b}`;
-
-    if (colorBuckets[key]) {
-      colorBuckets[key].count++;
-    } else {
-      colorBuckets[key] = { r, g, b, count: 1, hsl };
-    }
-  }
-
-  // 出現頻度でソート
-  const sortedColors = Object.values(colorBuckets)
-    .sort((a, b) => b.count - a.count)
-    .filter((bucket) => bucket.count > 20);
-
-  // デフォルトの色
-  const defaultColors = {
-    primary: { r: 59, g: 130, b: 246 },
-    secondary: { r: 147, g: 51, b: 234 },
-    accent: { r: 79, g: 70, b: 229 },
-  };
-
-  if (sortedColors.length === 0) {
-    return {
-      primary: `rgb(${defaultColors.primary.r}, ${defaultColors.primary.g}, ${defaultColors.primary.b})`,
-      secondary: `rgb(${defaultColors.secondary.r}, ${defaultColors.secondary.g}, ${defaultColors.secondary.b})`,
-      accent: `rgb(${defaultColors.accent.r}, ${defaultColors.accent.g}, ${defaultColors.accent.b})`,
-    };
-  }
-
-  // 色相でグループ化
-  const hueGroups: { [key: number]: ColorBucket[] } = {};
-  for (const color of sortedColors) {
-    const hueGroup = Math.floor(color.hsl[0] / 30);
-    if (!hueGroups[hueGroup]) {
-      hueGroups[hueGroup] = [];
-    }
-    hueGroups[hueGroup].push(color);
-  }
-
-  const hueGroupsArray = Object.values(hueGroups).sort(
-    (a, b) => b[0].count - a[0].count,
-  );
-
-  const primary = hueGroupsArray[0]?.[0] || sortedColors[0];
-  const secondary =
-    hueGroupsArray[1]?.[0] || sortedColors[Math.floor(sortedColors.length / 3)];
-  const accent =
-    hueGroupsArray[2]?.[0] || sortedColors[Math.floor(sortedColors.length / 2)];
-
-  return {
-    primary: `rgb(${primary.r}, ${primary.g}, ${primary.b})`,
-    secondary: `rgb(${secondary.r}, ${secondary.g}, ${secondary.b})`,
-    accent: `rgb(${accent.r}, ${accent.g}, ${accent.b})`,
-  };
-}
+import { extractDominantColorsFromBase64 } from './colorExtractor';
+import { loadInterFonts } from './fontLoader';
 
 /**
  * プレイヤー名リストを SVG 用に整形する内部関数。
@@ -296,7 +186,7 @@ async function generatePreviewSvg({
 
   const { elements: playerElements, height: playerListHeight } =
     generatePlayerElements(players, showAllPlayers, subHeaderFontSize);
-  const colors = await extractDominantColors(imageBase64);
+  const colors = await extractDominantColorsFromBase64(imageBase64);
 
   // showAllPlayersがfalseの場合は600px固定、trueの場合は動的に計算
   const totalHeight = showAllPlayers
@@ -439,10 +329,7 @@ export async function generatePreviewPng(
 
   try {
     // フォントを読み込む
-    await document.fonts.load('700 1em Inter');
-    await document.fonts.load('600 1em Inter');
-    await document.fonts.load('500 1em Inter');
-    await document.fonts.load('400 1em Inter');
+    await loadInterFonts();
 
     // SVGをPNGに変換
     const img = new Image();
