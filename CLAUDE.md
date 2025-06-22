@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Electron desktop app for organizing VRChat photos by automatically associating them with log files.
 
-**Tech Stack**: Electron + React 18 + TypeScript + Vite + tRPC + SQLite/Sequelize + Tailwind/Radix UI
+**Tech Stack**: Electron + React 18 + TypeScript + Vite + tRPC + SQLite/Sequelize + Tailwind/Radix UI + ts-pattern
 
 **Structure**:
 - `/electron/` - Main process (tRPC router in api.ts, business logic in /module/)
@@ -205,6 +205,28 @@ Example: `logInfoController.test.ts` (mocked) vs `logInfoController.integration.
   ```
 - **Lint Enforcement**: `yarn lint:valueobjects` で自動検証
 - **Benefits**: カプセル化強化、不正なインスタンス生成防止
+
+### 🚨 Electron Module Import Pattern (CRITICAL - Playwright テスト互換性必須)
+- **トップレベル import 禁止**: `electron` の `app`, `BrowserWindow` 等をトップレベルでインポートしない
+  ```typescript
+  // ❌ NEVER: Playwright テストでクラッシュ
+  import { app } from 'electron';
+  const logPath = app.getPath('logs');
+  
+  // ✅ OK: 遅延評価または動的インポート
+  const getLogPath = () => {
+    try {
+      const { app } = require('electron');
+      return app.getPath('logs');
+    } catch {
+      return '/tmp/test-logs';
+    }
+  };
+  ```
+- **共通モジュールは特に注意**: `logger.ts` など多くのモジュールから使用される共通モジュールでトップレベルインポートすると、依存する全モジュールが影響を受ける
+- **動的インポートの落とし穴**: `await import()` を使っても、インポート先がトップレベルで Electron を使用していれば同じ問題が発生
+- **症状**: Playwright テストで `electronApplication.firstWindow: Timeout` エラー
+- **Reference**: `docs/troubleshooting-migration-playwright-timeout.md`
 
 ## CLAUDE.md 更新ルール
 

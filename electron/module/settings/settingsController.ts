@@ -148,21 +148,6 @@ export const settingsRouter = () =>
       try {
         logger.info('=== Starting application data initialization ===');
 
-        // Step 0: 旧アプリからのデータ移行チェック（ユーザー確認待ちのため実行はしない）
-        logger.debug('Step 0: Checking for data migration from old app...');
-        const migrationModule = await import('../migration/service');
-        const migrationNeeded = await migrationModule.isMigrationNeeded();
-
-        if (migrationNeeded) {
-          logger.info(
-            'Migration needed from vrchat-photo-journey (waiting for user confirmation)',
-          );
-          // ユーザー確認が必要なため、ここでは移行を実行しない
-          // フロントエンドで確認ダイアログを表示し、承認後に performMigration エンドポイントを呼ぶ
-        } else {
-          logger.debug('No migration needed');
-        }
-
         // Step 1: データベース同期
         logger.info('Step 1: Syncing database schema...');
         await sequelizeClient.syncRDBClient();
@@ -301,60 +286,69 @@ export const settingsRouter = () =>
      * 旧アプリからの移行が必要かどうかをチェックする
      */
     checkMigrationStatus: procedure.query(async () => {
-      logger.debug('[Settings] Checking migration status...');
-      const migrationModule = await import('../migration/service');
-      const isNeeded = await migrationModule.isMigrationNeeded();
-      const result = {
-        migrationNeeded: isNeeded,
-        oldAppName: 'vrchat-photo-journey',
-        newAppName: 'VRChatAlbums',
-      };
-      logger.debug('[Settings] Migration status check result:', result);
-      return result;
+      try {
+        // 動的インポートで移行サービスを読み込む
+        const { isMigrationNeeded } = await import('../migration/service');
+        const needed = await isMigrationNeeded();
+
+        return {
+          migrationNeeded: needed,
+          oldAppName: 'vrchat-photo-journey',
+          newAppName: 'VRChatAlbums',
+        };
+      } catch (error) {
+        logger.warn('Failed to check migration status:', error);
+        // エラーが発生した場合は移行不要として扱う
+        return {
+          migrationNeeded: false,
+          oldAppName: 'vrchat-photo-journey',
+          newAppName: 'VRChatAlbums',
+        };
+      }
     }),
 
     /**
      * ユーザーの承認を得て旧アプリからのデータ移行を実行する
      */
     performMigration: procedure.mutation(async () => {
-      const migrationModule = await import('../migration/service');
+      try {
+        // 動的インポートで移行サービスを読み込む
+        const { performMigration } = await import('../migration/service');
+        const result = await performMigration();
 
-      // 再度移行が必要かチェック
-      const isNeeded = await migrationModule.isMigrationNeeded();
-      if (!isNeeded) {
-        throw new UserFacingError('データ移行は不要です');
-      }
+        if (result.isErr()) {
+          logger.error({
+            message: `Migration failed: ${result.error.message}`,
+            stack: match(result.error)
+              .with(P.instanceOf(Error), (err) => err)
+              .otherwise(() => undefined),
+          });
+          throw new UserFacingError(
+            `データ移行に失敗しました: ${result.error.message}`,
+          );
+        }
 
-      logger.info('User approved migration, starting migration process...');
-      const migrationResult = await migrationModule.performMigration();
-
-      if (migrationResult.isErr()) {
+        return result.value;
+      } catch (error) {
         logger.error({
-          message: `Migration failed: ${migrationResult.error.message}`,
-          stack: migrationResult.error,
+          message: `Failed to perform migration: ${match(error)
+            .with(P.instanceOf(Error), (err) => err.message)
+            .otherwise(() => 'Unknown error')}`,
+          stack: match(error)
+            .with(P.instanceOf(Error), (err) => err)
+            .otherwise(() => undefined),
         });
-        throw UserFacingError.withStructuredInfo({
-          code: ERROR_CODES.MIGRATION_FAILED,
-          category: ERROR_CATEGORIES.DATABASE_ERROR,
-          message: 'Data migration failed',
-          userMessage: `データ移行に失敗しました: ${migrationResult.error.message}`,
-        });
+
+        // UserFacingErrorの場合はそのまま再スロー
+        if (error instanceof UserFacingError) {
+          throw error;
+        }
+
+        // その他のエラーの場合
+        throw new UserFacingError(
+          'データ移行中に予期しないエラーが発生しました',
+        );
       }
-
-      logger.info('Migration completed successfully:', migrationResult.value);
-
-      // 移行結果を返す
-      const { details, errors } = migrationResult.value;
-      const migratedItems = [];
-      if (details.logStore) migratedItems.push('ログデータ');
-      if (details.settings) migratedItems.push('設定');
-
-      return {
-        success: true,
-        migratedItems,
-        errors,
-        details,
-      };
     }),
 
     /**
@@ -373,52 +367,6 @@ export const settingsRouter = () =>
     setMigrationNoticeShown: procedure.mutation(async () => {
       const settingStore = getSettingStore();
       settingStore.setMigrationNoticeShown(true);
-      return { success: true };
-    }),
-
-    /**
-     * デバッグ用：アプリのディレクトリ情報を取得
-     */
-    getAppDirectories: procedure.query(async () => {
-      const { app } = await import('electron');
-      const currentUserDataPath = app.getPath('userData');
-      const parentDir = require('node:path').dirname(currentUserDataPath);
-      const fs = require('node:fs');
-
-      // 親ディレクトリの内容を確認
-      let siblingDirs: string[] = [];
-      try {
-        siblingDirs = fs.readdirSync(parentDir).filter((name: string) => {
-          const fullPath = require('node:path').join(parentDir, name);
-          return fs.statSync(fullPath).isDirectory();
-        });
-      } catch (error) {
-        logger.error({
-          message: 'Failed to read parent directory',
-          stack: error instanceof Error ? error : new Error(String(error)),
-        });
-      }
-
-      return {
-        currentUserDataPath,
-        parentDir,
-        siblingDirs,
-        migrationMarkerExists: fs.existsSync(
-          require('node:path').join(
-            currentUserDataPath,
-            '.migration-completed',
-          ),
-        ),
-      };
-    }),
-
-    /**
-     * デバッグ用：移行通知フラグをリセット
-     */
-    resetMigrationNotice: procedure.mutation(async () => {
-      const settingStore = getSettingStore();
-      settingStore.setMigrationNoticeShown(false);
-      logger.info('[Settings] Reset migration notice flag');
       return { success: true };
     }),
   });

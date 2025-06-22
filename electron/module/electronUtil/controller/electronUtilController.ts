@@ -50,6 +50,17 @@ export const electronUtilRouter = () =>
       handleResultError(result, fileOperationErrorMappings);
       return true;
     }),
+    /**
+     * 単一の画像ファイルパスをクリップボードにコピーする
+     * 画像データではなく、ファイルパスそのものをコピーします
+     */
+    copySingleImagePath: procedure.input(z.string()).mutation(async (ctx) => {
+      const result = await utilsService.copyMultipleFilesToClipboard([
+        ctx.input,
+      ]);
+      handleResultError(result, fileOperationErrorMappings);
+      return true;
+    }),
     downloadImageAsPng: procedure
       .input(
         z.object({
@@ -149,14 +160,16 @@ export const electronUtilRouter = () =>
         handleResultError(result, fileOperationErrorMappings);
         return true;
       }),
-    copyMultipleImageDataByPath: procedure
+    /**
+     * 複数の画像ファイルパスをクリップボードにコピーする
+     * 画像データではなく、ファイルパスそのものをコピーします
+     * エクスプローラーやFinderで「貼り付け」操作ができるようになります
+     */
+    copyMultipleImagePaths: procedure
       .input(z.array(z.string()))
       .mutation(async (ctx) => {
         const paths = ctx.input;
-        consola.log(
-          'copyMultipleImageDataByPath called with paths:',
-          paths.length,
-        );
+        consola.log('copyMultipleImagePaths called with paths:', paths.length);
 
         const result = await utilsService.copyMultipleFilesToClipboard(paths);
         handleResultError(result, fileOperationErrorMappings);

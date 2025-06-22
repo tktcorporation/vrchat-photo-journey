@@ -47,7 +47,10 @@
       "Bash(nr lint)",
       "Bash(nlx tsx:*)",
       "Bash(DEBUG_LINT=1 yarn lint:valueobjects)",
-      "Bash(true)"
+      "Bash(true)",
+      "Bash(yarn run knip:*)",
+      "Bash(yarn knip:*)",
+      "Bash(npm ls:*)"
     ],
     "deny": []
   }

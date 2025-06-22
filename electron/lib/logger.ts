@@ -1,15 +1,22 @@
 import { captureException } from '@sentry/electron/main';
-import { app } from 'electron';
 import * as log from 'electron-log';
 import path from 'pathe';
 import { stackWithCauses } from 'pony-cause';
 import { P, match } from 'ts-pattern';
 import { getSettingStore } from '../module/settingStore';
 
-// appが未定義の場合はテスト環境や非Electron環境として判定
-const logFilePath = app
-  ? path.join(app.getPath('logs'), 'app.log') // Electron環境
-  : path.join(__dirname, 'test-app.log'); // テストまたは非Electron環境
+// ログファイルパスを遅延評価する
+const getLogFilePath = (): string => {
+  try {
+    const { app } = require('electron');
+    return path.join(app.getPath('logs'), 'app.log');
+  } catch {
+    // テストまたは非Electron環境
+    return path.join(__dirname, 'test-app.log');
+  }
+};
+
+const logFilePath = getLogFilePath();
 
 log.transports.file.resolvePathFn = () => logFilePath;
 
@@ -17,7 +24,16 @@ log.transports.file.resolvePathFn = () => logFilePath;
 log.transports.file.maxSize = 5 * 1024 * 1024;
 
 // ログレベルの設定
-const isProduction = app?.isPackaged ?? false;
+const getIsProduction = (): boolean => {
+  try {
+    const { app } = require('electron');
+    return app.isPackaged;
+  } catch {
+    return false;
+  }
+};
+
+const isProduction = getIsProduction();
 log.transports.file.level = isProduction ? 'info' : 'debug';
 log.transports.console.level = isProduction ? 'warn' : 'debug';
 

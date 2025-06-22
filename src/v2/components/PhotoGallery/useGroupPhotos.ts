@@ -17,7 +17,7 @@ interface Session {
   photos: Photo[];
 }
 
-interface GroupedPhoto {
+export interface GroupedPhoto {
   photos: Photo[];
   worldInfo: WorldInfo | null;
   joinDateTime: Date;

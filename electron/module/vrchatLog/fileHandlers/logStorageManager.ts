@@ -87,7 +87,10 @@ export const getLogStoreFilePathsInRange = async (
     const monthDir = path.join(getLogStoreDir(), yearMonth);
     const standardLogFilePath = getLogStoreFilePathForDate(targetDate);
 
-    logFilePathSet.add(standardLogFilePath.value);
+    // 標準ログファイルが存在する場合のみ追加
+    if (nodeFs.existsSync(standardLogFilePath.value)) {
+      logFilePathSet.add(standardLogFilePath.value);
+    }
 
     // 同じ月のタイムスタンプ付きのログファイルを検索
     if (nodeFs.existsSync(monthDir)) {

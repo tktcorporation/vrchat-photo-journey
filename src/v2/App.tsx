@@ -17,7 +17,6 @@ import {
 const isDev = process.env.NODE_ENV === 'development';
 import { AppHeader } from './components/AppHeader';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { useMigrationNotice } from './components/MigrationNotice';
 import PhotoGallery from './components/PhotoGallery';
 import { TermsModal } from './components/TermsModal';
 import PathSettings from './components/settings/PathSettings';
@@ -279,13 +278,11 @@ const ToasterWrapper = () => {
         return;
       }
 
-      // その他の場合 - 予期しないデータ型は無視
-      console.warn(
-        'Unexpected toast data type received:',
-        typeof content,
-        content,
-      );
-      // 予期しないデータ型のトーストは表示しない
+      // その他の場合
+      console.log('toast', JSON.stringify(content));
+      toast({
+        description: JSON.stringify(content),
+      });
     },
   });
   return (
@@ -303,7 +300,6 @@ const Contents = () => {
   // const { toast } = useToast(); // スタートアップエラーはbackendから送信されるため不要
   const { stage, error, originalError, retry } = useStartup();
   const loadingState = useLoadingState();
-  const { MigrationDialog } = useMigrationNotice();
 
   useEffect(() => {
     if (stage === 'syncing') {
@@ -565,12 +561,7 @@ const Contents = () => {
     );
   }
 
-  return (
-    <>
-      <PhotoGallery {...loadingState} />
-      <MigrationDialog />
-    </>
-  );
+  return <PhotoGallery {...loadingState} />;
 };
 
 export default App;

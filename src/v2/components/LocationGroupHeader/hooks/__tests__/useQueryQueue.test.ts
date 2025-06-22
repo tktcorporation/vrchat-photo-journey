@@ -59,17 +59,17 @@ describe('useQueryQueue', () => {
     expect(lowPriority.current).toBe(false);
     expect(highPriority.current).toBe(false);
 
-    // High priority should enable first (100ms + 1*100 = 200ms)
+    // High priority should enable first (100ms + 1*10 = 110ms)
     act(() => {
-      vi.advanceTimersByTime(200);
+      vi.advanceTimersByTime(110);
     });
 
     expect(highPriority.current).toBe(true);
     expect(lowPriority.current).toBe(false);
 
-    // Low priority should enable later (100ms + 5*100 = 600ms)
+    // Low priority should enable later (100ms + 5*10 = 150ms)
     act(() => {
-      vi.advanceTimersByTime(400); // Total 600ms
+      vi.advanceTimersByTime(40); // Total 150ms
     });
 
     expect(lowPriority.current).toBe(true);
