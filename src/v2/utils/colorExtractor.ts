@@ -1,3 +1,5 @@
+import { rgbToHsl } from './colorUtils';
+
 /**
  * 画像要素をキャンバスに描画し、そのピクセルデータを取得するヘルパー。
  * `extractDominantColors` からのみ利用される内部関数。
@@ -5,7 +7,7 @@
 function getPixelData(img: HTMLImageElement): ImageData {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
-  if (!ctx) throw new Error('Could not get canvas context');
+  if (!ctx) throw new Error('Failed to get canvas context');
 
   canvas.width = img.width;
   canvas.height = img.height;
@@ -14,27 +16,10 @@ function getPixelData(img: HTMLImageElement): ImageData {
   return ctx.getImageData(0, 0, canvas.width, canvas.height);
 }
 
-// RGB -> HSL 変換関数を共通ユーティリティから取り込む
-import { rgbToHsl } from './colorUtils';
-
-interface ColorBucket {
-  r: number;
-  g: number;
-  b: number;
-  count: number;
-  hsl: [number, number, number];
-}
-
-/**
- * 与えられた画像から主要な色を抽出する関数。
- * `BoldPreview` や `previewGenerator` で背景色を決定するために使われる。
- */
-export function extractDominantColors(img: HTMLImageElement) {
-  const imageData = getPixelData(img);
-  const data = imageData.data;
+function calcColors(data: Uint8ClampedArray, step: number) {
   const colorBuckets: { [key: string]: ColorBucket } = {};
 
-  for (let i = 0; i < data.length; i += 4) {
+  for (let i = 0; i < data.length; i += step) {
     const r = Math.floor(data[i] / 5) * 5;
     const g = Math.floor(data[i + 1] / 5) * 5;
     const b = Math.floor(data[i + 2] / 5) * 5;
@@ -92,4 +77,33 @@ export function extractDominantColors(img: HTMLImageElement) {
     secondary: `rgb(${secondary.r}, ${secondary.g}, ${secondary.b})`,
     accent: `rgb(${accent.r}, ${accent.g}, ${accent.b})`,
   };
+}
+
+interface ColorBucket {
+  r: number;
+  g: number;
+  b: number;
+  count: number;
+  hsl: [number, number, number];
+}
+
+/**
+ * 与えられた画像から主要な色を抽出する関数。
+ * `BoldPreview` や `previewGenerator` で背景色を決定するために使われる。
+ */
+export function extractDominantColors(img: HTMLImageElement) {
+  const imageData = getPixelData(img);
+  return calcColors(imageData.data, 4);
+}
+
+export async function extractDominantColorsFromBase64(imageBase64: string) {
+  const img = new Image();
+  img.src = `data:image/png;base64,${imageBase64}`;
+  await new Promise<void>((resolve, reject) => {
+    img.onload = () => resolve();
+    img.onerror = () => reject(new Error('Failed to load image'));
+  });
+
+  const imageData = getPixelData(img);
+  return calcColors(imageData.data, 20);
 }

@@ -1,3 +1,5 @@
+import { loadInterFonts } from './fontLoader';
+
 interface ShareImageOptions {
   pngBase64: string;
   filenameWithoutExt: string;
@@ -43,10 +45,7 @@ const _processSvgElement = async (
   const svgDataUrl = `data:image/svg+xml;base64,${svgBase64}`;
 
   // フォントを読み込む
-  await document.fonts.load('700 1em Inter');
-  await document.fonts.load('600 1em Inter');
-  await document.fonts.load('500 1em Inter');
-  await document.fonts.load('400 1em Inter');
+  await loadInterFonts();
 
   // SVGをcanvasに描画
   return new Promise<HTMLCanvasElement>((resolve, reject) => {
