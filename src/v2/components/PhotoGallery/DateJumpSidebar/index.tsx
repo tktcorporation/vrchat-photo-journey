@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import {
   type FC,
+  type MouseEvent,
   useCallback,
   useEffect,
   useMemo,
@@ -25,7 +26,7 @@ export interface DateSummary {
   groupIndices: number[];
   year?: string;
   month?: string;
-  normalizedHeight: number; // 0-1の正規化された高さ
+  normalizedHeight: number;
 }
 
 interface DateJumpSidebarProps {
@@ -90,12 +91,12 @@ export const DateJumpSidebar: FC<DateJumpSidebarProps> = ({
     return { dateToGroups, sortedDates, groupToDates };
   }, [groups]);
 
-  // 日付サマリーを生成（UI表示用）
+  // 日付サマリーを生成
   const dateSummaries = useMemo<DateSummary[]>(() => {
     let lastYear: string | null = null;
     let lastMonth: string | null = null;
 
-    // 最大写真枚数を計算（正規化用）
+    // 最大写真枚数を計算
     const maxPhotoCount = Math.max(
       ...dateIndex.sortedDates.map((date) => {
         const groupIndices = dateIndex.dateToGroups.get(date) || [];
@@ -114,7 +115,6 @@ export const DateJumpSidebar: FC<DateJumpSidebarProps> = ({
         0,
       );
 
-      // 写真枚数を0-1に正規化（最小高さ0.2を保証）
       const normalizedHeight = Math.max(0.2, photoCount / maxPhotoCount);
 
       const summary: DateSummary = {
@@ -152,19 +152,42 @@ export const DateJumpSidebar: FC<DateJumpSidebarProps> = ({
       .otherwise((idx) => dateIndex.groupToDates.get(idx) || null);
   }, [currentGroupIndex, dateIndex]);
 
-  // 日付クリックハンドラー
-  const handleDateClick = useCallback(
-    (summary: DateSummary) => {
+  // クリック位置から最も近い日付を見つける
+  const handleSidebarClick = useCallback(
+    (e: MouseEvent<HTMLDivElement>) => {
+      if (!sidebarRef.current || dateSummaries.length === 0) return;
+
+      const rect = sidebarRef.current.getBoundingClientRect();
+      const clickY = e.clientY - rect.top;
+      const clickPercent = (clickY / rect.height) * 100;
+
+      // クリック位置に最も近い日付を見つける
+      let closestIndex = 0;
+      let minDistance = Number.POSITIVE_INFINITY;
+
+      dateSummaries.forEach((_, index) => {
+        const datePercent = getDatePosition(index);
+        const distance = Math.abs(datePercent - clickPercent);
+        if (distance < minDistance) {
+          minDistance = distance;
+          closestIndex = index;
+        }
+      });
+
+      const summary = dateSummaries[closestIndex];
       const firstGroupIndex = summary.groupIndices[0];
       onJumpToDate(firstGroupIndex);
     },
-    [onJumpToDate],
+    [dateSummaries, onJumpToDate],
   );
 
-  // 日付の位置を計算（全体の高さに対する割合）
+  // 日付の位置を計算（パディングを考慮した配置）
   const getDatePosition = (index: number) => {
     if (dateSummaries.length <= 1) return 50;
-    return (index / (dateSummaries.length - 1)) * 100;
+    // 上下に5%ずつ余白を確保して、10%〜90%の範囲に配置
+    const paddingPercent = 10;
+    const usableRange = 100 - paddingPercent * 2;
+    return paddingPercent + (index / (dateSummaries.length - 1)) * usableRange;
   };
 
   return (
@@ -178,30 +201,67 @@ export const DateJumpSidebar: FC<DateJumpSidebarProps> = ({
           'group cursor-pointer',
           className,
         )}
+        onClick={handleSidebarClick}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            const rect = sidebarRef.current?.getBoundingClientRect();
+            if (rect) {
+              const mockEvent = {
+                clientY: rect.top + rect.height / 2,
+              } as MouseEvent<HTMLDivElement>;
+              handleSidebarClick(mockEvent);
+            }
+          }
+        }}
+        role="navigation"
+        aria-label="日付ジャンプサイドバー"
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => {
           setIsHovering(false);
           setHoveredDate(null);
         }}
+        onMouseMove={(e) => {
+          if (!sidebarRef.current || dateSummaries.length === 0) return;
+
+          const rect = sidebarRef.current.getBoundingClientRect();
+          const mouseY = e.clientY - rect.top;
+          const mousePercent = (mouseY / rect.height) * 100;
+
+          // マウス位置に最も近い日付を見つける
+          let closestDate: string | null = null;
+          let minDistance = Number.POSITIVE_INFINITY;
+
+          dateSummaries.forEach((summary, index) => {
+            const datePercent = getDatePosition(index);
+            const distance = Math.abs(datePercent - mousePercent);
+            if (distance < minDistance) {
+              minDistance = distance;
+              closestDate = summary.date;
+            }
+          });
+
+          setHoveredDate(closestDate);
+        }}
       >
-        {/* 背景とボーダー */}
+        {/* 背景 */}
         <div
           className={cn(
             'absolute inset-0 transition-all duration-300',
             isHovering || isScrolling
-              ? 'bg-background/95 backdrop-blur border-l border-border shadow-lg'
-              : 'bg-muted/20',
+              ? 'bg-background/98 backdrop-blur-lg border-l border-border shadow-xl'
+              : 'bg-gradient-to-l from-background/50 to-transparent',
           )}
         />
 
         {/* タイムライン */}
-        <div className="relative h-full py-8">
+        <div className="relative h-full py-12">
           {/* 年の区切り線 */}
           {dateSummaries.map((summary, index) =>
             summary.year ? (
               <div
                 key={`year-${summary.date}`}
-                className="absolute left-0 right-0 z-10"
+                className="absolute left-0 right-0 z-10 pointer-events-none"
                 style={{ top: `${getDatePosition(index)}%` }}
               >
                 <div
@@ -213,8 +273,10 @@ export const DateJumpSidebar: FC<DateJumpSidebarProps> = ({
                   )}
                 />
                 {(isHovering || isScrolling) && (
-                  <div className="absolute left-2 -top-4 text-xs font-bold text-foreground/70">
-                    {summary.year}
+                  <div className="absolute left-2 -top-4">
+                    <span className="text-xs font-bold bg-black text-white dark:bg-white dark:text-black px-1.5 py-0.5 rounded">
+                      {summary.year}
+                    </span>
                   </div>
                 )}
               </div>
@@ -226,7 +288,7 @@ export const DateJumpSidebar: FC<DateJumpSidebarProps> = ({
             summary.month && !summary.year ? (
               <div
                 key={`month-${summary.date}`}
-                className="absolute left-0 right-0 z-10"
+                className="absolute left-0 right-0 z-10 pointer-events-none"
                 style={{ top: `${getDatePosition(index)}%` }}
               >
                 <div
@@ -238,15 +300,17 @@ export const DateJumpSidebar: FC<DateJumpSidebarProps> = ({
                   )}
                 />
                 {(isHovering || isScrolling) && (
-                  <div className="absolute left-2 -top-3 text-[10px] text-foreground/50">
-                    {summary.month}
+                  <div className="absolute left-2 -top-3">
+                    <span className="text-[10px] font-medium bg-black/80 text-white dark:bg-white/80 dark:text-black px-1 py-0.5 rounded">
+                      {summary.month}
+                    </span>
                   </div>
                 )}
               </div>
             ) : null,
           )}
 
-          {/* 各日付のバー */}
+          {/* 各日付のビジュアル表現 */}
           {dateSummaries.map((summary, index) => {
             const isCurrentDate = currentDate === summary.date;
             const isHovered = hoveredDate === summary.date;
@@ -254,37 +318,22 @@ export const DateJumpSidebar: FC<DateJumpSidebarProps> = ({
             return (
               <div
                 key={summary.date}
-                className="absolute right-0 z-20"
+                className="absolute right-0 z-20 pointer-events-none"
                 style={{
                   top: `${getDatePosition(index)}%`,
                   transform: 'translateY(-50%)',
                 }}
-                onMouseEnter={() => setHoveredDate(summary.date)}
-                onMouseLeave={() => setHoveredDate(null)}
-                onClick={() => handleDateClick(summary)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    handleDateClick(summary);
-                  }
-                }}
-                role="button"
-                tabIndex={0}
-                aria-label={`${format(new Date(summary.date), 'yyyy年M月d日', {
-                  locale: ja,
-                })} - ${summary.photoCount}枚の写真`}
               >
                 {/* 日付のビジュアルバー */}
                 <div className="relative">
-                  {/* ヒートマップ風のドット */}
                   <div
                     className={cn(
-                      'transition-all duration-300',
+                      'transition-all duration-300 ring-1 ring-foreground/10',
                       isCurrentDate
-                        ? 'bg-primary shadow-lg shadow-primary/30'
+                        ? 'bg-primary shadow-lg shadow-primary/30 ring-primary/50'
                         : isHovered
-                          ? 'bg-accent shadow-md shadow-accent/20'
-                          : 'bg-foreground/10 hover:bg-foreground/20',
+                          ? 'bg-accent shadow-md shadow-accent/20 ring-accent/40'
+                          : 'bg-foreground/20 hover:bg-foreground/30',
                       isHovering || isScrolling ? 'rounded-md' : 'rounded-full',
                     )}
                     style={{
@@ -299,7 +348,7 @@ export const DateJumpSidebar: FC<DateJumpSidebarProps> = ({
                       opacity:
                         isHovering || isScrolling
                           ? 1
-                          : 0.4 + summary.normalizedHeight * 0.6,
+                          : 0.5 + summary.normalizedHeight * 0.5,
                     }}
                   />
 
@@ -315,18 +364,19 @@ export const DateJumpSidebar: FC<DateJumpSidebarProps> = ({
                     <div
                       className={cn(
                         'absolute right-full mr-2 top-1/2 -translate-y-1/2',
-                        'bg-popover/95 backdrop-blur border rounded-md shadow-md',
-                        'px-2 py-1 text-xs whitespace-nowrap',
+                        'bg-black text-white dark:bg-white dark:text-black',
+                        'rounded-md shadow-lg shadow-black/30',
+                        'px-2.5 py-1.5 text-xs whitespace-nowrap',
                         'animate-in fade-in-0 slide-in-from-right-2 duration-200',
                       )}
                     >
-                      <div className="font-medium">
+                      <div className="font-semibold">
                         {format(new Date(summary.date), 'M/d', {
                           locale: ja,
                         })}
                       </div>
-                      <div className="text-[10px] text-muted-foreground">
-                        {summary.photoCount}
+                      <div className="text-[11px] opacity-80">
+                        {summary.photoCount}枚
                       </div>
                     </div>
                   )}

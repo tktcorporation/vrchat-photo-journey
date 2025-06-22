@@ -141,12 +141,42 @@ const GalleryContent = memo(
     // 日付ジャンプハンドラー
     const handleJumpToDate = useCallback(
       (groupIndex: number) => {
+        const isFirstGroup = groupIndex === 0;
+        const isLastGroup = groupIndex === filteredGroups.length - 1;
+
+        // 基本のスクロール処理
         virtualizer.scrollToIndex(groupIndex, {
           behavior: 'smooth',
           align: 'start',
         });
+
+        // 最初と最後のグループには追加の余白調整
+        setTimeout(() => {
+          if (!containerRef.current) return;
+
+          const virtualItems = virtualizer.getVirtualItems();
+          const targetItem = virtualItems.find(
+            (item) => item.index === groupIndex,
+          );
+
+          if (isFirstGroup) {
+            // 最初のグループは完全に上部にスクロール
+            containerRef.current.scrollTop = 0;
+          } else if (isLastGroup && targetItem) {
+            // 最後のグループは上に100pxの余白を持たせる
+            const scrollPosition = Math.max(0, targetItem.start - 100);
+            containerRef.current.scrollTop = scrollPosition;
+          } else if (targetItem) {
+            // 中間のグループは中央寄せ
+            const containerHeight = containerRef.current.clientHeight;
+            const itemHeight = targetItem.size;
+            const scrollPosition =
+              targetItem.start - (containerHeight - itemHeight) / 2;
+            containerRef.current.scrollTop = Math.max(0, scrollPosition);
+          }
+        }, 150);
       },
-      [virtualizer],
+      [virtualizer, filteredGroups.length],
     );
 
     // IntersectionObserverでビューポート内のグループを検知
