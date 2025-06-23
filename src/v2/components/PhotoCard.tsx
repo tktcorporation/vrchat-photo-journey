@@ -205,12 +205,17 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
       <div
         ref={elementRef}
         className={clsx(
-          'photo-card group relative w-full bg-gray-100 dark:bg-gray-800 overflow-hidden transform transition-all duration-300',
-          isMultiSelectMode ? 'cursor-pointer' : 'cursor-pointer',
-          isSelected && 'ring-2 ring-blue-500 ring-offset-2',
-          !isMultiSelectMode && 'hover:brightness-110',
+          'photo-card group relative overflow-hidden transition-all duration-100',
+          'cursor-pointer flex items-center justify-center',
+          isSelected
+            ? 'bg-gray-200 dark:bg-gray-700'
+            : 'bg-gray-100 dark:bg-gray-800',
+          !isMultiSelectMode && 'hover:brightness-105 hover:shadow-sm',
         )}
-        style={{ height: displayHeight ? `${displayHeight}px` : undefined }}
+        style={{
+          height: displayHeight ? `${displayHeight}px` : undefined,
+          width: '100%',
+        }}
         onClick={handleClick}
         onContextMenu={handleContextMenu}
         onMouseEnter={() => setIsHovering(true)}
@@ -228,7 +233,7 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
           <ContextMenuTrigger className="absolute inset-0">
             <div
               className={clsx(
-                'absolute top-1 left-1 z-10 rounded-full transition-opacity duration-200',
+                'absolute top-2 left-2 z-10 rounded-full transition-opacity duration-150',
                 isMultiSelectMode || isHovering || isSelected
                   ? 'opacity-100'
                   : 'opacity-0 group-hover:opacity-100',
@@ -247,49 +252,57 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
               {isSelected ? (
                 <CheckCircle2
                   size={24}
-                  className="text-blue-500 bg-white rounded-full"
-                  strokeWidth={1.5}
+                  className="text-blue-500 dark:text-blue-400 bg-white dark:bg-gray-800 rounded-full shadow-sm"
+                  strokeWidth={2.5}
                 />
               ) : (
                 <Circle
                   size={24}
-                  className="text-white/70 bg-black/30 backdrop-blur-sm rounded-full hover:bg-black/50"
-                  strokeWidth={1.5}
+                  className="text-white/90 bg-gray-900/40 backdrop-blur-sm rounded-full hover:bg-gray-900/60 transition-colors duration-75"
+                  strokeWidth={2}
                 />
               )}
             </div>
 
             <div
               className={clsx(
-                'h-full',
-                isSelected && 'opacity-75 transition-opacity',
+                'absolute inset-0 transition-all duration-100',
+                isSelected ? 'p-4' : 'p-0',
               )}
             >
-              {shouldLoad ? (
-                <ProgressiveImage
-                  src={photoData?.data || ''}
-                  placeholderSrc={placeholderUrl}
-                  alt={photo.fileNameWithExt.value}
-                  className="absolute inset-0 w-full h-full object-cover"
-                  loading={priority ? 'eager' : 'lazy'}
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                />
-              ) : (
-                <div
-                  className="absolute inset-0 bg-gray-100 dark:bg-gray-800 animate-pulse"
-                  style={{ aspectRatio: `${photo.width / photo.height}` }}
-                />
-              )}
+              <div
+                className={clsx(
+                  'relative w-full h-full overflow-hidden',
+                  isSelected ? 'rounded-sm' : '',
+                )}
+              >
+                {shouldLoad ? (
+                  <ProgressiveImage
+                    src={photoData?.data || ''}
+                    placeholderSrc={placeholderUrl}
+                    alt={photo.fileNameWithExt.value}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    loading={priority ? 'eager' : 'lazy'}
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  />
+                ) : (
+                  <div
+                    className="absolute inset-0 bg-gray-200 dark:bg-gray-700 animate-pulse"
+                    style={{ aspectRatio: `${photo.width / photo.height}` }}
+                  />
+                )}
+              </div>
             </div>
 
             {!isMultiSelectMode && (
               <div
                 className={clsx(
-                  'absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity',
+                  'absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent',
+                  'opacity-0 group-hover:opacity-100 transition-opacity duration-100',
                 )}
               >
-                <div className="absolute bottom-0 left-0 right-0 p-2">
-                  <h3 className="text-white font-medium truncate text-xs">
+                <div className="absolute bottom-0 left-0 right-0 p-3">
+                  <h3 className="text-white font-medium truncate text-xs drop-shadow-sm">
                     {photo.fileNameWithExt.value}
                   </h3>
                 </div>
