@@ -44,6 +44,8 @@ const PhotoGallery = memo((props: PhotoGalleryProps) => {
   const {
     selectedPhotos,
     setSelectedPhotos,
+    selectionOrder,
+    setSelectionOrder,
     isMultiSelectMode,
     setIsMultiSelectMode,
     groupedPhotos,
@@ -54,6 +56,7 @@ const PhotoGallery = memo((props: PhotoGalleryProps) => {
   /** 選択をクリアし、複数選択モードを解除するハンドラ */
   const handleClearSelection = () => {
     setSelectedPhotos(new Set());
+    setSelectionOrder([]);
     setIsMultiSelectMode(false);
   };
 
@@ -92,15 +95,24 @@ const PhotoGallery = memo((props: PhotoGalleryProps) => {
       return;
     }
 
-    // 選択された写真のパスを取得
-    const selectedPhotoUrls: string[] = [];
+    // 選択された写真のパスを取得（選択順序を保持）
+    const photoMap = new Map<string, string>();
 
-    // グループ内の写真からIDが一致するものを探す
+    // まず全ての写真をMapに格納
     for (const group of Object.values(groupedPhotos)) {
       for (const photo of group.photos) {
         if (selectedPhotos.has(photo.id.toString())) {
-          selectedPhotoUrls.push(photo.url);
+          photoMap.set(photo.id.toString(), photo.url);
         }
+      }
+    }
+
+    // 選択順序に従ってURLを配列に格納
+    const selectedPhotoUrls: string[] = [];
+    for (const photoId of selectionOrder) {
+      const url = photoMap.get(photoId);
+      if (url) {
+        selectedPhotoUrls.push(url);
       }
     }
 

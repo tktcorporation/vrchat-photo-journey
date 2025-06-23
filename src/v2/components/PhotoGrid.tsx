@@ -17,6 +17,10 @@ interface PhotoGridProps {
   setSelectedPhotos: (
     update: Set<string> | ((prev: Set<string>) => Set<string>),
   ) => void;
+  /** 選択順序を記録する配列 */
+  selectionOrder: string[];
+  /** 選択順序を更新する関数 */
+  setSelectionOrder: (order: string[]) => void;
   /** 現在複数選択モードかどうか */
   isMultiSelectMode: boolean;
   /** 複数選択モードの有効/無効を設定する関数 */
@@ -59,6 +63,8 @@ export default function PhotoGrid({
   photos,
   selectedPhotos,
   setSelectedPhotos,
+  selectionOrder,
+  setSelectionOrder,
   isMultiSelectMode,
   setIsMultiSelectMode,
 }: PhotoGridProps) {
@@ -100,6 +106,8 @@ export default function PhotoGrid({
                       priority={index === 0}
                       selectedPhotos={selectedPhotos}
                       setSelectedPhotos={setSelectedPhotos}
+                      selectionOrder={selectionOrder}
+                      setSelectionOrder={setSelectionOrder}
                       photos={photos}
                       isMultiSelectMode={isMultiSelectMode}
                       setIsMultiSelectMode={setIsMultiSelectMode}

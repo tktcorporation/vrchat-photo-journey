@@ -92,6 +92,8 @@ const GalleryContent = memo(
       groupedPhotos,
       selectedPhotos,
       setSelectedPhotos,
+      selectionOrder,
+      setSelectionOrder,
       isMultiSelectMode,
       setIsMultiSelectMode,
     } = usePhotoGallery(searchQuery, searchType, {
@@ -207,10 +209,16 @@ const GalleryContent = memo(
       ) => {
         if (event.target === containerRef.current && isMultiSelectMode) {
           setSelectedPhotos(new Set());
+          setSelectionOrder([]);
           setIsMultiSelectMode(false);
         }
       },
-      [isMultiSelectMode, setSelectedPhotos, setIsMultiSelectMode],
+      [
+        isMultiSelectMode,
+        setSelectedPhotos,
+        setSelectionOrder,
+        setIsMultiSelectMode,
+      ],
     );
 
     if (isLoadingGrouping) {
@@ -293,6 +301,8 @@ const GalleryContent = memo(
                           photos={group.photos}
                           selectedPhotos={selectedPhotos}
                           setSelectedPhotos={setSelectedPhotos}
+                          selectionOrder={selectionOrder}
+                          setSelectionOrder={setSelectionOrder}
                           isMultiSelectMode={isMultiSelectMode}
                           setIsMultiSelectMode={setIsMultiSelectMode}
                         />

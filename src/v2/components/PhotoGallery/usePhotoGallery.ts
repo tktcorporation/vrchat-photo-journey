@@ -30,6 +30,8 @@ interface GalleryDebugInfo {
 const selectedPhotoAtom = atom<Photo | null>(null);
 /** 選択されている写真のIDセット */
 const selectedPhotosAtom = atom<Set<string>>(new Set<string>());
+/** 選択順序を記録する配列 */
+const selectionOrderAtom = atom<string[]>([]);
 /** 複数選択モードかどうか */
 const isMultiSelectModeAtom = atom<boolean>(false);
 
@@ -67,6 +69,10 @@ export function usePhotoGallery(
   setSelectedPhotos: (
     update: Set<string> | ((prev: Set<string>) => Set<string>),
   ) => void;
+  /** 選択順序を記録する配列 */
+  selectionOrder: string[];
+  /** 選択順序を更新する関数 */
+  setSelectionOrder: (order: string[]) => void;
   /** 現在複数選択モードかどうか */
   isMultiSelectMode: boolean;
   /** 複数選択モードの有効/無効を設定する関数 */
@@ -76,6 +82,7 @@ export function usePhotoGallery(
 } {
   const [selectedPhoto, setSelectedPhoto] = useAtom(selectedPhotoAtom);
   const [selectedPhotos, setSelectedPhotos] = useAtom(selectedPhotosAtom);
+  const [selectionOrder, setSelectionOrder] = useAtom(selectionOrderAtom);
   const [isMultiSelectMode, setIsMultiSelectMode] = useAtom(
     isMultiSelectModeAtom,
   );
@@ -255,6 +262,8 @@ export function usePhotoGallery(
     setSelectedPhoto,
     selectedPhotos,
     setSelectedPhotos,
+    selectionOrder,
+    setSelectionOrder,
     isMultiSelectMode,
     setIsMultiSelectMode,
     debug,

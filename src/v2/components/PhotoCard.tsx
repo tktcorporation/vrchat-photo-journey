@@ -31,6 +31,10 @@ interface PhotoCardProps {
   setSelectedPhotos: (
     update: Set<string> | ((prev: Set<string>) => Set<string>),
   ) => void;
+  /** 選択順序を記録する配列 */
+  selectionOrder: string[];
+  /** 選択順序を更新する関数 */
+  setSelectionOrder: (order: string[]) => void;
   /** このカードが含まれるグリッド全体の写真リスト (複数コピー時のパス取得用、将来的に不要かも) */
   photos: Photo[];
   /** 現在複数選択モードかどうか (ギャラリー全体の状態) */
@@ -51,6 +55,8 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
     priority = false,
     selectedPhotos,
     setSelectedPhotos,
+    selectionOrder,
+    setSelectionOrder,
     photos,
     isMultiSelectMode,
     setIsMultiSelectMode,
@@ -68,6 +74,8 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
     const currentPhotoId = String(photo.id);
     /** このカードが現在選択されているかどうか */
     const isSelected = selectedPhotos.has(currentPhotoId);
+    /** 選択順序のインデックス (1から始まる) */
+    const selectionIndex = selectionOrder.indexOf(currentPhotoId) + 1;
 
     /** 画像を読み込むべきか (優先指定またはビューポート内) */
     const shouldLoad = priority || isIntersecting;
@@ -132,8 +140,14 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
           const newSelected = new Set(prev);
           if (newSelected.has(currentPhotoId)) {
             newSelected.delete(currentPhotoId);
+            // 選択順序からも削除
+            setSelectionOrder(
+              selectionOrder.filter((id) => id !== currentPhotoId),
+            );
           } else {
             newSelected.add(currentPhotoId);
+            // 選択順序に追加
+            setSelectionOrder([...selectionOrder, currentPhotoId]);
           }
           return newSelected;
         });
@@ -145,6 +159,8 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
       isMultiSelectMode,
       currentPhotoId,
       setSelectedPhotos,
+      selectionOrder,
+      setSelectionOrder,
       photo.url,
       openInPhotoAppMutation,
     ]);
@@ -162,8 +178,14 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
           const newSelected = new Set(prev);
           if (newSelected.has(currentPhotoId)) {
             newSelected.delete(currentPhotoId);
+            // 選択順序からも削除
+            setSelectionOrder(
+              selectionOrder.filter((id) => id !== currentPhotoId),
+            );
           } else {
             newSelected.add(currentPhotoId);
+            // 選択順序に追加
+            setSelectionOrder([...selectionOrder, currentPhotoId]);
           }
           return newSelected;
         });
@@ -173,6 +195,8 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
         setIsMultiSelectMode,
         currentPhotoId,
         setSelectedPhotos,
+        selectionOrder,
+        setSelectionOrder,
       ],
     );
 
@@ -181,6 +205,7 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
       if (!isMultiSelectMode || !selectedPhotos.has(currentPhotoId)) {
         // モード外 or 未選択写真を右クリック: これを選択しモード開始
         setSelectedPhotos(new Set([currentPhotoId]));
+        setSelectionOrder([currentPhotoId]);
         setIsMultiSelectMode(true);
       }
     }, [
@@ -189,6 +214,7 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
       currentPhotoId,
       selectedPhotos,
       setSelectedPhotos,
+      setSelectionOrder,
     ]);
 
     /** コンテキストメニュー項目共通のアクションラッパー */
@@ -245,11 +271,18 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
               tabIndex={0}
             >
               {isSelected ? (
-                <CheckCircle2
-                  size={24}
-                  className="text-blue-500 bg-white rounded-full"
-                  strokeWidth={1.5}
-                />
+                <div className="relative">
+                  <CheckCircle2
+                    size={24}
+                    className="text-blue-500 bg-white rounded-full"
+                    strokeWidth={1.5}
+                  />
+                  {isMultiSelectMode && selectedPhotos.size > 1 && (
+                    <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-blue-500">
+                      {selectionIndex}
+                    </span>
+                  )}
+                </div>
               ) : (
                 <Circle
                   size={24}
