@@ -137,6 +137,35 @@ const en: Translations = {
       errorThrownSuccess: 'Error thrown successfully. Check Sentry.',
     },
   },
+  migration: {
+    title: 'Data Migration from Old App',
+    description:
+      'Old app data has been found. Would you like to migrate the data to the new app?',
+    items: {
+      database: 'Database',
+      logStore: 'Log Store',
+      settings: 'Settings',
+    },
+    labels: {
+      oldApp: 'Old App',
+      newApp: 'New App',
+      dataToMigrate: 'Data to be migrated',
+      dataDescription: 'VRChat log data (world visit history) and settings',
+      notes: 'Notes',
+      note1: 'Existing data will be preserved and old app data will be added',
+      note2: 'This process may take some time',
+    },
+    buttons: {
+      skip: 'Skip',
+      migrate: 'Migrate Data',
+      migrating: 'Migrating...',
+    },
+    toast: {
+      success: 'Data migration completed',
+      successDetail: 'Migrated data: {items}',
+      error: 'Data migration failed',
+    },
+  },
 };
 
 export default en;

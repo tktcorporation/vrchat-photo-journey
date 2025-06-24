@@ -138,6 +138,35 @@ const ja: Translations = {
         'エラーが正常に発生しました。Sentryを確認してください。',
     },
   },
+  migration: {
+    title: '旧アプリからのデータ移行',
+    description:
+      '旧アプリのデータが見つかりました。新アプリにデータを移行しますか？',
+    items: {
+      database: 'データベース',
+      logStore: 'ログストア',
+      settings: '設定',
+    },
+    labels: {
+      oldApp: '旧アプリ',
+      newApp: '新アプリ',
+      dataToMigrate: '移行されるデータ',
+      dataDescription: 'VRChatのログデータ（ワールド訪問履歴）と設定',
+      notes: '注意事項',
+      note1: '既存のデータは保持され、旧アプリのデータが追加されます',
+      note2: 'この処理には時間がかかる場合があります',
+    },
+    buttons: {
+      skip: 'スキップ',
+      migrate: 'データを移行する',
+      migrating: '移行中...',
+    },
+    toast: {
+      success: 'データ移行が完了しました',
+      successDetail: '移行されたデータ: {items}',
+      error: 'データ移行に失敗しました',
+    },
+  },
 };
 
 export default ja;
