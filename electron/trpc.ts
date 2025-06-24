@@ -13,37 +13,43 @@ const t = initTRPC.context<{ eventEmitter: EventEmitter }>().create({
   transformer: superjson,
   errorFormatter: (opts) => {
     const { shape, error } = opts;
-    let userMessage = '予期しないエラーが発生しました。';
-    let structuredErrorInfo = null;
     const cause = error.cause;
+
+    let userMessage: string;
+    let structuredErrorInfo: {
+      code: string;
+      category: string;
+      userMessage: string;
+    } | null = null;
 
     if (cause instanceof UserFacingError) {
       userMessage = cause.message;
-      // 構造化エラー情報をフロントエンドに渡す
-      if (cause.code && cause.category) {
-        structuredErrorInfo = {
-          code: cause.code,
-          category: cause.category,
-          userMessage: cause.userMessage || cause.message,
-        };
-      }
-    } else if (
-      cause instanceof Error &&
-      cause.name === 'ZodError' &&
-      Array.isArray((cause as ZodError).issues) &&
-      (cause as ZodError).issues.length > 0
-    ) {
-      userMessage = (cause as ZodError).issues[0].message;
+      structuredErrorInfo =
+        cause.code && cause.category
+          ? {
+              code: cause.code,
+              category: cause.category,
+              userMessage: cause.userMessage || cause.message,
+            }
+          : null;
+    } else if (cause instanceof Error && cause.name === 'ZodError') {
+      // ZodErrorの場合
+      const zodError = cause as ZodError;
+      userMessage = zodError.issues[0].message;
       structuredErrorInfo = {
         code: 'VALIDATION_ERROR',
         category: 'VALIDATION_ERROR',
-        userMessage: (cause as ZodError).issues[0].message,
+        userMessage: zodError.issues[0].message,
       };
     } else if (
       cause instanceof Error &&
       cause.message.includes('test error for Sentry')
     ) {
       userMessage = 'Sentryテスト用のエラーが発生しました。';
+      structuredErrorInfo = null;
+    } else {
+      userMessage = '予期しないエラーが発生しました。';
+      structuredErrorInfo = null;
     }
 
     // UserFacingErrorの場合は詳細情報を表示しない（構造化エラー情報で十分）
@@ -107,14 +113,10 @@ const logError = (
       },
     };
     eventEmitter.emit('toast', structuredToastMessage);
-  } else if (
-    err instanceof Error &&
-    err.name === 'ZodError' &&
-    Array.isArray((err as ZodError).issues) &&
-    (err as ZodError).issues.length > 0
-  ) {
+  } else if (err instanceof Error && err.name === 'ZodError') {
     // Zodバリデーションエラーの場合
-    const validationMessage = (err as ZodError).issues[0].message;
+    const zodError = err as ZodError;
+    const validationMessage = zodError.issues[0].message;
     const structuredToastMessage = {
       message: validationMessage,
       errorInfo: {
