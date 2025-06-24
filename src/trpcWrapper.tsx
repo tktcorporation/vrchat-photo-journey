@@ -69,6 +69,17 @@ export default ({ children }: { children: React.ReactNode }) => {
               }
               throw error;
             },
+            // パフォーマンス最適化のためのキャッシュ戦略
+            staleTime: 5 * 60 * 1000, // 5分間は新鮮なデータとして扱う
+            cacheTime: 10 * 60 * 1000, // 10分間キャッシュを保持
+            refetchOnWindowFocus: false, // ウィンドウフォーカス時の再取得を無効化
+            retry: (failureCount, error) => {
+              // ネットワークエラー以外はリトライしない
+              if (error instanceof Error && error.message.includes('Network')) {
+                return failureCount < 3;
+              }
+              return false;
+            },
           },
         },
       }),
