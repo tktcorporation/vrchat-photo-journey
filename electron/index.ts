@@ -14,6 +14,7 @@ import { scrubEventData } from '../src/lib/utils/masking';
 import { router } from './api';
 import * as electronUtil from './electronUtil';
 import { initializeSettingStoreForUtil } from './electronUtil';
+import { ERROR_CATEGORIES, UserFacingError } from './lib/errors';
 import { logger } from './lib/logger';
 import * as sequelizeClient from './lib/sequelize';
 import { getAppUserDataPath } from './lib/wrappedApp';
@@ -51,7 +52,7 @@ export const initializeMainSentry = () => {
     // __SENTRY_RELEASE__ はビルド時に Sentry プラグインによって置換される
     // リリースバージョンを表す定数
     release: __SENTRY_RELEASE__,
-    beforeSend: (event: ErrorEvent, _hint: EventHint) => {
+    beforeSend: (event: ErrorEvent, hint: EventHint) => {
       // 開発環境でも規約同意をチェックする
       if (settingStore.getTermsAccepted() !== true) {
         if (isDev) {
@@ -62,6 +63,32 @@ export const initializeMainSentry = () => {
           logger.info('Sentry event dropped due to terms not accepted.');
         }
         return null;
+      }
+
+      // ハンドリング済みのエラー（UserFacingError）をフィルタリング
+      const originalException = hint.originalException;
+      if (originalException instanceof UserFacingError) {
+        // SETUP_REQUIREDカテゴリーのエラーは正常な動作なのでSentryに送信しない
+        if (originalException.category === ERROR_CATEGORIES.SETUP_REQUIRED) {
+          logger.info(
+            `Sentry event dropped: Handled setup error - ${originalException.code}`,
+          );
+          return null;
+        }
+        // VALIDATION_ERRORも正常な動作の一部
+        if (originalException.category === ERROR_CATEGORIES.VALIDATION_ERROR) {
+          logger.info(
+            `Sentry event dropped: Validation error - ${originalException.code}`,
+          );
+          return null;
+        }
+        // FILE_NOT_FOUNDも多くの場合は正常な動作
+        if (originalException.category === ERROR_CATEGORIES.FILE_NOT_FOUND) {
+          logger.info(
+            `Sentry event dropped: File not found - ${originalException.code}`,
+          );
+          return null;
+        }
       }
 
       const processedEvent = scrubEventData(event);

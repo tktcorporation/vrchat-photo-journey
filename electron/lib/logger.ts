@@ -4,6 +4,7 @@ import path from 'pathe';
 import { stackWithCauses } from 'pony-cause';
 import { P, match } from 'ts-pattern';
 import { getSettingStore } from '../module/settingStore';
+import { ERROR_CATEGORIES, UserFacingError } from './errors';
 
 // ログファイルパスを遅延評価する
 const getLogFilePath = (): string => {
@@ -96,6 +97,27 @@ const error = ({ message, stack }: ErrorLogParams): void => {
     stackWithCauses(normalizedError),
     ...(stack ? [stackWithCauses(stack)] : []),
   );
+
+  // ハンドリング済みのエラーはSentryに送信しない
+  const shouldSkipSentry = match(normalizedError)
+    .when(
+      (err): err is UserFacingError =>
+        err instanceof UserFacingError &&
+        (err.category === ERROR_CATEGORIES.SETUP_REQUIRED ||
+          err.category === ERROR_CATEGORIES.VALIDATION_ERROR ||
+          err.category === ERROR_CATEGORIES.FILE_NOT_FOUND),
+      (err) => {
+        log.debug(
+          `Skipping Sentry for handled error: ${err.category} - ${err.code}`,
+        );
+        return true;
+      },
+    )
+    .otherwise(() => false);
+
+  if (shouldSkipSentry) {
+    return;
+  }
 
   // 規約同意済みかどうかを確認
   const termsAccepted = match(undefined)
