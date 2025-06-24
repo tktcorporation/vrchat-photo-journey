@@ -5,6 +5,7 @@ interface GeneratePreviewParams {
   showAllPlayers: boolean;
 }
 
+import { P, match } from 'ts-pattern';
 import { extractDominantColorsFromBase64 } from './colorExtractor';
 import { loadInterFonts } from './fontLoader';
 
@@ -56,41 +57,44 @@ function generatePlayerElements(
   });
 
   // 表示するプレイヤーを決定
-  let displayPlayers: typeof players;
-  let remainingCount = 0;
+  const { displayPlayers, remainingCount } = match(showAllPlayers)
+    .with(true, () => ({
+      displayPlayers: players,
+      remainingCount: 0,
+    }))
+    .with(false, () => {
+      // +N moreの固定幅を事前に設定
+      const moreFixedWidth = 100; // 小さくした分調整
+      const availableWidth = maxLineWidth - moreFixedWidth;
 
-  if (!showAllPlayers) {
-    // +N moreの固定幅を事前に設定
-    const moreFixedWidth = 100; // 小さくした分調整
-    const availableWidth = maxLineWidth - moreFixedWidth;
+      // プレイヤーを2行に配置していく
+      const tempPlayers: typeof players = [];
+      let currentWidth = 0;
+      let isSecondRow = false;
 
-    // プレイヤーを2行に配置していく
-    const tempPlayers: typeof players = [];
-    let currentWidth = 0;
-    let isSecondRow = false;
+      for (const [index, width] of playerWidths.entries()) {
+        const effectiveWidth = isSecondRow ? availableWidth : maxLineWidth;
 
-    for (const [index, width] of playerWidths.entries()) {
-      const effectiveWidth = isSecondRow ? availableWidth : maxLineWidth;
-
-      if (currentWidth + width <= effectiveWidth) {
-        tempPlayers.push(players[index]);
-        currentWidth += width + 6; // 間隔も小さく
-      } else if (!isSecondRow) {
-        // 1行目が埋まったら2行目へ
-        isSecondRow = true;
-        currentWidth = width + 6;
-        tempPlayers.push(players[index]);
-      } else {
-        // 2行目も埋まったら終了
-        break;
+        if (currentWidth + width <= effectiveWidth) {
+          tempPlayers.push(players[index]);
+          currentWidth += width + 6; // 間隔も小さく
+        } else if (!isSecondRow) {
+          // 1行目が埋まったら2行目へ
+          isSecondRow = true;
+          currentWidth = width + 6;
+          tempPlayers.push(players[index]);
+        } else {
+          // 2行目も埋まったら終了
+          break;
+        }
       }
-    }
 
-    displayPlayers = tempPlayers;
-    remainingCount = players.length - tempPlayers.length;
-  } else {
-    displayPlayers = players;
-  }
+      return {
+        displayPlayers: tempPlayers,
+        remainingCount: players.length - tempPlayers.length,
+      };
+    })
+    .exhaustive();
 
   // プレイヤー名を描画
   for (const player of displayPlayers) {
@@ -99,11 +103,18 @@ function generatePlayerElements(
         return width + (/[\u3000-\u9fff]/.test(char) ? 14 : 7);
       }, 0) + 20;
 
-    if (currentLineWidth + playerWidth > maxLineWidth) {
-      x = 0;
-      y += 30; // 行間隔を小さく
-      currentLineWidth = 0;
-    }
+    const lineWrapping = match(currentLineWidth + playerWidth > maxLineWidth)
+      .with(true, () => ({
+        x: 0,
+        y: y + 30, // 行間隔を小さく
+        currentLineWidth: 0,
+      }))
+      .with(false, () => ({ x, y, currentLineWidth }))
+      .exhaustive();
+
+    x = lineWrapping.x;
+    y = lineWrapping.y;
+    currentLineWidth = lineWrapping.currentLineWidth;
 
     elements.push(`
       <g transform="translate(${x}, ${y})">
@@ -130,14 +141,18 @@ function generatePlayerElements(
     currentLineWidth += playerWidth + 6;
   }
 
-  if (!showAllPlayers && remainingCount > 0) {
-    const moreText = `+${remainingCount} more`;
-    const moreTextWidth = [...moreText].reduce((width, char) => {
-      return width + (/[\u3000-\u9fff]/.test(char) ? 14 : 7);
-    }, 0);
-    const moreWidth = moreTextWidth + 20;
+  match({ showAllPlayers, remainingCount })
+    .when(
+      ({ showAllPlayers, remainingCount }) =>
+        !showAllPlayers && remainingCount > 0,
+      () => {
+        const moreText = `+${remainingCount} more`;
+        const moreTextWidth = [...moreText].reduce((width, char) => {
+          return width + (/[\u3000-\u9fff]/.test(char) ? 14 : 7);
+        }, 0);
+        const moreWidth = moreTextWidth + 20;
 
-    elements.push(`
+        elements.push(`
       <g transform="translate(${x}, ${y})">
         <rect
           width="${moreWidth}"
@@ -157,7 +172,9 @@ function generatePlayerElements(
         >${moreText}</text>
       </g>
     `);
-  }
+      },
+    )
+    .otherwise(() => {});
 
   // プレイヤーリストのコンテナを終了
   elements.push('</g>');
@@ -189,9 +206,10 @@ async function generatePreviewSvg({
   const colors = await extractDominantColorsFromBase64(imageBase64);
 
   // showAllPlayersがfalseの場合は600px固定、trueの場合は動的に計算
-  const totalHeight = showAllPlayers
-    ? Math.max(600, 500 + playerListHeight + 24)
-    : 600;
+  const totalHeight = match(showAllPlayers)
+    .with(true, () => Math.max(600, 500 + playerListHeight + 24))
+    .with(false, () => 600)
+    .exhaustive();
 
   // 中央の画像エリアを736×414に設定
   const imageWidth = 736;
