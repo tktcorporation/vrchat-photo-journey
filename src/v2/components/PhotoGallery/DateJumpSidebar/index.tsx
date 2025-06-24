@@ -200,7 +200,7 @@ export const DateJumpSidebar: FC<DateJumpSidebarProps> = ({
     <div
       ref={sidebarRef}
       className={cn(
-        'fixed right-0 top-0 h-full transition-all duration-300 z-10',
+        'fixed right-0 top-12 bottom-0 transition-all duration-300 z-10',
         isHovering || isScrolling ? 'w-24' : 'w-2',
         'group cursor-pointer',
         className,
