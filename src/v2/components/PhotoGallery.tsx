@@ -53,7 +53,7 @@ const PhotoGallery = memo((props: PhotoGalleryProps) => {
 
   /** 選択をクリアし、複数選択モードを解除するハンドラ */
   const handleClearSelection = () => {
-    setSelectedPhotos(new Set());
+    setSelectedPhotos(new Map());
     setIsMultiSelectMode(false);
   };
 
@@ -92,14 +92,20 @@ const PhotoGallery = memo((props: PhotoGalleryProps) => {
       return;
     }
 
-    // 選択された写真のパスを取得
-    const selectedPhotoUrls: string[] = [];
+    // 選択された写真を選択順序でソート
+    const sortedEntries = Array.from(selectedPhotos.entries()).sort(
+      (a, b) => a[1] - b[1],
+    );
 
-    // グループ内の写真からIDが一致するものを探す
-    for (const group of Object.values(groupedPhotos)) {
-      for (const photo of group.photos) {
-        if (selectedPhotos.has(photo.id.toString())) {
+    // 選択順序でソートされたパスを取得
+    const selectedPhotoUrls: string[] = [];
+    for (const [photoId] of sortedEntries) {
+      // グループ内の写真からIDが一致するものを探す
+      for (const group of Object.values(groupedPhotos)) {
+        const photo = group.photos.find((p) => p.id.toString() === photoId);
+        if (photo) {
           selectedPhotoUrls.push(photo.url);
+          break;
         }
       }
     }
