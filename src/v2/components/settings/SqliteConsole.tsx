@@ -105,7 +105,7 @@ const SqliteConsole: React.FC<SqliteConsoleProps> = ({ isOpen, onClose }) => {
   const handleThrowError = async () => {
     try {
       await throwErrorForSentryTest();
-      setResult('Error thrown successfully. Check Sentry.');
+      setResult(t('debug.sqliteConsole.errorThrownSuccess'));
     } catch (error) {
       setResult(String(error));
     }
