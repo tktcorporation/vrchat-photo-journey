@@ -1,4 +1,4 @@
-import { rgbToHsl } from './colorUtils';
+import { hslToRgb, rgbToHsl } from './colorUtils';
 
 /**
  * 画像要素をキャンバスに描画し、そのピクセルデータを取得するヘルパー。
@@ -46,10 +46,16 @@ function calcColors(data: Uint8ClampedArray, step: number) {
     .filter((bucket) => bucket.count > 20);
 
   if (sortedColors.length === 0) {
+    // index.cssで定義されたprimary colorと一致させる
+    // --primary: 240 75% 60%;
+    const primaryRgb = hslToRgb(240, 75, 60);
+    const secondaryRgb = hslToRgb(220, 5, 96); // --secondary: 220 5% 96%
+    const accentRgb = hslToRgb(240, 30, 95); // --accent: 240 30% 95%
+
     return {
-      primary: 'rgb(59, 130, 246)',
-      secondary: 'rgb(147, 51, 234)',
-      accent: 'rgb(79, 70, 229)',
+      primary: `rgb(${primaryRgb.r}, ${primaryRgb.g}, ${primaryRgb.b})`,
+      secondary: `rgb(${secondaryRgb.r}, ${secondaryRgb.g}, ${secondaryRgb.b})`,
+      accent: `rgb(${accentRgb.r}, ${accentRgb.g}, ${accentRgb.b})`,
     };
   }
 
