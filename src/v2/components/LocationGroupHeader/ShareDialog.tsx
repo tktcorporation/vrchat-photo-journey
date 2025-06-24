@@ -127,31 +127,31 @@ export const ShareDialog = ({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="h-[70vh] flex flex-col p-0 backdrop-blur-xl bg-white/80 dark:bg-gray-900/80 border border-white/20 dark:border-gray-700/30 shadow-2xl">
-        <DialogHeader className="px-6 pt-4 pb-2 border-b border-white/10 dark:border-gray-700/20 flex flex-row items-center justify-between">
+        <DialogHeader className="px-6 pt-4 pb-2 border-b border-white/10 dark:border-gray-700/20">
           <DialogTitle className="text-lg font-semibold text-gray-800 dark:text-white">
             {t('locationHeader.share')}
           </DialogTitle>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleCopyShareImageToClipboard}
-              disabled={isLoading}
-              className="p-2 rounded-lg bg-white/20 dark:bg-gray-800/50 hover:bg-white/30 dark:hover:bg-gray-800/60 border border-white/10 dark:border-gray-700/30 text-gray-700 dark:text-gray-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              title={t('locationHeader.copyToClipboard')}
-            >
-              <Copy className="h-5 w-5" />
-            </button>
-            <button
-              type="button"
-              onClick={handleDownloadShareImagePng}
-              disabled={isLoading}
-              className="p-2 rounded-lg bg-white/20 dark:bg-gray-800/50 hover:bg-white/30 dark:hover:bg-gray-800/60 border border-white/10 dark:border-gray-700/30 text-gray-700 dark:text-gray-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              title={t('locationHeader.downloadImage')}
-            >
-              <Download className="h-5 w-5" />
-            </button>
-          </div>
         </DialogHeader>
+        <div className="px-6 py-2 border-b border-white/10 dark:border-gray-700/20 flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={handleCopyShareImageToClipboard}
+            disabled={isLoading}
+            className="p-2 rounded-lg bg-white/20 dark:bg-gray-800/50 hover:bg-white/30 dark:hover:bg-gray-800/60 border border-white/10 dark:border-gray-700/30 text-gray-700 dark:text-gray-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            title={t('locationHeader.copyToClipboard')}
+          >
+            <Copy className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
+            onClick={handleDownloadShareImagePng}
+            disabled={isLoading}
+            className="p-2 rounded-lg bg-white/20 dark:bg-gray-800/50 hover:bg-white/30 dark:hover:bg-gray-800/60 border border-white/10 dark:border-gray-700/30 text-gray-700 dark:text-gray-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            title={t('locationHeader.downloadImage')}
+          >
+            <Download className="h-5 w-5" />
+          </button>
+        </div>
         <div className="flex flex-col pb-6 px-6 h-[calc(100vh-130px)] items-center justify-center">
           <div className="h-full aspect-[4/3] overflow-y-auto border border-white/10 dark:border-gray-700/20 rounded-lg">
             <ContextMenu>
