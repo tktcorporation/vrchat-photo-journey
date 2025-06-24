@@ -398,27 +398,3 @@ export function handlePhotoOperationError<T>(
     defaultUserMessage: '写真操作中にエラーが発生しました。',
   });
 }
-
-/**
- * ログ操作専用の型安全なエラーハンドラー
- */
-export function handleLogOperationError<T>(
-  result: Result<T, LogOperationError>,
-): T {
-  return handleTypedResultError(result, {
-    operationName: 'Log operation',
-    defaultUserMessage: 'ログ操作中にエラーが発生しました。',
-  });
-}
-
-/**
- * データベース操作専用の型安全なエラーハンドラー
- */
-export function handleDatabaseOperationError<T>(
-  result: Result<T, DatabaseOperationError>,
-): T {
-  return handleTypedResultError(result, {
-    operationName: 'Database operation',
-    defaultUserMessage: 'データベース操作中にエラーが発生しました。',
-  });
-}
