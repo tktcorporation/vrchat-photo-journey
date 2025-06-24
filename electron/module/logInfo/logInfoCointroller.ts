@@ -109,16 +109,20 @@ const findRecentMergedWorldJoinLog = async (datetime: Date) => {
 
     return sortedLogs[0] ?? null;
   } catch (error) {
+    const errorObj = match(error)
+      .with(P.instanceOf(Error), (err) => err)
+      .otherwise(() => new Error(String(error)));
+
     logger.error({
       message: `Error in findRecentMergedWorldJoinLog for datetime ${datetime.toISOString()}: ${error}`,
-      stack: error instanceof Error ? error : new Error(String(error)),
+      stack: errorObj,
     });
     throw UserFacingError.withStructuredInfo({
       code: ERROR_CODES.DATABASE_ERROR,
       category: ERROR_CATEGORIES.DATABASE_ERROR,
       message: `Failed to find recent world join log: ${error}`,
       userMessage: 'ワールド参加ログの取得中にエラーが発生しました。',
-      cause: error instanceof Error ? error : new Error(String(error)),
+      cause: errorObj,
     });
   }
 };
@@ -145,16 +149,20 @@ const findNextMergedWorldJoinLog = async (datetime: Date) => {
 
     return sortedLogs[0] ?? null;
   } catch (error) {
+    const errorObj = match(error)
+      .with(P.instanceOf(Error), (err) => err)
+      .otherwise(() => new Error(String(error)));
+
     logger.error({
       message: `Error in findNextMergedWorldJoinLog for datetime ${datetime.toISOString()}: ${error}`,
-      stack: error instanceof Error ? error : new Error(String(error)),
+      stack: errorObj,
     });
     throw UserFacingError.withStructuredInfo({
       code: ERROR_CODES.DATABASE_ERROR,
       category: ERROR_CATEGORIES.DATABASE_ERROR,
       message: `Failed to find next world join log: ${error}`,
       userMessage: 'ワールド参加ログの取得中にエラーが発生しました。',
-      cause: error instanceof Error ? error : new Error(String(error)),
+      cause: errorObj,
     });
   }
 };
@@ -384,15 +392,15 @@ const getPlayerJoinListInSameWorldCore = async (
         stack: new Error(`プレイヤー参加ログエラー: ${error.type}`),
       });
 
-      switch (error.type) {
-        case 'DATABASE_ERROR':
-        case 'INVALID_DATE_RANGE':
-        case 'NOT_FOUND':
-          return neverthrow.err('RECENT_JOIN_LOG_NOT_FOUND');
-        default:
+      return match(error.type)
+        .with(
+          P.union('DATABASE_ERROR', 'INVALID_DATE_RANGE', 'NOT_FOUND'),
+          () => neverthrow.err('RECENT_JOIN_LOG_NOT_FOUND' as const),
+        )
+        .otherwise(() => {
           // 型安全のためのケース（実際には到達しない）
           throw new Error(`未知のエラータイプ: ${JSON.stringify(error)}`);
-      }
+        });
     }
 
     const playerJoinLogList = playerJoinLogResult.value;
@@ -408,9 +416,13 @@ const getPlayerJoinListInSameWorldCore = async (
 
     return neverthrow.ok(playerJoinLogList);
   } catch (error) {
+    const errorObj = match(error)
+      .with(P.instanceOf(Error), (err) => err)
+      .otherwise(() => new Error(String(error)));
+
     logger.error({
       message: `Unexpected error in getPlayerJoinListInSameWorldCore for datetime ${datetime.toISOString()}: ${error}`,
-      stack: error instanceof Error ? error : new Error(String(error)),
+      stack: errorObj,
     });
 
     // Re-throw the error to be caught by the cache layer
@@ -419,7 +431,7 @@ const getPlayerJoinListInSameWorldCore = async (
       category: ERROR_CATEGORIES.DATABASE_ERROR,
       message: `Failed to get player join list: ${error}`,
       userMessage: 'プレイヤー情報の取得中にエラーが発生しました。',
-      cause: error instanceof Error ? error : new Error(String(error)),
+      cause: errorObj,
     });
   }
 };
@@ -561,16 +573,20 @@ export const logInfoRouter = () =>
           );
           return sessionDates;
         } catch (error) {
+          const errorObj = match(error)
+            .with(P.instanceOf(Error), (err) => err)
+            .otherwise(() => new Error(String(error)));
+
           logger.error({
             message: `Failed to search sessions by player name: ${error}`,
-            stack: error instanceof Error ? error : new Error(String(error)),
+            stack: errorObj,
           });
           throw UserFacingError.withStructuredInfo({
             code: ERROR_CODES.DATABASE_ERROR,
             category: ERROR_CATEGORIES.DATABASE_ERROR,
             message: `Failed to search sessions by player name: ${error}`,
             userMessage: 'プレイヤー検索中にエラーが発生しました。',
-            cause: error instanceof Error ? error : new Error(String(error)),
+            cause: errorObj,
           });
         }
       }),
@@ -782,11 +798,16 @@ export const logInfoRouter = () =>
 
           return results;
         } catch (error) {
+          const errorInfo = match(error)
+            .with(P.instanceOf(Error), (err) => ({
+              message: err.message,
+              stack: err,
+            }))
+            .otherwise(() => ({ message: String(error), stack: undefined }));
+
           logger.error({
-            message: `[SessionInfoBatch] バッチ処理でエラーが発生しました: ${
-              error instanceof Error ? error.message : String(error)
-            } (requested sessions: ${ctx.input.length})`,
-            stack: error instanceof Error ? error : undefined,
+            message: `[SessionInfoBatch] バッチ処理でエラーが発生しました: ${errorInfo.message} (requested sessions: ${ctx.input.length})`,
+            stack: errorInfo.stack,
           });
 
           // エラーの場合は空の結果を返す
