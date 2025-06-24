@@ -4,7 +4,7 @@ import { clipboard } from 'electron';
 import * as path from 'pathe';
 import sharp from 'sharp';
 import z from 'zod';
-import { getWindow } from '../../../electronUtil';
+import { reloadMainWindow } from '../../../electronUtil';
 import {
   fileOperationErrorMappings,
   handleResultError,
@@ -14,13 +14,6 @@ import * as exiftool from '../../../lib/wrappedExifTool';
 import { eventEmitter, procedure, router as trpcRouter } from './../../../trpc';
 import { DirectoryPathSchema } from './../../../valueObjects/index';
 import * as utilsService from './../service';
-
-const reloadWindow = () => {
-  const mainWindow = getWindow();
-  if (mainWindow) {
-    mainWindow.reload();
-  }
-};
 
 export const electronUtilRouter = () =>
   trpcRouter({
@@ -33,7 +26,7 @@ export const electronUtilRouter = () =>
       }),
     reloadWindow: procedure.mutation(async () => {
       consola.log('reloadWindow');
-      await reloadWindow();
+      reloadMainWindow();
     }),
     getVRChatPhotoItemData: procedure.input(z.string()).query(async (ctx) => {
       const photoBuf = await sharp(ctx.input).resize(256).toBuffer();

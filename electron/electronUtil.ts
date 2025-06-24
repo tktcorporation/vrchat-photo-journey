@@ -201,12 +201,11 @@ function createWindow(): BrowserWindow {
 }
 
 let mainWindow: BrowserWindow | null = null;
-// FIXME: このexport はやめたい
 /**
  * 既存の BrowserWindow を取得する。
  * 存在しない場合は null を返す。
  */
-export const getWindow = (): BrowserWindow | null => {
+const getWindow = (): BrowserWindow | null => {
   if (mainWindow && !mainWindow.isDestroyed()) {
     return mainWindow;
   }
@@ -391,6 +390,17 @@ const setTimeEventEmitter = (
       body: `${photoCount}枚の新しい写真を記録しました\n${worldJoinCount}件のワールド参加を記録しました\n${playerJoinCount}件のプレイヤー参加を記録しました`,
     }).show();
   });
+};
+
+/**
+ * メインウィンドウをリロードする。
+ * ウィンドウが存在しない場合は何もしない。
+ */
+export const reloadMainWindow = (): void => {
+  const window = getWindow();
+  if (window) {
+    window.reload();
+  }
 };
 
 export { setTray, createOrGetWindow, setTimeEventEmitter };
