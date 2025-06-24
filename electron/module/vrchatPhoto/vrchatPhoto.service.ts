@@ -102,7 +102,9 @@ async function* getPhotoPathBatches(
         } catch (error) {
           logger.error({
             message: `Failed to get stats for ${photoPath}`,
-            stack: error instanceof Error ? error : new Error(String(error)),
+            stack: match(error)
+              .with(P.instanceOf(Error), (e) => e)
+              .otherwise((e) => new Error(String(e))),
           });
           return null;
         }
@@ -183,7 +185,9 @@ async function processPhotoBatch(
       } catch (error) {
         logger.error({
           message: `Failed to process photo metadata for ${photoPath}`,
-          stack: error instanceof Error ? error : new Error(String(error)),
+          stack: match(error)
+            .with(P.instanceOf(Error), (e) => e)
+            .otherwise((e) => new Error(String(e))),
         });
         return null;
       }

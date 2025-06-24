@@ -1,3 +1,4 @@
+import { P, match } from 'ts-pattern';
 import z from 'zod';
 import {
   ERROR_CATEGORIES,
@@ -37,10 +38,9 @@ export const logSyncRouter = () => {
             category: ERROR_CATEGORIES.UNKNOWN_ERROR,
             message: 'Log sync failed',
             userMessage: `ログ同期に失敗しました: ${result.error.code}`,
-            cause:
-              result.error instanceof Error
-                ? result.error
-                : new Error(String(result.error)),
+            cause: match(result.error)
+              .with(P.instanceOf(Error), (e) => e)
+              .otherwise((e) => new Error(String(e))),
           });
         }
 

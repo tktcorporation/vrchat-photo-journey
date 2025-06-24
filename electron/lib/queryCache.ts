@@ -1,4 +1,5 @@
 import { type Result, err, ok } from 'neverthrow';
+import { P, match } from 'ts-pattern';
 import { logger } from './logger';
 
 export type CacheError = {
@@ -68,7 +69,9 @@ export class QueryCache {
     } catch (error) {
       logger.error({
         message: `Cache error for key "${key}": ${error}`,
-        stack: error instanceof Error ? error : new Error(String(error)),
+        stack: match(error)
+          .with(P.instanceOf(Error), (e) => e)
+          .otherwise((e) => new Error(String(e))),
       });
       return err({
         code: 'CACHE_ERROR',

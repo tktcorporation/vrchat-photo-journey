@@ -111,14 +111,18 @@ const findRecentMergedWorldJoinLog = async (datetime: Date) => {
   } catch (error) {
     logger.error({
       message: `Error in findRecentMergedWorldJoinLog for datetime ${datetime.toISOString()}: ${error}`,
-      stack: error instanceof Error ? error : new Error(String(error)),
+      stack: match(error)
+        .with(P.instanceOf(Error), (e) => e)
+        .otherwise((e) => new Error(String(e))),
     });
     throw UserFacingError.withStructuredInfo({
       code: ERROR_CODES.DATABASE_ERROR,
       category: ERROR_CATEGORIES.DATABASE_ERROR,
       message: `Failed to find recent world join log: ${error}`,
       userMessage: 'ワールド参加ログの取得中にエラーが発生しました。',
-      cause: error instanceof Error ? error : new Error(String(error)),
+      cause: match(error)
+        .with(P.instanceOf(Error), (e) => e)
+        .otherwise((e) => new Error(String(e))),
     });
   }
 };
@@ -147,14 +151,18 @@ const findNextMergedWorldJoinLog = async (datetime: Date) => {
   } catch (error) {
     logger.error({
       message: `Error in findNextMergedWorldJoinLog for datetime ${datetime.toISOString()}: ${error}`,
-      stack: error instanceof Error ? error : new Error(String(error)),
+      stack: match(error)
+        .with(P.instanceOf(Error), (e) => e)
+        .otherwise((e) => new Error(String(e))),
     });
     throw UserFacingError.withStructuredInfo({
       code: ERROR_CODES.DATABASE_ERROR,
       category: ERROR_CATEGORIES.DATABASE_ERROR,
       message: `Failed to find next world join log: ${error}`,
       userMessage: 'ワールド参加ログの取得中にエラーが発生しました。',
-      cause: error instanceof Error ? error : new Error(String(error)),
+      cause: match(error)
+        .with(P.instanceOf(Error), (e) => e)
+        .otherwise((e) => new Error(String(e))),
     });
   }
 };
@@ -410,7 +418,9 @@ const getPlayerJoinListInSameWorldCore = async (
   } catch (error) {
     logger.error({
       message: `Unexpected error in getPlayerJoinListInSameWorldCore for datetime ${datetime.toISOString()}: ${error}`,
-      stack: error instanceof Error ? error : new Error(String(error)),
+      stack: match(error)
+        .with(P.instanceOf(Error), (e) => e)
+        .otherwise((e) => new Error(String(e))),
     });
 
     // Re-throw the error to be caught by the cache layer
@@ -419,7 +429,9 @@ const getPlayerJoinListInSameWorldCore = async (
       category: ERROR_CATEGORIES.DATABASE_ERROR,
       message: `Failed to get player join list: ${error}`,
       userMessage: 'プレイヤー情報の取得中にエラーが発生しました。',
-      cause: error instanceof Error ? error : new Error(String(error)),
+      cause: match(error)
+        .with(P.instanceOf(Error), (e) => e)
+        .otherwise((e) => new Error(String(e))),
     });
   }
 };
@@ -563,14 +575,18 @@ export const logInfoRouter = () =>
         } catch (error) {
           logger.error({
             message: `Failed to search sessions by player name: ${error}`,
-            stack: error instanceof Error ? error : new Error(String(error)),
+            stack: match(error)
+              .with(P.instanceOf(Error), (e) => e)
+              .otherwise((e) => new Error(String(e))),
           });
           throw UserFacingError.withStructuredInfo({
             code: ERROR_CODES.DATABASE_ERROR,
             category: ERROR_CATEGORIES.DATABASE_ERROR,
             message: `Failed to search sessions by player name: ${error}`,
             userMessage: 'プレイヤー検索中にエラーが発生しました。',
-            cause: error instanceof Error ? error : new Error(String(error)),
+            cause: match(error)
+              .with(P.instanceOf(Error), (e) => e)
+              .otherwise((e) => new Error(String(e))),
           });
         }
       }),
