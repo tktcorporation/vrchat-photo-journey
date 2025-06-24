@@ -134,6 +134,8 @@ const ja: Translations = {
       noResult: '結果がここに表示されます...',
       enableDebugLog: 'デバッグログを有効にする',
       throwErrorButton: 'テストエラーを発生させる',
+      errorThrownSuccess:
+        'エラーが正常に発生しました。Sentryを確認してください。',
     },
   },
 };

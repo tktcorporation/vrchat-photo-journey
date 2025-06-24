@@ -28,19 +28,6 @@ const en: Translations = {
     copy: 'Copy',
     delete: 'Delete',
   },
-  debug: {
-    sqliteConsole: {
-      title: 'SQLite Console',
-      queryLabel: 'SQL Query',
-      shortcut: 'Press Cmd/Ctrl + Enter to execute',
-      placeholder: 'Enter SQL query...',
-      execute: 'Execute',
-      resultLabel: 'Result',
-      noResult: 'Results will appear here...',
-      enableDebugLog: 'Enable Debug Log',
-      throwErrorButton: 'Throw Test Error',
-    },
-  },
   locationHeader: {
     ungrouped: 'Ungrouped Photos',
     photoCount: '{count} photos',
@@ -135,6 +122,20 @@ const en: Translations = {
     title: 'Terms of Service and Privacy Policy',
     updateTitle: 'Terms of Service and Privacy Policy Update',
     accept: 'Accept',
+  },
+  debug: {
+    sqliteConsole: {
+      title: 'SQLite Console',
+      queryLabel: 'SQL Query',
+      shortcut: 'Press Cmd/Ctrl + Enter to execute',
+      placeholder: 'Enter SQL query...',
+      execute: 'Execute',
+      resultLabel: 'Result',
+      noResult: 'Results will appear here...',
+      enableDebugLog: 'Enable Debug Log',
+      throwErrorButton: 'Throw Test Error',
+      errorThrownSuccess: 'Error thrown successfully. Check Sentry.',
+    },
   },
 };
 
