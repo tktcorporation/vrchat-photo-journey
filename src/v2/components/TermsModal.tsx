@@ -84,7 +84,7 @@ export const TermsModal = ({
   return (
     <Dialog open={open} onOpenChange={canClose ? () => {} : undefined}>
       <DialogContent
-        className="max-w-[800px] h-[80vh] bg-white dark:bg-gray-900"
+        className="max-w-[800px] h-[80vh] bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border border-gray-200/50 dark:border-gray-700/50 shadow-2xl"
         showCloseButton={canClose}
       >
         <DialogHeader>
@@ -96,19 +96,19 @@ export const TermsModal = ({
         <ScrollArea className="h-full pr-4">
           <div className="space-y-8">
             <section>
-              <h3 className="text-lg font-semibold text-foreground mb-4">
-                {terms.sections.termsOfService.title}
+              <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                📋 {terms.sections.termsOfService.title}
               </h3>
-              <div className="whitespace-pre-wrap text-sm leading-relaxed text-gray-700 dark:text-gray-300">
+              <div className="terms-content whitespace-pre-wrap text-sm leading-relaxed text-gray-700 dark:text-gray-300 bg-gray-50/80 dark:bg-gray-800/80 rounded-lg p-6 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50">
                 {terms.sections.termsOfService.content}
               </div>
             </section>
 
             <section>
-              <h3 className="text-lg font-semibold text-foreground mb-4">
-                {terms.sections.privacyPolicy.title}
+              <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                🔒 {terms.sections.privacyPolicy.title}
               </h3>
-              <div className="whitespace-pre-wrap text-sm leading-relaxed text-gray-700 dark:text-gray-300">
+              <div className="terms-content whitespace-pre-wrap text-sm leading-relaxed text-gray-700 dark:text-gray-300 bg-gray-50/80 dark:bg-gray-800/80 rounded-lg p-6 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50">
                 {terms.sections.privacyPolicy.content}
               </div>
             </section>
