@@ -276,13 +276,6 @@ const setTray = () => {
       },
       { type: 'separator' },
       {
-        label: '設定',
-        click: () => {
-          /* 設定画面を開く */
-        },
-      },
-      { type: 'separator' },
-      {
         label: 'エラーログを開く',
         click: () => {
           const logPath = app.getPath('logs');
@@ -301,6 +294,14 @@ const setTray = () => {
     if (tray) {
       tray.setToolTip(app.name);
       tray.setContextMenu(contextMenu);
+
+      // トレイアイコンクリック時にウィンドウを表示
+      tray.on('click', () => {
+        const window = createOrGetWindow();
+        if (window.isMinimized()) window.restore();
+        window.show();
+        window.focus();
+      });
     }
   };
 

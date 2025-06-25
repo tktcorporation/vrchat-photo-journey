@@ -29,7 +29,7 @@ interface GalleryContentProps
   galleryData?: PhotoGalleryData;
 }
 
-const GROUP_SPACING = 52;
+const GROUP_SPACING = 32;
 
 const SkeletonGroup = () => (
   <div className="space-y-2 animate-pulse">

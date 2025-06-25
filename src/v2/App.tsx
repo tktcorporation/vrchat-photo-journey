@@ -126,18 +126,27 @@ function AppContent() {
       const currentVersion = terms.version;
       console.log('termsStatus', termsStatus);
 
-      if (!accepted) {
-        setShowTerms(true);
-        setIsUpdate(false);
-        setHasAcceptedTerms(false);
-      } else if (version !== currentVersion) {
-        setShowTerms(true);
-        setIsUpdate(true);
-        setHasAcceptedTerms(false);
-      } else {
-        setHasAcceptedTerms(true);
-        // setShowTerms(false); // 既に同意済みなのでモーダルは表示しない (この行はあってもなくても良い)
-      }
+      match({ accepted, version, currentVersion })
+        .when(
+          ({ accepted }) => !accepted,
+          () => {
+            setShowTerms(true);
+            setIsUpdate(false);
+            setHasAcceptedTerms(false);
+          },
+        )
+        .when(
+          ({ version, currentVersion }) => version !== currentVersion,
+          () => {
+            setShowTerms(true);
+            setIsUpdate(true);
+            setHasAcceptedTerms(false);
+          },
+        )
+        .otherwise(() => {
+          setHasAcceptedTerms(true);
+          // setShowTerms(false); // 既に同意済みなのでモーダルは表示しない (この行はあってもなくても良い)
+        });
     };
 
     checkTermsAndInitializeSentry();
@@ -236,53 +245,56 @@ const ToasterWrapper = () => {
   const { toast } = useToast();
   trpcReact.subscribeToast.useSubscription(undefined, {
     onData: (content: unknown) => {
-      // 構造化トーストメッセージの処理
-      if (
-        typeof content === 'object' &&
-        content !== null &&
-        'message' in content
-      ) {
-        const structuredMessage = content as StructuredToastMessage;
-        const variant = getToastVariant(structuredMessage.errorInfo?.category);
+      match(content)
+        // 構造化トーストメッセージの処理
+        .when(
+          (c): c is StructuredToastMessage =>
+            typeof c === 'object' && c !== null && 'message' in c,
+          (structuredMessage) => {
+            const variant = getToastVariant(
+              structuredMessage.errorInfo?.category,
+            );
 
-        console.log('structured toast', structuredMessage);
-        toast({
-          variant,
-          description:
-            structuredMessage.errorInfo?.userMessage ||
-            structuredMessage.message,
-          title:
-            variant === 'destructive'
-              ? 'エラー'
-              : variant === 'warning'
-                ? '警告'
-                : undefined,
+            console.log('structured toast', structuredMessage);
+            toast({
+              variant,
+              description:
+                structuredMessage.errorInfo?.userMessage ||
+                structuredMessage.message,
+              title:
+                variant === 'destructive'
+                  ? 'エラー'
+                  : variant === 'warning'
+                    ? '警告'
+                    : undefined,
+            });
+          },
+        )
+        // 従来の文字列メッセージの処理
+        .when(
+          (c): c is string => typeof c === 'string',
+          (message) => {
+            console.log('toast', message);
+
+            // 「予期しないエラー」以外は通常のトーストとして表示
+            const isUnexpectedError = message.includes(
+              '予期しないエラーが発生しました',
+            );
+
+            toast({
+              variant: isUnexpectedError ? 'destructive' : 'default',
+              description: message,
+              title: isUnexpectedError ? 'エラー' : undefined,
+            });
+          },
+        )
+        // その他の場合
+        .otherwise((c) => {
+          console.log('toast', JSON.stringify(c));
+          toast({
+            description: JSON.stringify(c),
+          });
         });
-        return;
-      }
-
-      // 従来の文字列メッセージの処理
-      if (typeof content === 'string') {
-        console.log('toast', content);
-
-        // 「予期しないエラー」以外は通常のトーストとして表示
-        const isUnexpectedError = content.includes(
-          '予期しないエラーが発生しました',
-        );
-
-        toast({
-          variant: isUnexpectedError ? 'destructive' : 'default',
-          description: content,
-          title: isUnexpectedError ? 'エラー' : undefined,
-        });
-        return;
-      }
-
-      // その他の場合
-      console.log('toast', JSON.stringify(content));
-      toast({
-        description: JSON.stringify(content),
-      });
     },
   });
   return (
