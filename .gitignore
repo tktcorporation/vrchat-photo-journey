@@ -4,6 +4,7 @@ dist
 dist-ssr
 *.local
 !.claude/settings.local.json
+*.log
 
 # production
 /main

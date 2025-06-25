@@ -95,13 +95,38 @@ interface ColorBucket {
 
 /**
  * 与えられた画像から主要な色を抽出する関数。
- * `BoldPreview` や `previewGenerator` で背景色を決定するために使われる。
+ *
+ * @param img - 色を抽出する画像要素
+ * @returns primary, secondary, accent の色を含むオブジェクト
+ *
+ * @description
+ * VRChatワールド参加イベントのプレビュー画像生成で使用される。
+ * 画像から支配的な色を抽出し、プレビューの装飾に利用する。
+ *
+ * 使用箇所:
+ * - BoldPreview.tsx (src/v2/components/BoldPreview.tsx) - 共有用SVGプレビュー
+ * - previewGenerator.ts (src/v2/utils/previewGenerator.ts) - PNG画像生成
+ *
+ * 色の用途:
+ * - primary/secondary: 背景のグラデーションオーバーレイ
+ * - accent: ワールド名の下のアンダーライン
+ *
+ * 色が抽出できない場合は、index.cssで定義されたテーマカラーと一致する
+ * デフォルト値を返す。
  */
 export function extractDominantColors(img: HTMLImageElement) {
   const imageData = getPixelData(img);
   return calcColors(imageData.data, 4);
 }
 
+/**
+ * Base64エンコードされた画像から主要な色を抽出する関数。
+ *
+ * @param imageBase64 - Base64エンコードされた画像データ
+ * @returns primary, secondary, accent の色を含むオブジェクト
+ *
+ * @see extractDominantColors - 通常の画像要素から色を抽出する関数
+ */
 export async function extractDominantColorsFromBase64(imageBase64: string) {
   const img = new Image();
   img.src = `data:image/png;base64,${imageBase64}`;
