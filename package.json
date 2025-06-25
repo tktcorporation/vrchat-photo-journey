@@ -17,6 +17,9 @@
   },
   "productName": "VRChatAlbums",
   "type": "module",
+  "workspaces": [
+    "pages"
+  ],
   "scripts": {
     "preinstall": "nlx only-allow yarn",
     "postinstall": "simple-git-hooks && nr license-check:generate && nr rebuild-native",
@@ -26,6 +29,8 @@
     "dev": "SENTRY_DSN='' ./scripts/dev.sh",
     "dev:vite": "vite",
     "dev:electron": "vite build -c electron/vite.config.ts && electron . --disable-gpu",
+    "dev:landing": "yarn workspace @vrchat-albums/landing-page dev",
+    "build:landing": "yarn workspace @vrchat-albums/landing-page build",
     "build": "nr lint:type-check && nr build:vite && nr build:electron",
     "build:vite": "vite build",
     "build:electron": "vite build -c electron/vite.config.ts",
