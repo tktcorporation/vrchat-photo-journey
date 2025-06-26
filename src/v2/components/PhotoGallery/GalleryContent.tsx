@@ -206,7 +206,7 @@ const GalleryContent = memo(
           | React.KeyboardEvent<HTMLDivElement>,
       ) => {
         if (event.target === containerRef.current && isMultiSelectMode) {
-          setSelectedPhotos(new Set());
+          setSelectedPhotos(new Map());
           setIsMultiSelectMode(false);
         }
       },
