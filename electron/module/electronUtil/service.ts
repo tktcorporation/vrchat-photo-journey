@@ -215,17 +215,16 @@ const downloadImageAsPng = async (options: {
     return neverthrow.ok(undefined);
   } catch (error) {
     console.error('Error in downloadImageAsPng:', error);
-    if (error instanceof Error && error.message === 'canceled') {
-      return neverthrow.err('canceled');
-    }
-    return neverthrow.err(
-      match(error)
-        .with(
-          P.instanceOf(Error),
-          (err) => new Error('Failed to handle png file', { cause: err }),
-        )
-        .otherwise(() => new Error('Failed to handle png file')),
-    );
+    return match(error)
+      .with(P.instanceOf(Error), (err) => {
+        if (err.message === 'canceled') {
+          return neverthrow.err('canceled' as const);
+        }
+        return neverthrow.err(
+          new Error('Failed to handle png file', { cause: err }),
+        );
+      })
+      .otherwise(() => neverthrow.err(new Error('Failed to handle png file')));
   } finally {
     if (tempDir) {
       await fs
