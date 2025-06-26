@@ -1,6 +1,8 @@
 {
   "image": "mcr.microsoft.com/devcontainers/base:bookworm",
-  "mounts": ["source=${env:SSH_AUTH_SOCK},target=/ssh-agent,type=bind"],
+  "mounts": [
+    "source=${env:SSH_AUTH_SOCK},target=/ssh-agent,type=bind,readOnly=true"
+  ],
   "remoteEnv": {
     "SSH_AUTH_SOCK": "/ssh-agent"
   },
