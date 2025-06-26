@@ -92,6 +92,99 @@ describe('VRChatログ関連のvalueObjects', () => {
       expect(isValidVRChatWorldInstanceId('abc123')).toBe(true);
       expect(isValidVRChatWorldInstanceId('invalid-id')).toBe(false);
     });
+
+    describe('getInstanceType', () => {
+      it('通常のインスタンスIDはpublicを返す', () => {
+        const instanceId = VRChatWorldInstanceIdSchema.parse('12345');
+        expect(instanceId.getInstanceType()).toBe('public');
+      });
+
+      it('リージョン情報のみの場合はpublicを返す', () => {
+        const instanceId1 = VRChatWorldInstanceIdSchema.parse('12345~jp');
+        expect(instanceId1.getInstanceType()).toBe('public');
+
+        const instanceId2 = VRChatWorldInstanceIdSchema.parse('12345~us(e)');
+        expect(instanceId2.getInstanceType()).toBe('public');
+      });
+
+      it('friendsインスタンスを正しく判定する', () => {
+        const instanceId = VRChatWorldInstanceIdSchema.parse(
+          '12345~friends(usr_12345678-1234-1234-1234-123456789abc)',
+        );
+        expect(instanceId.getInstanceType()).toBe('friends');
+      });
+
+      it('friends+インスタンスを正しく判定する', () => {
+        const instanceId = VRChatWorldInstanceIdSchema.parse(
+          '12345~hidden(usr_12345678-1234-1234-1234-123456789abc)',
+        );
+        expect(instanceId.getInstanceType()).toBe('friends+');
+      });
+
+      it('inviteインスタンスを正しく判定する', () => {
+        const instanceId = VRChatWorldInstanceIdSchema.parse(
+          '12345~private(usr_12345678-1234-1234-1234-123456789abc)',
+        );
+        expect(instanceId.getInstanceType()).toBe('invite');
+      });
+
+      it('groupインスタンスを正しく判定する', () => {
+        const instanceId = VRChatWorldInstanceIdSchema.parse(
+          '12345~group(grp_12345678-1234-1234-1234-123456789abc)',
+        );
+        expect(instanceId.getInstanceType()).toBe('group');
+      });
+
+      it('group-publicインスタンスを正しく判定する', () => {
+        const instanceId = VRChatWorldInstanceIdSchema.parse(
+          '12345~groupPublic(grp_12345678-1234-1234-1234-123456789abc)',
+        );
+        expect(instanceId.getInstanceType()).toBe('group-public');
+      });
+
+      it('不明なタイプの場合はunknownを返す', () => {
+        const instanceId = VRChatWorldInstanceIdSchema.parse('12345~something');
+        expect(instanceId.getInstanceType()).toBe('unknown');
+      });
+    });
+
+    describe('getInstanceTypeLabel', () => {
+      it('インスタンスタイプの適切なラベルを返す', () => {
+        expect(
+          VRChatWorldInstanceIdSchema.parse('12345').getInstanceTypeLabel(),
+        ).toBe('Public');
+        expect(
+          VRChatWorldInstanceIdSchema.parse(
+            '12345~friends(usr_123)',
+          ).getInstanceTypeLabel(),
+        ).toBe('Friends');
+        expect(
+          VRChatWorldInstanceIdSchema.parse(
+            '12345~hidden(usr_123)',
+          ).getInstanceTypeLabel(),
+        ).toBe('Friends+');
+        expect(
+          VRChatWorldInstanceIdSchema.parse(
+            '12345~private(usr_123)',
+          ).getInstanceTypeLabel(),
+        ).toBe('Invite');
+        expect(
+          VRChatWorldInstanceIdSchema.parse(
+            '12345~group(grp_123)',
+          ).getInstanceTypeLabel(),
+        ).toBe('Group');
+        expect(
+          VRChatWorldInstanceIdSchema.parse(
+            '12345~groupPublic(grp_123)',
+          ).getInstanceTypeLabel(),
+        ).toBe('Group Public');
+        expect(
+          VRChatWorldInstanceIdSchema.parse(
+            '12345~unknown',
+          ).getInstanceTypeLabel(),
+        ).toBe('Unknown');
+      });
+    });
   });
 
   describe('VRChatPlayerName', () => {
