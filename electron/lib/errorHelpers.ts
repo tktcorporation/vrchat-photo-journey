@@ -64,6 +64,8 @@ function throwOriginalError<E>(error: E): never {
  * Resultがerrの場合に、適切なUserFacingErrorを投げる
  * @param result neverthrowのResult
  * @param errorMappings エラー値をUserFacingErrorにマッピングする関数群
+ * @param options オプション設定
+ * @param options.silentErrors サイレントに処理するエラーのリスト（指定時はT | nullを返す）
  */
 export function handleResultError<T, E>(
   result: Result<T, E>,
@@ -72,13 +74,22 @@ export function handleResultError<T, E>(
   } & {
     default?: (error: E) => UserFacingError;
   },
-): T {
+  options?: {
+    silentErrors?: string[];
+  },
+): T | null {
   if (result.isOk()) {
     return result.value;
   }
 
   const error = result.error;
   const errorKey = getErrorKey(error);
+
+  // サイレントエラーの場合はnullを返す
+  if (options?.silentErrors?.includes(errorKey)) {
+    return null;
+  }
+
   const userFacingError = applyErrorMapping(error, errorKey, errorMappings);
 
   if (userFacingError) {
@@ -94,6 +105,7 @@ export function handleResultError<T, E>(
  * @param result neverthrowのResult
  * @param silentErrors サイレントに処理するエラーのリスト
  * @param errorMappings その他のエラーのマッピング
+ * @deprecated Use handleResultError with options.silentErrors instead
  */
 export function handleResultErrorWithSilent<T, E>(
   result: Result<T, E>,
@@ -104,28 +116,20 @@ export function handleResultErrorWithSilent<T, E>(
     default?: (error: E) => UserFacingError;
   },
 ): T | null {
-  if (result.isOk()) {
-    return result.value;
-  }
-
-  const error = result.error;
-  const errorKey = getErrorKey(error);
-
-  // サイレントエラーの場合はnullを返す
-  if (silentErrors.includes(errorKey)) {
-    return null;
-  }
-
-  // エラーマッピングがある場合は適用
-  if (errorMappings) {
-    const userFacingError = applyErrorMapping(error, errorKey, errorMappings);
-    if (userFacingError) {
-      throw userFacingError;
-    }
-  }
-
-  // マッピングがない場合は元のエラーをthrow（予期しないエラーとして扱われる）
-  throwOriginalError(error);
+  return handleResultError(
+    result,
+    errorMappings || {
+      default: (error) =>
+        UserFacingError.withStructuredInfo({
+          code: ERROR_CODES.UNKNOWN,
+          category: ERROR_CATEGORIES.UNKNOWN_ERROR,
+          message: 'Operation error',
+          userMessage: '操作中にエラーが発生しました。',
+          cause: error instanceof Error ? error : new Error(String(error)),
+        }),
+    },
+    { silentErrors },
+  );
 }
 
 /**

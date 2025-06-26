@@ -44,26 +44,10 @@ const getDownloadsPath = (): string => {
 };
 
 /**
- * ディレクトリ選択ダイアログを表示し、選択されたパスを返す。
- * 設定画面からフォルダ指定する際に使用される。
- */
-const openGetDirDialog = async (): Promise<
-  neverthrow.Result<string, 'canceled'>
-> => {
-  const result = await dialog.showOpenDialog({
-    properties: ['openDirectory'],
-  });
-  if (result.canceled) {
-    return neverthrow.err('canceled');
-  }
-  return neverthrow.ok(result.filePaths[0]);
-};
-
-/**
  * ファイル/ディレクトリ選択ダイアログを表示する汎用関数。
  * VRChat ログフォルダなどの設定入力で利用される。
  */
-const openGetFileDialog = async (
+const openElectronDialog = async (
   properties: Array<'openDirectory' | 'openFile' | 'multiSelections'>,
 ): Promise<neverthrow.Result<string[], 'canceled'>> => {
   const result = await dialog.showOpenDialog({
@@ -73,6 +57,29 @@ const openGetFileDialog = async (
     return neverthrow.err('canceled');
   }
   return neverthrow.ok(result.filePaths);
+};
+
+/**
+ * ディレクトリ選択ダイアログを表示し、選択されたパスを返す。
+ * 設定画面からフォルダ指定する際に使用される。
+ * @deprecated Use openElectronDialog with ['openDirectory'] instead
+ */
+const openGetDirDialog = async (): Promise<
+  neverthrow.Result<string, 'canceled'>
+> => {
+  const result = await openElectronDialog(['openDirectory']);
+  return result.map((paths) => paths[0]);
+};
+
+/**
+ * ファイル/ディレクトリ選択ダイアログを表示する汎用関数。
+ * VRChat ログフォルダなどの設定入力で利用される。
+ * @deprecated Use openElectronDialog instead
+ */
+const openGetFileDialog = async (
+  properties: Array<'openDirectory' | 'openFile' | 'multiSelections'>,
+): Promise<neverthrow.Result<string[], 'canceled'>> => {
+  return openElectronDialog(properties);
 };
 
 /**
@@ -323,6 +330,7 @@ const copyMultipleFilesToClipboard = async (
 
 export {
   openPathInExplorer,
+  openElectronDialog,
   openGetDirDialog,
   openGetFileDialog,
   openUrlInDefaultBrowser,
