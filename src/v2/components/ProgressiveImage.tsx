@@ -25,32 +25,22 @@ const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
   loading = 'lazy',
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [currentSrc, setCurrentSrc] = useState(placeholderSrc);
-
-  useEffect(() => {
-    const img = new Image();
-    img.src = src;
-    img.onload = () => {
-      setIsLoaded(true);
-      setCurrentSrc(src);
-    };
-  }, [src]);
 
   return (
     <div className="relative w-full h-full overflow-hidden">
       {/* Placeholder/blur image */}
-      <img
-        src={placeholderSrc}
-        alt=""
-        aria-hidden="true"
-        className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${
-          isLoaded ? 'opacity-0' : 'opacity-100'
-        } blur-xl scale-110`}
-      />
+      {!isLoaded && (
+        <img
+          src={placeholderSrc}
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover blur-xl scale-110"
+        />
+      )}
 
       {/* Main image */}
       <img
-        src={currentSrc}
+        src={src}
         alt={alt}
         sizes={sizes}
         srcSet={srcSet}
