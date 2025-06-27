@@ -10,18 +10,40 @@ interface Release {
 
 function Download() {
   const [release, setRelease] = useState<Release | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(
-      'https://api.github.com/repos/tktcorporation/vrchat-albums/releases/latest',
-    )
-      .then((res) => res.json())
-      .then((data) => {
+    const fetchRelease = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const res = await fetch(
+          'https://api.github.com/repos/tktcorporation/vrchat-albums/releases/latest',
+        );
+
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+
+        const data = await res.json();
+
+        if (!data.assets || !Array.isArray(data.assets)) {
+          throw new Error('Invalid release data format');
+        }
+
         setRelease(data);
-      })
-      .catch(() => {
-        // エラー時は何もしない
-      });
+      } catch (err) {
+        console.error('Failed to fetch release:', err);
+        setError(
+          'リリース情報の取得に失敗しました。しばらくしてから再度お試しください。',
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRelease();
   }, []);
 
   const getDownloadLink = (platform: string) => {
@@ -48,7 +70,17 @@ function Download() {
           <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
             完全無料・オープンソースのアプリケーションです
           </p>
-          {release && (
+          {loading && (
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+              バージョン情報を取得中...
+            </p>
+          )}
+          {error && (
+            <p className="text-sm text-red-600 dark:text-red-400 mt-2">
+              {error}
+            </p>
+          )}
+          {!loading && !error && release && (
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 font-mono bg-gray-100 dark:bg-gray-900 px-4 py-1 rounded-full inline-block">
               最新バージョン: {release.tag_name}
             </p>
