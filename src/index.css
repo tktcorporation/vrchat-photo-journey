@@ -28,7 +28,7 @@
     --popover-foreground: 220 9% 15%;
  
     --border: 220 10% 90% / 0.3;
-    --input: 220 10% 95% / 0.4;
+    --input: 220 10% 85% / 0.5;
  
     --card: 0 0% 100% / 0.7;
     --card-foreground: 220 9% 15%;
@@ -76,7 +76,7 @@
     --popover-foreground: 220 15% 85%;
  
     --border: 220 27% 20% / 0.3;
-    --input: 220 27% 16% / 0.4;
+    --input: 220 27% 25% / 0.5;
  
     --card: 220 27% 12% / 0.7;
     --card-foreground: 220 15% 85%;
