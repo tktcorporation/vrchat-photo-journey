@@ -1,6 +1,7 @@
 import { EventEmitter } from 'node:events';
 import { TRPCError, initTRPC } from '@trpc/server';
 import superjson from 'superjson';
+import { P, match } from 'ts-pattern';
 import type { ZodError } from 'zod';
 import { UserFacingError } from './lib/errors';
 import { logger } from './lib/logger';
@@ -17,44 +18,65 @@ const t = initTRPC.context<{ eventEmitter: EventEmitter }>().create({
     let structuredErrorInfo = null;
     const cause = error.cause;
 
-    if (cause instanceof UserFacingError) {
-      userMessage = cause.message;
-      // 構造化エラー情報をフロントエンドに渡す
-      if (cause.code && cause.category) {
-        structuredErrorInfo = {
-          code: cause.code,
-          category: cause.category,
-          userMessage: cause.userMessage || cause.message,
-        };
-      }
-    } else if (
-      cause instanceof Error &&
-      cause.name === 'ZodError' &&
-      Array.isArray((cause as ZodError).issues) &&
-      (cause as ZodError).issues.length > 0
-    ) {
-      userMessage = (cause as ZodError).issues[0].message;
-      structuredErrorInfo = {
-        code: 'VALIDATION_ERROR',
-        category: 'VALIDATION_ERROR',
-        userMessage: (cause as ZodError).issues[0].message,
-      };
-    } else if (
-      cause instanceof Error &&
-      cause.message.includes('test error for Sentry')
-    ) {
-      userMessage = 'Sentryテスト用のエラーが発生しました。';
-    }
+    match(cause)
+      .when(
+        (c): c is UserFacingError =>
+          c instanceof UserFacingError && !!c.code && !!c.category,
+        (err) => {
+          userMessage = err.message;
+          structuredErrorInfo = {
+            code: err.code,
+            category: err.category,
+            userMessage: err.userMessage || err.message,
+          };
+        },
+      )
+      .when(
+        (c): c is UserFacingError => c instanceof UserFacingError,
+        (err) => {
+          userMessage = err.message;
+        },
+      )
+      .when(
+        (c): c is ZodError =>
+          c instanceof Error &&
+          c.name === 'ZodError' &&
+          'issues' in c &&
+          Array.isArray((c as ZodError).issues) &&
+          (c as ZodError).issues.length > 0,
+        (err) => {
+          userMessage = err.issues[0].message;
+          structuredErrorInfo = {
+            code: 'VALIDATION_ERROR',
+            category: 'VALIDATION_ERROR',
+            userMessage: err.issues[0].message,
+          };
+        },
+      )
+      .when(
+        (c): c is Error =>
+          c instanceof Error && c.message.includes('test error for Sentry'),
+        () => {
+          userMessage = 'Sentryテスト用のエラーが発生しました。';
+        },
+      )
+      .otherwise(() => {});
 
     // UserFacingErrorの場合は詳細情報を表示しない（構造化エラー情報で十分）
-    let debugInfo = '';
-    if (cause instanceof Error && !(cause instanceof UserFacingError)) {
-      debugInfo = ` [詳細: ${cause.message}${
-        cause.stack
-          ? `\nStack: ${cause.stack.split('\n').slice(0, 3).join('\n')}`
-          : ''
-      }]`;
-    }
+    const debugInfo = match(cause)
+      .with(
+        P.intersection(
+          P.instanceOf(Error),
+          P.not(P.instanceOf(UserFacingError)),
+        ),
+        (err) =>
+          ` [詳細: ${err.message}${
+            err.stack
+              ? `\nStack: ${err.stack.split('\n').slice(0, 3).join('\n')}`
+              : ''
+          }]`,
+      )
+      .otherwise(() => '');
 
     return {
       ...shape,
@@ -62,15 +84,19 @@ const t = initTRPC.context<{ eventEmitter: EventEmitter }>().create({
       data: {
         ...shape.data,
         // 構造化エラー情報を含める（フロントエンドでの解析用）
-        ...(structuredErrorInfo && { structuredError: structuredErrorInfo }),
+        ...(structuredErrorInfo
+          ? { structuredError: structuredErrorInfo }
+          : {}),
         // 原因エラーの詳細も含める
-        ...(cause instanceof Error && {
-          originalError: {
-            name: cause.name,
-            message: cause.message,
-            stack: cause.stack,
-          },
-        }),
+        ...match(cause)
+          .with(P.instanceOf(Error), (err) => ({
+            originalError: {
+              name: err.name,
+              message: err.message,
+              stack: err.stack,
+            },
+          }))
+          .otherwise(() => ({})),
       },
     };
   },
@@ -87,7 +113,10 @@ const logError = (
   originalError?: Error,
 ) => {
   const errorToLog =
-    originalError || (err instanceof Error ? err : new Error(String(err)));
+    originalError ||
+    match(err)
+      .with(P.instanceOf(Error), (e) => e)
+      .otherwise(() => new Error(String(err)));
   const appVersion = settingService.getAppVersion();
 
   logger.error({
@@ -96,55 +125,64 @@ const logError = (
   });
 
   // 構造化エラー情報を含むトーストメッセージを生成
-  if (err instanceof UserFacingError && err.code && err.category) {
-    // 構造化エラー情報がある場合
-    const structuredToastMessage = {
-      message: err.message,
-      errorInfo: {
-        code: err.code,
-        category: err.category,
-        userMessage: err.userMessage || err.message,
-      },
-    };
-    eventEmitter.emit('toast', structuredToastMessage);
-  } else if (
-    err instanceof Error &&
-    err.name === 'ZodError' &&
-    Array.isArray((err as ZodError).issues) &&
-    (err as ZodError).issues.length > 0
-  ) {
-    // Zodバリデーションエラーの場合
-    const validationMessage = (err as ZodError).issues[0].message;
-    const structuredToastMessage = {
-      message: validationMessage,
-      errorInfo: {
-        code: 'VALIDATION_ERROR',
-        category: 'VALIDATION_ERROR',
-        userMessage: validationMessage,
-      },
-    };
-    eventEmitter.emit('toast', structuredToastMessage);
-  } else if (
-    err instanceof Error &&
-    err.message.includes('test error for Sentry')
-  ) {
-    // Sentryテスト用エラーの場合
-    eventEmitter.emit('toast', 'Sentryテスト用のエラーが発生しました。');
-  } else if (err instanceof UserFacingError) {
-    // UserFacingErrorだが構造化情報がない場合
-    eventEmitter.emit('toast', err.message);
-  } else {
-    // その他のエラー（予期しないエラー）
-    eventEmitter.emit('toast', '予期しないエラーが発生しました。');
-  }
+  match(err)
+    .with(P.instanceOf(UserFacingError), (userErr) => {
+      // 構造化エラー情報がある場合
+      if (userErr.code && userErr.category) {
+        const structuredToastMessage = {
+          message: userErr.message,
+          errorInfo: {
+            code: userErr.code,
+            category: userErr.category,
+            userMessage: userErr.userMessage || userErr.message,
+          },
+        };
+        eventEmitter.emit('toast', structuredToastMessage);
+      } else {
+        // UserFacingErrorだが構造化情報がない場合
+        eventEmitter.emit('toast', userErr.message);
+      }
+    })
+    .with(P.instanceOf(Error), (error) => {
+      // Zodバリデーションエラーの場合
+      if (
+        error.name === 'ZodError' &&
+        'issues' in error &&
+        Array.isArray((error as ZodError).issues) &&
+        (error as ZodError).issues.length > 0
+      ) {
+        const validationMessage = (error as ZodError).issues[0].message;
+        const structuredToastMessage = {
+          message: validationMessage,
+          errorInfo: {
+            code: 'VALIDATION_ERROR',
+            category: 'VALIDATION_ERROR',
+            userMessage: validationMessage,
+          },
+        };
+        eventEmitter.emit('toast', structuredToastMessage);
+      } else if (error.message.includes('test error for Sentry')) {
+        // Sentryテスト用エラーの場合
+        eventEmitter.emit('toast', 'Sentryテスト用のエラーが発生しました。');
+      } else {
+        // その他のエラー
+        eventEmitter.emit('toast', '予期しないエラーが発生しました。');
+      }
+    })
+    .with(P.string, () => {
+      // 文字列エラーの場合
+      eventEmitter.emit('toast', '予期しないエラーが発生しました。');
+    })
+    .exhaustive();
 };
 
 const errorHandler = t.middleware(async (opts) => {
   try {
     const result = await opts.next(opts);
     if (!result.ok) {
-      const originalError =
-        result.error.cause instanceof Error ? result.error.cause : result.error;
+      const originalError = match(result.error.cause)
+        .with(P.instanceOf(Error), (err) => err)
+        .otherwise(() => result.error);
       const requestInfo = `${opts.type} ${opts.path} ${JSON.stringify(
         opts.input,
       )}`;
@@ -152,7 +190,9 @@ const errorHandler = t.middleware(async (opts) => {
     }
     return result;
   } catch (cause) {
-    const error = cause instanceof Error ? cause : new Error(String(cause));
+    const error = match(cause)
+      .with(P.instanceOf(Error), (err) => err)
+      .otherwise(() => new Error(String(cause)));
     const requestInfo = `${opts.type} ${opts.path} ${JSON.stringify(
       opts.input,
     )}`;
