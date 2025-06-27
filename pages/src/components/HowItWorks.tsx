@@ -33,7 +33,7 @@ function HowItWorks() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative mt-12">
           {steps.map((step, index) => (
-            <div key={index} className="text-center relative">
+            <div key={step.number} className="text-center relative">
               <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-[#5865F2] to-[#7950F2] text-white text-2xl font-bold rounded-full mb-6">
                 {step.number}
               </div>

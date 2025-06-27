@@ -51,9 +51,9 @@ function Features() {
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map((feature, index) => (
+          {features.map((feature) => (
             <div
-              key={index}
+              key={feature.icon}
               className="bg-white dark:bg-gray-950 p-8 rounded-lg text-center transition-all duration-250 border border-gray-200 dark:border-gray-700 hover:-translate-y-1 hover:shadow-lg hover:border-[#5865F2]"
             >
               <div className="text-5xl mb-6 inline-block">{feature.icon}</div>
