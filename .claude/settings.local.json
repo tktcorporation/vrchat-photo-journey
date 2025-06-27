@@ -51,7 +51,9 @@
       "Bash(yarn run knip:*)",
       "Bash(yarn knip:*)",
       "Bash(npm ls:*)",
-      "Bash(cargo install:*)"
+      "Bash(cargo install:*)",
+      "Bash(touch:*)",
+      "Bash(npx biome format:*)"
     ],
     "deny": []
   }
