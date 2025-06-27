@@ -1,5 +1,5 @@
 {
-  "name": "VRChat Photo Journey",
+  "name": "VRChat Albums",
   "short_name": "VRChat Albums",
   "description": "VRChatで撮影した写真を自動的にワールド別・日付別に整理するデスクトップアプリケーション",
   "start_url": "/vrchat-albums/",

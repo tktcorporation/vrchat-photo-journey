@@ -1,5 +1,3 @@
-import './Features.css';
-
 const features = [
   {
     icon: '🗂️',
@@ -41,21 +39,30 @@ const features = [
 
 function Features() {
   return (
-    <section id="features" className="features">
+    <section id="features" className="py-24 bg-gray-50 dark:bg-gray-900">
       <div className="container">
-        <div className="section-header">
-          <h2 className="section-title">主な機能</h2>
-          <p className="section-description">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+            主な機能
+          </h2>
+          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
             VRChat Photo
             Journeyは、あなたのVRChat体験をより豊かにする様々な機能を提供します
           </p>
         </div>
-        <div className="features-grid">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature, index) => (
-            <div key={index} className="feature-card">
-              <div className="feature-icon">{feature.icon}</div>
-              <h3 className="feature-title">{feature.title}</h3>
-              <p className="feature-description">{feature.description}</p>
+            <div
+              key={index}
+              className="bg-white dark:bg-gray-950 p-8 rounded-lg text-center transition-all duration-250 border border-gray-200 dark:border-gray-700 hover:-translate-y-1 hover:shadow-lg hover:border-[#5865F2]"
+            >
+              <div className="text-5xl mb-6 inline-block">{feature.icon}</div>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+                {feature.title}
+              </h3>
+              <p className="text-base text-gray-600 dark:text-gray-400 leading-relaxed">
+                {feature.description}
+              </p>
             </div>
           ))}
         </div>

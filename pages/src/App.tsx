@@ -4,11 +4,10 @@ import HowItWorks from './components/HowItWorks';
 import Screenshots from './components/Screenshots';
 import Download from './components/Download';
 import Footer from './components/Footer';
-import './App.css';
 
 function App() {
   return (
-    <div className="app">
+    <div className="min-h-screen flex flex-col">
       <Hero />
       <Features />
       <HowItWorks />

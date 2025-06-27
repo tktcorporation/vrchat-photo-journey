@@ -1,5 +1,3 @@
-import './HowItWorks.css';
-
 const steps = [
   {
     number: '01',
@@ -23,21 +21,33 @@ const steps = [
 
 function HowItWorks() {
   return (
-    <section className="how-it-works">
+    <section className="py-24 bg-white dark:bg-gray-950">
       <div className="container">
-        <div className="section-header">
-          <h2 className="section-title">使い方は簡単</h2>
-          <p className="section-description">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+            使い方は簡単
+          </h2>
+          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
             3つのステップで、あなたのVRChat写真が美しく整理されます
           </p>
         </div>
-        <div className="steps">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative mt-12">
           {steps.map((step, index) => (
-            <div key={index} className="step">
-              <div className="step-number">{step.number}</div>
-              <h3 className="step-title">{step.title}</h3>
-              <p className="step-description">{step.description}</p>
-              {index < steps.length - 1 && <div className="step-arrow">→</div>}
+            <div key={index} className="text-center relative">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-[#5865F2] to-[#7950F2] text-white text-2xl font-bold rounded-full mb-6">
+                {step.number}
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+                {step.title}
+              </h3>
+              <p className="text-base text-gray-600 dark:text-gray-400 leading-relaxed max-w-xs mx-auto">
+                {step.description}
+              </p>
+              {index < steps.length - 1 && (
+                <div className="hidden md:block absolute top-10 -right-10 text-3xl text-[#5865F2] opacity-50">
+                  →
+                </div>
+              )}
             </div>
           ))}
         </div>
