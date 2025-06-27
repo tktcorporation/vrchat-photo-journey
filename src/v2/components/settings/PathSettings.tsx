@@ -1,3 +1,5 @@
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { trpcReact } from '@/trpc';
 import {
   AlertCircle,
@@ -288,36 +290,38 @@ const PathSettingsComponent = memo(({ showRefreshAll }: PathSettingsProps) => {
               {t('settings.paths.photoDirectory')}
             </label>
             <div className="flex gap-2">
-              <input
+              <Input
                 type="text"
                 aria-label={`input-${t('settings.paths.photoDirectory')}`}
                 value={photoInputValue}
                 onChange={handlePhotoInputChange}
                 placeholder="/path/to/photos"
-                className="flex-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                className="flex-1"
               />
               {isPhotoPathManuallyChanged ? (
-                <button
+                <Button
                   type="button"
                   aria-label={`${t('common.submit')}-${t(
                     'settings.paths.photoDirectory',
                   )}`}
-                  className="px-3 py-2 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 rounded-md text-sm text-white"
+                  variant="default"
+                  size="sm"
                   onClick={handlePhotoPathSave}
                 >
                   <Save className="h-4 w-4" />
-                </button>
+                </Button>
               ) : (
-                <button
+                <Button
                   type="button"
                   aria-label={`${t('settings.paths.browse')}-${t(
                     'settings.paths.photoDirectory',
                   )}`}
-                  className="px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-200"
+                  variant="secondary"
+                  size="sm"
                   onClick={handleBrowsePhotoDirectory}
                 >
                   <FolderOpen className="h-4 w-4" />
-                </button>
+                </Button>
               )}
             </div>
             {photoValidationResult && photoValidationResult !== 'VALID' && (
@@ -342,35 +346,35 @@ const PathSettingsComponent = memo(({ showRefreshAll }: PathSettingsProps) => {
               </label>
               <div className="mt-1 space-y-2">
                 {extraDirs.map((dir: string, index: number) => (
-                  <div
-                    key={`extra-dir-${dir}`}
-                    className="flex rounded-md shadow-sm"
-                  >
-                    <input
+                  <div key={`extra-dir-${dir}`} className="flex gap-2">
+                    <Input
                       type="text"
                       value={dir}
                       readOnly
-                      className="flex-1 block w-full rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white"
+                      className="flex-1"
                     />
-                    <button
+                    <Button
                       type="button"
                       onClick={() => handleRemoveExtraDirectory(index)}
                       aria-label={t('settings.paths.removeExtraDirectory')}
-                      className="px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-r-md text-sm text-gray-700 dark:text-gray-200 border border-l-0 border-gray-300 dark:border-gray-600"
+                      variant="secondary"
+                      size="sm"
                     >
                       <Trash className="h-4 w-4" />
-                    </button>
+                    </Button>
                   </div>
                 ))}
-                <button
+                <Button
                   type="button"
                   onClick={handleBrowseExtraDirectory}
                   aria-label={t('settings.paths.addExtraDirectory')}
-                  className="flex items-center px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-200"
+                  variant="secondary"
+                  size="sm"
+                  className="w-full"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   フォルダを追加
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -381,36 +385,38 @@ const PathSettingsComponent = memo(({ showRefreshAll }: PathSettingsProps) => {
               {t('settings.paths.logFile')}
             </label>
             <div className="flex gap-2">
-              <input
+              <Input
                 type="text"
                 aria-label={`input-${t('settings.paths.logFile')}`}
                 value={logInputValue}
                 onChange={handleLogInputChange}
                 placeholder="/path/to/photo-logs.json"
-                className="flex-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                className="flex-1"
               />
               {isLogPathManuallyChanged ? (
-                <button
+                <Button
                   type="button"
                   aria-label={`${t('common.submit')}-${t(
                     'settings.paths.logFile',
                   )}`}
-                  className="px-3 py-2 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 rounded-md text-sm text-white"
+                  variant="default"
+                  size="sm"
                   onClick={handleLogPathSave}
                 >
                   <Save className="h-4 w-4" />
-                </button>
+                </Button>
               ) : (
-                <button
+                <Button
                   type="button"
                   aria-label={`${t('settings.paths.browse')}-${t(
                     'settings.paths.logFile',
                   )}`}
-                  className="px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-200"
+                  variant="secondary"
+                  size="sm"
                   onClick={handleBrowseLogFile}
                 >
                   <FolderOpen className="h-4 w-4" />
-                </button>
+                </Button>
               )}
             </div>
             {logFilesDir?.error && (
