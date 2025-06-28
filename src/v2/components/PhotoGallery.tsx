@@ -53,7 +53,7 @@ const PhotoGallery = memo((props: PhotoGalleryProps) => {
 
   /** 選択をクリアし、複数選択モードを解除するハンドラ */
   const handleClearSelection = () => {
-    setSelectedPhotos(new Set());
+    setSelectedPhotos(new Map());
     setIsMultiSelectMode(false);
   };
 
@@ -86,23 +86,34 @@ const PhotoGallery = memo((props: PhotoGalleryProps) => {
     });
 
   // 選択された写真をクリップボードにコピーするハンドラ
-  /** 選択写真のパスを集めて一括コピーする */
+  /** 選択写真のパスを集めて選択順でソートし一括コピーする */
   const handleCopySelected = () => {
     if (selectedPhotos.size === 0) {
       return;
     }
 
-    // 選択された写真のパスを取得
-    const selectedPhotoUrls: string[] = [];
+    // 選択された写真の情報を収集（IDと選択順序を保持）
+    const selectedPhotoData: Array<{ url: string; order: number }> = [];
 
     // グループ内の写真からIDが一致するものを探す
     for (const group of Object.values(groupedPhotos)) {
       for (const photo of group.photos) {
-        if (selectedPhotos.has(photo.id.toString())) {
-          selectedPhotoUrls.push(photo.url);
+        const photoIdStr = photo.id.toString();
+        if (selectedPhotos.has(photoIdStr)) {
+          const order = selectedPhotos.get(photoIdStr);
+          if (order !== undefined) {
+            selectedPhotoData.push({
+              url: photo.url,
+              order,
+            });
+          }
         }
       }
     }
+
+    // 選択順でソート
+    selectedPhotoData.sort((a, b) => a.order - b.order);
+    const selectedPhotoUrls = selectedPhotoData.map((data) => data.url);
 
     // 写真をクリップボードにコピー
     if (selectedPhotoUrls.length > 0) {
