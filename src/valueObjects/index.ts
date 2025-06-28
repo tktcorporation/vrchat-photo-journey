@@ -5,6 +5,9 @@ import { BaseValueObject } from '../../electron/lib/baseValueObject.js';
 /**
  * VRChatの写真ファイル名
  * VRChat_2023-10-01_03-01-18.551_2560x1440.png
+ *
+ * @see docs/photo-grouping-logic.md - 写真グループ化ロジック
+ * @see electron/module/vrchatPhoto/model/vrchatPhotoPath.model.ts
  */
 class VRChatPhotoFileNameWithExt extends BaseValueObject<
   'VRChatPhotoFileNameWithExt',
