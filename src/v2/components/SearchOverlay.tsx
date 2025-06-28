@@ -1,6 +1,7 @@
 import { trpcReact } from '@/trpc';
 import { Globe, Search, User, X } from 'lucide-react';
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { ICON_SIZE } from '../constants/ui';
 import { useI18n } from '../i18n/store';
 
 interface SearchOverlayProps {
@@ -240,7 +241,9 @@ const SearchOverlay = memo(
           >
             {/* 検索入力部分 */}
             <div className="flex items-center p-4 border-b border-gray-200/30 dark:border-gray-700/30">
-              <Search className="h-5 w-5 text-muted-foreground/40 mr-3 flex-shrink-0" />
+              <Search
+                className={`${ICON_SIZE.md.class} text-muted-foreground/40 mr-3 flex-shrink-0`}
+              />
               <input
                 ref={inputRef}
                 type="text"
@@ -261,7 +264,9 @@ const SearchOverlay = memo(
                   className="ml-3 p-1.5 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 rounded-lg transition-colors"
                   aria-label="検索をクリア"
                 >
-                  <X className="h-4 w-4 text-muted-foreground/60" />
+                  <X
+                    className={`${ICON_SIZE.sm.class} text-muted-foreground/60`}
+                  />
                 </button>
               )}
             </div>
@@ -306,9 +311,13 @@ const SearchOverlay = memo(
                       tabIndex={0}
                     >
                       {suggestion.type === 'world' ? (
-                        <Globe className="h-4 w-4 mr-3 text-muted-foreground" />
+                        <Globe
+                          className={`${ICON_SIZE.sm.class} mr-3 text-muted-foreground`}
+                        />
                       ) : (
-                        <User className="h-4 w-4 mr-3 text-muted-foreground" />
+                        <User
+                          className={`${ICON_SIZE.sm.class} mr-3 text-muted-foreground`}
+                        />
                       )}
                       <span className="flex-1 font-medium text-gray-900 dark:text-gray-100">
                         {suggestion.label}
@@ -337,7 +346,8 @@ const SearchOverlay = memo(
                   onClick={handleSearch}
                   className="w-full flex items-center justify-center px-4 py-2 bg-primary/10 hover:bg-primary/20 dark:bg-primary/20 dark:hover:bg-primary/30 text-primary font-medium rounded-xl transition-colors"
                 >
-                  <Search className="h-4 w-4 mr-2" />「{query}」で検索
+                  <Search className={`${ICON_SIZE.sm.class} mr-2`} />「{query}
+                  」で検索
                 </button>
               </div>
             )}
