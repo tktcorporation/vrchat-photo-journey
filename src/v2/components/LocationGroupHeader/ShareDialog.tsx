@@ -162,7 +162,7 @@ export const ShareDialog = ({
                     {isLoading || isGeneratingPreview ? (
                       <div className="flex items-center justify-center">
                         <LoaderCircle
-                          className={`${ICON_SIZE.lg.class} animate-spin text-blue-500`}
+                          className={`${ICON_SIZE.lg.class} animate-spin text-primary`}
                         />
                       </div>
                     ) : (
