@@ -46,6 +46,9 @@ interface DBQueueOptions {
  * データベースアクセスのためのキュー
  * - 同時実行数を制限してデータベースアクセスをキューイングする
  * - トランザクション処理をサポート
+ *
+ * @see docs/log-sync-architecture.md - ログ同期設計ドキュメント
+ * @see electron/module/logSync/service.ts - 主要サービスクラス
  */
 class DBQueue {
   private queue: PQueue;
