@@ -109,6 +109,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
     <div
       className="flex h-9 items-center justify-between px-2 select-none border-b dark:border-gray-700"
       style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
+      onDoubleClick={handleMaximize}
     >
       {/* 左側: ギャラリーコントロール */}
       <div
