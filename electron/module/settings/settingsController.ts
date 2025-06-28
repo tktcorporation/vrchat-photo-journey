@@ -1,6 +1,6 @@
 import type { UpdateCheckResult } from 'electron-updater';
 import { P, match } from 'ts-pattern';
-import { getWindow } from '../../electronUtil';
+import { reloadMainWindow } from '../../electronUtil';
 import {
   ERROR_CATEGORIES,
   ERROR_CODES,
@@ -73,20 +73,14 @@ export const settingsRouter = () =>
         throw new UserFacingError('アップデートはありません。');
       }
       await settingService.installUpdate();
-      const mainWindow = getWindow();
-      if (mainWindow) {
-        mainWindow.reload();
-      }
+      reloadMainWindow();
     }),
     checkForUpdates: procedure.query(async () => {
       return await settingService.getElectronUpdaterInfo();
     }),
     installUpdatesAndReload: procedure.mutation(async () => {
       await settingService.installUpdate();
-      const mainWindow = getWindow();
-      if (mainWindow) {
-        mainWindow.reload();
-      }
+      reloadMainWindow();
     }),
     checkForUpdatesAndReturnResult: procedure.query(
       async (): Promise<{
@@ -102,10 +96,7 @@ export const settingsRouter = () =>
     ),
     installUpdatesAndReloadApp: procedure.mutation(async () => {
       await settingService.installUpdate();
-      const mainWindow = getWindow();
-      if (mainWindow) {
-        mainWindow.reload();
-      }
+      reloadMainWindow();
     }),
     openApplicationLogInExploler: procedure.mutation(async () => {
       const logPath = electronUtilService.getApplicationLogPath();

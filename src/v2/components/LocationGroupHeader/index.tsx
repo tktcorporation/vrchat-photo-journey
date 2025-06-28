@@ -14,6 +14,10 @@ import type { ReactPortal } from 'react';
 import { createPortal } from 'react-dom';
 import { ICON_SIZE } from '../../constants/ui';
 import { useI18n } from '../../i18n/store';
+import {
+  getInstanceTypeColor,
+  getInstanceTypeLabel,
+} from '../../utils/instanceTypeUtils';
 import { PlatformBadge } from './PlatformBadge';
 import { type Player, PlayerList } from './PlayerList';
 import { ShareDialog } from './ShareDialog';
@@ -309,6 +313,15 @@ export const LocationGroupHeader = ({
                     />
                     {formattedDate}
                   </div>
+                  {worldInstanceId && getInstanceTypeLabel(worldInstanceId) && (
+                    <div
+                      className={`flex items-center text-xs font-medium px-2.5 py-1 rounded-full backdrop-blur-sm border transition-all duration-300 ${getInstanceTypeColor(
+                        worldInstanceId,
+                      )}`}
+                    >
+                      {getInstanceTypeLabel(worldInstanceId)}
+                    </div>
+                  )}
                   {details?.unityPackages &&
                     details.unityPackages.length > 0 && (
                       <div className="flex items-center gap-1.5">
@@ -333,6 +346,10 @@ export const LocationGroupHeader = ({
 
               {/* 2行目: 写真枚数とプレイヤーリスト */}
               <div className="flex items-center gap-2 w-full">
+                <div className="flex items-center text-xs text-gray-800 dark:text-white backdrop-blur-sm bg-white/30 dark:bg-black/30 px-3 py-1 rounded-full border border-white/20 dark:border-gray-700/30">
+                  <ImageIcon className="h-4 w-4 mr-1.5 text-primary-600 dark:text-primary-300" />
+                  <span>{photoCount}枚</span>
+                </div>
                 {isPlayersLoading ? (
                   <div className="flex gap-2 items-center text-xs text-gray-800 dark:text-white backdrop-blur-sm bg-white/30 dark:bg-black/30 px-3 py-1 rounded-full border border-white/20 dark:border-gray-700/30 flex-1 min-w-0 animate-pulse">
                     <div className="flex items-center gap-1">
