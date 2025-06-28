@@ -16,6 +16,9 @@ interface State {
 /**
  * ギャラリー表示中の予期せぬエラーを捕捉して再読み込みを促すバウンダリ。
  * PathSettings へのリンクも表示し、環境設定をやり直せるようにする。
+ *
+ * @see docs/error-handling.md - エラーハンドリング設計ドキュメント
+ * @see electron/lib/errors.ts
  */
 export class GalleryErrorBoundary extends React.Component<Props, State> {
   constructor(props: Props) {

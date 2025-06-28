@@ -40,6 +40,10 @@ export interface LayoutResult {
  * const result = calculator.calculateLayout(photos, containerWidth);
  * const height = calculator.calculateTotalHeight(photos, containerWidth);
  * ```
+ *
+ * @see docs/date-jump-architecture.md - 日付ジャンプ機能の設計
+ * @see PhotoGrid
+ * @see MeasurePhotoGroup
  */
 export class JustifiedLayoutCalculator {
   private readonly constants: LayoutConstants;

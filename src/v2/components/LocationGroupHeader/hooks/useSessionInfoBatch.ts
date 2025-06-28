@@ -24,6 +24,9 @@ interface BatchRequest {
 /**
  * プレイヤー情報バッチマネージャー
  * 設定されたウィンドウ時間で複数のリクエストをまとめて一つのDBクエリで処理
+ *
+ * @see docs/log-sync-architecture.md - ログ同期設計ドキュメント
+ * @see electron/lib/dbQueue.ts
  */
 class PlayerInfoBatchManager {
   private pendingRequests: BatchRequest[] = [];
