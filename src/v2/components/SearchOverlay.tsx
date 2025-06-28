@@ -261,7 +261,7 @@ const SearchOverlay = memo(
                     setQuery('');
                     onSearch('');
                   }}
-                  className="ml-3 p-1.5 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 rounded-lg transition-colors"
+                  className="ml-3 p-1.5 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 rounded-lg transition-colors duration-150"
                   aria-label="検索をクリア"
                 >
                   <X
@@ -344,7 +344,7 @@ const SearchOverlay = memo(
                 <button
                   type="button"
                   onClick={handleSearch}
-                  className="w-full flex items-center justify-center px-4 py-2 bg-primary/10 hover:bg-primary/20 dark:bg-primary/20 dark:hover:bg-primary/30 text-primary font-medium rounded-xl transition-colors"
+                  className="w-full flex items-center justify-center px-4 py-2 bg-primary/10 hover:bg-primary/20 dark:bg-primary/20 dark:hover:bg-primary/30 text-primary font-medium rounded-xl transition-colors duration-150"
                 >
                   <Search className={`${ICON_SIZE.sm.class} mr-2`} />「{query}
                   」で検索

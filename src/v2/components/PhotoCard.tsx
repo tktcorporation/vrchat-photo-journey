@@ -206,7 +206,7 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
       <div
         ref={elementRef}
         className={clsx(
-          'photo-card group relative overflow-hidden transition-all duration-100',
+          'photo-card group relative overflow-hidden transition-all duration-150',
           'cursor-pointer flex items-center justify-center',
           isSelected
             ? 'bg-gray-200 dark:bg-gray-700'
@@ -259,7 +259,7 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
               ) : (
                 <Circle
                   size={ICON_SIZE.photo.pixels}
-                  className="text-white/90 bg-gray-900/40 backdrop-blur-sm rounded-full hover:bg-gray-900/60 transition-colors duration-75"
+                  className="text-white/90 bg-gray-900/40 backdrop-blur-sm rounded-full hover:bg-gray-900/60 transition-colors duration-150"
                   strokeWidth={2}
                 />
               )}
@@ -267,7 +267,7 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
 
             <div
               className={clsx(
-                'absolute inset-0 transition-all duration-100',
+                'absolute inset-0 transition-all duration-150',
                 isSelected ? 'p-4' : 'p-0',
               )}
             >
@@ -299,7 +299,7 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
               <div
                 className={clsx(
                   'absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent',
-                  'opacity-0 group-hover:opacity-100 transition-opacity duration-100',
+                  'opacity-0 group-hover:opacity-100 transition-opacity duration-150',
                 )}
               >
                 <div className="absolute bottom-0 left-0 right-0 p-3">
