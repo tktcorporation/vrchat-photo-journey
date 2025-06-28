@@ -28,8 +28,8 @@ interface GalleryDebugInfo {
 
 /** 表示中の写真（モーダル表示用） */
 const selectedPhotoAtom = atom<Photo | null>(null);
-/** 選択されている写真のIDセット */
-const selectedPhotosAtom = atom<Set<string>>(new Set<string>());
+/** 選択されている写真のIDと選択順序のマップ */
+const selectedPhotosAtom = atom<Map<string, number>>(new Map<string, number>());
 /** 複数選択モードかどうか */
 const isMultiSelectModeAtom = atom<boolean>(false);
 
@@ -61,11 +61,13 @@ export function usePhotoGallery(
   selectedPhoto: Photo | null;
   /** モーダル表示する写真オブジェクトを設定する関数 */
   setSelectedPhoto: (photo: Photo | null) => void;
-  /** 現在選択されている写真のIDセット */
-  selectedPhotos: Set<string>;
-  /** 選択されている写真のIDセットを更新する関数 */
+  /** 現在選択されている写真のIDと選択順序のマップ */
+  selectedPhotos: Map<string, number>;
+  /** 選択されている写真のIDと選択順序のマップを更新する関数 */
   setSelectedPhotos: (
-    update: Set<string> | ((prev: Set<string>) => Set<string>),
+    update:
+      | Map<string, number>
+      | ((prev: Map<string, number>) => Map<string, number>),
   ) => void;
   /** 現在複数選択モードかどうか */
   isMultiSelectMode: boolean;
