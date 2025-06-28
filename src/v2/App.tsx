@@ -63,7 +63,7 @@ function AppContent() {
           tags: {
             source: 'electron-renderer',
           },
-          beforeSend: async (event: ErrorEvent, _hint: EventHint) => {
+          beforeSend: async (event: ErrorEvent, hint: EventHint) => {
             try {
               // 開発環境でも規約同意をチェックする
               const currentTermsStatus =
@@ -79,6 +79,45 @@ function AppContent() {
                   );
                 }
                 return null;
+              }
+
+              // ハンドリング済みのエラーをフィルタリング
+              const originalException = hint.originalException;
+              if (
+                originalException &&
+                typeof originalException === 'object' &&
+                'errorInfo' in originalException
+              ) {
+                const errorInfo = (
+                  originalException as {
+                    errorInfo?: { category?: string; code?: string };
+                  }
+                ).errorInfo;
+                if (errorInfo?.category) {
+                  // SETUP_REQUIREDカテゴリーのエラーは正常な動作なのでSentryに送信しない
+                  if (errorInfo.category === ERROR_CATEGORIES.SETUP_REQUIRED) {
+                    console.log(
+                      `Sentry event dropped: Handled setup error - ${errorInfo.code}`,
+                    );
+                    return null;
+                  }
+                  // VALIDATION_ERRORも正常な動作の一部
+                  if (
+                    errorInfo.category === ERROR_CATEGORIES.VALIDATION_ERROR
+                  ) {
+                    console.log(
+                      `Sentry event dropped: Validation error - ${errorInfo.code}`,
+                    );
+                    return null;
+                  }
+                  // FILE_NOT_FOUNDも多くの場合は正常な動作
+                  if (errorInfo.category === ERROR_CATEGORIES.FILE_NOT_FOUND) {
+                    console.log(
+                      `Sentry event dropped: File not found - ${errorInfo.code}`,
+                    );
+                    return null;
+                  }
+                }
               }
 
               // 個人情報マスク処理を追加
