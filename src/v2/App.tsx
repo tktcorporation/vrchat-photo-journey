@@ -482,7 +482,32 @@ const Contents = () => {
   }
 
   if (stage === 'syncing') {
-    const currentStage = 'アプリケーションを初期化中...';
+    // 既存ログ数を取得して初回起動かどうかを判定
+    // 最新1週間のログを取得して、ログが存在するかチェック
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+    const { data: existingLogs } =
+      trpcReact.vrchatWorldJoinLog.getVRChatWorldJoinLogList.useQuery(
+        {
+          gtJoinDateTime: oneWeekAgo,
+          orderByJoinDateTime: 'desc',
+        },
+        {
+          // エラーは無視して、取得できなければ初回起動として扱う
+          retry: false,
+          staleTime: 0,
+          refetchOnWindowFocus: false,
+        },
+      );
+
+    const isFirstLaunch = !existingLogs || existingLogs.length === 0;
+    const currentStage = isFirstLaunch
+      ? 'アプリケーションを初期化中...'
+      : 'データを読み込み中...';
+    const subMessage = isFirstLaunch
+      ? '写真とログファイルを準備しています'
+      : '最新のデータを取得しています';
 
     return (
       <div className="h-screen flex flex-col overflow-hidden bg-[#f9f9fa] dark:bg-[#1c1c1e]">
@@ -544,7 +569,7 @@ const Contents = () => {
                 {currentStage}
               </h2>
               <p className="text-sm text-gray-500 dark:text-gray-500">
-                写真とログファイルを準備しています
+                {subMessage}
               </p>
             </div>
 
