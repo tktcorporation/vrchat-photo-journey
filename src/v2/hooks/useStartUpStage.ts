@@ -1,5 +1,6 @@
 import { trpcReact } from '@/trpc';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { P, match } from 'ts-pattern';
 
 import { invalidatePhotoGalleryQueries } from '@/queryClient';
 
@@ -64,13 +65,23 @@ export const useStartupStage = (callbacks?: ProcessStageCallbacks) => {
         errorMessage: errorMsg,
       });
 
-      if (status === 'error' && errorMsg) {
-        const processError = { stage, message: errorMsg, originalError };
-        setError(processError);
-        callbacks?.onError?.(processError);
-      } else if (status === 'success' || status === 'skipped') {
-        setError(null);
-      }
+      match(status)
+        .when(
+          (s) => s === 'error' && !!errorMsg,
+          () => {
+            const processError = {
+              stage,
+              message: errorMsg || '',
+              originalError,
+            };
+            setError(processError);
+            callbacks?.onError?.(processError);
+          },
+        )
+        .with(P.union('success', 'skipped'), () => {
+          setError(null);
+        })
+        .otherwise(() => {});
     },
     [callbacks],
   );
@@ -98,18 +109,23 @@ export const useStartupStage = (callbacks?: ProcessStageCallbacks) => {
         console.error('Application initialization failed:', error);
 
         // 重複実行エラーの場合は無視
-        if (
-          error instanceof Error &&
-          error.message.includes('初期化処理が既に実行中')
-        ) {
-          console.log('Ignoring duplicate initialization request');
-          return;
-        }
+        const shouldIgnore = match(error)
+          .when(
+            (e) =>
+              e instanceof Error &&
+              e.message.includes('初期化処理が既に実行中'),
+            () => {
+              console.log('Ignoring duplicate initialization request');
+              return true;
+            },
+          )
+          .otherwise(() => false);
 
-        const errorMessage =
-          error instanceof Error
-            ? error.message
-            : 'アプリケーション初期化に失敗しました';
+        if (shouldIgnore) return;
+
+        const errorMessage = match(error)
+          .with(P.instanceOf(Error), (e) => e.message)
+          .otherwise(() => 'アプリケーション初期化に失敗しました');
 
         // tRPCエラーオブジェクト全体を保持
         updateStage('initialization', 'error', errorMessage, error);
@@ -118,16 +134,26 @@ export const useStartupStage = (callbacks?: ProcessStageCallbacks) => {
 
   // 初期化処理を開始
   const startInitialization = useCallback(() => {
-    if (
-      stages.initialization === 'pending' &&
-      !initializeAppDataMutation.isLoading &&
-      !initializeAppDataMutation.isSuccess &&
-      !hasTriggeredInitialization
-    ) {
-      console.log('Starting initialization...');
-      setHasTriggeredInitialization(true);
-      initializeAppDataMutation.mutate();
-    }
+    match({
+      stage: stages.initialization,
+      isLoading: initializeAppDataMutation.isLoading,
+      isSuccess: initializeAppDataMutation.isSuccess,
+      hasTriggered: hasTriggeredInitialization,
+    })
+      .with(
+        {
+          stage: 'pending',
+          isLoading: false,
+          isSuccess: false,
+          hasTriggered: false,
+        },
+        () => {
+          console.log('Starting initialization...');
+          setHasTriggeredInitialization(true);
+          initializeAppDataMutation.mutate();
+        },
+      )
+      .otherwise(() => {});
   }, [
     stages.initialization,
     initializeAppDataMutation,
@@ -166,7 +192,9 @@ export const useStartupStage = (callbacks?: ProcessStageCallbacks) => {
   // 終了判定（成功またはエラー）
   const finished = useMemo(
     () =>
-      stages.initialization === 'success' || stages.initialization === 'error',
+      match(stages.initialization)
+        .with(P.union('success', 'error'), () => true)
+        .otherwise(() => false),
     [stages],
   );
 

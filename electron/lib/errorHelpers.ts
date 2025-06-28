@@ -7,9 +7,65 @@ import { ERROR_CATEGORIES, ERROR_CODES, UserFacingError } from './errors';
  */
 
 /**
+ * エラーを文字列キーに変換する共通ロジック
+ */
+function getErrorKey<E>(error: E): string {
+  if (error instanceof Error) {
+    return error.constructor.name;
+  }
+  return String(error);
+}
+
+/**
+ * エラーマッピングを適用してUserFacingErrorを生成する共通ロジック
+ */
+function applyErrorMapping<E>(
+  error: E,
+  errorKey: string,
+  errorMappings: {
+    [key: string]: (error: E) => UserFacingError;
+  } & {
+    default?: (error: E) => UserFacingError;
+  },
+): UserFacingError | null {
+  const mapping = errorMappings[errorKey];
+
+  if (mapping && typeof mapping === 'function') {
+    const userError = mapping(error);
+    // Original errorをcauseとして保持
+    if (error instanceof Error && userError && !userError.cause) {
+      Object.assign(userError, { cause: error });
+    }
+    return userError;
+  }
+
+  if (errorMappings.default) {
+    const userError = errorMappings.default(error);
+    // Original errorをcauseとして保持
+    if (error instanceof Error && userError && !userError.cause) {
+      Object.assign(userError, { cause: error });
+    }
+    return userError;
+  }
+
+  return null;
+}
+
+/**
+ * エラーをthrowする共通ロジック
+ */
+function throwOriginalError<E>(error: E): never {
+  throw match(error)
+    .with(P.instanceOf(Error), (err) => err)
+    .otherwise((err) => new Error(String(err)));
+}
+
+/**
  * Resultがerrの場合に、適切なUserFacingErrorを投げる
  * @param result neverthrowのResult
  * @param errorMappings エラー値をUserFacingErrorにマッピングする関数群
+ * @param options オプション設定
+ * @param options.silentErrors サイレントに処理するエラーのリスト（指定時はT | nullを返す）
  */
 export function handleResultError<T, E>(
   result: Result<T, E>,
@@ -18,56 +74,30 @@ export function handleResultError<T, E>(
   } & {
     default?: (error: E) => UserFacingError;
   },
-): T {
+  options?: {
+    silentErrors?: string[];
+  },
+): T | null {
   if (result.isOk()) {
     return result.value;
   }
 
   const error = result.error;
+  const errorKey = getErrorKey(error);
 
-  // エラーを文字列キーとして変換
-  let errorKey: string;
-  if (error instanceof Error) {
-    errorKey = error.constructor.name;
-  } else {
-    errorKey = String(error);
+  // サイレントエラーの場合はnullを返す
+  if (options?.silentErrors?.includes(errorKey)) {
+    return null;
   }
 
-  const mapping = errorMappings[errorKey];
-
-  const userFacingError = match({
-    mapping,
-    hasDefault: !!errorMappings.default,
-  })
-    .with(
-      { mapping: P.when((m) => m && typeof m === 'function') },
-      ({ mapping }) => {
-        const userError = mapping(error);
-        // Original errorをcauseとして保持
-        if (error instanceof Error && userError && !userError.cause) {
-          Object.assign(userError, { cause: error });
-        }
-        return userError;
-      },
-    )
-    .with({ hasDefault: true }, () => {
-      const userError = errorMappings.default?.(error);
-      // Original errorをcauseとして保持
-      if (error instanceof Error && userError && !userError.cause) {
-        Object.assign(userError, { cause: error });
-      }
-      return userError;
-    })
-    .otherwise(() => null);
+  const userFacingError = applyErrorMapping(error, errorKey, errorMappings);
 
   if (userFacingError) {
     throw userFacingError;
   }
 
   // マッピングがない場合は元のエラーをthrow（予期しないエラーとして扱われる）
-  throw match(error)
-    .with(P.instanceOf(Error), (err) => err)
-    .otherwise((err) => new Error(String(err)));
+  throwOriginalError(error);
 }
 
 /**
@@ -75,6 +105,7 @@ export function handleResultError<T, E>(
  * @param result neverthrowのResult
  * @param silentErrors サイレントに処理するエラーのリスト
  * @param errorMappings その他のエラーのマッピング
+ * @deprecated Use handleResultError with options.silentErrors instead
  */
 export function handleResultErrorWithSilent<T, E>(
   result: Result<T, E>,
@@ -85,64 +116,20 @@ export function handleResultErrorWithSilent<T, E>(
     default?: (error: E) => UserFacingError;
   },
 ): T | null {
-  if (result.isOk()) {
-    return result.value;
-  }
-
-  const error = result.error;
-
-  // エラーを文字列キーとして変換
-  let errorKey: string;
-  if (error instanceof Error) {
-    errorKey = error.constructor.name;
-  } else {
-    errorKey = String(error);
-  }
-
-  // サイレントエラーの場合はnullを返す
-  if (silentErrors.includes(errorKey)) {
-    return null;
-  }
-
-  // エラーマッピングがある場合は適用
-  const userFacingError = match(errorMappings)
-    .with(
-      P.when((mappings) => !!mappings),
-      (mappings) => {
-        const mapping = mappings[errorKey];
-        return match({ mapping, hasDefault: !!mappings.default })
-          .with(
-            { mapping: P.when((m) => m && typeof m === 'function') },
-            ({ mapping }) => {
-              const userError = mapping(error);
-              // Original errorをcauseとして保持
-              if (error instanceof Error && userError && !userError.cause) {
-                Object.assign(userError, { cause: error });
-              }
-              return userError;
-            },
-          )
-          .with({ hasDefault: true }, () => {
-            const userError = mappings.default?.(error);
-            // Original errorをcauseとして保持
-            if (error instanceof Error && userError && !userError.cause) {
-              Object.assign(userError, { cause: error });
-            }
-            return userError;
-          })
-          .otherwise(() => null);
-      },
-    )
-    .otherwise(() => null);
-
-  if (userFacingError) {
-    throw userFacingError;
-  }
-
-  // マッピングがない場合は元のエラーをthrow（予期しないエラーとして扱われる）
-  throw match(error)
-    .with(P.instanceOf(Error), (err) => err)
-    .otherwise((err) => new Error(String(err)));
+  return handleResultError(
+    result,
+    errorMappings || {
+      default: (error) =>
+        UserFacingError.withStructuredInfo({
+          code: ERROR_CODES.UNKNOWN,
+          category: ERROR_CATEGORIES.UNKNOWN_ERROR,
+          message: 'Operation error',
+          userMessage: '操作中にエラーが発生しました。',
+          cause: error instanceof Error ? error : new Error(String(error)),
+        }),
+    },
+    { silentErrors },
+  );
 }
 
 /**

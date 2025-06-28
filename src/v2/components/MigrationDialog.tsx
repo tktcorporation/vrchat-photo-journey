@@ -12,6 +12,7 @@ import { AlertCircle, ArrowRight, Database, FolderOpen } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
 import { useToast } from '../hooks/use-toast';
+import { useI18n } from '../i18n/store';
 
 interface MigrationDialogProps {
   open: boolean;
@@ -28,6 +29,7 @@ export const MigrationDialog: React.FC<MigrationDialogProps> = ({
   onMigrationComplete,
 }) => {
   const { toast } = useToast();
+  const { t } = useI18n();
   const [isProcessing, setIsProcessing] = useState(false);
 
   const performMigration = trpcReact.settings.performMigration.useMutation({
@@ -37,23 +39,29 @@ export const MigrationDialog: React.FC<MigrationDialogProps> = ({
     onSuccess: (result) => {
       // 移行された項目をリストアップ
       const migratedItems = [];
-      if (result.details.database) migratedItems.push('データベース');
-      if (result.details.logStore) migratedItems.push('ログストア');
-      if (result.details.settings) migratedItems.push('設定');
+      if (result.details.database)
+        migratedItems.push(t('migration.items.database'));
+      if (result.details.logStore)
+        migratedItems.push(t('migration.items.logStore'));
+      if (result.details.settings)
+        migratedItems.push(t('migration.items.settings'));
 
       toast({
-        title: 'データ移行が完了しました',
+        title: t('migration.toast.success'),
         description:
           migratedItems.length > 0
-            ? `移行されたデータ: ${migratedItems.join('、')}`
-            : 'データ移行が完了しました',
+            ? t('migration.toast.successDetail').replace(
+                '{items}',
+                migratedItems.join('、'),
+              )
+            : t('migration.toast.success'),
       });
       onMigrationComplete();
     },
     onError: (error) => {
       toast({
         variant: 'destructive',
-        title: 'データ移行に失敗しました',
+        title: t('migration.toast.error'),
         description: error.message,
       });
       setIsProcessing(false);
@@ -75,10 +83,10 @@ export const MigrationDialog: React.FC<MigrationDialogProps> = ({
       <DialogContent className="max-w-[500px] bg-white dark:bg-gray-900">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-            旧アプリからのデータ移行
+            {t('migration.title')}
           </DialogTitle>
           <DialogDescription className="text-gray-600 dark:text-gray-400">
-            旧アプリのデータが見つかりました。 新アプリにデータを移行しますか？
+            {t('migration.description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -90,16 +98,16 @@ export const MigrationDialog: React.FC<MigrationDialogProps> = ({
                 <FolderOpen className="h-8 w-8 text-gray-600 dark:text-gray-400" />
               </div>
               <span className="text-xs text-gray-600 dark:text-gray-400">
-                旧アプリ
+                {t('migration.labels.oldApp')}
               </span>
             </div>
-            <ArrowRight className="h-6 w-6 text-blue-500" />
+            <ArrowRight className="h-6 w-6 text-primary" />
             <div className="flex flex-col items-center gap-2">
-              <div className="w-16 h-16 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                <FolderOpen className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+              <div className="w-16 h-16 rounded-xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
+                <FolderOpen className="h-8 w-8 text-primary" />
               </div>
               <span className="text-xs text-gray-600 dark:text-gray-400">
-                新アプリ
+                {t('migration.labels.newApp')}
               </span>
             </div>
           </div>
@@ -107,13 +115,13 @@ export const MigrationDialog: React.FC<MigrationDialogProps> = ({
           {/* 移行内容 */}
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 space-y-3">
             <div className="flex items-start gap-3">
-              <Database className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+              <Database className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
               <div className="flex-1">
                 <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                  移行されるデータ
+                  {t('migration.labels.dataToMigrate')}
                 </p>
                 <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                  VRChatのログデータ（ワールド訪問履歴）と設定
+                  {t('migration.labels.dataDescription')}
                 </p>
               </div>
             </div>
@@ -125,13 +133,11 @@ export const MigrationDialog: React.FC<MigrationDialogProps> = ({
               <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
               <div className="flex-1 space-y-1">
                 <p className="text-sm font-medium text-amber-900 dark:text-amber-100">
-                  注意事項
+                  {t('migration.labels.notes')}
                 </p>
                 <ul className="text-xs text-amber-700 dark:text-amber-300 space-y-1 ml-2">
-                  <li>
-                    • 既存のデータは保持され、旧アプリのデータが追加されます
-                  </li>
-                  <li>• この処理には時間がかかる場合があります</li>
+                  <li>• {t('migration.labels.note1')}</li>
+                  <li>• {t('migration.labels.note2')}</li>
                 </ul>
               </div>
             </div>
@@ -145,20 +151,20 @@ export const MigrationDialog: React.FC<MigrationDialogProps> = ({
             disabled={isProcessing}
             className="min-w-[100px]"
           >
-            スキップ
+            {t('migration.buttons.skip')}
           </Button>
           <Button
             onClick={handleMigration}
             disabled={isProcessing}
-            className="min-w-[140px] bg-blue-600 hover:bg-blue-700 text-white"
+            className="min-w-[140px] bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             {isProcessing ? (
               <span className="flex items-center gap-2">
                 <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                移行中...
+                {t('migration.buttons.migrating')}
               </span>
             ) : (
-              'データを移行する'
+              t('migration.buttons.migrate')
             )}
           </Button>
         </DialogFooter>

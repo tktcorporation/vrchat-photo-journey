@@ -52,6 +52,7 @@ export interface Translations {
       noResult: string;
       enableDebugLog: string;
       throwErrorButton: string;
+      errorThrownSuccess: string;
     };
   };
   locationHeader: {
@@ -147,5 +148,33 @@ export interface Translations {
     title: string;
     updateTitle: string;
     accept: string;
+  };
+  migration: {
+    title: string;
+    description: string;
+    items: {
+      database: string;
+      logStore: string;
+      settings: string;
+    };
+    labels: {
+      oldApp: string;
+      newApp: string;
+      dataToMigrate: string;
+      dataDescription: string;
+      notes: string;
+      note1: string;
+      note2: string;
+    };
+    buttons: {
+      skip: string;
+      migrate: string;
+      migrating: string;
+    };
+    toast: {
+      success: string;
+      successDetail: string;
+      error: string;
+    };
   };
 }

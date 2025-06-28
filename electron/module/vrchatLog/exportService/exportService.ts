@@ -2,7 +2,7 @@ import { promises as fs } from 'node:fs';
 import * as path from 'node:path';
 import * as datefns from 'date-fns';
 import { app } from 'electron';
-import { match } from 'ts-pattern';
+import { P, match } from 'ts-pattern';
 import {
   type LogRecord,
   exportLogsToLogStore,
@@ -199,11 +199,11 @@ export const exportLogStoreFromDB = async (
       exportEndTime,
     };
   } catch (error) {
-    throw new Error(
-      `Export failed: ${
-        error instanceof Error ? error.message : String(error)
-      }`,
-    );
+    const errorMessage = match(error)
+      .with(P.instanceOf(Error), (err) => err.message)
+      .otherwise(() => String(error));
+
+    throw new Error(`Export failed: ${errorMessage}`);
   }
 };
 
@@ -260,10 +260,10 @@ export const exportLogStoreToSingleFile = async (
       exportEndTime,
     };
   } catch (error) {
-    throw new Error(
-      `Export failed: ${
-        error instanceof Error ? error.message : String(error)
-      }`,
-    );
+    const errorMessage = match(error)
+      .with(P.instanceOf(Error), (err) => err.message)
+      .otherwise(() => String(error));
+
+    throw new Error(`Export failed: ${errorMessage}`);
   }
 };

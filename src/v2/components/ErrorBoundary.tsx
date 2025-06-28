@@ -36,7 +36,7 @@ const ErrorFallback: React.FC<{
         <button
           type="button"
           onClick={handleRetry}
-          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+          className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors duration-150"
         >
           再読み込み
         </button>
