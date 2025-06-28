@@ -16,6 +16,7 @@ import {
 } from '../../../components/ui/dialog';
 import { Label } from '../../../components/ui/label';
 import { Switch } from '../../../components/ui/switch';
+import { ICON_SIZE } from '../../constants/ui';
 import { useI18n } from '../../i18n/store';
 import { generatePreviewPng } from '../../utils/previewGenerator';
 import { downloadOrCopyImageAsPng } from '../../utils/shareUtils';
@@ -139,7 +140,7 @@ export const ShareDialog = ({
               className="p-2 rounded-lg bg-white/20 dark:bg-gray-800/50 hover:bg-white/30 dark:hover:bg-gray-800/60 border border-white/10 dark:border-gray-700/30 text-gray-700 dark:text-gray-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               title={t('locationHeader.copyToClipboard')}
             >
-              <Copy className="h-5 w-5" />
+              <Copy className={ICON_SIZE.md.class} />
             </button>
             <button
               type="button"
@@ -148,7 +149,7 @@ export const ShareDialog = ({
               className="p-2 rounded-lg bg-white/20 dark:bg-gray-800/50 hover:bg-white/30 dark:hover:bg-gray-800/60 border border-white/10 dark:border-gray-700/30 text-gray-700 dark:text-gray-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               title={t('locationHeader.downloadImage')}
             >
-              <Download className="h-5 w-5" />
+              <Download className={ICON_SIZE.md.class} />
             </button>
           </div>
         </DialogHeader>
@@ -160,7 +161,9 @@ export const ShareDialog = ({
                   <div className="w-full">
                     {isLoading || isGeneratingPreview ? (
                       <div className="flex items-center justify-center">
-                        <LoaderCircle className="h-8 w-8 animate-spin text-primary" />
+                        <LoaderCircle
+                          className={`${ICON_SIZE.lg.class} animate-spin text-primary`}
+                        />
                       </div>
                     ) : (
                       <div className="flex items-center justify-center">
@@ -182,7 +185,7 @@ export const ShareDialog = ({
                   onClick={handleCopyShareImageToClipboard}
                   disabled={isLoading}
                 >
-                  <Copy className="h-4 w-4" />
+                  <Copy className={ICON_SIZE.sm.class} />
                   <span>{t('locationHeader.copyToClipboard')}</span>
                 </ContextMenuItem>
                 <ContextMenuItem
@@ -190,7 +193,7 @@ export const ShareDialog = ({
                   onClick={handleDownloadShareImagePng}
                   disabled={isLoading}
                 >
-                  <Download className="h-4 w-4" />
+                  <Download className={ICON_SIZE.sm.class} />
                   <span>{t('locationHeader.downloadImage')}</span>
                 </ContextMenuItem>
               </ContextMenuContent>

@@ -12,6 +12,7 @@ import {
 import { useEffect, useRef, useState } from 'react';
 import type { ReactPortal } from 'react';
 import { createPortal } from 'react-dom';
+import { ICON_SIZE } from '../../constants/ui';
 import { useI18n } from '../../i18n/store';
 import { PlatformBadge } from './PlatformBadge';
 import { type Player, PlayerList } from './PlayerList';
@@ -201,14 +202,16 @@ export const LocationGroupHeader = ({
             {t('locationHeader.ungrouped')}
           </h2>
           <span className="flex items-center gap-2 px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full">
-            <ImageIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+            <ImageIcon
+              className={`${ICON_SIZE.sm.class} text-gray-500 dark:text-gray-400`}
+            />
             <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
               {photoCount}
             </span>
           </span>
         </div>
         <div className="mt-2 text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
-          <Calendar className="h-4 w-4" />
+          <Calendar className={ICON_SIZE.sm.class} />
           <time dateTime={joinDateTime.toISOString()}>{formattedDate}</time>
         </div>
       </header>
@@ -271,7 +274,9 @@ export const LocationGroupHeader = ({
                   className="h-20 rounded-lg bg-gray-200 dark:bg-gray-800 flex items-center justify-center border border-white/20 dark:border-gray-700/30"
                   style={{ aspectRatio: '4/3' }}
                 >
-                  <ImageIcon className="h-8 w-8 text-gray-400 dark:text-gray-600" />
+                  <ImageIcon
+                    className={`${ICON_SIZE.lg.class} text-gray-400 dark:text-gray-600`}
+                  />
                 </div>
               )}
             </div>
@@ -292,12 +297,16 @@ export const LocationGroupHeader = ({
                     <span className="line-clamp-1 text-start">
                       {details?.name || worldName}
                     </span>
-                    <ExternalLink className="h-4 w-4 ml-2 transition-opacity flex-shrink-0" />
+                    <ExternalLink
+                      className={`${ICON_SIZE.sm.class} ml-2 transition-opacity flex-shrink-0`}
+                    />
                   </button>
                 </h3>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <div className="flex items-center text-sm text-gray-800 dark:text-white backdrop-blur-sm bg-white/30 dark:bg-black/30 px-3 py-1 rounded-full border border-white/20 dark:border-gray-700/30">
-                    <Calendar className="h-4 w-4 mr-1.5 text-primary-600 dark:text-primary-300" />
+                    <Calendar
+                      className={`${ICON_SIZE.sm.class} mr-1.5 text-primary-600 dark:text-primary-300`}
+                    />
                     {formattedDate}
                   </div>
                   {details?.unityPackages &&
@@ -317,7 +326,7 @@ export const LocationGroupHeader = ({
                     onClick={openShareModal}
                     className="flex items-center text-sm font-medium text-gray-800 dark:text-white backdrop-blur-sm bg-primary-500/10 hover:bg-primary-500/20 dark:bg-primary-500/30 dark:hover:bg-primary-500/40 px-3 py-1 rounded-full transition-all duration-300 border border-white/20 dark:border-white/10 hover:border-white/30 dark:hover:border-white/20"
                   >
-                    <Share2 className="h-4 w-4 mr-1.5" />
+                    <Share2 className={`${ICON_SIZE.sm.class} mr-1.5`} />
                   </button>
                 </div>
               </div>
@@ -327,7 +336,9 @@ export const LocationGroupHeader = ({
                 {isPlayersLoading ? (
                   <div className="flex gap-2 items-center text-xs text-gray-800 dark:text-white backdrop-blur-sm bg-white/30 dark:bg-black/30 px-3 py-1 rounded-full border border-white/20 dark:border-gray-700/30 flex-1 min-w-0 animate-pulse">
                     <div className="flex items-center gap-1">
-                      <Users className="h-4 w-4 text-primary-600/50 dark:text-primary-300/50 flex-shrink-0" />
+                      <Users
+                        className={`${ICON_SIZE.sm.class} text-primary-600/50 dark:text-primary-300/50 flex-shrink-0`}
+                      />
                       <div className="h-4 w-6 bg-gray-200/70 dark:bg-black/40 rounded" />
                     </div>
                     <div className="text-gray-500/50 dark:text-gray-400/50">
@@ -344,7 +355,9 @@ export const LocationGroupHeader = ({
                   players.length > 0 && (
                     <div className="flex gap-2 items-center text-xs text-gray-800 dark:text-white backdrop-blur-sm bg-white/30 hover:bg-white/40 dark:bg-black/30 dark:hover:bg-black/40 px-3 py-1 rounded-full transition-all duration-300 border border-white/20 dark:border-gray-700/30 hover:border-white/30 dark:hover:border-gray-700/40 group/players flex-1 min-w-0">
                       <div className="flex items-center gap-1">
-                        <Users className="h-4 w-4 text-primary-600 dark:text-primary-300 flex-shrink-0" />
+                        <Users
+                          className={`${ICON_SIZE.sm.class} text-primary-600 dark:text-primary-300 flex-shrink-0`}
+                        />
                         <span>{players.length}</span>
                       </div>
                       <div className="text-gray-500 dark:text-gray-400">|</div>
@@ -373,7 +386,7 @@ export const LocationGroupHeader = ({
                             />
                           ) : (
                             <span className="text-green-400 flex items-center gap-2">
-                              <CheckIcon className="h-4 w-4" />
+                              <CheckIcon className={ICON_SIZE.sm.class} />
                               {t('locationHeader.copied')}
                             </span>
                           )}
@@ -405,7 +418,9 @@ export const LocationGroupHeader = ({
                             document.body,
                           ) as ReactPortal)}
                       </div>
-                      <Copy className="h-4 w-4 ml-2 text-gray-800 dark:text-white group-hover/players:text-gray-200 transition-colors flex-shrink-0" />
+                      <Copy
+                        className={`${ICON_SIZE.sm.class} ml-2 text-gray-800 dark:text-white group-hover/players:text-gray-200 transition-colors flex-shrink-0`}
+                      />
                     </div>
                   )
                 )}

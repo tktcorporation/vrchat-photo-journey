@@ -11,6 +11,7 @@ import pathe from 'pathe';
 import type React from 'react';
 import { memo, useCallback, useRef, useState } from 'react';
 import { P, match } from 'ts-pattern';
+import { ICON_SIZE } from '../constants/ui';
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
 import { useI18n } from '../i18n/store';
 import type { Photo } from '../types/photo';
@@ -251,13 +252,13 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
             >
               {isSelected ? (
                 <CheckCircle2
-                  size={24}
+                  size={ICON_SIZE.photo.pixels}
                   className="text-primary bg-white dark:bg-gray-800 rounded-full shadow-sm"
                   strokeWidth={2.5}
                 />
               ) : (
                 <Circle
-                  size={24}
+                  size={ICON_SIZE.photo.pixels}
                   className="text-white/90 bg-gray-900/40 backdrop-blur-sm rounded-full hover:bg-gray-900/60 transition-colors duration-75"
                   strokeWidth={2}
                 />

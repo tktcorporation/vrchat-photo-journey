@@ -13,6 +13,7 @@ import {
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { trpcReact as trpc } from '../../trpc';
+import { ICON_SIZE } from '../constants/ui';
 import type { UseLoadingStateResult } from '../hooks/useLoadingState';
 import { LOG_SYNC_MODE, useLogSync } from '../hooks/useLogSync';
 import { useI18n } from '../i18n/store';
@@ -126,7 +127,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
                   onClick={onClearSelection}
                   className="h-7 w-7 p-0"
                 >
-                  <X className="h-4 w-4" />
+                  <X className={ICON_SIZE.sm.class} />
                 </Button>
                 <span className="text-xs font-medium px-2">
                   {selectedPhotoCount}件
@@ -139,7 +140,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
                   className="h-7 w-7 p-0"
                   title={t('common.contextMenu.copyPhotoData')}
                 >
-                  <Copy className="h-4 w-4" />
+                  <Copy className={ICON_SIZE.sm.class} />
                 </Button>
               </>
             ) : (
@@ -150,7 +151,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
                   onClick={onOpenSettings}
                   className="h-7 w-7 p-0"
                 >
-                  <Settings className="h-4 w-4" />
+                  <Settings className={ICON_SIZE.sm.class} />
                 </Button>
                 <Button
                   variant="ghost"
@@ -161,7 +162,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
                   title={t('common.refresh')}
                 >
                   <RefreshCw
-                    className={`h-4 w-4 ${
+                    className={`${ICON_SIZE.sm.class} ${
                       loadingState?.isRefreshing ? 'animate-spin' : ''
                     }`}
                   />
@@ -195,7 +196,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             className="h-7 w-7 p-0 hover:bg-green-500/15 text-green-500/70 hover:text-green-500 transition-colors duration-150"
             title="アップデートをインストール"
           >
-            <Download className="h-4 w-4" />
+            <Download className={ICON_SIZE.sm.class} />
           </Button>
         )}
         <Button
@@ -204,7 +205,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           onClick={handleMinimize}
           className="h-7 w-7 p-0 hover:bg-muted/40 text-muted-foreground/60 hover:text-muted-foreground transition-colors duration-150"
         >
-          <Minus className="h-4 w-4" />
+          <Minus className={ICON_SIZE.sm.class} />
         </Button>
         <Button
           variant="ghost"
@@ -212,7 +213,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           onClick={handleMaximize}
           className="h-7 w-7 p-0 hover:bg-muted/40 text-muted-foreground/60 hover:text-muted-foreground transition-colors duration-150"
         >
-          <Square className="h-4 w-4" />
+          <Square className={ICON_SIZE.sm.class} />
         </Button>
         <Button
           variant="ghost"
@@ -220,7 +221,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           onClick={handleClose}
           className="h-7 w-7 p-0 hover:bg-red-500/80 text-muted-foreground/60 hover:text-white transition-colors duration-150"
         >
-          <X className="h-4 w-4" />
+          <X className={ICON_SIZE.sm.class} />
         </Button>
       </div>
     </div>
