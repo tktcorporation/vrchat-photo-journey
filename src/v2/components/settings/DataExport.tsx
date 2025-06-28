@@ -280,11 +280,11 @@ const DataExport = memo(() => {
         </div>
 
         {/* 説明 */}
-        <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-          <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">
+        <div className="bg-primary/10 dark:bg-primary/20 p-4 rounded-lg">
+          <h4 className="text-sm font-medium text-primary mb-2">
             エクスポート形式について
           </h4>
-          <ul className="text-xs text-blue-800 dark:text-blue-200 space-y-1">
+          <ul className="text-xs text-primary/80 space-y-1">
             <li>• データベースからlogStore形式でエクスポートします</li>
             <li>• 月別にファイルが分割されます（例: logStore-2023-10.txt）</li>
             <li>• ワールド参加、プレイヤー参加/退出ログが含まれます</li>
