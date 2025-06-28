@@ -160,7 +160,7 @@ export const ShareDialog = ({
                   <div className="w-full">
                     {isLoading || isGeneratingPreview ? (
                       <div className="flex items-center justify-center">
-                        <LoaderCircle className="h-8 w-8 animate-spin text-blue-500" />
+                        <LoaderCircle className="h-8 w-8 animate-spin text-primary" />
                       </div>
                     ) : (
                       <div className="flex items-center justify-center">

@@ -252,7 +252,7 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
               {isSelected ? (
                 <CheckCircle2
                   size={24}
-                  className="text-blue-500 dark:text-blue-400 bg-white dark:bg-gray-800 rounded-full shadow-sm"
+                  className="text-primary bg-white dark:bg-gray-800 rounded-full shadow-sm"
                   strokeWidth={2.5}
                 />
               ) : (

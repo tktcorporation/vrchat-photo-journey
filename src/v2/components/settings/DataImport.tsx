@@ -212,7 +212,7 @@ const DataImport = memo(() => {
           <div
             className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
               isDragOver
-                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                ? 'border-primary bg-primary/10 dark:bg-primary/20'
                 : 'border-gray-300 dark:border-gray-600'
             }`}
             onDragOver={handleDragOver}
@@ -255,7 +255,7 @@ const DataImport = memo(() => {
                 {selectedPaths.map((pathItem) => (
                   <div
                     key={pathItem}
-                    className="text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 p-2 rounded"
+                    className="text-xs text-primary bg-primary/10 dark:bg-primary/20 p-2 rounded"
                   >
                     {getFilenameFromPath(pathItem)}
                     <div className="text-gray-500 truncate">{pathItem}</div>
@@ -288,11 +288,11 @@ const DataImport = memo(() => {
         </div>
 
         {/* 説明 */}
-        <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-          <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">
+        <div className="bg-primary/10 dark:bg-primary/20 p-4 rounded-lg">
+          <h4 className="text-sm font-medium text-primary mb-2">
             インポート機能について
           </h4>
-          <ul className="text-xs text-blue-800 dark:text-blue-200 space-y-1">
+          <ul className="text-xs text-primary/80 space-y-1">
             <li>
               • logStoreファイルまたはディレクトリを既存データに統合します
             </li>
@@ -377,7 +377,7 @@ const DataImport = memo(() => {
                       {backup.exportedFiles.length}ファイル
                     </div>
                     {backup.sourceFiles.length > 0 && (
-                      <div className="text-blue-600 dark:text-blue-400">
+                      <div className="text-primary">
                         インポート元:{' '}
                         {backup.sourceFiles
                           .map((f) => getFilenameFromPath(f))

@@ -101,10 +101,10 @@ export const MigrationDialog: React.FC<MigrationDialogProps> = ({
                 {t('migration.labels.oldApp')}
               </span>
             </div>
-            <ArrowRight className="h-6 w-6 text-blue-500" />
+            <ArrowRight className="h-6 w-6 text-primary" />
             <div className="flex flex-col items-center gap-2">
-              <div className="w-16 h-16 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                <FolderOpen className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+              <div className="w-16 h-16 rounded-xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
+                <FolderOpen className="h-8 w-8 text-primary" />
               </div>
               <span className="text-xs text-gray-600 dark:text-gray-400">
                 {t('migration.labels.newApp')}
@@ -115,7 +115,7 @@ export const MigrationDialog: React.FC<MigrationDialogProps> = ({
           {/* 移行内容 */}
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 space-y-3">
             <div className="flex items-start gap-3">
-              <Database className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+              <Database className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
               <div className="flex-1">
                 <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                   {t('migration.labels.dataToMigrate')}
@@ -156,7 +156,7 @@ export const MigrationDialog: React.FC<MigrationDialogProps> = ({
           <Button
             onClick={handleMigration}
             disabled={isProcessing}
-            className="min-w-[140px] bg-blue-600 hover:bg-blue-700 text-white"
+            className="min-w-[140px] bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             {isProcessing ? (
               <span className="flex items-center gap-2">
