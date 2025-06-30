@@ -3,7 +3,12 @@ import { ofetch } from 'ofetch';
 import { P, match } from 'ts-pattern';
 import type { QueryObject } from 'ufo';
 
-// 独自エラークラスの定義
+/**
+ * HTTPリクエスト失敗時の詳細情報を保持するエラークラス。
+ *
+ * @see docs/error-handling.md - エラーハンドリング方針
+ * @see fetchWithResult - ofetch のラッパー
+ */
 export class FetchError extends Error {
   status: number;
   url: string;
