@@ -1,7 +1,7 @@
 const opaqueSymbol: unique symbol = Symbol('opaqueSymbol');
 
 /**
- * 値オブジェクトの基底クラス
+ * 値オブジェクトの基底クラス。
  *
  * このクラスを継承することで、型安全な値オブジェクトを実装できます。
  * - Tにはブランド型として使用する文字列リテラル型を指定します
@@ -11,6 +11,9 @@ const opaqueSymbol: unique symbol = Symbol('opaqueSymbol');
  * ```typescript
  * class UserId extends BaseValueObject<'UserId', string> {}
  * ```
+ *
+ * @see docs/refactoring-plan-code-duplication.md - 値オブジェクト活用の背景
+ * @see electron/lib/pathObject.ts - パス操作用ValueObjectの例
  */
 export abstract class BaseValueObject<T extends string, K> {
   // @ts-ignore TS1338

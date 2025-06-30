@@ -14,6 +14,10 @@ import { type ImportBackupMetadata, backupService } from './backupService';
 /**
  * ロールバックサービス
  * バックアップからlogStoreとDBを復帰
+ *
+ * @see docs/app-event-export-import.md - エクスポート/インポート仕様
+ * @see BackupService - バックアップ作成
+ * @see ImportService - インポート処理
  */
 export class RollbackService {
   /**

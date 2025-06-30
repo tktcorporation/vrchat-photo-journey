@@ -6,7 +6,10 @@ import { BaseValueObject } from './baseValueObject.js';
 const opaqueSymbol: unique symbol = Symbol('opaqueSymbol');
 
 /**
- * 基本的なPathObject - 型安全なパス操作を提供
+ * 基本的なPathObject - 型安全なパス操作を提供する値オブジェクト。
+ *
+ * @see docs/app-event-export-import.md - エクスポート/インポート仕様
+ * @see electron/module/vrchatPhoto/model/vrchatPhotoPath.model.ts - 写真パスモデル
  */
 class PathObject extends BaseValueObject<'PathObject', string> {
   /**
