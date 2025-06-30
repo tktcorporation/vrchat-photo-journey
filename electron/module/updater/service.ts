@@ -1,5 +1,12 @@
 import { autoUpdater } from 'electron-updater';
 import { BehaviorSubject } from 'rxjs';
+/**
+ * Electron自動アップデート機能を管理するサービス。
+ *
+
+ * @see docs/error-handling.md - エラーハンドリング設計
+ * @see electron/module/updater/router.ts - tRPCルーター
+ */
 
 export class UpdaterService {
   private updateDownloaded = new BehaviorSubject<boolean>(false);
