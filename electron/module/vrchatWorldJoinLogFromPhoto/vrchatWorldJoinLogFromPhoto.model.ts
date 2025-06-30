@@ -42,6 +42,13 @@ const JoinDateTimeFromPhotoIndex = createIndexDecorator(
 );
 
 @Table({ tableName: 'VRChatWorldJoinLogFromPhotoModels' })
+/**
+ * 写真から抽出したワールド入室情報を保存するモデル。
+ *
+ * @see docs/photo-grouping-logic.md - 写真グループ化ロジック
+ * @see docs/log-sync-architecture.md - ログ同期の設計
+ * @see VRChatWorldJoinLogModel - ログ由来のワールド入室情報
+ */
 export class VRChatWorldJoinLogFromPhotoModel extends Model<
   InferAttributes<VRChatWorldJoinLogFromPhotoModel>,
   InferCreationAttributes<VRChatWorldJoinLogFromPhotoModel>

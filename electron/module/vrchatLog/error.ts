@@ -8,6 +8,12 @@ type Code =
   | 'LOG_MONTH_DIR_CREATE_FAILED'
   | 'LOG_FILE_WRITE_FAILED';
 
+/**
+ * VRChatログファイル読み込みに関するエラークラス。
+ *
+ * @see docs/error-handling.md - エラーハンドリング方針
+ * @see electron/module/vrchatLog/fileHandlers - ログ読み込み関連
+ */
 export class VRChatLogFileError extends Error {
   code: Code | string;
 

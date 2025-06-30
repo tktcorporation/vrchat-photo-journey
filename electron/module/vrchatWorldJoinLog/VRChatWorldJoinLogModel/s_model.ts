@@ -34,6 +34,13 @@ const JoinDateTimeIndex = createIndexDecorator('WorldJoinDateTimeIndex', {
 });
 
 @Table({ tableName: 'VRChatWorldJoinLogModels' })
+/**
+ * VRChatのワールド入室ログを保持するSequelizeモデル。
+ *
+ * @see docs/log-sync-architecture.md - ログ同期の設計
+ * @see docs/photo-grouping-logic.md - 写真グループ化ロジック
+ * @see VRChatWorldJoinLogFromPhotoModel - 写真由来ログ
+ */
 export class VRChatWorldJoinLogModel extends Model<
   InferAttributes<VRChatWorldJoinLogModel>,
   InferCreationAttributes<VRChatWorldJoinLogModel>

@@ -21,6 +21,12 @@ interface QueryCacheOptions {
   onEvict?: (key: string) => void;
 }
 
+/**
+ * tRPCレスポンスをキャッシュする簡易クラス。
+ *
+ * @see docs/log-sync-architecture.md - ログ同期のキャッシュ戦略
+ * @see electron/lib/logger.ts - ログ出力
+ */
 export class QueryCache {
   private cache = new Map<string, CacheEntry<unknown>>();
   private accessOrder: string[] = [];
