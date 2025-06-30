@@ -14,9 +14,14 @@ const t = initTRPC.context<{ eventEmitter: EventEmitter }>().create({
   transformer: superjson,
   errorFormatter: (opts) => {
     const { shape, error } = opts;
-    let userMessage = '予期しないエラーが発生しました。';
-    let structuredErrorInfo = null;
     const cause = error.cause;
+
+    let userMessage = '予期しないエラーが発生しました。';
+    let structuredErrorInfo: {
+      code: string;
+      category: string;
+      userMessage: string;
+    } | null = null;
 
     match(cause)
       .when(
@@ -24,11 +29,15 @@ const t = initTRPC.context<{ eventEmitter: EventEmitter }>().create({
           c instanceof UserFacingError && !!c.code && !!c.category,
         (err) => {
           userMessage = err.message;
-          structuredErrorInfo = {
-            code: err.code,
-            category: err.category,
-            userMessage: err.userMessage || err.message,
-          };
+          // Type guard ensures code and category exist
+          const { code, category } = err;
+          if (code && category) {
+            structuredErrorInfo = {
+              code,
+              category,
+              userMessage: err.userMessage || err.message,
+            };
+          }
         },
       )
       .when(
@@ -60,7 +69,9 @@ const t = initTRPC.context<{ eventEmitter: EventEmitter }>().create({
           userMessage = 'Sentryテスト用のエラーが発生しました。';
         },
       )
-      .otherwise(() => {});
+      .otherwise(() => {
+        userMessage = '予期しないエラーが発生しました。';
+      });
 
     // UserFacingErrorの場合は詳細情報を表示しない（構造化エラー情報で十分）
     const debugInfo = match(cause)
