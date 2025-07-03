@@ -26,11 +26,13 @@ interface PhotoCardProps {
   photo: Photo;
   /** 画像を優先的に読み込むか (ビューポート内の最初の要素など) */
   priority?: boolean;
-  /** 現在選択されている写真のIDセット */
-  selectedPhotos: Set<string>;
-  /** 選択されている写真のIDセットを更新する関数 */
+  /** 現在選択されている写真のIDと選択順序のマップ */
+  selectedPhotos: Map<string, number>;
+  /** 選択されている写真のIDと選択順序のマップを更新する関数 */
   setSelectedPhotos: (
-    update: Set<string> | ((prev: Set<string>) => Set<string>),
+    update:
+      | Map<string, number>
+      | ((prev: Map<string, number>) => Map<string, number>),
   ) => void;
   /** このカードが含まれるグリッド全体の写真リスト (複数コピー時のパス取得用、将来的に不要かも) */
   photos: Photo[];
@@ -69,6 +71,8 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
     const currentPhotoId = String(photo.id);
     /** このカードが現在選択されているかどうか */
     const isSelected = selectedPhotos.has(currentPhotoId);
+    /** このカードの選択順序番号 */
+    const selectionOrder = selectedPhotos.get(currentPhotoId);
 
     /** 画像を読み込むべきか (優先指定またはビューポート内) */
     const shouldLoad = priority || isIntersecting;
@@ -100,7 +104,7 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
     const handleCopyPhotoData = (e: React.MouseEvent) => {
       e.stopPropagation();
       if (selectedPhotos.size > 1) {
-        const pathsToCopy = Array.from(selectedPhotos)
+        const pathsToCopy = Array.from(selectedPhotos.keys())
           .map((id) => {
             const p = photos.find((p) => String(p.id) === id);
             return p?.url;
@@ -130,11 +134,14 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
       if (isMultiSelectMode) {
         // 複数選択モード中: 選択/選択解除
         setSelectedPhotos((prev) => {
-          const newSelected = new Set(prev);
+          const newSelected = new Map(prev);
           if (newSelected.has(currentPhotoId)) {
             newSelected.delete(currentPhotoId);
           } else {
-            newSelected.add(currentPhotoId);
+            // 新しい選択順序番号を割り当て（現在の最大値 + 1）
+            const maxOrder =
+              newSelected.size > 0 ? Math.max(...newSelected.values()) : 0;
+            newSelected.set(currentPhotoId, maxOrder + 1);
           }
           return newSelected;
         });
@@ -160,11 +167,14 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
         }
 
         setSelectedPhotos((prev) => {
-          const newSelected = new Set(prev);
+          const newSelected = new Map(prev);
           if (newSelected.has(currentPhotoId)) {
             newSelected.delete(currentPhotoId);
           } else {
-            newSelected.add(currentPhotoId);
+            // 新しい選択順序番号を割り当て（現在の最大値 + 1）
+            const maxOrder =
+              newSelected.size > 0 ? Math.max(...newSelected.values()) : 0;
+            newSelected.set(currentPhotoId, maxOrder + 1);
           }
           return newSelected;
         });
@@ -181,7 +191,9 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
     const handleContextMenu = useCallback(() => {
       if (!isMultiSelectMode || !selectedPhotos.has(currentPhotoId)) {
         // モード外 or 未選択写真を右クリック: これを選択しモード開始
-        setSelectedPhotos(new Set([currentPhotoId]));
+        const newSelected = new Map<string, number>();
+        newSelected.set(currentPhotoId, 1);
+        setSelectedPhotos(newSelected);
         setIsMultiSelectMode(true);
       }
     }, [
@@ -251,11 +263,18 @@ const PhotoCard: React.FC<PhotoCardProps> = memo(
               tabIndex={0}
             >
               {isSelected ? (
-                <CheckCircle2
-                  size={ICON_SIZE.photo.pixels}
-                  className="text-primary bg-white dark:bg-gray-800 rounded-full shadow-sm"
-                  strokeWidth={2.5}
-                />
+                <div className="relative">
+                  <CheckCircle2
+                    size={ICON_SIZE.photo.pixels}
+                    className="text-primary bg-white dark:bg-gray-800 rounded-full shadow-sm"
+                    strokeWidth={2.5}
+                  />
+                  {selectionOrder && (
+                    <div className="absolute -right-1 -bottom-1 w-5 h-5 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-bold shadow-sm">
+                      {selectionOrder}
+                    </div>
+                  )}
+                </div>
               ) : (
                 <Circle
                   size={ICON_SIZE.photo.pixels}
