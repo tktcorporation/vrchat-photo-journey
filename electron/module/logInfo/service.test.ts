@@ -43,6 +43,17 @@ vi.mock('../vrchatLog/service', () => ({
   getVRChaLogInfoByLogFilePathList: vi.fn().mockImplementation(() => {
     return neverthrow.ok([]);
   }),
+  getVRChaLogInfoByLogFilePathListWithPartialSuccess: vi
+    .fn()
+    .mockImplementation(() => {
+      return Promise.resolve({
+        data: [],
+        errors: [],
+        totalProcessed: 0,
+        successCount: 0,
+        errorCount: 0,
+      });
+    }),
   getLegacyLogStoreFilePath: vi.fn().mockImplementation(async () => {
     // モックでレガシーファイルパスを返す
     const legacyPath = path.join('/mock/user/data/logStore', 'logStore.txt');
@@ -178,11 +189,17 @@ describe('loadLogInfoIndexFromVRChatLog', () => {
 
     // このテスト用にgetVRChaLogInfoByLogFilePathListをカスタマイズ
     vi.mocked(
-      vrchatLogService.getVRChaLogInfoByLogFilePathList,
+      vrchatLogService.getVRChaLogInfoByLogFilePathListWithPartialSuccess,
     ).mockImplementation(async (paths) => {
       // パスにlegacyPathが含まれていることを確認するためのカスタムモック
       expect(paths.some((p) => p.value === legacyPath)).toBe(true);
-      return neverthrow.ok([]);
+      return {
+        data: [],
+        errors: [],
+        totalProcessed: paths.length,
+        successCount: paths.length,
+        errorCount: 0,
+      };
     });
 
     try {
@@ -211,9 +228,15 @@ describe('loadLogInfoIndexFromVRChatLog', () => {
 
     // getVRChaLogInfoByLogFilePathListのモックをリセット
     vi.mocked(
-      vrchatLogService.getVRChaLogInfoByLogFilePathList,
+      vrchatLogService.getVRChaLogInfoByLogFilePathListWithPartialSuccess,
     ).mockImplementation(async () => {
-      return neverthrow.ok([]);
+      return {
+        data: [],
+        errors: [],
+        totalProcessed: 0,
+        successCount: 0,
+        errorCount: 0,
+      };
     });
 
     // テスト用にgetLogStoreFilePathsInRangeの実装を修正してパスを記録
@@ -298,9 +321,15 @@ describe('loadLogInfoIndexFromVRChatLog', () => {
 
     // getVRChaLogInfoByLogFilePathListのモックをリセット
     vi.mocked(
-      vrchatLogService.getVRChaLogInfoByLogFilePathList,
+      vrchatLogService.getVRChaLogInfoByLogFilePathListWithPartialSuccess,
     ).mockImplementation(async () => {
-      return neverthrow.ok([]);
+      return {
+        data: [],
+        errors: [],
+        totalProcessed: 0,
+        successCount: 0,
+        errorCount: 0,
+      };
     });
 
     // テスト用にgetLogStoreFilePathsInRangeの実装を修正してパスを記録
@@ -398,8 +427,14 @@ describe('_getLogStoreFilePaths behavior within loadLogInfoIndexFromVRChatLog', 
     ]);
     // getVRChaLogInfoByLogFilePathList は空の成功結果を返すように設定
     vi.mocked(
-      vrchatLogService.getVRChaLogInfoByLogFilePathList,
-    ).mockResolvedValue(neverthrow.ok([]));
+      vrchatLogService.getVRChaLogInfoByLogFilePathListWithPartialSuccess,
+    ).mockResolvedValue({
+      data: [],
+      errors: [],
+      totalProcessed: 0,
+      successCount: 0,
+      errorCount: 0,
+    });
     // 写真関連のモックも設定（必要に応じて）
     vi.mocked(vrchatPhotoService.getVRChatPhotoDirPath).mockResolvedValue(
       VRChatPhotoDirPathSchema.parse('/mock/photos'),
@@ -436,7 +471,7 @@ describe('_getLogStoreFilePaths behavior within loadLogInfoIndexFromVRChatLog', 
 
       // getVRChaLogInfoByLogFilePathList に渡されるパスを確認
       expect(
-        vrchatLogService.getVRChaLogInfoByLogFilePathList,
+        vrchatLogService.getVRChaLogInfoByLogFilePathListWithPartialSuccess,
       ).toHaveBeenCalledWith([rangeLogPath1, rangeLogPath2]);
     } finally {
       vi.useRealTimers();
@@ -469,7 +504,7 @@ describe('_getLogStoreFilePaths behavior within loadLogInfoIndexFromVRChatLog', 
 
       // getVRChaLogInfoByLogFilePathList に渡されるパスを確認 (legacy + range)
       expect(
-        vrchatLogService.getVRChaLogInfoByLogFilePathList,
+        vrchatLogService.getVRChaLogInfoByLogFilePathListWithPartialSuccess,
       ).toHaveBeenCalledWith([legacyLogPath, rangeLogPath1, rangeLogPath2]);
     } finally {
       vi.useRealTimers();
@@ -502,7 +537,7 @@ describe('_getLogStoreFilePaths behavior within loadLogInfoIndexFromVRChatLog', 
 
       // getVRChaLogInfoByLogFilePathList に渡されるパスを確認 (range のみ)
       expect(
-        vrchatLogService.getVRChaLogInfoByLogFilePathList,
+        vrchatLogService.getVRChaLogInfoByLogFilePathListWithPartialSuccess,
       ).toHaveBeenCalledWith([rangeLogPath1, rangeLogPath2]);
     } finally {
       vi.useRealTimers();
@@ -549,7 +584,7 @@ describe('_getLogStoreFilePaths behavior within loadLogInfoIndexFromVRChatLog', 
 
       // getVRChaLogInfoByLogFilePathList に渡されるパスを確認 (range のみ)
       expect(
-        vrchatLogService.getVRChaLogInfoByLogFilePathList,
+        vrchatLogService.getVRChaLogInfoByLogFilePathListWithPartialSuccess,
       ).toHaveBeenCalledWith([rangeLogPath1, rangeLogPath2]); // モックの rangeLogPath が渡される
     } finally {
       vi.useRealTimers();

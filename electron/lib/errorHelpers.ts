@@ -179,6 +179,87 @@ export const fileOperationErrorMappings = {
 } as const;
 
 /**
+ * VRChatログ操作関連のエラーマッピング
+ */
+export const vrchatLogErrorMappings = {
+  LOG_FILE_NOT_FOUND: (originalError: unknown) =>
+    UserFacingError.withStructuredInfo({
+      code: ERROR_CODES.FILE_NOT_FOUND,
+      category: ERROR_CATEGORIES.FILE_NOT_FOUND,
+      message: 'VRChat log file not found',
+      userMessage: 'VRChatのログファイルが見つかりません。',
+      cause: match(originalError)
+        .with(P.instanceOf(Error), (err) => err)
+        .otherwise((err) => new Error(String(err))),
+    }),
+  LOG_FILE_DIR_NOT_FOUND: (originalError: unknown) =>
+    UserFacingError.withStructuredInfo({
+      code: ERROR_CODES.VRCHAT_DIRECTORY_SETUP_REQUIRED,
+      category: ERROR_CATEGORIES.SETUP_REQUIRED,
+      message: 'VRChat log directory not found',
+      userMessage:
+        'VRChatのログディレクトリが見つかりません。VRChatがインストールされているか確認してください。',
+      cause: match(originalError)
+        .with(P.instanceOf(Error), (err) => err)
+        .otherwise((err) => new Error(String(err))),
+    }),
+  LOG_FILES_NOT_FOUND: (originalError: unknown) =>
+    UserFacingError.withStructuredInfo({
+      code: ERROR_CODES.FILE_NOT_FOUND,
+      category: ERROR_CATEGORIES.FILE_NOT_FOUND,
+      message: 'No VRChat log files found',
+      userMessage:
+        'VRChatのログファイルが見つかりません。VRChatを一度起動してから再度お試しください。',
+      cause: match(originalError)
+        .with(P.instanceOf(Error), (err) => err)
+        .otherwise((err) => new Error(String(err))),
+    }),
+  LOG_STORE_DIR_CREATE_FAILED: (originalError: unknown) =>
+    UserFacingError.withStructuredInfo({
+      code: ERROR_CODES.PERMISSION_DENIED,
+      category: ERROR_CATEGORIES.PERMISSION_DENIED,
+      message: 'Failed to create log storage directory',
+      userMessage:
+        'ログ保存用ディレクトリの作成に失敗しました。ファイルシステムの権限を確認してください。',
+      cause: match(originalError)
+        .with(P.instanceOf(Error), (err) => err)
+        .otherwise((err) => new Error(String(err))),
+    }),
+  LOG_MONTH_DIR_CREATE_FAILED: (originalError: unknown) =>
+    UserFacingError.withStructuredInfo({
+      code: ERROR_CODES.PERMISSION_DENIED,
+      category: ERROR_CATEGORIES.PERMISSION_DENIED,
+      message: 'Failed to create monthly log directory',
+      userMessage:
+        '月別ログディレクトリの作成に失敗しました。ファイルシステムの権限を確認してください。',
+      cause: match(originalError)
+        .with(P.instanceOf(Error), (err) => err)
+        .otherwise((err) => new Error(String(err))),
+    }),
+  LOG_FILE_WRITE_FAILED: (originalError: unknown) =>
+    UserFacingError.withStructuredInfo({
+      code: ERROR_CODES.PERMISSION_DENIED,
+      category: ERROR_CATEGORIES.PERMISSION_DENIED,
+      message: 'Failed to write log file',
+      userMessage:
+        'ログファイルの書き込みに失敗しました。ディスクの空き容量とファイルシステムの権限を確認してください。',
+      cause: match(originalError)
+        .with(P.instanceOf(Error), (err) => err)
+        .otherwise((err) => new Error(String(err))),
+    }),
+  default: (originalError: unknown) =>
+    UserFacingError.withStructuredInfo({
+      code: ERROR_CODES.UNKNOWN,
+      category: ERROR_CATEGORIES.UNKNOWN_ERROR,
+      message: 'VRChat log operation error',
+      userMessage: 'VRChatログ操作中にエラーが発生しました。',
+      cause: match(originalError)
+        .with(P.instanceOf(Error), (err) => err)
+        .otherwise((err) => new Error(String(err))),
+    }),
+} as const;
+
+/**
  * 写真操作関連のエラーマッピング
  */
 export const photoOperationErrorMappings = {
@@ -242,6 +323,15 @@ export type LogOperationError =
   | 'LOG_FILE_NOT_FOUND'
   | 'LOG_PARSE_ERROR'
   | 'LOG_ACCESS_DENIED';
+
+// VRChatログファイル操作のエラー型定義
+export type VRChatLogFileErrorCode =
+  | 'LOG_FILE_NOT_FOUND'
+  | 'LOG_FILE_DIR_NOT_FOUND'
+  | 'LOG_FILES_NOT_FOUND'
+  | 'LOG_STORE_DIR_CREATE_FAILED'
+  | 'LOG_MONTH_DIR_CREATE_FAILED'
+  | 'LOG_FILE_WRITE_FAILED';
 
 // データベース操作関連のエラー型定義
 export type DatabaseOperationError =
@@ -408,4 +498,35 @@ export function handleDatabaseOperationError<T>(
     operationName: 'Database operation',
     defaultUserMessage: 'データベース操作中にエラーが発生しました。',
   });
+}
+
+/**
+ * VRChatログ操作専用のエラーハンドラー
+ * VRChatLogFileErrorオブジェクトを適切なUserFacingErrorに変換
+ */
+export function handleVRChatLogError<T>(
+  result: Result<T, { code: VRChatLogFileErrorCode | string }>,
+): T {
+  if (result.isOk()) {
+    return result.value;
+  }
+
+  const error = result.error;
+  const errorCode = error.code;
+
+  // エラーコードに基づいてマッピングを取得
+  const mapping =
+    vrchatLogErrorMappings[errorCode as keyof typeof vrchatLogErrorMappings];
+
+  if (mapping) {
+    throw mapping(error);
+  }
+
+  // デフォルトマッピングを使用
+  if (vrchatLogErrorMappings.default) {
+    throw vrchatLogErrorMappings.default(error);
+  }
+
+  // マッピングがない場合は元のエラーをthrow
+  throw error instanceof Error ? error : new Error(String(error));
 }
