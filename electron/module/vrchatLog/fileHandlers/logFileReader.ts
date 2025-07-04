@@ -5,9 +5,11 @@ import { match } from 'ts-pattern';
 import { logger } from '../../../lib/logger';
 import * as fs from '../../../lib/wrappedFs';
 import type { VRChatLogFilePath } from '../../vrchatLogFileDir/model';
-import type { VRChatLogFileError } from '../error';
+import { VRChatLogFileError } from '../error';
 import type { VRChatLogLine, VRChatLogStoreFilePath } from '../model';
 import { VRChatLogLineSchema } from '../model';
+import type { PartialSuccessResult } from '../types/partialSuccess';
+import { createPartialSuccessResult } from '../types/partialSuccess';
 
 /**
  * VRChatログファイルの読み込み機能
@@ -125,6 +127,102 @@ export const getLogLinesByLogFilePathList = async (props: {
     )
     .with(false, () => neverthrow.ok(logLineList))
     .exhaustive();
+};
+
+/**
+ * 複数のログファイルから指定された文字列を含む行を抽出（部分的な成功を許容）
+ * エラーが発生しても処理を継続し、成功した部分のデータを返す
+ * @param props.logFilePathList ログファイルパスのリスト
+ * @param props.includesList 抽出対象とする文字列のリスト
+ * @param props.concurrency 並列処理数（デフォルト: 5）
+ * @param props.maxMemoryUsageMB メモリ使用量の上限（MB）
+ * @returns 部分的な成功結果（成功したデータとエラー情報）
+ */
+export const getLogLinesByLogFilePathListWithPartialSuccess = async (props: {
+  logFilePathList: (VRChatLogFilePath | VRChatLogStoreFilePath)[];
+  includesList: string[];
+  concurrency?: number;
+  maxMemoryUsageMB?: number;
+}): Promise<
+  PartialSuccessResult<
+    VRChatLogLine[],
+    { path: string; error: VRChatLogFileError }
+  >
+> => {
+  const logLineList: VRChatLogLine[] = [];
+  const errors: { path: string; error: VRChatLogFileError }[] = [];
+  const concurrency = props.concurrency ?? 5;
+  const maxMemoryUsageMB = props.maxMemoryUsageMB ?? 500;
+  const maxLinesInMemory = Math.floor((maxMemoryUsageMB * 1024 * 1024) / 200);
+
+  const checkMemoryUsage = () => {
+    const memUsage = process.memoryUsage();
+    const usedMB = memUsage.heapUsed / 1024 / 1024;
+    return usedMB;
+  };
+
+  // バッチ処理で並列数を制限
+  for (let i = 0; i < props.logFilePathList.length; i += concurrency) {
+    const batch = props.logFilePathList.slice(i, i + concurrency);
+    const batchResults = await Promise.all(
+      batch.map(async (logFilePath) => {
+        try {
+          const result = await getLogLinesFromLogFile({
+            logFilePath,
+            includesList: props.includesList,
+          });
+          if (result.isErr()) {
+            errors.push({ path: logFilePath.value, error: result.error });
+            return [];
+          }
+          return result.value.map((line) => VRChatLogLineSchema.parse(line));
+        } catch (e) {
+          // パースエラーなど予期しないエラーもキャッチ
+          logger.warn(`Failed to process log file: ${logFilePath.value}`, e);
+          errors.push({
+            path: logFilePath.value,
+            error: new VRChatLogFileError({
+              code: 'LOG_PARSE_ERROR',
+              message: e instanceof Error ? e.message : 'Unknown parse error',
+            }),
+          });
+          return [];
+        }
+      }),
+    );
+
+    // バッチの結果を統合
+    for (const lines of batchResults) {
+      logLineList.push(...lines);
+
+      // メモリ使用量をチェックし、上限に近づいたら警告
+      if (logLineList.length > maxLinesInMemory) {
+        const usedMB = checkMemoryUsage();
+        logger.warn(
+          `Log lines in memory: ${logLineList.length} (Memory: ${usedMB.toFixed(
+            2,
+          )}MB). Consider processing in smaller batches.`,
+        );
+      }
+    }
+  }
+
+  const totalFiles = props.logFilePathList.length;
+  const successCount = totalFiles - errors.length;
+
+  logger.info(
+    `Loaded ${logLineList.length} log lines from ${successCount}/${totalFiles} files ` +
+      `(${errors.length} errors, Memory: ${checkMemoryUsage().toFixed(2)}MB)`,
+  );
+
+  if (errors.length > 0) {
+    logger.warn(
+      `Failed to process ${errors.length} log files:`,
+      errors.map((e) => ({ path: e.path, code: e.error.code })),
+    );
+  }
+
+  return createPartialSuccessResult(logLineList, errors, totalFiles);
 };
 
 /**

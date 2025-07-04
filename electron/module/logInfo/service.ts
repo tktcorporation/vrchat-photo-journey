@@ -187,21 +187,39 @@ export async function loadLogInfoIndexFromVRChatLog({
     )}`,
   );
 
-  // 3. ログファイルからログ情報を取得
+  // 3. ログファイルからログ情報を取得（部分的な成功を許容）
   const getLogInfoStartTime = performance.now();
   const logInfoListFromLogFile =
-    await vrchatLogService.getVRChaLogInfoByLogFilePathList(logStoreFilePaths);
+    await vrchatLogService.getVRChaLogInfoByLogFilePathListWithPartialSuccess(
+      logStoreFilePaths,
+    );
   const getLogInfoEndTime = performance.now();
   logger.debug(
     `Get VRChat log info from log files took ${
       getLogInfoEndTime - getLogInfoStartTime
     } ms`,
   );
-  if (logInfoListFromLogFile.isErr()) {
-    return neverthrow.err(logInfoListFromLogFile.error);
+
+  // エラーがあった場合は警告を出力
+  if (logInfoListFromLogFile.errorCount > 0) {
+    logger.warn(
+      `Failed to process ${logInfoListFromLogFile.errorCount} log files out of ${logInfoListFromLogFile.totalProcessed}`,
+      logInfoListFromLogFile.errors.map((e) => ({
+        path: e.path,
+        code: e.error.code,
+      })),
+    );
   }
 
-  const logInfoList = logInfoListFromLogFile.value;
+  // 成功したログが1つもない場合のみエラーを返す
+  if (
+    logInfoListFromLogFile.successCount === 0 &&
+    logInfoListFromLogFile.errorCount > 0
+  ) {
+    return neverthrow.err(logInfoListFromLogFile.errors[0].error);
+  }
+
+  const logInfoList = logInfoListFromLogFile.data;
 
   const filterLogsStartTime = performance.now();
   const newLogs = await match(excludeOldLogLoad)

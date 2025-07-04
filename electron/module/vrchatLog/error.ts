@@ -17,7 +17,12 @@ type Code =
 export class VRChatLogFileError extends Error {
   code: Code | string;
 
-  constructor(codeOrError: Code | (Error & { code: string })) {
+  constructor(
+    codeOrError:
+      | Code
+      | (Error & { code: string })
+      | { code: string; message?: string },
+  ) {
     const result = match(codeOrError)
       .with(P.string, (code) => ({
         message: code,
@@ -28,6 +33,11 @@ export class VRChatLogFileError extends Error {
         message: error.message,
         code: error.code,
         stack: error.stack,
+      }))
+      .with({ code: P.string }, (obj) => ({
+        message: obj.message || obj.code,
+        code: obj.code,
+        stack: undefined,
       }))
       .otherwise(() => ({
         message: 'UNKNOWN',
