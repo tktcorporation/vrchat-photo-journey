@@ -200,15 +200,32 @@ export async function loadLogInfoIndexFromVRChatLog({
     } ms`,
   );
 
-  // エラーがあった場合は警告を出力
+  // エラーがあった場合は警告を出力し、Sentryにも送信
   if (logInfoListFromLogFile.errorCount > 0) {
-    logger.warn(
-      `Failed to process ${logInfoListFromLogFile.errorCount} log files out of ${logInfoListFromLogFile.totalProcessed}`,
-      logInfoListFromLogFile.errors.map((e) => ({
-        path: e.path,
-        code: e.error.code,
-      })),
-    );
+    const errorSummary = `Failed to process ${logInfoListFromLogFile.errorCount} log files out of ${logInfoListFromLogFile.totalProcessed}`;
+    const errorDetails = logInfoListFromLogFile.errors.map((e) => ({
+      path: e.path,
+      code: e.error.code,
+    }));
+
+    logger.warn(errorSummary, errorDetails);
+
+    // 部分的な失敗もSentryに送信（エラーレベルで記録）
+    // カスタムエラークラスを定義して型安全にする
+    interface PartialLogLoadFailureError extends Error {
+      errorDetails: Array<{ path: string; code: string }>;
+    }
+
+    const partialFailureError = new Error(
+      errorSummary,
+    ) as PartialLogLoadFailureError;
+    partialFailureError.name = 'PartialLogLoadFailure';
+    partialFailureError.errorDetails = errorDetails;
+
+    logger.error({
+      message: partialFailureError,
+      stack: partialFailureError,
+    });
   }
 
   // 成功したログが1つもない場合のみエラーを返す
