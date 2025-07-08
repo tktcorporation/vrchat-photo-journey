@@ -6,6 +6,7 @@
 export {
   getLogLinesFromLogFile,
   getLogLinesByLogFilePathList,
+  getLogLinesByLogFilePathListWithPartialSuccess,
   getLogLinesByLogFilePathListStreaming,
 } from './logFileReader';
 

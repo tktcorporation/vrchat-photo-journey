@@ -30,10 +30,12 @@ import {
   getLegacyLogStoreFilePath,
   getLogLinesByLogFilePathList,
   getLogLinesByLogFilePathListStreaming,
+  getLogLinesByLogFilePathListWithPartialSuccess,
   getLogStoreFilePathForDate,
   getLogStoreFilePathsInRange,
   importLogLinesFromLogPhotoDirPath,
 } from './fileHandlers';
+import type { PartialSuccessResult } from './types/partialSuccess';
 
 /**
  * VRChatログサービスのメインインターフェース
@@ -124,6 +126,50 @@ export const getVRChaLogInfoByLogFilePathList = async (
   );
 
   return neverthrow.ok(logInfoList);
+};
+
+/**
+ * 複数のVRChatログファイルからログ情報を取得（部分的な成功を許容）
+ * エラーが発生しても処理を継続し、成功した部分のデータを返す
+ * @param logFilePathList ログファイルパスのリスト
+ * @returns 部分的な成功結果（成功したログ情報とエラー情報）
+ */
+export const getVRChaLogInfoByLogFilePathListWithPartialSuccess = async (
+  logFilePathList: (VRChatLogFilePath | VRChatLogStoreFilePath)[],
+): Promise<
+  PartialSuccessResult<
+    (
+      | VRChatWorldJoinLog
+      | VRChatWorldLeaveLog
+      | VRChatPlayerJoinLog
+      | VRChatPlayerLeaveLog
+    )[],
+    { path: string; error: VRChatLogFileError }
+  >
+> => {
+  const logLineListResult =
+    await getLogLinesByLogFilePathListWithPartialSuccess({
+      logFilePathList,
+      includesList: [
+        'VRC Analytics Initialized', // TODO: 今後実装
+        '[Behaviour] Joining ',
+        '[Behaviour] OnPlayerJoined ',
+        '[Behaviour] OnPlayerLeft ',
+        'VRCApplication: HandleApplicationQuit', // worldLeaveParserで処理
+      ],
+    });
+
+  const logInfoList = convertLogLinesToWorldAndPlayerJoinLogInfos(
+    logLineListResult.data,
+  );
+
+  return {
+    data: logInfoList,
+    errors: logLineListResult.errors,
+    totalProcessed: logLineListResult.totalProcessed,
+    successCount: logLineListResult.successCount,
+    errorCount: logLineListResult.errorCount,
+  };
 };
 
 // ファイルハンドラー機能の再エクスポート
