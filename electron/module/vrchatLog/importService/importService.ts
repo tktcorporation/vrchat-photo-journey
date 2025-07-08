@@ -28,6 +28,10 @@ export interface ImportResult {
 /**
  * インポートサービス
  * logStoreファイルを既存のlogStore階層に統合し、DBに反映
+ *
+ * @see docs/app-event-export-import.md - エクスポート/インポート仕様
+ * @see BackupService - バックアップ作成
+ * @see RollbackService - ロールバック処理
  */
 export class ImportService {
   /**

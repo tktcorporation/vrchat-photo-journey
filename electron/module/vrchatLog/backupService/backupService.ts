@@ -35,6 +35,10 @@ export type DBLogProvider = (
 /**
  * バックアップサービス
  * 既存のエクスポート機能を活用してインポート前のデータバックアップを作成
+ *
+ * @see docs/app-event-export-import.md - エクスポート/インポート仕様
+ * @see ImportService - インポート処理
+ * @see RollbackService - ロールバック処理
  */
 export class BackupService {
   /**
