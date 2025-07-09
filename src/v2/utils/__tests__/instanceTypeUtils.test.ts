@@ -67,17 +67,17 @@ describe('instanceTypeUtils', () => {
     });
 
     describe('リージョン情報パターン（中信頼度）', () => {
-      it('2文字のリージョンコードを中信頼度でpublicと判定する', () => {
+      it('既知の2文字のリージョンコードを中信頼度でpublicと判定する', () => {
         const result = getInstanceTypeWithConfidence('12345~jp');
         expect(result).toEqual({ type: 'public', confidence: 'medium' });
       });
 
-      it('3文字のリージョンコードを中信頼度でpublicと判定する', () => {
+      it('既知の3文字のリージョンコードを中信頼度でpublicと判定する', () => {
         const result = getInstanceTypeWithConfidence('12345~usw');
         expect(result).toEqual({ type: 'public', confidence: 'medium' });
       });
 
-      it('リージョンコードとパラメータを中信頼度でpublicと判定する', () => {
+      it('既知のリージョンコードとパラメータを中信頼度でpublicと判定する', () => {
         const result = getInstanceTypeWithConfidence('12345~us(e)');
         expect(result).toEqual({ type: 'public', confidence: 'medium' });
       });
@@ -85,6 +85,11 @@ describe('instanceTypeUtils', () => {
       it('数字を含むリージョンパラメータを中信頼度でpublicと判定する', () => {
         const result = getInstanceTypeWithConfidence('12345~jp(1234)');
         expect(result).toEqual({ type: 'public', confidence: 'medium' });
+      });
+
+      it('未知のリージョンコードは低信頼度でpublicと判定する', () => {
+        const result = getInstanceTypeWithConfidence('12345~xy');
+        expect(result).toEqual({ type: 'public', confidence: 'low' });
       });
     });
 
@@ -124,6 +129,7 @@ describe('instanceTypeUtils', () => {
     it('低信頼度の場合はfalseを返す', () => {
       expect(shouldShowInstanceTypeBadge('12345~something')).toBe(false);
       expect(shouldShowInstanceTypeBadge('12345~toolong')).toBe(false);
+      expect(shouldShowInstanceTypeBadge('12345~xy')).toBe(false); // 未知のリージョンコード
     });
   });
 
@@ -168,6 +174,28 @@ describe('instanceTypeUtils', () => {
     it('大文字のリージョンコードは低信頼度でunknownを返す', () => {
       const result = getInstanceTypeWithConfidence('12345~JP');
       expect(result).toEqual({ type: 'unknown', confidence: 'low' });
+    });
+
+    it('極端に長いインスタンスIDは低信頼度でnullを返す', () => {
+      const longInstanceId = 'a'.repeat(1001);
+      const result = getInstanceTypeWithConfidence(longInstanceId);
+      expect(result).toEqual({ type: null, confidence: 'low' });
+    });
+
+    it('最大長ギリギリのインスタンスIDは正常に処理される', () => {
+      const maxLengthInstanceId = `${'a'.repeat(999)}b`;
+      const result = getInstanceTypeWithConfidence(maxLengthInstanceId);
+      expect(result).toEqual({ type: 'public', confidence: 'high' });
+    });
+
+    it('4文字以上のリージョンコードは低信頼度でunknownを返す', () => {
+      const result = getInstanceTypeWithConfidence('12345~toolong');
+      expect(result).toEqual({ type: 'unknown', confidence: 'low' });
+    });
+
+    it('パターンに一致するが未知のリージョンコードは低信頼度でpublicを返す', () => {
+      const result = getInstanceTypeWithConfidence('12345~xy(123)');
+      expect(result).toEqual({ type: 'public', confidence: 'low' });
     });
   });
 });

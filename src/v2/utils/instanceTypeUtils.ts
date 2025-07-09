@@ -8,6 +8,31 @@
 export type InstanceTypeConfidence = 'high' | 'medium' | 'low';
 
 /**
+ * パフォーマンス向上のため事前コンパイル済み正規表現
+ */
+const REGION_PATTERN = /^[a-z]{2,3}(\([a-z0-9]+\))?$/;
+
+/**
+ * 入力値の最大長制限（セキュリティ対策）
+ */
+const MAX_INSTANCE_ID_LENGTH = 1000;
+
+/**
+ * VRChatで使用される既知のリージョンコード
+ */
+const KNOWN_REGION_CODES = new Set([
+  'us',
+  'use',
+  'usw',
+  'eu',
+  'jp',
+  'au',
+  'ap',
+  'ase',
+  'asw',
+]);
+
+/**
  * インスタンスタイプと信頼度を含む結果
  */
 export interface InstanceTypeResult {
@@ -24,6 +49,11 @@ export const getInstanceTypeWithConfidence = (
   instanceId: string | null,
 ): InstanceTypeResult => {
   if (!instanceId) return { type: null, confidence: 'low' };
+
+  // セキュリティ：入力値の長さ制限チェック
+  if (instanceId.length > MAX_INSTANCE_ID_LENGTH) {
+    return { type: null, confidence: 'low' };
+  }
 
   // インスタンスIDに~が含まれていない場合はPublicインスタンス（高信頼度）
   if (!instanceId.includes('~')) {
@@ -56,8 +86,14 @@ export const getInstanceTypeWithConfidence = (
     return { type: 'group-public', confidence: 'high' };
 
   // リージョン情報のみの場合はPublic（中信頼度）
-  if (typePart.match(/^[a-z]{2,3}(\([a-z0-9]+\))?$/)) {
-    return { type: 'public', confidence: 'medium' };
+  if (REGION_PATTERN.test(typePart)) {
+    // 既知のリージョンコードかチェック
+    const regionMatch = typePart.match(/^([a-z]{2,3})/);
+    if (regionMatch && KNOWN_REGION_CODES.has(regionMatch[1])) {
+      return { type: 'public', confidence: 'medium' };
+    }
+    // 未知のリージョンコードの場合は低信頼度
+    return { type: 'public', confidence: 'low' };
   }
 
   // その他の場合（低信頼度）
