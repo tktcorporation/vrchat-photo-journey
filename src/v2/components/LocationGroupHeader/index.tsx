@@ -17,6 +17,7 @@ import { useI18n } from '../../i18n/store';
 import {
   getInstanceTypeColor,
   getInstanceTypeLabel,
+  shouldShowInstanceTypeBadge,
 } from '../../utils/instanceTypeUtils';
 import { PlatformBadge } from './PlatformBadge';
 import { type Player, PlayerList } from './PlayerList';
@@ -313,15 +314,16 @@ export const LocationGroupHeader = ({
                     />
                     {formattedDate}
                   </div>
-                  {worldInstanceId && getInstanceTypeLabel(worldInstanceId) && (
-                    <div
-                      className={`flex items-center text-xs font-medium px-2.5 py-1 rounded-full backdrop-blur-sm border transition-all duration-300 ${getInstanceTypeColor(
-                        worldInstanceId,
-                      )}`}
-                    >
-                      {getInstanceTypeLabel(worldInstanceId)}
-                    </div>
-                  )}
+                  {worldInstanceId &&
+                    shouldShowInstanceTypeBadge(worldInstanceId) && (
+                      <div
+                        className={`flex items-center text-xs font-medium px-2.5 py-1 rounded-full backdrop-blur-sm border transition-all duration-300 ${getInstanceTypeColor(
+                          worldInstanceId,
+                        )}`}
+                      >
+                        {getInstanceTypeLabel(worldInstanceId)}
+                      </div>
+                    )}
                   {details?.unityPackages &&
                     details.unityPackages.length > 0 && (
                       <div className="flex items-center gap-1.5">
