@@ -53,7 +53,10 @@
       "Bash(npm ls:*)",
       "Bash(cargo install:*)",
       "Bash(touch:*)",
-      "Bash(npx biome format:*)"
+      "Bash(npx biome format:*)",
+      "Bash(gh api:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)"
     ],
     "deny": []
   }
