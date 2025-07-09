@@ -41,7 +41,7 @@ jobs:
             actions: read
           
           # Optional: Specify model (defaults to Claude Sonnet 4, uncomment for Claude Opus 4)
-          # model: "claude-opus-4-20250514"
+          model: "claude-opus-4-20250514"
           
           # Optional: Customize the trigger phrase (default: @claude)
           # trigger_phrase: "/claude"
@@ -50,7 +50,54 @@ jobs:
           # assignee_trigger: "claude-bot"
           
           # Optional: Allow Claude to run specific commands
-          # allowed_tools: "Bash(npm install),Bash(npm run build),Bash(npm run test:*),Bash(npm run lint:*)"
+          allowed_tools: |
+            Bash,Glob,Grep,LS,Read,Edit,MultiEdit,Write,
+            NotebookRead,NotebookEdit,TodoRead,TodoWrite,
+            RipgrepSearch,SearchReplace,
+            mcp__github_file_ops__commit_files,
+            mcp__github_file_ops__delete_files,
+            mcp__github_file_ops__apply_patch,
+            mcp__github__add_issue_comment,
+            mcp__github__add_pull_request_review_comment,
+            mcp__github__create_branch,
+            mcp__github__create_issue,
+            mcp__github__create_or_update_file,
+            mcp__github__create_pull_request,
+            mcp__github__create_pull_request_review,
+            mcp__github__create_repository,
+            mcp__github__delete_file,
+            mcp__github__fork_repository,
+            mcp__github__get_code_scanning_alert,
+            mcp__github__get_commit,
+            mcp__github__get_file_contents,
+            mcp__github__get_issue,
+            mcp__github__get_issue_comments,
+            mcp__github__get_me,
+            mcp__github__get_pull_request,
+            mcp__github__get_pull_request_comments,
+            mcp__github__get_pull_request_files,
+            mcp__github__get_pull_request_reviews,
+            mcp__github__get_pull_request_status,
+            mcp__github__get_secret_scanning_alert,
+            mcp__github__get_tag,
+            mcp__github__list_branches,
+            mcp__github__list_code_scanning_alerts,
+            mcp__github__list_commits,
+            mcp__github__list_issues,
+            mcp__github__list_pull_requests,
+            mcp__github__list_secret_scanning_alerts,
+            mcp__github__list_tags,
+            mcp__github__merge_pull_request,
+            mcp__github__push_files,
+            mcp__github__search_code,
+            mcp__github__search_issues,
+            mcp__github__search_repositories,
+            mcp__github__search_users,
+            mcp__github__update_issue,
+            mcp__github__update_issue_comment,
+            mcp__github__update_pull_request,
+            mcp__github__update_pull_request_branch,
+            mcp__github__update_pull_request_comment
           
           # Optional: Add custom instructions for Claude to customize its behavior for your project
           # custom_instructions: |
@@ -61,4 +108,3 @@ jobs:
           # Optional: Custom environment variables for Claude
           # claude_env: |
           #   NODE_ENV: test
-
