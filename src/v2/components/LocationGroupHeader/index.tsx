@@ -51,7 +51,7 @@ export const LocationGroupHeader = ({
   worldId,
   worldName,
   worldInstanceId,
-  photoCount,
+  photoCount: _photoCount,
   joinDateTime,
 }: LocationGroupHeaderProps) => {
   const { t } = useI18n();
@@ -206,14 +206,6 @@ export const LocationGroupHeader = ({
           <h2 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-gray-100 dark:to-gray-300 bg-clip-text text-transparent">
             {t('locationHeader.ungrouped')}
           </h2>
-          <span className="flex items-center gap-2 px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full">
-            <ImageIcon
-              className={`${ICON_SIZE.sm.class} text-gray-500 dark:text-gray-400`}
-            />
-            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
-              {photoCount}
-            </span>
-          </span>
         </div>
         <div className="mt-2 text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
           <Calendar className={ICON_SIZE.sm.class} />
@@ -346,12 +338,8 @@ export const LocationGroupHeader = ({
                 </div>
               </div>
 
-              {/* 2行目: 写真枚数とプレイヤーリスト */}
+              {/* 2行目: プレイヤーリスト */}
               <div className="flex items-center gap-2 w-full">
-                <div className="flex items-center text-xs text-gray-800 dark:text-white backdrop-blur-sm bg-white/30 dark:bg-black/30 px-3 py-1 rounded-full border border-white/20 dark:border-gray-700/30">
-                  <ImageIcon className="h-4 w-4 mr-1.5 text-primary-600 dark:text-primary-300" />
-                  <span>{photoCount}枚</span>
-                </div>
                 {isPlayersLoading ? (
                   <div className="flex gap-2 items-center text-xs text-gray-800 dark:text-white backdrop-blur-sm bg-white/30 dark:bg-black/30 px-3 py-1 rounded-full border border-white/20 dark:border-gray-700/30 flex-1 min-w-0 animate-pulse">
                     <div className="flex items-center gap-1">
