@@ -308,12 +308,6 @@ export const LocationGroupHeader = ({
                   </button>
                 </h3>
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  <div className="flex items-center text-sm text-gray-800 dark:text-white backdrop-blur-sm bg-white/30 dark:bg-black/30 px-3 py-1 rounded-full border border-white/20 dark:border-gray-700/30">
-                    <Calendar
-                      className={`${ICON_SIZE.sm.class} mr-1.5 text-primary-600 dark:text-primary-300`}
-                    />
-                    {formattedDate}
-                  </div>
                   {worldInstanceId &&
                     shouldShowInstanceTypeBadge(worldInstanceId) && (
                       <div
@@ -324,6 +318,12 @@ export const LocationGroupHeader = ({
                         {getInstanceTypeLabel(worldInstanceId)}
                       </div>
                     )}
+                  <div className="flex items-center text-sm text-gray-800 dark:text-white backdrop-blur-sm bg-white/30 dark:bg-black/30 px-3 py-1 rounded-full border border-white/20 dark:border-gray-700/30">
+                    <Calendar
+                      className={`${ICON_SIZE.sm.class} mr-1.5 text-primary-600 dark:text-primary-300`}
+                    />
+                    {formattedDate}
+                  </div>
                   {details?.unityPackages &&
                     details.unityPackages.length > 0 && (
                       <div className="flex items-center gap-1.5">
