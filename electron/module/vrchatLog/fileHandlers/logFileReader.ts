@@ -16,6 +16,63 @@ import { createPartialSuccessResult } from '../types/partialSuccess';
  */
 
 /**
+ * 共通のバッチ処理設定
+ */
+interface BatchConfig {
+  concurrency: number;
+  maxMemoryUsageMB: number;
+  maxLinesInMemory: number;
+}
+
+/**
+ * メモリ監視機能
+ */
+interface MemoryMonitor {
+  checkMemoryUsage: () => number;
+  checkMemoryLimit: (maxMemoryUsageMB: number) => number;
+}
+
+/**
+ * バッチ処理設定を作成
+ */
+const createBatchConfig = (props: {
+  concurrency?: number;
+  maxMemoryUsageMB?: number;
+}): BatchConfig => {
+  const concurrency = props.concurrency ?? 5;
+  const maxMemoryUsageMB = props.maxMemoryUsageMB ?? 500;
+  const maxLinesInMemory = Math.floor((maxMemoryUsageMB * 1024 * 1024) / 200); // 1行約200バイトと仮定
+
+  return { concurrency, maxMemoryUsageMB, maxLinesInMemory };
+};
+
+/**
+ * メモリ監視ユーティリティを作成
+ */
+const createMemoryMonitor = (): MemoryMonitor => {
+  const checkMemoryUsage = () => {
+    const memUsage = process.memoryUsage();
+    return memUsage.heapUsed / 1024 / 1024;
+  };
+
+  const checkMemoryLimit = (maxMemoryUsageMB: number) => {
+    const currentUsage = checkMemoryUsage();
+    return match(currentUsage > maxMemoryUsageMB)
+      .with(true, () => {
+        throw new Error(
+          `Memory usage exceeded limit: ${currentUsage.toFixed(
+            2,
+          )}MB > ${maxMemoryUsageMB}MB. Processing stopped to prevent system instability.`,
+        );
+      })
+      .with(false, () => currentUsage)
+      .exhaustive();
+  };
+
+  return { checkMemoryUsage, checkMemoryLimit };
+};
+
+/**
  * ログファイルから指定された文字列を含む行を抽出
  * @param props.logFilePath ログファイルのパス
  * @param props.includesList 抽出対象とする文字列のリスト
@@ -69,22 +126,14 @@ export const getLogLinesByLogFilePathList = async (props: {
   concurrency?: number;
   maxMemoryUsageMB?: number; // メモリ使用量の上限（MB）
 }): Promise<neverthrow.Result<VRChatLogLine[], VRChatLogFileError>> => {
+  const config = createBatchConfig(props);
+  const memoryMonitor = createMemoryMonitor();
   const logLineList: VRChatLogLine[] = [];
   const errors: VRChatLogFileError[] = [];
-  const concurrency = props.concurrency ?? 5; // デフォルトの並列数を制限
-  const maxMemoryUsageMB = props.maxMemoryUsageMB ?? 500; // デフォルト500MB
-  const maxLinesInMemory = Math.floor((maxMemoryUsageMB * 1024 * 1024) / 200); // 1行約200バイトと仮定
-
-  // メモリ使用量のチェック
-  const checkMemoryUsage = () => {
-    const memUsage = process.memoryUsage();
-    const usedMB = memUsage.heapUsed / 1024 / 1024;
-    return usedMB;
-  };
 
   // バッチ処理で並列数を制限
-  for (let i = 0; i < props.logFilePathList.length; i += concurrency) {
-    const batch = props.logFilePathList.slice(i, i + concurrency);
+  for (let i = 0; i < props.logFilePathList.length; i += config.concurrency) {
+    const batch = props.logFilePathList.slice(i, i + config.concurrency);
     const batchResults = await Promise.all(
       batch.map(async (logFilePath) => {
         const result = await getLogLinesFromLogFile({
@@ -104,8 +153,8 @@ export const getLogLinesByLogFilePathList = async (props: {
       logLineList.push(...lines);
 
       // メモリ使用量をチェックし、上限に近づいたら警告
-      if (logLineList.length > maxLinesInMemory) {
-        const usedMB = checkMemoryUsage();
+      if (logLineList.length > config.maxLinesInMemory) {
+        const usedMB = memoryMonitor.checkMemoryUsage();
         logger.warn(
           `Log lines in memory: ${logLineList.length} (Memory: ${usedMB.toFixed(
             2,
@@ -118,7 +167,7 @@ export const getLogLinesByLogFilePathList = async (props: {
   logger.info(
     `Loaded ${logLineList.length} log lines from ${
       props.logFilePathList.length
-    } files (Memory: ${checkMemoryUsage().toFixed(2)}MB)`,
+    } files (Memory: ${memoryMonitor.checkMemoryUsage().toFixed(2)}MB)`,
   );
 
   return match(errors.length > 0)
@@ -149,21 +198,14 @@ export const getLogLinesByLogFilePathListWithPartialSuccess = async (props: {
     { path: string; error: VRChatLogFileError }
   >
 > => {
+  const config = createBatchConfig(props);
+  const memoryMonitor = createMemoryMonitor();
   const logLineList: VRChatLogLine[] = [];
   const errors: { path: string; error: VRChatLogFileError }[] = [];
-  const concurrency = props.concurrency ?? 5;
-  const maxMemoryUsageMB = props.maxMemoryUsageMB ?? 500;
-  const maxLinesInMemory = Math.floor((maxMemoryUsageMB * 1024 * 1024) / 200);
-
-  const checkMemoryUsage = () => {
-    const memUsage = process.memoryUsage();
-    const usedMB = memUsage.heapUsed / 1024 / 1024;
-    return usedMB;
-  };
 
   // バッチ処理で並列数を制限
-  for (let i = 0; i < props.logFilePathList.length; i += concurrency) {
-    const batch = props.logFilePathList.slice(i, i + concurrency);
+  for (let i = 0; i < props.logFilePathList.length; i += config.concurrency) {
+    const batch = props.logFilePathList.slice(i, i + config.concurrency);
     const batchResults = await Promise.all(
       batch.map(async (logFilePath) => {
         try {
@@ -196,8 +238,8 @@ export const getLogLinesByLogFilePathListWithPartialSuccess = async (props: {
       logLineList.push(...lines);
 
       // メモリ使用量をチェックし、上限に近づいたら警告
-      if (logLineList.length > maxLinesInMemory) {
-        const usedMB = checkMemoryUsage();
+      if (logLineList.length > config.maxLinesInMemory) {
+        const usedMB = memoryMonitor.checkMemoryUsage();
         logger.warn(
           `Log lines in memory: ${logLineList.length} (Memory: ${usedMB.toFixed(
             2,
@@ -212,17 +254,23 @@ export const getLogLinesByLogFilePathListWithPartialSuccess = async (props: {
 
   logger.info(
     `Loaded ${logLineList.length} log lines from ${successCount}/${totalFiles} files ` +
-      `(${errors.length} errors, Memory: ${checkMemoryUsage().toFixed(2)}MB)`,
+      `(${errors.length} errors, Memory: ${memoryMonitor
+        .checkMemoryUsage()
+        .toFixed(2)}MB)`,
   );
 
-  if (errors.length > 0) {
-    logger.warn(
-      `Failed to process ${errors.length} log files:`,
-      errors.map((e) => ({ path: e.path, code: e.error.code })),
-    );
-  }
-
-  return createPartialSuccessResult(logLineList, errors, totalFiles);
+  return match(errors.length > 0)
+    .with(true, () => {
+      logger.warn(
+        `Failed to process ${errors.length} log files:`,
+        errors.map((e) => ({ path: e.path, code: e.error.code })),
+      );
+      return createPartialSuccessResult(logLineList, errors, totalFiles);
+    })
+    .with(false, () =>
+      createPartialSuccessResult(logLineList, errors, totalFiles),
+    )
+    .exhaustive();
 };
 
 /**
@@ -241,43 +289,25 @@ export async function* getLogLinesByLogFilePathListStreaming(props: {
   batchSize?: number;
   maxMemoryUsageMB?: number;
 }): AsyncGenerator<VRChatLogLine[], void, unknown> {
-  const concurrency = props.concurrency ?? 5;
+  const config = createBatchConfig(props);
+  const memoryMonitor = createMemoryMonitor();
   const batchSize = props.batchSize ?? 1000;
-  const maxMemoryUsageMB = props.maxMemoryUsageMB ?? 500;
   let accumulatedLines: VRChatLogLine[] = [];
   let totalLinesProcessed = 0;
 
-  // メモリ使用量のチェック関数
-  const checkMemoryUsage = () => {
-    const memUsage = process.memoryUsage();
-    const usedMB = memUsage.heapUsed / 1024 / 1024;
-    return usedMB;
-  };
-
-  // メモリ使用量の上限チェック
-  const checkMemoryLimit = () => {
-    const currentUsage = checkMemoryUsage();
-    if (currentUsage > maxMemoryUsageMB) {
-      throw new Error(
-        `Memory usage exceeded limit: ${currentUsage.toFixed(
-          2,
-        )}MB > ${maxMemoryUsageMB}MB. Processing stopped to prevent system instability.`,
-      );
-    }
-    return currentUsage;
-  };
-
   // ファイルバッチごとに処理
-  for (let i = 0; i < props.logFilePathList.length; i += concurrency) {
+  for (let i = 0; i < props.logFilePathList.length; i += config.concurrency) {
     // メモリ使用量をチェック
-    const currentMemory = checkMemoryLimit();
+    const currentMemory = memoryMonitor.checkMemoryLimit(
+      config.maxMemoryUsageMB,
+    );
     logger.debug(
       `Processing file batch ${
-        Math.floor(i / concurrency) + 1
+        Math.floor(i / config.concurrency) + 1
       }, memory: ${currentMemory.toFixed(2)}MB`,
     );
 
-    const fileBatch = props.logFilePathList.slice(i, i + concurrency);
+    const fileBatch = props.logFilePathList.slice(i, i + config.concurrency);
     const batchResults = await Promise.all(
       fileBatch.map(async (logFilePath) => {
         const result = await getLogLinesFromLogFile({
@@ -301,7 +331,7 @@ export async function* getLogLinesByLogFilePathListStreaming(props: {
         accumulatedLines = accumulatedLines.slice(batchSize);
         totalLinesProcessed += batch.length;
 
-        const memoryUsage = checkMemoryUsage();
+        const memoryUsage = memoryMonitor.checkMemoryUsage();
         logger.debug(
           `Streaming log lines: yielding batch of ${
             batch.length
@@ -311,7 +341,7 @@ export async function* getLogLinesByLogFilePathListStreaming(props: {
         );
 
         // バッチを返す前にメモリチェック
-        checkMemoryLimit();
+        memoryMonitor.checkMemoryLimit(config.maxMemoryUsageMB);
         yield batch;
       }
     }
@@ -320,7 +350,7 @@ export async function* getLogLinesByLogFilePathListStreaming(props: {
   // 残りのログ行をyield
   if (accumulatedLines.length > 0) {
     totalLinesProcessed += accumulatedLines.length;
-    const memoryUsage = checkMemoryUsage();
+    const memoryUsage = memoryMonitor.checkMemoryUsage();
     logger.debug(
       `Streaming log lines: yielding final batch of ${
         accumulatedLines.length
@@ -330,7 +360,7 @@ export async function* getLogLinesByLogFilePathListStreaming(props: {
     );
 
     // 最終バッチを返す前にメモリチェック
-    checkMemoryLimit();
+    memoryMonitor.checkMemoryLimit(config.maxMemoryUsageMB);
     yield accumulatedLines;
   }
 }
