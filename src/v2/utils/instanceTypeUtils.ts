@@ -3,38 +3,111 @@
  */
 
 /**
- * インスタンスIDからインスタンスタイプを取得する
- * @param instanceId インスタンスID文字列
- * @returns インスタンスタイプ
+ * インスタンスタイプの信頼度レベル
  */
-export const getInstanceType = (instanceId: string | null): string | null => {
-  if (!instanceId) return null;
+export type InstanceTypeConfidence = 'high' | 'medium' | 'low';
 
-  // インスタンスIDに~が含まれていない場合はPublicインスタンス
+/**
+ * パフォーマンス向上のため事前コンパイル済み正規表現
+ */
+const REGION_PATTERN = /^[a-z]{2,3}(\([a-z0-9]+\))?$/;
+
+/**
+ * 入力値の最大長制限（セキュリティ対策）
+ */
+const MAX_INSTANCE_ID_LENGTH = 1000;
+
+/**
+ * VRChatで使用される既知のリージョンコード
+ */
+const KNOWN_REGION_CODES = new Set([
+  'us',
+  'use',
+  'usw',
+  'eu',
+  'jp',
+  'au',
+  'ap',
+  'ase',
+  'asw',
+]);
+
+/**
+ * インスタンスタイプと信頼度を含む結果
+ */
+export interface InstanceTypeResult {
+  type: string | null;
+  confidence: InstanceTypeConfidence;
+}
+
+/**
+ * インスタンスIDからインスタンスタイプと信頼度を取得する
+ * @param instanceId インスタンスID文字列
+ * @returns インスタンスタイプと信頼度
+ */
+export const getInstanceTypeWithConfidence = (
+  instanceId: string | null,
+): InstanceTypeResult => {
+  if (!instanceId) return { type: null, confidence: 'low' };
+
+  // セキュリティ：入力値の長さ制限チェック
+  if (instanceId.length > MAX_INSTANCE_ID_LENGTH) {
+    return { type: null, confidence: 'low' };
+  }
+
+  // インスタンスIDに~が含まれていない場合はPublicインスタンス（高信頼度）
   if (!instanceId.includes('~')) {
-    return 'public';
+    return { type: 'public', confidence: 'high' };
   }
 
   // ~以降の部分を取得
   const parts = instanceId.split('~');
   if (parts.length < 2) {
-    return null;
+    return { type: null, confidence: 'low' };
   }
 
   const typePart = parts[1];
 
-  // インスタンスタイプを判定
-  if (typePart.startsWith('friends(')) return 'friends';
-  if (typePart.startsWith('hidden(')) return 'friends+';
-  if (typePart.startsWith('private(')) return 'invite';
-  if (typePart.startsWith('group(')) return 'group';
-  if (typePart.startsWith('groupPublic(')) return 'group-public';
+  // 空のtypePartの場合は低信頼度でnullを返す
+  if (typePart === '') {
+    return { type: null, confidence: 'low' };
+  }
 
-  // リージョン情報のみの場合はPublic
-  if (typePart.match(/^[a-z]{2}(\([a-z0-9]+\))?$/)) return 'public';
+  // 既知のプライベートインスタンスパターン（高信頼度）
+  if (typePart.startsWith('friends('))
+    return { type: 'friends', confidence: 'high' };
+  if (typePart.startsWith('hidden('))
+    return { type: 'friends+', confidence: 'high' };
+  if (typePart.startsWith('private('))
+    return { type: 'invite', confidence: 'high' };
+  if (typePart.startsWith('group('))
+    return { type: 'group', confidence: 'high' };
+  if (typePart.startsWith('groupPublic('))
+    return { type: 'group-public', confidence: 'high' };
 
-  // その他の場合
-  return 'unknown';
+  // リージョン情報のみの場合はPublic（中信頼度）
+  if (REGION_PATTERN.test(typePart)) {
+    // 既知のリージョンコードかチェック
+    const regionMatch = typePart.match(/^([a-z]{2,3})/);
+    if (regionMatch && KNOWN_REGION_CODES.has(regionMatch[1])) {
+      return { type: 'public', confidence: 'medium' };
+    }
+    // 未知のリージョンコードの場合は低信頼度
+    return { type: 'public', confidence: 'low' };
+  }
+
+  // その他の場合（低信頼度）
+  return { type: 'unknown', confidence: 'low' };
+};
+
+/**
+ * インスタンスIDからインスタンスタイプを取得する
+ * @param instanceId インスタンスID文字列
+ * @returns インスタンスタイプ
+ */
+export const getInstanceType = (instanceId: string | null): string | null => {
+  const result = getInstanceTypeWithConfidence(instanceId);
+  return result.type;
 };
 
 /**
@@ -89,4 +162,17 @@ export const getInstanceTypeColor = (instanceId: string | null): string => {
     default:
       return 'bg-gray-500/20 text-gray-700 dark:text-gray-300 border-gray-500/30';
   }
+};
+
+/**
+ * インスタンスタイプバッジを表示するかどうかを判定する
+ * @param instanceId インスタンスID文字列
+ * @returns バッジを表示するかどうか
+ */
+export const shouldShowInstanceTypeBadge = (
+  instanceId: string | null,
+): boolean => {
+  const result = getInstanceTypeWithConfidence(instanceId);
+  // 高信頼度または中信頼度の場合のみバッジを表示
+  return result.confidence === 'high' || result.confidence === 'medium';
 };

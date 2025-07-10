@@ -131,6 +131,11 @@ class VRChatWorldInstanceId extends BaseValueObject<
 
     const typePart = parts[1];
 
+    // 空のtypePartの場合はnullを返す
+    if (typePart === '') {
+      return null;
+    }
+
     // インスタンスタイプを判定
     if (typePart.startsWith('friends(')) return 'friends';
     if (typePart.startsWith('hidden(')) return 'friends+';
@@ -139,7 +144,7 @@ class VRChatWorldInstanceId extends BaseValueObject<
     if (typePart.startsWith('groupPublic(')) return 'group-public';
 
     // リージョン情報のみの場合はPublic
-    if (typePart.match(/^[a-z]{2}(\([a-z0-9]+\))?$/)) return 'public';
+    if (typePart.match(/^[a-z]{2,3}(\([a-z0-9]+\))?$/)) return 'public';
 
     // その他の場合
     return 'unknown';

@@ -17,6 +17,7 @@ import { useI18n } from '../../i18n/store';
 import {
   getInstanceTypeColor,
   getInstanceTypeLabel,
+  shouldShowInstanceTypeBadge,
 } from '../../utils/instanceTypeUtils';
 import { PlatformBadge } from './PlatformBadge';
 import { type Player, PlayerList } from './PlayerList';
@@ -307,21 +308,22 @@ export const LocationGroupHeader = ({
                   </button>
                 </h3>
                 <div className="flex items-center gap-2 flex-shrink-0">
+                  {worldInstanceId &&
+                    shouldShowInstanceTypeBadge(worldInstanceId) && (
+                      <div
+                        className={`flex items-center text-xs font-medium px-2.5 py-1 rounded-full backdrop-blur-sm border transition-all duration-300 ${getInstanceTypeColor(
+                          worldInstanceId,
+                        )}`}
+                      >
+                        {getInstanceTypeLabel(worldInstanceId)}
+                      </div>
+                    )}
                   <div className="flex items-center text-sm text-gray-800 dark:text-white backdrop-blur-sm bg-white/30 dark:bg-black/30 px-3 py-1 rounded-full border border-white/20 dark:border-gray-700/30">
                     <Calendar
                       className={`${ICON_SIZE.sm.class} mr-1.5 text-primary-600 dark:text-primary-300`}
                     />
                     {formattedDate}
                   </div>
-                  {worldInstanceId && getInstanceTypeLabel(worldInstanceId) && (
-                    <div
-                      className={`flex items-center text-xs font-medium px-2.5 py-1 rounded-full backdrop-blur-sm border transition-all duration-300 ${getInstanceTypeColor(
-                        worldInstanceId,
-                      )}`}
-                    >
-                      {getInstanceTypeLabel(worldInstanceId)}
-                    </div>
-                  )}
                   {details?.unityPackages &&
                     details.unityPackages.length > 0 && (
                       <div className="flex items-center gap-1.5">
