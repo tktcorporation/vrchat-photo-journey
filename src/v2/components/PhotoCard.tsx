@@ -15,7 +15,6 @@ import { ICON_SIZE } from '../constants/ui';
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
 import { useI18n } from '../i18n/store';
 import type { Photo } from '../types/photo';
-import { generatePreviewPng } from '../utils/previewGenerator';
 import ProgressiveImage from './ProgressiveImage';
 
 /**

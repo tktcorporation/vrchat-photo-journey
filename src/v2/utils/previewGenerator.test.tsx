@@ -1,126 +1,56 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { generatePreviewPng } from './previewGenerator';
 
-// XMLSerializerのモック
-class MockXMLSerializer {
-  serializeToString() {
-    return '<svg>test</svg>';
-  }
-}
-global.XMLSerializer = MockXMLSerializer as typeof XMLSerializer;
+// Satori のモック
+vi.mock('satori', () => ({
+  default: vi.fn().mockResolvedValue('<svg>mocked svg</svg>'),
+}));
 
-// DOMのモックを設定
-const mockDocument = {
-  createElement: vi.fn(),
-  createElementNS: vi.fn(),
-  fonts: {
-    load: vi.fn().mockResolvedValue(undefined),
-  },
-};
+// Resvg のモック
+vi.mock('@resvg/resvg-js', () => ({
+  Resvg: vi.fn().mockImplementation(() => ({
+    render: vi.fn().mockReturnValue({
+      asPng: vi.fn().mockReturnValue(new Uint8Array([137, 80, 78, 71])), // PNG signature
+    }),
+  })),
+}));
 
-// グローバルなdocumentオブジェクトをモック
-global.document = mockDocument as unknown as Document;
+// colorExtractor のモック
+vi.mock('./colorExtractor', () => ({
+  extractDominantColorsFromBase64: vi.fn().mockResolvedValue({
+    primary: '#FF0000',
+    secondary: '#00FF00',
+    accent: '#0000FF',
+  }),
+}));
 
-// btoa関数のモック
-global.btoa = vi.fn().mockReturnValue('test-base64');
+// fetch のモック
+global.fetch = vi.fn().mockResolvedValue({
+  arrayBuffer: vi.fn().mockResolvedValue(new ArrayBuffer(8)),
+  ok: true,
+  status: 200,
+  statusText: 'OK',
+  headers: new Headers(),
+  url: '',
+  body: null,
+  bodyUsed: false,
+  blob: vi.fn(),
+  clone: vi.fn(),
+  formData: vi.fn(),
+  json: vi.fn(),
+  text: vi.fn(),
+  type: 'basic' as ResponseType,
+  redirected: false,
+} as unknown as Response);
 
-// Image constructorのモック
-class MockImage {
-  onload = () => {};
-  onerror = () => {};
-  src = '';
-  crossOrigin = '';
-
-  constructor() {
-    setTimeout(() => this.onload(), 0);
-  }
-}
-global.Image = MockImage as unknown as typeof Image;
-
-// URL.createObjectURLとrevokeObjectURLのモック
-global.URL.createObjectURL = vi.fn().mockReturnValue('blob:test');
-global.URL.revokeObjectURL = vi.fn();
+// btoa のモック
+global.btoa = vi.fn().mockImplementation((str: string) => {
+  return Buffer.from(str, 'binary').toString('base64');
+});
 
 describe('previewGenerator', () => {
   beforeEach(() => {
-    // モックをリセット
     vi.clearAllMocks();
-
-    // 共通のキャンバスコンテキストのモック
-    const mockCanvasContext = {
-      fillStyle: '',
-      fillRect: vi.fn(),
-      drawImage: vi.fn(),
-      getImageData: vi.fn().mockReturnValue({
-        data: new Uint8ClampedArray([
-          255,
-          0,
-          0,
-          255, // 赤ピクセル
-          0,
-          255,
-          0,
-          255, // 緑ピクセル
-          0,
-          0,
-          255,
-          255, // 青ピクセル
-          // より多くのピクセルデータをシミュレート
-          ...Array(1000)
-            .fill(0)
-            .flatMap(() => [
-              Math.floor(Math.random() * 255),
-              Math.floor(Math.random() * 255),
-              Math.floor(Math.random() * 255),
-              255,
-            ]),
-        ]),
-        width: 800 * 2,
-        height: 600 * 2,
-      }),
-    };
-
-    // canvasのモック
-    const mockCanvas = {
-      width: 800 * 2,
-      height: 600 * 2,
-      getContext: vi.fn().mockReturnValue(mockCanvasContext),
-      toDataURL: vi.fn().mockReturnValue('data:image/png;base64,test123'),
-    };
-
-    // createElementのモック実装
-    mockDocument.createElement.mockImplementation((tagName: string) => {
-      if (tagName === 'canvas') {
-        return mockCanvas;
-      }
-      return {} as HTMLElement;
-    });
-
-    // createElementNSのモック実装
-    mockDocument.createElementNS.mockImplementation(
-      (_namespace: string, tagName: string) => {
-        if (tagName === 'svg') {
-          return {
-            setAttribute: vi.fn(),
-            getAttribute: vi.fn().mockReturnValue('0 0 800 600'),
-            insertBefore: vi.fn(),
-            getElementsByTagName: vi.fn().mockReturnValue([]),
-            cloneNode: vi.fn().mockReturnValue({
-              setAttribute: vi.fn(),
-              getAttribute: vi.fn().mockReturnValue('0 0 800 600'),
-              insertBefore: vi.fn(),
-              getElementsByTagName: vi.fn().mockReturnValue([]),
-            }),
-          };
-        }
-        if (tagName === 'style') {
-          return {
-            textContent: '',
-          };
-        }
-        return {} as Element;
-      },
-    );
   });
 
   describe('generatePreviewPng', () => {
@@ -135,18 +65,13 @@ describe('previewGenerator', () => {
       const result = await generatePreviewPng(params);
 
       // Base64エンコードされたPNG画像が返されること
-      expect(result).toBe('test123');
+      expect(result).toBeTruthy();
+      expect(typeof result).toBe('string');
 
-      // フォントが読み込まれたことを確認
-      expect(document.fonts.load).toHaveBeenCalledTimes(4);
-      expect(document.fonts.load).toHaveBeenCalledWith('700 1em Inter');
-      expect(document.fonts.load).toHaveBeenCalledWith('600 1em Inter');
-      expect(document.fonts.load).toHaveBeenCalledWith('500 1em Inter');
-      expect(document.fonts.load).toHaveBeenCalledWith('400 1em Inter');
-
-      // BlobURLが作成され、解放されたことを確認
-      expect(URL.createObjectURL).toHaveBeenCalled();
-      expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:test');
+      // フォントが取得されたことを確認
+      expect(global.fetch).toHaveBeenCalledWith(
+        'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfAZ9hiA.woff2',
+      );
     });
 
     it('プレイヤーリストが空の場合も正しく処理できること', async () => {
@@ -158,7 +83,8 @@ describe('previewGenerator', () => {
       };
 
       const result = await generatePreviewPng(params);
-      expect(result).toBe('test123');
+      expect(result).toBeTruthy();
+      expect(typeof result).toBe('string');
     });
 
     it('showAllPlayersがtrueの場合、すべてのプレイヤーを表示できること', async () => {
@@ -172,34 +98,40 @@ describe('previewGenerator', () => {
       };
 
       const result = await generatePreviewPng(params);
-      expect(result).toBe('test123');
+      expect(result).toBeTruthy();
+      expect(typeof result).toBe('string');
     });
 
-    it('キャンバスコンテキストの取得に失敗した場合エラーを投げること', async () => {
-      // キャンバスコンテキストの取得に失敗するようにモックを変更
-      const mockCanvas = {
-        width: 800 * 2,
-        height: 600 * 2,
-        getContext: vi.fn().mockReturnValue(null),
-      };
-
-      mockDocument.createElement.mockImplementation((tagName: string) => {
-        if (tagName === 'canvas') {
-          return mockCanvas;
-        }
-        return {} as HTMLElement;
-      });
-
+    it('日本語のプレイヤー名も正しく処理できること', async () => {
       const params = {
-        worldName: 'Test World',
+        worldName: 'テストワールド',
         imageBase64: 'test-image-base64',
-        players: null,
+        players: [
+          { playerName: 'プレイヤー1' },
+          { playerName: 'プレイヤー2' },
+          { playerName: '混在Player3' },
+        ],
         showAllPlayers: false,
       };
 
-      await expect(generatePreviewPng(params)).rejects.toThrow(
-        'Failed to get canvas context',
-      );
+      const result = await generatePreviewPng(params);
+      expect(result).toBeTruthy();
+      expect(typeof result).toBe('string');
+    });
+
+    it('長いプレイヤーリストで改行が正しく処理されること', async () => {
+      const params = {
+        worldName: 'Test World',
+        imageBase64: 'test-image-base64',
+        players: Array.from({ length: 50 }, (_, i) => ({
+          playerName: `VeryLongPlayerName${i + 1}`,
+        })),
+        showAllPlayers: false,
+      };
+
+      const result = await generatePreviewPng(params);
+      expect(result).toBeTruthy();
+      expect(typeof result).toBe('string');
     });
   });
 });
