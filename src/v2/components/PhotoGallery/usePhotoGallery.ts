@@ -3,6 +3,7 @@ import { atom, useAtom } from 'jotai';
 import pathe from 'pathe';
 import { useMemo } from 'react';
 import { VRChatPhotoFileNameWithExtSchema } from '../../../valueObjects';
+import { useCombinedLoading } from '../../hooks/useCombinedLoading';
 import type { Photo } from '../../types/photo';
 import type { GroupedPhotos } from './useGroupPhotos';
 import {
@@ -221,8 +222,11 @@ export function usePhotoGallery(
     playerSearchSessionSet,
   ]);
 
-  const isLoading =
-    isLoadingPhotos || isLoadingGrouping || isLoadingPlayerSearch;
+  const isLoading = useCombinedLoading(
+    isLoadingPhotos,
+    isLoadingGrouping,
+    isLoadingPlayerSearch,
+  );
 
   const filteredPhotosCount = useMemo(() => {
     return Object.values(filteredGroupedPhotos).reduce(

@@ -5,6 +5,7 @@ import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
 import { useToast } from '../../hooks/use-toast';
+import { useTrpcMutationWithToast } from '../../hooks/useTrpcMutationWithToast';
 
 /**
  * ログデータのエクスポート機能を提供するコンポーネント
@@ -43,19 +44,13 @@ const DataExport = memo(() => {
   };
 
   const { mutate: exportLogStore, isLoading: isExporting } =
-    trpcReact.vrchatLog.exportLogStoreData.useMutation({
+    useTrpcMutationWithToast(trpcReact.vrchatLog.exportLogStoreData, {
+      successTitle: 'エクスポート完了',
+      errorTitle: 'エクスポートエラー',
       onSuccess: (result) => {
         toast({
           title: 'エクスポート完了',
           description: `${result.exportedFiles.length}ファイル、${result.totalLogLines}行をエクスポートしました`,
-          duration: 5000,
-        });
-      },
-      onError: (error) => {
-        toast({
-          title: 'エクスポートエラー',
-          description: error.message,
-          variant: 'destructive',
           duration: 5000,
         });
       },

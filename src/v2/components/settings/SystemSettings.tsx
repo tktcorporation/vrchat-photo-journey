@@ -1,6 +1,7 @@
 import { trpcReact } from '@/trpc';
 import { memo } from 'react';
-import { useToast } from '../../hooks/use-toast';
+import { useCombinedLoading } from '../../hooks/useCombinedLoading';
+import { useTrpcMutationWithToast } from '../../hooks/useTrpcMutationWithToast';
 import { useI18n } from '../../i18n/store';
 
 interface ToggleProps {
@@ -35,56 +36,37 @@ const Toggle = ({ checked, onCheckedChange, disabled }: ToggleProps) => (
  */
 const SystemSettings = memo(() => {
   const { t } = useI18n();
-  const { toast } = useToast();
   const utils = trpcReact.useContext();
 
   const { data: startupLaunch, isLoading: isStartupLoading } =
     trpcReact.backgroundSettings.getIsAppAutoStartEnabled.useQuery();
-  const { mutate: setStartupLaunch, isLoading: isStartupUpdating } =
-    trpcReact.backgroundSettings.setIsAppAutoStartEnabled.useMutation({
-      onMutate: async (newValue) => {
-        await utils.backgroundSettings.getIsAppAutoStartEnabled.cancel();
-        const previousValue =
-          utils.backgroundSettings.getIsAppAutoStartEnabled.getData();
-        utils.backgroundSettings.getIsAppAutoStartEnabled.setData(
-          undefined,
-          newValue,
-        );
-        return { previousValue };
-      },
-      onError: (err, _newValue, context) => {
-        utils.backgroundSettings.getIsAppAutoStartEnabled.setData(
-          undefined,
-          context?.previousValue,
-        );
-        console.error('Failed to update startup launch setting:', err);
-        toast({
-          title: t('settings.system.startupLaunch'),
-          description: t('settings.system.startupError'),
-          variant: 'destructive',
-        });
-      },
-      onSuccess: () => {
-        toast({
-          title: t('settings.system.startupLaunch'),
-          description: t('settings.system.startupSuccess'),
-        });
-      },
-      onSettled: () => {
-        utils.backgroundSettings.getIsAppAutoStartEnabled.invalidate();
-      },
-    });
 
-  const { data: backgroundUpdate } =
-    trpcReact.backgroundSettings.getIsBackgroundFileCreationEnabled.useQuery();
-  const { mutate: setBackgroundUpdate } =
-    trpcReact.backgroundSettings.setIsBackgroundFileCreationEnabled.useMutation(
+  const { mutate: setStartupLaunch, isLoading: isStartupUpdating } =
+    useTrpcMutationWithToast(
+      trpcReact.backgroundSettings.setIsAppAutoStartEnabled,
       {
+        successTitle: t('settings.system.startupLaunch'),
+        errorTitle: t('settings.system.startupError'),
+        onError: (err) => {
+          console.error('Failed to update startup launch setting:', err);
+        },
         onSuccess: () => {
-          utils.backgroundSettings.getIsBackgroundFileCreationEnabled.invalidate();
+          utils.backgroundSettings.getIsAppAutoStartEnabled.invalidate();
         },
       },
     );
+
+  const { data: backgroundUpdate } =
+    trpcReact.backgroundSettings.getIsBackgroundFileCreationEnabled.useQuery();
+
+  const { mutate: setBackgroundUpdate } = useTrpcMutationWithToast(
+    trpcReact.backgroundSettings.setIsBackgroundFileCreationEnabled,
+    {
+      onSuccess: () => {
+        utils.backgroundSettings.getIsBackgroundFileCreationEnabled.invalidate();
+      },
+    },
+  );
 
   return (
     <div className="space-y-6">
@@ -107,7 +89,7 @@ const SystemSettings = memo(() => {
           <Toggle
             checked={startupLaunch ?? false}
             onCheckedChange={setStartupLaunch}
-            disabled={isStartupLoading || isStartupUpdating}
+            disabled={useCombinedLoading(isStartupLoading, isStartupUpdating)}
           />
         </div>
 
