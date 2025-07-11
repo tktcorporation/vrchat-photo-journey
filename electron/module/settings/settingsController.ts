@@ -1,11 +1,7 @@
 import type { UpdateCheckResult } from 'electron-updater';
 import { P, match } from 'ts-pattern';
 import { reloadMainWindow } from '../../electronUtil';
-import {
-  ERROR_CATEGORIES,
-  ERROR_CODES,
-  UserFacingError,
-} from '../../lib/errors';
+import { ERROR_CODES, UserFacingError } from '../../lib/errors';
 import { logger } from '../../lib/logger';
 import * as sequelizeClient from '../../lib/sequelize';
 import * as electronUtilService from '../electronUtil/service';
@@ -220,14 +216,12 @@ export const settingsRouter = () =>
 
           match(errorCode)
             .with('APPEND_LOGS_FAILED', () => {
-              // VRChatログファイル関連の設定（初期セットアップが必要）
-              throw UserFacingError.withStructuredInfo({
-                code: ERROR_CODES.VRCHAT_DIRECTORY_SETUP_REQUIRED,
-                category: ERROR_CATEGORIES.SETUP_REQUIRED,
+              // VRChatログファイル関連の設定エラー
+              // アプリケーション起動は妨げず、警告として記録
+              logger.warn({
                 message:
-                  'VRChat directory setup is required for initial configuration',
-                userMessage:
-                  'VRChatフォルダの設定が必要です。初期セットアップを開始します。',
+                  'VRChat directory setup may be required, but continuing application startup',
+                code: ERROR_CODES.VRCHAT_DIRECTORY_SETUP_REQUIRED,
                 details: {
                   syncError: logSyncResult.error,
                 },

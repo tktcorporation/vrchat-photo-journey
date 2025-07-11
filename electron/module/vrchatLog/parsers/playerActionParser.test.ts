@@ -14,12 +14,15 @@ describe('playerActionParser', () => {
 
       const result = extractPlayerJoinInfoFromLog(logLine);
 
-      expect(result.logType).toBe('playerJoin');
-      expect(result.playerName.value).toBe('TestPlayer');
-      expect(result.playerId?.value).toBe(
-        'usr_12345678-1234-1234-1234-123456789abc',
-      );
-      expect(result.joinDate).toEqual(new Date('2025-01-07T23:25:34'));
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value.logType).toBe('playerJoin');
+        expect(result.value.playerName.value).toBe('TestPlayer');
+        expect(result.value.playerId?.value).toBe(
+          'usr_12345678-1234-1234-1234-123456789abc',
+        );
+        expect(result.value.joinDate).toEqual(new Date('2025-01-07T23:25:34'));
+      }
     });
 
     it('プレイヤーIDがないプレイヤー参加ログを処理できる', () => {
@@ -29,10 +32,13 @@ describe('playerActionParser', () => {
 
       const result = extractPlayerJoinInfoFromLog(logLine);
 
-      expect(result.logType).toBe('playerJoin');
-      expect(result.playerName.value).toBe('TestPlayer');
-      expect(result.playerId).toBeNull();
-      expect(result.joinDate).toEqual(new Date('2025-01-07T23:25:34'));
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value.logType).toBe('playerJoin');
+        expect(result.value.playerName.value).toBe('TestPlayer');
+        expect(result.value.playerId).toBeNull();
+        expect(result.value.joinDate).toEqual(new Date('2025-01-07T23:25:34'));
+      }
     });
 
     it('空白を含むプレイヤー名を正しく処理できる', () => {
@@ -41,15 +47,20 @@ describe('playerActionParser', () => {
       );
 
       const result = extractPlayerJoinInfoFromLog(logLine);
-      expect(result.playerName.value).toBe('Test Player Name');
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value.playerName.value).toBe('Test Player Name');
+      }
     });
 
-    it('無効な形式の場合はエラーを投げる', () => {
+    it('無効な形式の場合はエラーを返す', () => {
       const logLine = VRChatLogLineSchema.parse('Invalid log format');
 
-      expect(() => extractPlayerJoinInfoFromLog(logLine)).toThrow(
-        'Log line did not match the expected format',
-      );
+      const result = extractPlayerJoinInfoFromLog(logLine);
+      expect(result.isErr()).toBe(true);
+      if (result.isErr()) {
+        expect(result.error).toBe('LOG_FORMAT_MISMATCH');
+      }
     });
   });
 
@@ -61,12 +72,15 @@ describe('playerActionParser', () => {
 
       const result = extractPlayerLeaveInfoFromLog(logLine);
 
-      expect(result.logType).toBe('playerLeave');
-      expect(result.playerName.value).toBe('TestPlayer');
-      expect(result.playerId?.value).toBe(
-        'usr_12345678-1234-1234-1234-123456789abc',
-      );
-      expect(result.leaveDate).toEqual(new Date('2025-01-08T00:22:04'));
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value.logType).toBe('playerLeave');
+        expect(result.value.playerName.value).toBe('TestPlayer');
+        expect(result.value.playerId?.value).toBe(
+          'usr_12345678-1234-1234-1234-123456789abc',
+        );
+        expect(result.value.leaveDate).toEqual(new Date('2025-01-08T00:22:04'));
+      }
     });
 
     it('特殊文字を含むプレイヤー名を正しく処理できる', () => {
@@ -75,7 +89,10 @@ describe('playerActionParser', () => {
       );
 
       const result = extractPlayerLeaveInfoFromLog(logLine);
-      expect(result.playerName.value).toBe('プレイヤー ⁄ A');
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value.playerName.value).toBe('プレイヤー ⁄ A');
+      }
     });
 
     it('プレイヤーIDがない退出ログを処理できる', () => {
@@ -84,16 +101,21 @@ describe('playerActionParser', () => {
       );
 
       const result = extractPlayerLeaveInfoFromLog(logLine);
-      expect(result.playerName.value).toBe('TestPlayer');
-      expect(result.playerId).toBeNull();
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value.playerName.value).toBe('TestPlayer');
+        expect(result.value.playerId).toBeNull();
+      }
     });
 
-    it('無効な形式の場合はエラーを投げる', () => {
+    it('無効な形式の場合はエラーを返す', () => {
       const logLine = VRChatLogLineSchema.parse('Invalid log format');
 
-      expect(() => extractPlayerLeaveInfoFromLog(logLine)).toThrow(
-        'Log line did not match the expected format',
-      );
+      const result = extractPlayerLeaveInfoFromLog(logLine);
+      expect(result.isErr()).toBe(true);
+      if (result.isErr()) {
+        expect(result.error).toBe('LOG_FORMAT_MISMATCH');
+      }
     });
   });
 });

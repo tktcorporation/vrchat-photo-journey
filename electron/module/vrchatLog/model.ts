@@ -273,8 +273,17 @@ export const OptionalVRChatPlayerIdSchema = z
   .nullable()
   .transform((value) => {
     if (!value) return null;
-    if (!isValidVRChatPlayerId(value)) {
-      throw new Error('Invalid VRChat Player ID format');
-    }
     return new VRChatPlayerId(value);
-  });
+  })
+  .pipe(
+    z.custom<VRChatPlayerId | null>(
+      (val) => {
+        if (val === null) return true;
+        return isValidVRChatPlayerId(val.value);
+      },
+      {
+        message:
+          'Invalid VRChat Player ID format. Expected: usr_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
+      },
+    ),
+  );

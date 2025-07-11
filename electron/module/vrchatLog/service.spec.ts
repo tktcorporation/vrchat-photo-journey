@@ -262,12 +262,15 @@ describe('extractPlayerJoinInfoFromLog', () => {
       '2025.01.07 23:25:34 Log        -  [Behaviour] OnPlayerJoined プレイヤーA (usr_8862b082-dbc8-4b6d-8803-e834f833b498)',
     );
     const result = service.extractPlayerJoinInfoFromLog(logLine);
-    expect(result.logType).toBe('playerJoin');
-    expect(result.playerName.value).toBe('プレイヤーA');
-    expect(result.playerId?.value).toBe(
-      'usr_8862b082-dbc8-4b6d-8803-e834f833b498',
-    );
-    expect(result.joinDate).toBeInstanceOf(Date);
+    expect(result.isOk()).toBe(true);
+    if (result.isOk()) {
+      expect(result.value.logType).toBe('playerJoin');
+      expect(result.value.playerName.value).toBe('プレイヤーA');
+      expect(result.value.playerId?.value).toBe(
+        'usr_8862b082-dbc8-4b6d-8803-e834f833b498',
+      );
+      expect(result.value.joinDate).toBeInstanceOf(Date);
+    }
   });
 
   it('should extract player join info without player ID', () => {
@@ -275,16 +278,23 @@ describe('extractPlayerJoinInfoFromLog', () => {
       '2025.01.07 23:25:34 Log        -  [Behaviour] OnPlayerJoined プレイヤーB',
     );
     const result = service.extractPlayerJoinInfoFromLog(logLine);
-    expect(result.logType).toBe('playerJoin');
-    expect(result.playerName.value).toBe('プレイヤーB');
-    expect(result.playerId).toBe(null);
-    expect(result.joinDate).toBeInstanceOf(Date);
+    expect(result.isOk()).toBe(true);
+    if (result.isOk()) {
+      expect(result.value.logType).toBe('playerJoin');
+      expect(result.value.playerName.value).toBe('プレイヤーB');
+      expect(result.value.playerId).toBe(null);
+      expect(result.value.joinDate).toBeInstanceOf(Date);
+    }
   });
 
-  it('should throw error for invalid log format', () => {
+  it('should return error for invalid log format', () => {
     const logLine = VRChatLogLineSchema.parse(
       '2025.01.07 23:25:34 Log        -  Invalid log format',
     );
-    expect(() => service.extractPlayerJoinInfoFromLog(logLine)).toThrow();
+    const result = service.extractPlayerJoinInfoFromLog(logLine);
+    expect(result.isErr()).toBe(true);
+    if (result.isErr()) {
+      expect(result.error).toBe('LOG_FORMAT_MISMATCH');
+    }
   });
 });

@@ -183,35 +183,34 @@ describe('settingsController.initializeAppData', () => {
     );
   });
 
-  it('APPEND_LOGS_FAILED エラー時は構造化されたセットアップエラーをスローする', async () => {
+  it('APPEND_LOGS_FAILED エラー時は警告ログを出力して処理を継続する', async () => {
     // ログ同期でAPPEND_LOGS_FAILEDエラー
     mockSyncLogs.mockResolvedValue({
       isErr: () => true,
       error: { code: 'APPEND_LOGS_FAILED', message: 'Failed to append logs' },
     });
 
-    let thrownError: Error | null = null;
-    try {
-      if (!initializeAppData)
-        throw new Error('initializeAppData not initialized');
-      await initializeAppData();
-    } catch (error) {
-      thrownError = error as Error;
-    }
+    if (!initializeAppData)
+      throw new Error('initializeAppData not initialized');
 
-    // TRPCError内のcauseがUserFacingErrorであることを確認
-    expect(thrownError).toBeDefined();
-    const cause = (thrownError as { cause?: unknown })
-      ?.cause as UserFacingError;
-    expect(cause).toBeInstanceOf(UserFacingError);
-    expect(cause?.errorInfo?.code).toBe(
-      ERROR_CODES.VRCHAT_DIRECTORY_SETUP_REQUIRED,
-    );
-    expect(cause?.errorInfo?.userMessage).toBe(
-      'VRChatフォルダの設定が必要です。初期セットアップを開始します。',
-    );
-    expect(cause?.message).toBe(
-      'VRChatフォルダの設定が必要です。初期セットアップを開始します。',
+    // エラーがスローされずに正常に完了することを確認
+    const result = await initializeAppData();
+    expect(result).toEqual({ success: true });
+
+    // 警告ログが出力されることを確認
+    expect(mockLogger.warn).toHaveBeenCalledWith({
+      message:
+        'VRChat directory setup may be required, but continuing application startup',
+      code: ERROR_CODES.VRCHAT_DIRECTORY_SETUP_REQUIRED,
+      details: {
+        syncError: {
+          code: 'APPEND_LOGS_FAILED',
+          message: 'Failed to append logs',
+        },
+      },
+    });
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      'Log sync failed: Failed to append logs. This is normal in development environments without VRChat logs.',
     );
   });
 
