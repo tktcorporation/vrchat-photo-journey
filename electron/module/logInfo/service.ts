@@ -4,6 +4,10 @@ import * as datefns from 'date-fns';
 import * as neverthrow from 'neverthrow';
 import { match } from 'ts-pattern';
 import { logger } from '../../lib/logger';
+import {
+  createPerformanceTracker,
+  trackParallelOperations,
+} from '../../src/v2/utils/performance';
 import { VRChatPlayerJoinLogModel } from '../VRChatPlayerJoinLogModel/playerJoinInfoLog.model';
 import * as playerJoinLogService from '../VRChatPlayerJoinLogModel/playerJoinLog.service';
 import type { VRChatPlayerLeaveLogModel } from '../VRChatPlayerLeaveLogModel/playerLeaveLog.model';
@@ -38,81 +42,75 @@ interface LogProcessingResults {
 async function _getLogStoreFilePaths(
   excludeOldLogLoad: boolean,
 ): Promise<VRChatLogStoreFilePath[]> {
-  const startTime = performance.now();
-  let startDate: Date;
-  const logStoreFilePaths: VRChatLogStoreFilePath[] = [];
+  const tracker = createPerformanceTracker('_getLogStoreFilePaths', logger);
 
-  if (excludeOldLogLoad) {
-    const findLatestStartTime = performance.now();
-    // DBに保存されている最新のログ日時を取得
-    const [
-      latestWorldJoinDate,
-      latestPlayerJoinDateResult,
-      latestPlayerLeaveDate,
-    ] = await Promise.all([
-      worldJoinLogService.findLatestWorldJoinLog(),
-      playerJoinLogService.findLatestPlayerJoinLog(),
-      playerLeaveLogService.findLatestPlayerLeaveLog(),
-    ]);
-    const findLatestEndTime = performance.now();
-    logger.debug(
-      `_getLogStoreFilePaths: Find latest logs took ${
-        findLatestEndTime - findLatestStartTime
-      } ms`,
-    );
+  return tracker.track(async () => {
+    let startDate: Date;
+    const logStoreFilePaths: VRChatLogStoreFilePath[] = [];
 
-    const latestPlayerJoinDate = latestPlayerJoinDateResult.isOk()
-      ? latestPlayerJoinDateResult.value?.joinDateTime
-      : null;
+    if (excludeOldLogLoad) {
+      // DBに保存されている最新のログ日時を取得
+      const [
+        latestWorldJoinDate,
+        latestPlayerJoinDateResult,
+        latestPlayerLeaveDate,
+      ] = await trackParallelOperations(
+        [
+          {
+            operation: () => worldJoinLogService.findLatestWorldJoinLog(),
+            name: 'Find latest world join log',
+          },
+          {
+            operation: () => playerJoinLogService.findLatestPlayerJoinLog(),
+            name: 'Find latest player join log',
+          },
+          {
+            operation: () => playerLeaveLogService.findLatestPlayerLeaveLog(),
+            name: 'Find latest player leave log',
+          },
+        ],
+        'Find latest logs',
+        logger,
+      );
 
-    // 最新の日時をフィルタリングしてソート
-    const dates = [
-      latestWorldJoinDate?.joinDateTime,
-      latestPlayerJoinDate,
-      latestPlayerLeaveDate?.leaveDateTime,
-    ]
-      .filter((d): d is Date => d instanceof Date) // Date型のみをフィルタリング
-      .sort(datefns.compareAsc);
-    logger.debug(`_getLogStoreFilePaths: latest dates: ${dates}`);
+      const latestPlayerJoinDate = latestPlayerJoinDateResult.isOk()
+        ? latestPlayerJoinDateResult.value?.joinDateTime
+        : null;
 
-    // 最新の日付を取得、なければ1年前
-    startDate = dates.at(-1) ?? datefns.subYears(new Date(), 1);
-  } else {
-    // すべてのログを読み込む場合は、非常に古い日付から
-    startDate = datefns.parseISO('2000-01-01');
-    const getLegacyPathStartTime = performance.now();
-    // 旧形式のログファイルも追加 (excludeOldLogLoadがfalseの場合のみ)
-    const legacyLogStoreFilePath =
-      await vrchatLogService.getLegacyLogStoreFilePath();
-    const getLegacyPathEndTime = performance.now();
-    logger.debug(
-      `_getLogStoreFilePaths: Get legacy log path took ${
-        getLegacyPathEndTime - getLegacyPathStartTime
-      } ms`,
-    );
-    if (legacyLogStoreFilePath) {
-      logStoreFilePaths.push(legacyLogStoreFilePath);
+      // 最新の日時をフィルタリングしてソート
+      const dates = [
+        latestWorldJoinDate?.joinDateTime,
+        latestPlayerJoinDate,
+        latestPlayerLeaveDate?.leaveDateTime,
+      ]
+        .filter((d): d is Date => d instanceof Date) // Date型のみをフィルタリング
+        .sort(datefns.compareAsc);
+      logger.debug(`_getLogStoreFilePaths: latest dates: ${dates}`);
+
+      // 最新の日付を取得、なければ1年前
+      startDate = dates.at(-1) ?? datefns.subYears(new Date(), 1);
+    } else {
+      // すべてのログを読み込む場合は、非常に古い日付から
+      startDate = datefns.parseISO('2000-01-01');
+      // 旧形式のログファイルも追加 (excludeOldLogLoadがfalseの場合のみ)
+      const legacyLogStoreFilePath = await tracker.track(
+        () => vrchatLogService.getLegacyLogStoreFilePath(),
+        'Get legacy log path',
+      );
+      if (legacyLogStoreFilePath) {
+        logStoreFilePaths.push(legacyLogStoreFilePath);
+      }
     }
-  }
 
-  const getPathsInRangeStartTime = performance.now();
-  // 日付範囲内のすべてのログファイルパスを取得して追加
-  const pathsInRange = await vrchatLogService.getLogStoreFilePathsInRange(
-    startDate,
-    new Date(),
-  );
-  const getPathsInRangeEndTime = performance.now();
-  logger.debug(
-    `_getLogStoreFilePaths: Get paths in range took ${
-      getPathsInRangeEndTime - getPathsInRangeStartTime
-    } ms`,
-  );
-  logStoreFilePaths.push(...pathsInRange);
+    // 日付範囲内のすべてのログファイルパスを取得して追加
+    const pathsInRange = await tracker.track(
+      () => vrchatLogService.getLogStoreFilePathsInRange(startDate, new Date()),
+      'Get paths in range',
+    );
+    logStoreFilePaths.push(...pathsInRange);
 
-  const endTime = performance.now();
-  logger.debug(`_getLogStoreFilePaths took ${endTime - startTime} ms`);
-
-  return logStoreFilePaths;
+    return logStoreFilePaths;
+  });
 }
 
 /**
