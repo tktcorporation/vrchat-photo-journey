@@ -183,23 +183,27 @@ describe('settingsController.initializeAppData', () => {
     );
   });
 
-  it('APPEND_LOGS_FAILED エラー時は構造化されたセットアップエラーをスローする', async () => {
-    // ログ同期でAPPEND_LOGS_FAILEDエラー
+  it('LOG_FILE_DIR_NOT_FOUND エラー時はセットアップが必要なエラーをスローする', async () => {
+    // ログ同期でLOG_FILE_DIR_NOT_FOUNDエラー
     mockSyncLogs.mockResolvedValue({
       isErr: () => true,
-      error: { code: 'APPEND_LOGS_FAILED', message: 'Failed to append logs' },
+      error: {
+        code: 'LOG_FILE_DIR_NOT_FOUND',
+        message: 'Log directory not found',
+      },
     });
 
+    if (!initializeAppData)
+      throw new Error('initializeAppData not initialized');
+
+    // UserFacingErrorがスローされることを確認
     let thrownError: Error | null = null;
     try {
-      if (!initializeAppData)
-        throw new Error('initializeAppData not initialized');
       await initializeAppData();
     } catch (error) {
       thrownError = error as Error;
     }
 
-    // TRPCError内のcauseがUserFacingErrorであることを確認
     expect(thrownError).toBeDefined();
     const cause = (thrownError as { cause?: unknown })
       ?.cause as UserFacingError;
@@ -207,11 +211,41 @@ describe('settingsController.initializeAppData', () => {
     expect(cause?.errorInfo?.code).toBe(
       ERROR_CODES.VRCHAT_DIRECTORY_SETUP_REQUIRED,
     );
-    expect(cause?.errorInfo?.userMessage).toBe(
-      'VRChatフォルダの設定が必要です。初期セットアップを開始します。',
+    expect(cause?.errorInfo?.category).toBe('SETUP_REQUIRED');
+    expect(cause?.userMessage).toBe(
+      'VRChatのログディレクトリが見つかりません。初期設定が必要です。',
     );
-    expect(cause?.message).toBe(
-      'VRChatフォルダの設定が必要です。初期セットアップを開始します。',
+
+    // 情報ログが出力されることを確認
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      'VRChat directory setup required - throwing UserFacingError to trigger setup screen',
+    );
+  });
+
+  it('LOG_FILES_NOT_FOUND エラー時もセットアップが必要なエラーをスローする', async () => {
+    // ログ同期でLOG_FILES_NOT_FOUNDエラー
+    mockSyncLogs.mockResolvedValue({
+      isErr: () => true,
+      error: { code: 'LOG_FILES_NOT_FOUND', message: 'No log files found' },
+    });
+
+    if (!initializeAppData)
+      throw new Error('initializeAppData not initialized');
+
+    // UserFacingErrorがスローされることを確認
+    let thrownError: Error | null = null;
+    try {
+      await initializeAppData();
+    } catch (error) {
+      thrownError = error as Error;
+    }
+
+    expect(thrownError).toBeDefined();
+    const cause = (thrownError as { cause?: unknown })
+      ?.cause as UserFacingError;
+    expect(cause).toBeInstanceOf(UserFacingError);
+    expect(cause?.errorInfo?.code).toBe(
+      ERROR_CODES.VRCHAT_DIRECTORY_SETUP_REQUIRED,
     );
   });
 

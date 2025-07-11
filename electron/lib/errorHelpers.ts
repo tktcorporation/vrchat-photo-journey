@@ -247,6 +247,27 @@ export const vrchatLogErrorMappings = {
         .with(P.instanceOf(Error), (err) => err)
         .otherwise((err) => new Error(String(err))),
     }),
+  LOG_PARSE_ERROR: (originalError: unknown) =>
+    UserFacingError.withStructuredInfo({
+      code: ERROR_CODES.VALIDATION_ERROR,
+      category: ERROR_CATEGORIES.VALIDATION_ERROR,
+      message: 'Failed to parse VRChat log file',
+      userMessage:
+        'VRChatログファイルの解析に失敗しました。ログファイルが破損している可能性があります。',
+      cause: match(originalError)
+        .with(P.instanceOf(Error), (err) => err)
+        .otherwise((err) => new Error(String(err))),
+    }),
+  UNKNOWN: (originalError: unknown) =>
+    UserFacingError.withStructuredInfo({
+      code: ERROR_CODES.UNKNOWN,
+      category: ERROR_CATEGORIES.UNKNOWN_ERROR,
+      message: 'Unknown VRChat log operation error',
+      userMessage: 'VRChatログ操作中に不明なエラーが発生しました。',
+      cause: match(originalError)
+        .with(P.instanceOf(Error), (err) => err)
+        .otherwise((err) => new Error(String(err))),
+    }),
   default: (originalError: unknown) =>
     UserFacingError.withStructuredInfo({
       code: ERROR_CODES.UNKNOWN,
@@ -390,25 +411,6 @@ export function handleTypedResultError<T, E extends string>(
         message: 'Photo file not found, removed from database',
         userMessage:
           '写真ファイルが見つからないため、データベースから削除されました。',
-        cause: isErrorObject(error) ? error : new Error(String(error)),
-      }),
-    )
-    // ログ操作エラー（将来の拡張用）
-    .with('LOG_FILE_NOT_FOUND', () =>
-      UserFacingError.withStructuredInfo({
-        code: ERROR_CODES.FILE_NOT_FOUND,
-        category: ERROR_CATEGORIES.FILE_NOT_FOUND,
-        message: 'Log file not found',
-        userMessage: 'ログファイルが見つかりません。',
-        cause: isErrorObject(error) ? error : new Error(String(error)),
-      }),
-    )
-    .with('LOG_PARSE_ERROR', () =>
-      UserFacingError.withStructuredInfo({
-        code: ERROR_CODES.VALIDATION_ERROR,
-        category: ERROR_CATEGORIES.VALIDATION_ERROR,
-        message: 'Log file parse error',
-        userMessage: 'ログファイルの解析中にエラーが発生しました。',
         cause: isErrorObject(error) ? error : new Error(String(error)),
       }),
     )

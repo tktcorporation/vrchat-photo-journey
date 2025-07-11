@@ -45,6 +45,7 @@ log.transports.console.format = '{y}-{m}-{d} {h}:{i}:{s} [{level}] {text}';
 interface ErrorLogParams {
   message: unknown;
   stack?: Error;
+  details?: Record<string, unknown>;
 }
 
 /**
@@ -88,7 +89,7 @@ const warn = log.warn;
 /**
  * Sentry への送信も行うエラー出力用ラッパー関数。
  */
-const error = ({ message, stack }: ErrorLogParams): void => {
+const error = ({ message, stack, details }: ErrorLogParams): void => {
   const normalizedError = normalizeError(message);
   const errorInfo = buildErrorInfo({ message, stack });
 
@@ -96,6 +97,7 @@ const error = ({ message, stack }: ErrorLogParams): void => {
   log.error(
     stackWithCauses(normalizedError),
     ...(stack ? [stackWithCauses(stack)] : []),
+    ...(details ? [details] : []),
   );
 
   // 規約同意済みかどうかを確認
@@ -122,6 +124,7 @@ const error = ({ message, stack }: ErrorLogParams): void => {
         captureException(errorInfo, {
           extra: {
             ...(stack ? { stack: stackWithCauses(stack) } : {}),
+            ...(details ? { details } : {}),
           },
           tags: {
             source: 'electron-main',
