@@ -1,3 +1,7 @@
+import {
+  useResizeListener,
+  useWindowEventListeners,
+} from '@/hooks/useEventListener';
 import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import type { Player } from '../PlayerList';
@@ -98,27 +102,27 @@ export const usePlayerListDisplay = (players: Player[] | null) => {
     };
   }, [players]);
 
+  // ツールチップの位置を更新する関数
+  const updateTooltipPosition = () => {
+    if (playerListRef.current) {
+      const rect = playerListRef.current.getBoundingClientRect();
+      setTooltipPosition({
+        top: rect.bottom + 8,
+        left: rect.left,
+      });
+    }
+  };
+
+  // 初回更新
   useEffect(() => {
-    /** ツールチップの位置をプレイヤーリストの下に更新する */
-    const updateTooltipPosition = () => {
-      if (playerListRef.current) {
-        const rect = playerListRef.current.getBoundingClientRect();
-        setTooltipPosition({
-          top: rect.bottom + 8,
-          left: rect.left,
-        });
-      }
-    };
-
     updateTooltipPosition();
-    window.addEventListener('resize', updateTooltipPosition);
-    window.addEventListener('scroll', updateTooltipPosition);
-
-    return () => {
-      window.removeEventListener('resize', updateTooltipPosition);
-      window.removeEventListener('scroll', updateTooltipPosition);
-    };
   }, []);
+
+  // Window イベントリスナーを管理
+  useWindowEventListeners([
+    { type: 'resize', listener: updateTooltipPosition },
+    { type: 'scroll', listener: updateTooltipPosition },
+  ]);
 
   /** ツールチップの追従用マウスムーブハンドラ */
   const handleMouseMove = (event: React.MouseEvent) => {

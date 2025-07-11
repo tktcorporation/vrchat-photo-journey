@@ -1,5 +1,6 @@
+import { useAtomState } from '@/hooks/useAtomState';
 import { trpcReact } from '@/trpc';
-import { atom, useAtom } from 'jotai';
+import { atom } from 'jotai';
 import pathe from 'pathe';
 import { useMemo } from 'react';
 import { VRChatPhotoFileNameWithExtSchema } from '../../../valueObjects';
@@ -74,11 +75,9 @@ export function usePhotoGallery(
   /** デバッグ情報 */
   debug: GalleryDebugInfo;
 } {
-  const [selectedPhoto, setSelectedPhoto] = useAtom(selectedPhotoAtom);
-  const [selectedPhotos, setSelectedPhotos] = useAtom(selectedPhotosAtom);
-  const [isMultiSelectMode, setIsMultiSelectMode] = useAtom(
-    isMultiSelectModeAtom,
-  );
+  const selectedPhotoState = useAtomState(selectedPhotoAtom);
+  const selectedPhotosState = useAtomState(selectedPhotosAtom);
+  const isMultiSelectModeState = useAtomState(isMultiSelectModeAtom);
 
   const { data: photoListRaw, isLoading: isLoadingPhotos } =
     trpcReact.vrchatPhoto.getVrchatPhotoPathModelList.useQuery(
@@ -251,12 +250,12 @@ export function usePhotoGallery(
   return {
     groupedPhotos: filteredGroupedPhotos,
     isLoading,
-    selectedPhoto,
-    setSelectedPhoto,
-    selectedPhotos,
-    setSelectedPhotos,
-    isMultiSelectMode,
-    setIsMultiSelectMode,
+    selectedPhoto: selectedPhotoState.value,
+    setSelectedPhoto: selectedPhotoState.setValue,
+    selectedPhotos: selectedPhotosState.value,
+    setSelectedPhotos: selectedPhotosState.setValue,
+    isMultiSelectMode: isMultiSelectModeState.value,
+    setIsMultiSelectMode: isMultiSelectModeState.setValue,
     debug,
   };
 }
