@@ -452,7 +452,11 @@ async function main() {
       console.log(`✓ Masked: ${file} -> ${path.join(OUTPUT_DIR, file)}`);
       successCount++;
     } catch (error) {
-      console.error(`✗ Error processing ${file}: ${(error as Error).message}`);
+      console.error(
+        `✗ Error processing ${file}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
       errorCount++;
     }
   }
