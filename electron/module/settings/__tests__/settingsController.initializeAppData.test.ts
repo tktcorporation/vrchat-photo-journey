@@ -183,34 +183,69 @@ describe('settingsController.initializeAppData', () => {
     );
   });
 
-  it('APPEND_LOGS_FAILED エラー時は警告ログを出力して処理を継続する', async () => {
-    // ログ同期でAPPEND_LOGS_FAILEDエラー
+  it('LOG_FILE_DIR_NOT_FOUND エラー時はセットアップが必要なエラーをスローする', async () => {
+    // ログ同期でLOG_FILE_DIR_NOT_FOUNDエラー
     mockSyncLogs.mockResolvedValue({
       isErr: () => true,
-      error: { code: 'APPEND_LOGS_FAILED', message: 'Failed to append logs' },
+      error: {
+        code: 'LOG_FILE_DIR_NOT_FOUND',
+        message: 'Log directory not found',
+      },
     });
 
     if (!initializeAppData)
       throw new Error('initializeAppData not initialized');
 
-    // エラーがスローされずに正常に完了することを確認
-    const result = await initializeAppData();
-    expect(result).toEqual({ success: true });
+    // UserFacingErrorがスローされることを確認
+    let thrownError: Error | null = null;
+    try {
+      await initializeAppData();
+    } catch (error) {
+      thrownError = error as Error;
+    }
 
-    // 警告ログが出力されることを確認
-    expect(mockLogger.warn).toHaveBeenCalledWith({
-      message:
-        'VRChat directory setup may be required, but continuing application startup',
-      code: ERROR_CODES.VRCHAT_DIRECTORY_SETUP_REQUIRED,
-      details: {
-        syncError: {
-          code: 'APPEND_LOGS_FAILED',
-          message: 'Failed to append logs',
-        },
-      },
+    expect(thrownError).toBeDefined();
+    const cause = (thrownError as { cause?: unknown })
+      ?.cause as UserFacingError;
+    expect(cause).toBeInstanceOf(UserFacingError);
+    expect(cause?.errorInfo?.code).toBe(
+      ERROR_CODES.VRCHAT_DIRECTORY_SETUP_REQUIRED,
+    );
+    expect(cause?.errorInfo?.category).toBe('SETUP_REQUIRED');
+    expect(cause?.userMessage).toBe(
+      'VRChatのログディレクトリが見つかりません。初期設定が必要です。',
+    );
+
+    // 情報ログが出力されることを確認
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      'VRChat directory setup required - throwing UserFacingError to trigger setup screen',
+    );
+  });
+
+  it('LOG_FILES_NOT_FOUND エラー時もセットアップが必要なエラーをスローする', async () => {
+    // ログ同期でLOG_FILES_NOT_FOUNDエラー
+    mockSyncLogs.mockResolvedValue({
+      isErr: () => true,
+      error: { code: 'LOG_FILES_NOT_FOUND', message: 'No log files found' },
     });
-    expect(mockLogger.warn).toHaveBeenCalledWith(
-      'Log sync failed: Failed to append logs. This is normal in development environments without VRChat logs.',
+
+    if (!initializeAppData)
+      throw new Error('initializeAppData not initialized');
+
+    // UserFacingErrorがスローされることを確認
+    let thrownError: Error | null = null;
+    try {
+      await initializeAppData();
+    } catch (error) {
+      thrownError = error as Error;
+    }
+
+    expect(thrownError).toBeDefined();
+    const cause = (thrownError as { cause?: unknown })
+      ?.cause as UserFacingError;
+    expect(cause).toBeInstanceOf(UserFacingError);
+    expect(cause?.errorInfo?.code).toBe(
+      ERROR_CODES.VRCHAT_DIRECTORY_SETUP_REQUIRED,
     );
   });
 

@@ -11,6 +11,7 @@ import { backupService } from './backupService/backupService';
 import { rollbackService } from './backupService/rollbackService';
 import { FILTER_PATTERNS } from './constants/logPatterns';
 import type { LogRecord } from './converters/dbToLogStore';
+import { VRChatLogFileError } from './error';
 import { exportLogStoreFromDB } from './exportService/exportService';
 import { importService } from './importService/importService';
 import * as vrchatLogService from './service';
@@ -27,15 +28,15 @@ import * as vrchatLogService from './service';
  */
 export const appendLoglinesToFileFromLogFilePathList = async (
   processAll = false,
-): Promise<neverthrow.Result<void, Error>> => {
+): Promise<neverthrow.Result<void, VRChatLogFileError>> => {
   const vrchatlogFilesDir =
     await vrchatLogFileDirService.getValidVRChatLogFileDir();
   if (vrchatlogFilesDir.isErr()) {
     return neverthrow.err(
-      new Error(
-        match(vrchatlogFilesDir.error)
-          .with({ error: 'logFilesNotFound' }, () => 'logFilesNotFound')
-          .with({ error: 'logFileDirNotFound' }, () => 'logFileDirNotFound')
+      new VRChatLogFileError(
+        match(vrchatlogFilesDir.error.error)
+          .with('logFilesNotFound', () => 'LOG_FILES_NOT_FOUND' as const)
+          .with('logFileDirNotFound', () => 'LOG_FILE_DIR_NOT_FOUND' as const)
           .exhaustive(),
       ),
     );
@@ -63,12 +64,9 @@ export const appendLoglinesToFileFromLogFilePathList = async (
     );
   if (logFilePathList.isErr()) {
     return neverthrow.err(
-      new Error(
+      new VRChatLogFileError(
         match(logFilePathList.error)
-          .with(
-            'ENOENT',
-            () => 'logFileDir is found but log files are not found',
-          )
+          .with('ENOENT', () => 'LOG_FILE_DIR_NOT_FOUND' as const)
           .exhaustive(),
       ),
     );
@@ -114,9 +112,21 @@ export const appendLoglinesToFileFromLogFilePathList = async (
   } catch (error) {
     return neverthrow.err(
       match(error)
-        .with(P.instanceOf(Error), (err) => err)
+        .with(P.instanceOf(VRChatLogFileError), (err) => err)
+        .with(
+          P.instanceOf(Error),
+          (err) =>
+            new VRChatLogFileError({
+              code: 'LOG_PARSE_ERROR',
+              message: err.message,
+            }),
+        )
         .otherwise(
-          () => new Error('Unknown error occurred during log processing'),
+          () =>
+            new VRChatLogFileError({
+              code: 'UNKNOWN',
+              message: 'Unknown error occurred during log processing',
+            }),
         ),
     );
   }
