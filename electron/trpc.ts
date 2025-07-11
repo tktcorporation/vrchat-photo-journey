@@ -23,29 +23,41 @@ const t = initTRPC.context<{ eventEmitter: EventEmitter }>().create({
       userMessage: string;
     } | null = null;
 
+    // ネストされたUserFacingErrorも含めて検索
+    const findUserFacingError = (err: unknown): UserFacingError | null => {
+      if (err instanceof UserFacingError) return err;
+      if (err && typeof err === 'object' && 'cause' in err) {
+        return findUserFacingError((err as { cause: unknown }).cause);
+      }
+      return null;
+    };
+
+    const userFacingError = findUserFacingError(cause);
+
+    if (userFacingError) {
+      if (
+        userFacingError.errorInfo?.code &&
+        userFacingError.errorInfo?.category
+      ) {
+        const {
+          code,
+          category,
+          userMessage: errorUserMessage,
+        } = userFacingError.errorInfo;
+
+        userMessage = errorUserMessage || userFacingError.message;
+        structuredErrorInfo = {
+          code,
+          category,
+          userMessage,
+        };
+      } else {
+        userMessage = userFacingError.message;
+      }
+    }
+
+    // 元のcauseベースのマッチングも維持（Zod errorなど）
     match(cause)
-      .when(
-        (c): c is UserFacingError =>
-          c instanceof UserFacingError && !!c.code && !!c.category,
-        (err) => {
-          userMessage = err.message;
-          // Type guard ensures code and category exist
-          const { code, category } = err;
-          if (code && category) {
-            structuredErrorInfo = {
-              code,
-              category,
-              userMessage: err.userMessage || err.message,
-            };
-          }
-        },
-      )
-      .when(
-        (c): c is UserFacingError => c instanceof UserFacingError,
-        (err) => {
-          userMessage = err.message;
-        },
-      )
       .when(
         (c): c is ZodError =>
           c instanceof Error &&
@@ -70,7 +82,10 @@ const t = initTRPC.context<{ eventEmitter: EventEmitter }>().create({
         },
       )
       .otherwise(() => {
-        userMessage = '予期しないエラーが発生しました。';
+        // ネストされたUserFacingErrorが見つからない場合のみデフォルトメッセージ
+        if (!userFacingError) {
+          userMessage = '予期しないエラーが発生しました。';
+        }
       });
 
     // UserFacingErrorの場合は詳細情報を表示しない（構造化エラー情報で十分）
@@ -98,15 +113,21 @@ const t = initTRPC.context<{ eventEmitter: EventEmitter }>().create({
         ...(structuredErrorInfo
           ? { structuredError: structuredErrorInfo }
           : {}),
-        // 原因エラーの詳細も含める
+        // 原因エラーの詳細も含める（UserFacingError以外の場合）
         ...match(cause)
-          .with(P.instanceOf(Error), (err) => ({
-            originalError: {
-              name: err.name,
-              message: err.message,
-              stack: err.stack,
-            },
-          }))
+          .with(
+            P.intersection(
+              P.instanceOf(Error),
+              P.not(P.instanceOf(UserFacingError)),
+            ),
+            (err) => ({
+              originalError: {
+                name: err.name,
+                message: err.message,
+                stack: err.stack,
+              },
+            }),
+          )
           .otherwise(() => ({})),
       },
     };

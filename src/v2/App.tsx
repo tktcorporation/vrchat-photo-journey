@@ -7,11 +7,7 @@ import { init as initSentry } from '@sentry/electron/renderer';
 import { useEffect, useState } from 'react';
 import { match } from 'ts-pattern';
 import './App.css';
-import {
-  ERROR_CATEGORIES,
-  parseErrorFromTRPC,
-  parseErrorMessage,
-} from './types/errors';
+import { ERROR_CATEGORIES, parseErrorFromTRPC } from './types/errors';
 
 // Electron レンダラープロセスでの開発環境検出
 const isDev = process.env.NODE_ENV === 'development';
@@ -255,7 +251,6 @@ const ToasterWrapper = () => {
               structuredMessage.errorInfo?.category,
             );
 
-            console.log('structured toast', structuredMessage);
             toast({
               variant,
               description:
@@ -274,8 +269,6 @@ const ToasterWrapper = () => {
         .when(
           (c): c is string => typeof c === 'string',
           (message) => {
-            console.log('toast', message);
-
             // 「予期しないエラー」以外は通常のトーストとして表示
             const isUnexpectedError = message.includes(
               '予期しないエラーが発生しました',
@@ -290,7 +283,6 @@ const ToasterWrapper = () => {
         )
         // その他の場合
         .otherwise((c) => {
-          console.log('toast', JSON.stringify(c));
           toast({
             description: JSON.stringify(c),
           });
@@ -321,35 +313,12 @@ const Contents = () => {
     }
   }, [stage, loadingState]);
 
-  // スタートアップエラーは backend の logError 関数からトースト送信されるため
-  // ここでの重複toast表示は無効化
-  // useEffect(() => {
-  //   if (error) {
-  //     // 構造化エラー情報がある場合は適切に処理
-  //     const errorInfo = originalError
-  //       ? parseErrorFromTRPC(originalError)
-  //       : parseErrorMessage(error);
-
-  //     const variant = getToastVariant(errorInfo?.category);
-
-  //     toast({
-  //       variant,
-  //       title: variant === 'destructive'
-  //         ? 'スタートアップエラー'
-  //         : variant === 'warning'
-  //           ? 'スタートアップ警告'
-  //           : 'スタートアップ',
-  //       description: errorInfo?.userMessage || error,
-  //     });
-  //   }
-  // }, [error, originalError, toast]);
-
   if (stage === 'error') {
     // 型安全なエラー解析 - tRPCエラーオブジェクトがある場合は優先的に使用
     const errorInfo = originalError
       ? parseErrorFromTRPC(originalError)
       : error
-        ? parseErrorMessage(error)
+        ? parseErrorFromTRPC(error)
         : null;
 
     // ts-patternを使用した型安全なエラー判定

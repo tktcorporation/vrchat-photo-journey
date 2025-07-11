@@ -46,7 +46,7 @@ vi.mock('./service', async (importOriginal) => {
   };
 });
 
-// Mock the log sync service to avoid APPEND_LOGS_FAILED error
+// Mock the log sync service to avoid LOG_FILE_WRITE_FAILED error
 vi.mock('../logSync/service', async () => {
   const { ok } = await import('neverthrow');
   return {

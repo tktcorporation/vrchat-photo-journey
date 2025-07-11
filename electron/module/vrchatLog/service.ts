@@ -121,11 +121,12 @@ export const getVRChaLogInfoByLogFilePathList = async (
     return neverthrow.err(logLineList.error);
   }
 
-  const logInfoList = convertLogLinesToWorldAndPlayerJoinLogInfos(
+  const parseResult = convertLogLinesToWorldAndPlayerJoinLogInfos(
     logLineList.value,
   );
 
-  return neverthrow.ok(logInfoList);
+  // エラーがあってもログ情報は返す（部分的な成功を許容）
+  return neverthrow.ok(parseResult.logInfos);
 };
 
 /**
@@ -159,12 +160,12 @@ export const getVRChaLogInfoByLogFilePathListWithPartialSuccess = async (
       ],
     });
 
-  const logInfoList = convertLogLinesToWorldAndPlayerJoinLogInfos(
+  const parseResult = convertLogLinesToWorldAndPlayerJoinLogInfos(
     logLineListResult.data,
   );
 
   return {
-    data: logInfoList,
+    data: parseResult.logInfos,
     errors: logLineListResult.errors,
     totalProcessed: logLineListResult.totalProcessed,
     successCount: logLineListResult.successCount,

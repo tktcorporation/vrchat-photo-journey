@@ -48,8 +48,8 @@ const hasPhotoPathChanged = (): boolean => {
 
 export const settingsRouter = () =>
   trpcRouter({
-    getAppVersion: procedure.query(async () => {
-      const version = await settingService.getAppVersion();
+    getAppVersion: procedure.query(() => {
+      const version = settingService.getAppVersion();
       return version;
     }),
     forceResetDatabase: procedure.mutation(async () => {
@@ -60,8 +60,8 @@ export const settingsRouter = () =>
     syncDatabase: procedure.mutation(async () => {
       await sequelizeClient.syncRDBClient();
     }),
-    isDatabaseReady: procedure.query(async () => {
-      const appVersion = await settingService.getAppVersion();
+    isDatabaseReady: procedure.query(() => {
+      const appVersion = settingService.getAppVersion();
       return sequelizeClient.checkMigrationRDBClient(appVersion);
     }),
     getAppUpdateInfo: procedure.query(async () => {
@@ -218,26 +218,32 @@ export const settingsRouter = () =>
           // ログ同期エラーの場合、詳細なエラータイプを特定
           const errorCode = logSyncResult.error.code;
 
-          match(errorCode)
-            .with('APPEND_LOGS_FAILED', () => {
-              // VRChatログファイル関連の設定（初期セットアップが必要）
-              throw UserFacingError.withStructuredInfo({
-                code: ERROR_CODES.VRCHAT_DIRECTORY_SETUP_REQUIRED,
-                category: ERROR_CATEGORIES.SETUP_REQUIRED,
-                message:
-                  'VRChat directory setup is required for initial configuration',
-                userMessage:
-                  'VRChatフォルダの設定が必要です。初期セットアップを開始します。',
-                details: {
-                  syncError: logSyncResult.error,
-                },
-              });
-            })
-            .otherwise(() => {
-              // その他のエラーは何もしない（後続の処理で警告ログ出力）
+          // VRChatログディレクトリが見つからない場合は、設定が必要なエラーとして処理
+          const isSetupRequired = match(errorCode)
+            .with('LOG_FILE_DIR_NOT_FOUND', () => true)
+            .with('LOG_FILES_NOT_FOUND', () => true)
+            .otherwise(() => false);
+
+          if (isSetupRequired) {
+            logger.info(
+              'VRChat directory setup required - throwing UserFacingError to trigger setup screen',
+            );
+
+            const setupError = UserFacingError.withStructuredInfo({
+              code: ERROR_CODES.VRCHAT_DIRECTORY_SETUP_REQUIRED,
+              category: ERROR_CATEGORIES.SETUP_REQUIRED,
+              message: 'VRChat directory not found',
+              userMessage:
+                'VRChatのログディレクトリが見つかりません。初期設定が必要です。',
+              details: {
+                syncError: logSyncResult.error,
+              },
             });
 
-          // 開発環境ではwarnレベルでログ記録（Sentryに送信されない）
+            throw setupError;
+          }
+
+          // その他のエラーは警告として記録（開発環境での一時的なエラーなど）
           logger.warn(
             `Log sync failed: ${
               logSyncResult.error.message || 'Unknown error'
