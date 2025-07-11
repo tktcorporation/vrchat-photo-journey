@@ -176,7 +176,6 @@ function generateFakeName(seed: string): string {
   const num1 = Number.parseInt(hash.substring(0, 8), 16);
   const num2 = Number.parseInt(hash.substring(8, 16), 16);
   const num3 = Number.parseInt(hash.substring(16, 24), 16);
-  const _num4 = Number.parseInt(hash.substring(24, 32), 16);
 
   // ランダムだが一貫性のある選択
   const formatType = num1 % 4;

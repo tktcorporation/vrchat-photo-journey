@@ -39,17 +39,17 @@ const t = initTRPC.context<{ eventEmitter: EventEmitter }>().create({
         userFacingError.errorInfo?.code &&
         userFacingError.errorInfo?.category
       ) {
-        userMessage =
-          userFacingError.errorInfo.userMessage || userFacingError.message;
         const {
           code,
           category,
           userMessage: errorUserMessage,
         } = userFacingError.errorInfo;
+
+        userMessage = errorUserMessage || userFacingError.message;
         structuredErrorInfo = {
           code,
           category,
-          userMessage: errorUserMessage || userFacingError.message,
+          userMessage,
         };
       } else {
         userMessage = userFacingError.message;

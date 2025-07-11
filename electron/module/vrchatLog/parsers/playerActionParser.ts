@@ -41,7 +41,7 @@ const parsePlayerInfo = (
   // プレイヤー名の検証
   const playerNameResult = VRChatPlayerNameSchema.safeParse(playerName);
   if (!playerNameResult.success) {
-    return err('INVALID_PLAYER_NAME' as const);
+    return err('INVALID_PLAYER_NAME');
   }
 
   // プレイヤーIDの検証
@@ -49,7 +49,7 @@ const parsePlayerInfo = (
     playerId || null,
   );
   if (!playerIdResult.success) {
-    return err('INVALID_PLAYER_ID' as const);
+    return err('INVALID_PLAYER_ID');
   }
 
   return ok({
@@ -72,7 +72,7 @@ export const extractPlayerJoinInfoFromLog = (
   const matches = logLine.value.match(regex);
 
   if (!matches) {
-    return err('LOG_FORMAT_MISMATCH' as const);
+    return err('LOG_FORMAT_MISMATCH');
   }
 
   const [, date, time, playerName, playerId] = matches;
@@ -95,7 +95,7 @@ export const extractPlayerJoinInfoFromLog = (
   }
 
   return ok({
-    logType: 'playerJoin' as const,
+    logType: 'playerJoin',
     joinDate: joinDate.value,
     ...playerInfo.value,
   });
@@ -116,7 +116,7 @@ export const extractPlayerLeaveInfoFromLog = (
   const matches = logLine.value.match(regex);
 
   if (!matches) {
-    return err('LOG_FORMAT_MISMATCH' as const);
+    return err('LOG_FORMAT_MISMATCH');
   }
 
   const [, date, time, playerName, playerId] = matches;
@@ -145,7 +145,7 @@ export const extractPlayerLeaveInfoFromLog = (
   }
 
   return ok({
-    logType: 'playerLeave' as const,
+    logType: 'playerLeave',
     leaveDate: leaveDate.value,
     ...playerInfo.value,
   });

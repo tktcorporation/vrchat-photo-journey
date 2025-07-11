@@ -32,13 +32,14 @@ export interface CustomErrorData {
 
 /**
  * TRPC v10のエラー形状を表す型
- * shape.json.data にエラー情報が含まれる
+ * shape.json.data または shape.data にエラー情報が含まれる
  */
 interface TRPCErrorShape {
   shape?: {
     json?: {
       data?: unknown;
     };
+    data?: unknown;
   };
 }
 
@@ -64,7 +65,7 @@ export function isTypedTRPCError(error: unknown): error is TypedTRPCError {
     return true;
   }
 
-  // Check for TRPC v10 client error structure (shape.json.data)
+  // Check for TRPC v10 client error structure (shape.json.data or shape.data)
   const errorWithShape = error as Error & TRPCErrorShape;
   if (
     error instanceof Error &&
@@ -72,6 +73,7 @@ export function isTypedTRPCError(error: unknown): error is TypedTRPCError {
     typeof errorWithShape.shape === 'object' &&
     errorWithShape.shape !== null
   ) {
+    // Check for shape.json.data
     if (
       'json' in errorWithShape.shape &&
       typeof errorWithShape.shape.json === 'object' &&
@@ -80,51 +82,77 @@ export function isTypedTRPCError(error: unknown): error is TypedTRPCError {
       typeof errorWithShape.shape.json.data === 'object' &&
       errorWithShape.shape.json.data !== null
     ) {
-      // Normalize the error structure by copying shape.json.data to data
-      // Use Object.defineProperty to avoid TypeScript errors
-      Object.defineProperty(error, 'data', {
-        value: errorWithShape.shape.json.data,
-        writable: true,
-        enumerable: true,
-        configurable: true,
-      });
       return true;
     }
-  }
 
-  // Additional check for TRPC error structure (shape.data directly)
-  if (
-    error instanceof Error &&
-    'shape' in error &&
-    typeof errorWithShape.shape === 'object' &&
-    errorWithShape.shape !== null &&
-    'data' in errorWithShape.shape &&
-    typeof errorWithShape.shape.data === 'object'
-  ) {
-    // Normalize to expected structure
-    Object.defineProperty(error, 'data', {
-      value: errorWithShape.shape.data,
-      writable: true,
-      enumerable: true,
-      configurable: true,
-    });
-    return true;
+    // Check for shape.data directly
+    if (
+      'data' in errorWithShape.shape &&
+      typeof errorWithShape.shape.data === 'object'
+    ) {
+      return true;
+    }
   }
 
   return false;
 }
 
 /**
+ * TRPCエラーオブジェクトから正規化されたエラーオブジェクトを返す
+ * 元のエラーオブジェクトは変更せず、新しいオブジェクトを返す
+ */
+export function normalizeTypedTRPCError(error: unknown): TypedTRPCError | null {
+  if (!isTypedTRPCError(error)) {
+    return null;
+  }
+
+  // 直接dataプロパティがある場合
+  if (
+    'data' in error &&
+    typeof error.data === 'object' &&
+    error.data !== null
+  ) {
+    return error as TypedTRPCError;
+  }
+
+  // shape.json.data からデータを抽出
+  const errorWithShape = error as Error & TRPCErrorShape;
+  if (
+    errorWithShape.shape?.json?.data &&
+    typeof errorWithShape.shape.json.data === 'object'
+  ) {
+    return {
+      ...error,
+      data: errorWithShape.shape.json.data as CustomErrorData,
+    } as TypedTRPCError;
+  }
+
+  // shape.data からデータを抽出
+  if (
+    errorWithShape.shape?.data &&
+    typeof errorWithShape.shape.data === 'object'
+  ) {
+    return {
+      ...error,
+      data: errorWithShape.shape.data as CustomErrorData,
+    } as TypedTRPCError;
+  }
+
+  return null;
+}
+
+/**
  * 型ガード: エラーに構造化エラー情報が含まれているかを判定
  */
 export function hasStructuredError(error: unknown): error is TypedTRPCError {
+  const normalizedError = normalizeTypedTRPCError(error);
   return (
-    isTypedTRPCError(error) &&
-    error.data?.structuredError !== undefined &&
-    typeof error.data.structuredError === 'object' &&
-    'code' in error.data.structuredError &&
-    'category' in error.data.structuredError &&
-    'userMessage' in error.data.structuredError
+    normalizedError !== null &&
+    normalizedError.data?.structuredError !== undefined &&
+    typeof normalizedError.data.structuredError === 'object' &&
+    'code' in normalizedError.data.structuredError &&
+    'category' in normalizedError.data.structuredError &&
+    'userMessage' in normalizedError.data.structuredError
   );
 }
 
@@ -134,8 +162,9 @@ export function hasStructuredError(error: unknown): error is TypedTRPCError {
 export function getStructuredError(
   error: unknown,
 ): StructuredError | undefined {
-  if (hasStructuredError(error) && error.data?.structuredError) {
-    return error.data.structuredError;
+  const normalizedError = normalizeTypedTRPCError(error);
+  if (normalizedError?.data?.structuredError) {
+    return normalizedError.data.structuredError;
   }
   return undefined;
 }
