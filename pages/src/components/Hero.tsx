@@ -50,7 +50,7 @@ function Hero() {
           </div>
           <div className="relative">
             <img
-              src="/Screenshot.jpg"
+              src="/VRChatAlbums-finalized.png"
               alt="VRChat Albums スクリーンショット"
               className="w-full h-auto rounded-lg shadow-2xl transition-transform duration-[350ms] hover:transform-none"
               style={{
