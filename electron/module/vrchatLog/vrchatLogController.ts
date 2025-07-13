@@ -277,7 +277,7 @@ export const vrchatLogRouter = () =>
             processAll: z.boolean().optional().default(false),
           })
           .optional()
-          .default({}),
+          .default(() => ({ processAll: false })),
       )
       .mutation(async (opts) => {
         const { input } = opts;
