@@ -240,10 +240,10 @@ export const LocationGroupHeader = ({
                   filter: 'blur(26px) saturate(120%) brightness(0.9)',
                 }}
               />
-              <div className="absolute inset-0 bg-white/40 dark:bg-gray-900/50 backdrop-blur-[1px] group-hover/card:backdrop-blur-[2px] transition-all duration-500" />
+              <div className="absolute inset-0 bg-white/70 dark:bg-gray-900/50 backdrop-blur-[1px] group-hover/card:backdrop-blur-[2px] transition-all duration-500" />
               <div className="absolute inset-0">
-                <div className="absolute inset-0 bg-gradient-to-r from-white/50 to-white/30 dark:from-gray-900/30 dark:to-gray-900/10 mix-blend-overlay" />
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.4),rgba(255,255,255,0.2)_70%)] dark:bg-[radial-gradient(circle_at_50%_120%,rgba(17,24,39,0.4),rgba(17,24,39,0.2)_70%)]" />
+                <div className="absolute inset-0 bg-gradient-to-r from-white/60 to-white/40 dark:from-gray-900/30 dark:to-gray-900/10 mix-blend-overlay" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.6),rgba(255,255,255,0.3)_70%)] dark:bg-[radial-gradient(circle_at_50%_120%,rgba(17,24,39,0.4),rgba(17,24,39,0.2)_70%)]" />
               </div>
             </>
           )}
