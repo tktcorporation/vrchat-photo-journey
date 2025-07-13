@@ -241,30 +241,36 @@ export const VRChatPlayerIdSchema = z
 export const VRChatWorldIdSchema = z
   .string()
   .refine(isValidVRChatWorldId, {
-    message:
-      'Invalid VRChat World ID format. Expected: wrld_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
+    error: (issue) => ({
+      message: `Invalid VRChat World ID format. Expected: wrld_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx, received: ${issue.input}`,
+    }),
   })
   .transform((value) => new VRChatWorldId(value));
 
 export const VRChatWorldInstanceIdSchema = z
   .string()
   .refine(isValidVRChatWorldInstanceId, {
-    message:
-      'Invalid VRChat World Instance ID format. Expected: alphanumeric string or alphanumeric~region(region_code).',
+    error: (issue) => ({
+      message: `Invalid VRChat World Instance ID format. Expected: alphanumeric string or alphanumeric~region(region_code), received: ${issue.input}`,
+    }),
   })
   .transform((value) => new VRChatWorldInstanceId(value));
 
 export const VRChatPlayerNameSchema = z
   .string()
   .refine(isValidVRChatPlayerName, {
-    message: 'Invalid VRChat Player Name. Cannot be empty',
+    error: (issue) => ({
+      message: `Invalid VRChat Player Name. Cannot be empty, received: ${issue.input}`,
+    }),
   })
   .transform((value) => new VRChatPlayerName(value));
 
 export const VRChatWorldNameSchema = z
   .string()
   .refine(isValidVRChatWorldName, {
-    message: 'Invalid VRChat World Name. Cannot be empty',
+    error: (issue) => ({
+      message: `Invalid VRChat World Name. Cannot be empty, received: ${issue.input}`,
+    }),
   })
   .transform((value) => new VRChatWorldName(value));
 
