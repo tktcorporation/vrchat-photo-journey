@@ -4639,11 +4639,11 @@
     "path": "node_modules/yocto-queue",
     "licenseFile": "node_modules/yocto-queue/license"
   },
-  "zod@3.23.4": {
+  "zod@4.0.5": {
     "licenses": "MIT",
     "repository": "https://github.com/colinhacks/zod",
     "publisher": "Colin McDonnell",
-    "email": "colin@colinhacks.com",
+    "email": "zod@colinhacks.com",
     "path": "node_modules/zod",
     "licenseFile": "node_modules/zod/LICENSE"
   },

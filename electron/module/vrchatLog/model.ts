@@ -241,29 +241,36 @@ export const VRChatPlayerIdSchema = z
 export const VRChatWorldIdSchema = z
   .string()
   .refine(isValidVRChatWorldId, {
-    message:
-      'Invalid VRChat World ID format. Expected: wrld_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
+    error: (issue) => ({
+      message: `Invalid VRChat World ID format. Expected: wrld_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx, received: ${issue.input}`,
+    }),
   })
   .transform((value) => new VRChatWorldId(value));
 
 export const VRChatWorldInstanceIdSchema = z
   .string()
-  .refine(isValidVRChatWorldInstanceId, (value) => ({
-    message: `Invalid VRChat World Instance ID format. Expected: alphanumeric string or alphanumeric~region(region_code). received: ${value}`,
-  }))
+  .refine(isValidVRChatWorldInstanceId, {
+    error: (issue) => ({
+      message: `Invalid VRChat World Instance ID format. Expected: alphanumeric string or alphanumeric~region(region_code), received: ${issue.input}`,
+    }),
+  })
   .transform((value) => new VRChatWorldInstanceId(value));
 
 export const VRChatPlayerNameSchema = z
   .string()
   .refine(isValidVRChatPlayerName, {
-    message: 'Invalid VRChat Player Name. Cannot be empty',
+    error: (issue) => ({
+      message: `Invalid VRChat Player Name. Cannot be empty, received: ${issue.input}`,
+    }),
   })
   .transform((value) => new VRChatPlayerName(value));
 
 export const VRChatWorldNameSchema = z
   .string()
   .refine(isValidVRChatWorldName, {
-    message: 'Invalid VRChat World Name. Cannot be empty',
+    error: (issue) => ({
+      message: `Invalid VRChat World Name. Cannot be empty, received: ${issue.input}`,
+    }),
   })
   .transform((value) => new VRChatWorldName(value));
 
@@ -277,9 +284,17 @@ export const OptionalVRChatPlayerIdSchema = z
   })
   .pipe(
     z.custom<VRChatPlayerId | null>(
-      (val) => {
+      (val): val is VRChatPlayerId | null => {
         if (val === null) return true;
-        return isValidVRChatPlayerId(val.value);
+        if (
+          val &&
+          typeof val === 'object' &&
+          'value' in val &&
+          typeof val.value === 'string'
+        ) {
+          return isValidVRChatPlayerId(val.value);
+        }
+        return false;
       },
       {
         message:
