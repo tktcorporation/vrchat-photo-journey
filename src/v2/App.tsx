@@ -244,8 +244,27 @@ const ToasterWrapper = () => {
       match(content)
         // 構造化トーストメッセージの処理
         .when(
-          (c): c is StructuredToastMessage =>
-            typeof c === 'object' && c !== null && 'message' in c,
+          (c): c is StructuredToastMessage => {
+            if (typeof c !== 'object' || c === null || !('message' in c)) {
+              return false;
+            }
+            const obj = c as { message: unknown; errorInfo?: unknown };
+            if (typeof obj.message !== 'string') {
+              return false;
+            }
+            if (!obj.errorInfo) {
+              return true; // message-only structured toast is valid
+            }
+            if (typeof obj.errorInfo !== 'object' || obj.errorInfo === null) {
+              return false;
+            }
+            const errorInfo = obj.errorInfo as Record<string, unknown>;
+            return (
+              typeof errorInfo.code === 'string' &&
+              typeof errorInfo.category === 'string' &&
+              typeof errorInfo.userMessage === 'string'
+            );
+          },
           (structuredMessage) => {
             const variant = getToastVariant(
               structuredMessage.errorInfo?.category,
@@ -283,8 +302,12 @@ const ToasterWrapper = () => {
         )
         // その他の場合
         .otherwise((c) => {
+          // デバッグ用にコンソールに出力するが、ユーザーには表示しない
+          console.warn('Unknown toast content received:', c);
           toast({
-            description: JSON.stringify(c),
+            variant: 'destructive',
+            description: '予期しないエラーが発生しました。',
+            title: 'エラー',
           });
         });
     },

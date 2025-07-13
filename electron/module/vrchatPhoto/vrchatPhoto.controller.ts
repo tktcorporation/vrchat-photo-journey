@@ -82,8 +82,11 @@ export const vrchatPhotoRouter = () =>
           eventEmitter.emit('toast', 'VRChatの写真の保存先を設定しました');
           return true;
         },
-        (error) => {
-          eventEmitter.emit('toast', error);
+        (_error) => {
+          eventEmitter.emit(
+            'toast',
+            'VRChatの写真の保存先の設定がキャンセルされました',
+          );
           return false;
         },
       );
