@@ -248,9 +248,10 @@ export const VRChatWorldIdSchema = z
 
 export const VRChatWorldInstanceIdSchema = z
   .string()
-  .refine(isValidVRChatWorldInstanceId, (value) => ({
-    message: `Invalid VRChat World Instance ID format. Expected: alphanumeric string or alphanumeric~region(region_code). received: ${value}`,
-  }))
+  .refine(isValidVRChatWorldInstanceId, {
+    message:
+      'Invalid VRChat World Instance ID format. Expected: alphanumeric string or alphanumeric~region(region_code).',
+  })
   .transform((value) => new VRChatWorldInstanceId(value));
 
 export const VRChatPlayerNameSchema = z
@@ -277,9 +278,17 @@ export const OptionalVRChatPlayerIdSchema = z
   })
   .pipe(
     z.custom<VRChatPlayerId | null>(
-      (val) => {
+      (val): val is VRChatPlayerId | null => {
         if (val === null) return true;
-        return isValidVRChatPlayerId(val.value);
+        if (
+          val &&
+          typeof val === 'object' &&
+          'value' in val &&
+          typeof val.value === 'string'
+        ) {
+          return isValidVRChatPlayerId(val.value);
+        }
+        return false;
       },
       {
         message:

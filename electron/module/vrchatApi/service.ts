@@ -114,7 +114,11 @@ export const getVrcWorldInfoByWorldId = async (
   const result = VRChatWorldInfoFromApiSchema.safeParse(response.value);
   if (!result.success) {
     return neverthrow.err(
-      new Error(`fail to parse VRChatWorldInfoFromApi: ${result.error.errors}`),
+      new Error(
+        `fail to parse VRChatWorldInfoFromApi: ${JSON.stringify(
+          result.error.issues,
+        )}`,
+      ),
     );
   }
   return neverthrow.ok(result.data);
@@ -183,7 +187,9 @@ export const getVrcUserInfoByUserName = async (
       const json = await response.json();
       const result = UsersSchema.safeParse(json);
       if (!result.success) {
-        throw new Error(`fail to parse UsersSchema: ${result.error.errors}`);
+        throw new Error(
+          `fail to parse UsersSchema: ${JSON.stringify(result.error.issues)}`,
+        );
         // resolve(neverthrow.err(new Error(`fail to parse UsersSchema: ${result.error.errors}`)));
         // return;
       }
