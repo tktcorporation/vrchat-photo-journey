@@ -6,6 +6,36 @@ All notable changes to this project will be documented in this file.
 
 ### 🚀 Features
 
+- 写真選択UIをモダンでシンプルなデザインに改善 (#497)
+- ランディングページの実装とTailwind CSS v4への移行 (#532)
+- VRChat Albums紹介用ランディングページの実装 (#533)
+- *(#529)* ウィンドウヘッダーのダブルクリックで最大化/復元機能 (#537)
+
+### 🐛 Bug Fixes
+
+- 日付ジャンプサイドバーがアプリケーションヘッダーと重なる問題を修正 (#503)
+- App trayの項目整理とアイコンクリック動作を追加 (#505)
+- I18nの漏れを修正 (#502)
+- フォトギャラリーのグループ間の余白を適切なサイズに調整 (#506)
+- Primary colorの不一致を修正 (#504)
+- 入力要素のスタイル統一とSSH agent forwarding設定 (#526) (#527)
+- *(#476)* UIコンポーネントのprimary color統一 (#535)
+- ランディングページのビルドエラーを修正 (#543)
+
+### 🚜 Refactor
+
+- Replace if statements with ts-pattern in App.tsx (#514)
+- Consolidate error helper functions to reduce duplication (#528)
+- Apply ts-pattern to startup stage handling (#522)
+- Phase 1 - Consolidate duplicate code patterns (#531)
+- アイコンサイズの統一と定数化 (#542)
+- *(#538)* Transition durationの統一 (#540)
+- TRPCエラーハンドリング、Sentryフィルタリング、利用規約改善 (#501)
+
+## [0.17.0] - 2025-06-22
+
+### 🚀 Features
+
 - 写真クリック時にOSの標準写真ビューアーで開くように変更 (#475)
 - 写真コピー機能を画像データコピーからファイルパスコピーに変更 (#481)
 - 旧アプリからのデータ移行機能を再実装（Playwrightテスト対応版） (#463) (#488)

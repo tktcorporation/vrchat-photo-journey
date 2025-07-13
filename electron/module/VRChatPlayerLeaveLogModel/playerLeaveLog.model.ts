@@ -16,6 +16,13 @@ import {
 import { uuidv7 } from 'uuidv7';
 
 @Table({ tableName: 'VRChatPlayerLeaveLogModels' })
+/**
+ * プレイヤー退出ログを保存するモデル。
+ *
+ * @see docs/log-sync-architecture.md - ログ同期の設計
+ * @see docs/photo-grouping-logic.md - セッション単位の写真グループ化
+ * @see VRChatPlayerJoinLogModel - 参加ログモデル
+ */
 export class VRChatPlayerLeaveLogModel extends Model<
   InferAttributes<VRChatPlayerLeaveLogModel>,
   InferCreationAttributes<VRChatPlayerLeaveLogModel>

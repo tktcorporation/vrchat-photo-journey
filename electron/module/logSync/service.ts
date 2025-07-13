@@ -57,11 +57,16 @@ export async function syncLogs(
     await appendLoglinesToFileFromLogFilePathList(isFullSync);
 
   if (appendResult.isErr()) {
-    logger.error({ message: 'Failed to append log lines' });
-    return neverthrow.err({
-      code: 'APPEND_LOGS_FAILED',
-      ...appendResult.error,
-    } as VRChatLogFileError);
+    logger.error({
+      message: 'Failed to append log lines',
+      details: {
+        code: appendResult.error.code,
+        error: appendResult.error.message,
+      },
+    });
+
+    // VRChatLogFileError を直接返す
+    return neverthrow.err(appendResult.error);
   }
 
   // Step 2: 保存されたログをデータベースに読み込む

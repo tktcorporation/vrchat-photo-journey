@@ -7,11 +7,7 @@ import { init as initSentry } from '@sentry/electron/renderer';
 import { useEffect, useState } from 'react';
 import { match } from 'ts-pattern';
 import './App.css';
-import {
-  ERROR_CATEGORIES,
-  parseErrorFromTRPC,
-  parseErrorMessage,
-} from './types/errors';
+import { ERROR_CATEGORIES, parseErrorFromTRPC } from './types/errors';
 
 // Electron レンダラープロセスでの開発環境検出
 const isDev = process.env.NODE_ENV === 'development';
@@ -126,18 +122,27 @@ function AppContent() {
       const currentVersion = terms.version;
       console.log('termsStatus', termsStatus);
 
-      if (!accepted) {
-        setShowTerms(true);
-        setIsUpdate(false);
-        setHasAcceptedTerms(false);
-      } else if (version !== currentVersion) {
-        setShowTerms(true);
-        setIsUpdate(true);
-        setHasAcceptedTerms(false);
-      } else {
-        setHasAcceptedTerms(true);
-        // setShowTerms(false); // 既に同意済みなのでモーダルは表示しない (この行はあってもなくても良い)
-      }
+      match({ accepted, version, currentVersion })
+        .when(
+          ({ accepted }) => !accepted,
+          () => {
+            setShowTerms(true);
+            setIsUpdate(false);
+            setHasAcceptedTerms(false);
+          },
+        )
+        .when(
+          ({ version, currentVersion }) => version !== currentVersion,
+          () => {
+            setShowTerms(true);
+            setIsUpdate(true);
+            setHasAcceptedTerms(false);
+          },
+        )
+        .otherwise(() => {
+          setHasAcceptedTerms(true);
+          // setShowTerms(false); // 既に同意済みなのでモーダルは表示しない (この行はあってもなくても良い)
+        });
     };
 
     checkTermsAndInitializeSentry();
@@ -236,53 +241,52 @@ const ToasterWrapper = () => {
   const { toast } = useToast();
   trpcReact.subscribeToast.useSubscription(undefined, {
     onData: (content: unknown) => {
-      // 構造化トーストメッセージの処理
-      if (
-        typeof content === 'object' &&
-        content !== null &&
-        'message' in content
-      ) {
-        const structuredMessage = content as StructuredToastMessage;
-        const variant = getToastVariant(structuredMessage.errorInfo?.category);
+      match(content)
+        // 構造化トーストメッセージの処理
+        .when(
+          (c): c is StructuredToastMessage =>
+            typeof c === 'object' && c !== null && 'message' in c,
+          (structuredMessage) => {
+            const variant = getToastVariant(
+              structuredMessage.errorInfo?.category,
+            );
 
-        console.log('structured toast', structuredMessage);
-        toast({
-          variant,
-          description:
-            structuredMessage.errorInfo?.userMessage ||
-            structuredMessage.message,
-          title:
-            variant === 'destructive'
-              ? 'エラー'
-              : variant === 'warning'
-                ? '警告'
-                : undefined,
+            toast({
+              variant,
+              description:
+                structuredMessage.errorInfo?.userMessage ||
+                structuredMessage.message,
+              title:
+                variant === 'destructive'
+                  ? 'エラー'
+                  : variant === 'warning'
+                    ? '警告'
+                    : undefined,
+            });
+          },
+        )
+        // 従来の文字列メッセージの処理
+        .when(
+          (c): c is string => typeof c === 'string',
+          (message) => {
+            // 「予期しないエラー」以外は通常のトーストとして表示
+            const isUnexpectedError = message.includes(
+              '予期しないエラーが発生しました',
+            );
+
+            toast({
+              variant: isUnexpectedError ? 'destructive' : 'default',
+              description: message,
+              title: isUnexpectedError ? 'エラー' : undefined,
+            });
+          },
+        )
+        // その他の場合
+        .otherwise((c) => {
+          toast({
+            description: JSON.stringify(c),
+          });
         });
-        return;
-      }
-
-      // 従来の文字列メッセージの処理
-      if (typeof content === 'string') {
-        console.log('toast', content);
-
-        // 「予期しないエラー」以外は通常のトーストとして表示
-        const isUnexpectedError = content.includes(
-          '予期しないエラーが発生しました',
-        );
-
-        toast({
-          variant: isUnexpectedError ? 'destructive' : 'default',
-          description: content,
-          title: isUnexpectedError ? 'エラー' : undefined,
-        });
-        return;
-      }
-
-      // その他の場合
-      console.log('toast', JSON.stringify(content));
-      toast({
-        description: JSON.stringify(content),
-      });
     },
   });
   return (
@@ -309,35 +313,12 @@ const Contents = () => {
     }
   }, [stage, loadingState]);
 
-  // スタートアップエラーは backend の logError 関数からトースト送信されるため
-  // ここでの重複toast表示は無効化
-  // useEffect(() => {
-  //   if (error) {
-  //     // 構造化エラー情報がある場合は適切に処理
-  //     const errorInfo = originalError
-  //       ? parseErrorFromTRPC(originalError)
-  //       : parseErrorMessage(error);
-
-  //     const variant = getToastVariant(errorInfo?.category);
-
-  //     toast({
-  //       variant,
-  //       title: variant === 'destructive'
-  //         ? 'スタートアップエラー'
-  //         : variant === 'warning'
-  //           ? 'スタートアップ警告'
-  //           : 'スタートアップ',
-  //       description: errorInfo?.userMessage || error,
-  //     });
-  //   }
-  // }, [error, originalError, toast]);
-
   if (stage === 'error') {
     // 型安全なエラー解析 - tRPCエラーオブジェクトがある場合は優先的に使用
     const errorInfo = originalError
       ? parseErrorFromTRPC(originalError)
       : error
-        ? parseErrorMessage(error)
+        ? parseErrorFromTRPC(error)
         : null;
 
     // ts-patternを使用した型安全なエラー判定
@@ -365,10 +346,8 @@ const Contents = () => {
                   <div className="space-y-4">
                     <div className="flex items-start space-x-3">
                       <div className="flex-shrink-0">
-                        <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                          <span className="text-blue-600 dark:text-blue-300">
-                            1
-                          </span>
+                        <div className="w-8 h-8 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
+                          <span className="text-primary">1</span>
                         </div>
                       </div>
                       <div>
@@ -383,10 +362,8 @@ const Contents = () => {
                     <PathSettings showRefreshAll={false} />
                     <div className="flex items-start space-x-3">
                       <div className="flex-shrink-0">
-                        <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                          <span className="text-blue-600 dark:text-blue-300">
-                            2
-                          </span>
+                        <div className="w-8 h-8 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
+                          <span className="text-primary">2</span>
                         </div>
                       </div>
                       <div>
@@ -404,7 +381,7 @@ const Contents = () => {
                   <button
                     type="button"
                     onClick={retry}
-                    className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                    className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
                   >
                     設定を確認して続ける
                   </button>
@@ -442,7 +419,7 @@ const Contents = () => {
                           href="https://github.com/your-repo/issues/new"
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-blue-500 hover:underline"
+                          className="text-primary hover:underline"
                         >
                           バグを報告する
                         </a>
@@ -462,7 +439,7 @@ const Contents = () => {
                 <button
                   type="button"
                   onClick={retry}
-                  className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                  className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors"
                 >
                   再試行
                 </button>
@@ -501,7 +478,7 @@ const Contents = () => {
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="3"
-                    className="text-[#4c4cff] dark:text-[#7c7cff] animate-arc-loading"
+                    className="text-primary animate-arc-loading"
                     strokeDasharray="226"
                     strokeDashoffset="226"
                     strokeLinecap="round"

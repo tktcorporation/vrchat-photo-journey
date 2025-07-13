@@ -4,6 +4,7 @@ import path from 'pathe';
 import { stackWithCauses } from 'pony-cause';
 import { P, match } from 'ts-pattern';
 import { getSettingStore } from '../module/settingStore';
+import { UserFacingError } from './errors';
 
 // ログファイルパスを遅延評価する
 const getLogFilePath = (): string => {
@@ -44,6 +45,7 @@ log.transports.console.format = '{y}-{m}-{d} {h}:{i}:{s} [{level}] {text}';
 interface ErrorLogParams {
   message: unknown;
   stack?: Error;
+  details?: Record<string, unknown>;
 }
 
 /**
@@ -87,7 +89,7 @@ const warn = log.warn;
 /**
  * Sentry への送信も行うエラー出力用ラッパー関数。
  */
-const error = ({ message, stack }: ErrorLogParams): void => {
+const error = ({ message, stack, details }: ErrorLogParams): void => {
   const normalizedError = normalizeError(message);
   const errorInfo = buildErrorInfo({ message, stack });
 
@@ -95,6 +97,7 @@ const error = ({ message, stack }: ErrorLogParams): void => {
   log.error(
     stackWithCauses(normalizedError),
     ...(stack ? [stackWithCauses(stack)] : []),
+    ...(details ? [details] : []),
   );
 
   // 規約同意済みかどうかを確認
@@ -110,14 +113,18 @@ const error = ({ message, stack }: ErrorLogParams): void => {
     })
     .exhaustive();
 
-  // 規約同意済みの場合のみSentryへ送信
-  match(termsAccepted)
-    .with(true, () => {
+  // UserFacingErrorの場合はSentryに送信しない（意図的に処理されたエラーのため）
+  const shouldSendToSentry = !(normalizedError instanceof UserFacingError);
+
+  // 規約同意済みかつハンドルされていないエラーの場合のみSentryへ送信
+  match({ termsAccepted, shouldSendToSentry })
+    .with({ termsAccepted: true, shouldSendToSentry: true }, () => {
       log.debug('Attempting to send error to Sentry...');
       try {
         captureException(errorInfo, {
           extra: {
             ...(stack ? { stack: stackWithCauses(stack) } : {}),
+            ...(details ? { details } : {}),
           },
           tags: {
             source: 'electron-main',
@@ -128,9 +135,13 @@ const error = ({ message, stack }: ErrorLogParams): void => {
         log.debug('Failed to send error to Sentry:', sentryError);
       }
     })
-    .otherwise(() => {
+    .with({ termsAccepted: true, shouldSendToSentry: false }, () => {
+      log.debug('UserFacingError detected, skipping Sentry (handled error)');
+    })
+    .with({ termsAccepted: false }, () => {
       log.debug('Terms not accepted, skipping Sentry error');
-    });
+    })
+    .exhaustive();
 };
 
 const electronLogFilePath = log.transports.file.getFile().path;

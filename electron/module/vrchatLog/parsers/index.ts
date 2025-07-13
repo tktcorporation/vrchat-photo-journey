@@ -1,3 +1,5 @@
+import { match } from 'ts-pattern';
+import { logger } from '../../../lib/logger';
 import type { VRChatLogLine } from '../model';
 import {
   type VRChatPlayerJoinLog,
@@ -20,18 +22,35 @@ import {
  */
 
 /**
+ * パース処理のエラー情報
+ */
+export interface ParseErrorInfo {
+  line: string;
+  error: string;
+  type: 'player_join' | 'player_leave' | 'world_join' | 'world_leave';
+}
+
+/**
+ * パース処理の結果
+ */
+export interface ParseResult {
+  logInfos: (
+    | VRChatWorldJoinLog
+    | VRChatWorldLeaveLog
+    | VRChatPlayerJoinLog
+    | VRChatPlayerLeaveLog
+  )[];
+  errors: ParseErrorInfo[];
+}
+
+/**
  * ログ行の配列をワールド参加・退出・プレイヤー参加/退出情報に変換
  * @param logLines パース対象のログ行
- * @returns 抽出されたログ情報の配列
+ * @returns 抽出されたログ情報とエラー情報
  */
 export const convertLogLinesToWorldAndPlayerJoinLogInfos = (
   logLines: VRChatLogLine[],
-): (
-  | VRChatWorldJoinLog
-  | VRChatWorldLeaveLog
-  | VRChatPlayerJoinLog
-  | VRChatPlayerLeaveLog
-)[] => {
+): ParseResult => {
   // TODO: アプリイベントの処理は今後実装
   // | VRChatAppStartLog
   // | VRChatAppExitLog
@@ -45,6 +64,8 @@ export const convertLogLinesToWorldAndPlayerJoinLogInfos = (
     // | VRChatAppStartLog
     // | VRChatAppExitLog
     [];
+
+  const errors: ParseErrorInfo[] = [];
 
   const worldJoinIndices: number[] = [];
 
@@ -80,9 +101,58 @@ export const convertLogLinesToWorldAndPlayerJoinLogInfos = (
 
     // プレイヤー参加ログ
     if (l.value.includes('[Behaviour] OnPlayerJoined')) {
-      const info = extractPlayerJoinInfoFromLog(l);
-      if (info) {
-        logInfos.push(info);
+      const result = extractPlayerJoinInfoFromLog(l);
+
+      if (result.isOk()) {
+        logInfos.push(result.value);
+      } else {
+        // ログ行からプレイヤー名とIDを抽出（デバッグ用）
+        const playerNameMatch = l.value.match(
+          /OnPlayerJoined (.+?)(?:\s+\((usr_[^)]+)\))?$/,
+        );
+        const playerName = playerNameMatch
+          ? playerNameMatch[1]
+          : 'Unknown player';
+        const playerIdMatch = l.value.match(/\((usr_[^)]+)\)/);
+        const playerId = playerIdMatch
+          ? playerIdMatch[1]
+          : 'No player ID found';
+
+        // エラータイプに応じた詳細なエラーメッセージを生成
+        const errorMessage = match(result.error)
+          .with(
+            'LOG_FORMAT_MISMATCH',
+            () => 'Log format mismatch for player join',
+          )
+          .with(
+            'INVALID_PLAYER_NAME',
+            () => `Invalid player name in join log: "${playerName}"`,
+          )
+          .with(
+            'INVALID_PLAYER_ID',
+            () =>
+              `Invalid player ID format in join log. Player: "${playerName}", ID: "${playerId}"`,
+          )
+          .with('DATE_PARSE_ERROR', () => 'Failed to parse date in join log')
+          .exhaustive();
+
+        // エラー情報を収集
+        errors.push({
+          line: l.value,
+          error: errorMessage,
+          type: 'player_join',
+        });
+
+        // エラーログとして記録（自動的にSentryに送信される）
+        logger.error({
+          message: new Error(`Player join parse error: ${errorMessage}`),
+          details: {
+            logLine: l.value,
+            playerName,
+            playerId,
+            errorType: result.error,
+          },
+        });
       }
     }
 
@@ -91,9 +161,58 @@ export const convertLogLinesToWorldAndPlayerJoinLogInfos = (
       l.value.includes('OnPlayerLeft') &&
       !l.value.includes('OnPlayerLeftRoom')
     ) {
-      const info = extractPlayerLeaveInfoFromLog(l);
-      if (info) {
-        logInfos.push(info);
+      const result = extractPlayerLeaveInfoFromLog(l);
+
+      if (result.isOk()) {
+        logInfos.push(result.value);
+      } else {
+        // ログ行からプレイヤー名とIDを抽出（デバッグ用）
+        const playerNameMatch = l.value.match(
+          /OnPlayerLeft (.+?)(?:\s+\((usr_[^)]+)\))?$/,
+        );
+        const playerName = playerNameMatch
+          ? playerNameMatch[1]
+          : 'Unknown player';
+        const playerIdMatch = l.value.match(/\((usr_[^)]+)\)/);
+        const playerId = playerIdMatch
+          ? playerIdMatch[1]
+          : 'No player ID found';
+
+        // エラータイプに応じた詳細なエラーメッセージを生成
+        const errorMessage = match(result.error)
+          .with(
+            'LOG_FORMAT_MISMATCH',
+            () => 'Log format mismatch for player leave',
+          )
+          .with(
+            'INVALID_PLAYER_NAME',
+            () => `Invalid player name in leave log: "${playerName}"`,
+          )
+          .with(
+            'INVALID_PLAYER_ID',
+            () =>
+              `Invalid player ID format in leave log. Player: "${playerName}", ID: "${playerId}"`,
+          )
+          .with('DATE_PARSE_ERROR', () => 'Failed to parse date in leave log')
+          .exhaustive();
+
+        // エラー情報を収集
+        errors.push({
+          line: l.value,
+          error: errorMessage,
+          type: 'player_leave',
+        });
+
+        // エラーログとして記録（自動的にSentryに送信される）
+        logger.error({
+          message: new Error(`Player leave parse error: ${errorMessage}`),
+          details: {
+            logLine: l.value,
+            playerName,
+            playerId,
+            errorType: result.error,
+          },
+        });
       }
     }
   }
@@ -102,7 +221,10 @@ export const convertLogLinesToWorldAndPlayerJoinLogInfos = (
   const inferredLeaves = inferWorldLeaveEvents(logLines, worldJoinIndices);
   logInfos.push(...inferredLeaves);
 
-  return logInfos;
+  return {
+    logInfos,
+    errors,
+  };
 };
 
 // 型定義の再エクスポート

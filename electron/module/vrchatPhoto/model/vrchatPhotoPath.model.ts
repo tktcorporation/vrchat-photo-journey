@@ -18,6 +18,12 @@ import {
 import { uuidv7 } from 'uuidv7';
 
 @Table({ tableName: 'VRChatPhotoPathModels' })
+/**
+ * VRChat写真のパスとメタデータを管理するモデル。
+ *
+ * @see docs/photo-grouping-logic.md - 写真グループ化ロジック
+ * @see VRChatWorldJoinLogModel - ワールド参加ログとの関連
+ */
 export class VRChatPhotoPathModel extends Model<
   InferAttributes<VRChatPhotoPathModel>,
   InferCreationAttributes<VRChatPhotoPathModel>

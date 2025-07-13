@@ -50,7 +50,15 @@
       "Bash(true)",
       "Bash(yarn run knip:*)",
       "Bash(yarn knip:*)",
-      "Bash(npm ls:*)"
+      "Bash(npm ls:*)",
+      "Bash(cargo install:*)",
+      "Bash(touch:*)",
+      "Bash(npx biome format:*)",
+      "Bash(gh api:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)",
+      "Bash(npx tsx:*)",
+      "Bash(npm run lint:*)"
     ],
     "deny": []
   }

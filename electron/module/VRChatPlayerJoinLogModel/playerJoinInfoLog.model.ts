@@ -35,6 +35,13 @@ const JoinDateTimeIndex = createIndexDecorator('JoinDateTimeIndex', {
 });
 
 @Table({ tableName: 'VRChatPlayerJoinLogModels' })
+/**
+ * プレイヤー参加ログを保存するモデル。
+ *
+ * @see docs/log-sync-architecture.md - ログ同期の設計
+ * @see docs/photo-grouping-logic.md - セッション単位の写真グループ化
+ * @see VRChatPlayerLeaveLogModel - 退出ログモデル
+ */
 export class VRChatPlayerJoinLogModel extends Model<
   InferAttributes<VRChatPlayerJoinLogModel>,
   InferCreationAttributes<VRChatPlayerJoinLogModel>

@@ -7,9 +7,65 @@ import { ERROR_CATEGORIES, ERROR_CODES, UserFacingError } from './errors';
  */
 
 /**
+ * エラーを文字列キーに変換する共通ロジック
+ */
+function getErrorKey<E>(error: E): string {
+  if (error instanceof Error) {
+    return error.constructor.name;
+  }
+  return String(error);
+}
+
+/**
+ * エラーマッピングを適用してUserFacingErrorを生成する共通ロジック
+ */
+function applyErrorMapping<E>(
+  error: E,
+  errorKey: string,
+  errorMappings: {
+    [key: string]: (error: E) => UserFacingError;
+  } & {
+    default?: (error: E) => UserFacingError;
+  },
+): UserFacingError | null {
+  const mapping = errorMappings[errorKey];
+
+  if (mapping && typeof mapping === 'function') {
+    const userError = mapping(error);
+    // Original errorをcauseとして保持
+    if (error instanceof Error && userError && !userError.cause) {
+      Object.assign(userError, { cause: error });
+    }
+    return userError;
+  }
+
+  if (errorMappings.default) {
+    const userError = errorMappings.default(error);
+    // Original errorをcauseとして保持
+    if (error instanceof Error && userError && !userError.cause) {
+      Object.assign(userError, { cause: error });
+    }
+    return userError;
+  }
+
+  return null;
+}
+
+/**
+ * エラーをthrowする共通ロジック
+ */
+function throwOriginalError<E>(error: E): never {
+  throw match(error)
+    .with(P.instanceOf(Error), (err) => err)
+    .otherwise((err) => new Error(String(err)));
+}
+
+/**
  * Resultがerrの場合に、適切なUserFacingErrorを投げる
  * @param result neverthrowのResult
  * @param errorMappings エラー値をUserFacingErrorにマッピングする関数群
+ * @param options オプション設定
+ * @param options.silentErrors サイレントに処理するエラーのリスト（指定時はT | nullを返す）
  */
 export function handleResultError<T, E>(
   result: Result<T, E>,
@@ -18,56 +74,30 @@ export function handleResultError<T, E>(
   } & {
     default?: (error: E) => UserFacingError;
   },
-): T {
+  options?: {
+    silentErrors?: string[];
+  },
+): T | null {
   if (result.isOk()) {
     return result.value;
   }
 
   const error = result.error;
+  const errorKey = getErrorKey(error);
 
-  // エラーを文字列キーとして変換
-  let errorKey: string;
-  if (error instanceof Error) {
-    errorKey = error.constructor.name;
-  } else {
-    errorKey = String(error);
+  // サイレントエラーの場合はnullを返す
+  if (options?.silentErrors?.includes(errorKey)) {
+    return null;
   }
 
-  const mapping = errorMappings[errorKey];
-
-  const userFacingError = match({
-    mapping,
-    hasDefault: !!errorMappings.default,
-  })
-    .with(
-      { mapping: P.when((m) => m && typeof m === 'function') },
-      ({ mapping }) => {
-        const userError = mapping(error);
-        // Original errorをcauseとして保持
-        if (error instanceof Error && userError && !userError.cause) {
-          Object.assign(userError, { cause: error });
-        }
-        return userError;
-      },
-    )
-    .with({ hasDefault: true }, () => {
-      const userError = errorMappings.default?.(error);
-      // Original errorをcauseとして保持
-      if (error instanceof Error && userError && !userError.cause) {
-        Object.assign(userError, { cause: error });
-      }
-      return userError;
-    })
-    .otherwise(() => null);
+  const userFacingError = applyErrorMapping(error, errorKey, errorMappings);
 
   if (userFacingError) {
     throw userFacingError;
   }
 
   // マッピングがない場合は元のエラーをthrow（予期しないエラーとして扱われる）
-  throw match(error)
-    .with(P.instanceOf(Error), (err) => err)
-    .otherwise((err) => new Error(String(err)));
+  throwOriginalError(error);
 }
 
 /**
@@ -75,6 +105,7 @@ export function handleResultError<T, E>(
  * @param result neverthrowのResult
  * @param silentErrors サイレントに処理するエラーのリスト
  * @param errorMappings その他のエラーのマッピング
+ * @deprecated Use handleResultError with options.silentErrors instead
  */
 export function handleResultErrorWithSilent<T, E>(
   result: Result<T, E>,
@@ -85,64 +116,20 @@ export function handleResultErrorWithSilent<T, E>(
     default?: (error: E) => UserFacingError;
   },
 ): T | null {
-  if (result.isOk()) {
-    return result.value;
-  }
-
-  const error = result.error;
-
-  // エラーを文字列キーとして変換
-  let errorKey: string;
-  if (error instanceof Error) {
-    errorKey = error.constructor.name;
-  } else {
-    errorKey = String(error);
-  }
-
-  // サイレントエラーの場合はnullを返す
-  if (silentErrors.includes(errorKey)) {
-    return null;
-  }
-
-  // エラーマッピングがある場合は適用
-  const userFacingError = match(errorMappings)
-    .with(
-      P.when((mappings) => !!mappings),
-      (mappings) => {
-        const mapping = mappings[errorKey];
-        return match({ mapping, hasDefault: !!mappings.default })
-          .with(
-            { mapping: P.when((m) => m && typeof m === 'function') },
-            ({ mapping }) => {
-              const userError = mapping(error);
-              // Original errorをcauseとして保持
-              if (error instanceof Error && userError && !userError.cause) {
-                Object.assign(userError, { cause: error });
-              }
-              return userError;
-            },
-          )
-          .with({ hasDefault: true }, () => {
-            const userError = mappings.default?.(error);
-            // Original errorをcauseとして保持
-            if (error instanceof Error && userError && !userError.cause) {
-              Object.assign(userError, { cause: error });
-            }
-            return userError;
-          })
-          .otherwise(() => null);
-      },
-    )
-    .otherwise(() => null);
-
-  if (userFacingError) {
-    throw userFacingError;
-  }
-
-  // マッピングがない場合は元のエラーをthrow（予期しないエラーとして扱われる）
-  throw match(error)
-    .with(P.instanceOf(Error), (err) => err)
-    .otherwise((err) => new Error(String(err)));
+  return handleResultError(
+    result,
+    errorMappings || {
+      default: (error) =>
+        UserFacingError.withStructuredInfo({
+          code: ERROR_CODES.UNKNOWN,
+          category: ERROR_CATEGORIES.UNKNOWN_ERROR,
+          message: 'Operation error',
+          userMessage: '操作中にエラーが発生しました。',
+          cause: error instanceof Error ? error : new Error(String(error)),
+        }),
+    },
+    { silentErrors },
+  );
 }
 
 /**
@@ -185,6 +172,108 @@ export const fileOperationErrorMappings = {
       category: ERROR_CATEGORIES.UNKNOWN_ERROR,
       message: 'File operation error',
       userMessage: 'ファイル操作中にエラーが発生しました。',
+      cause: match(originalError)
+        .with(P.instanceOf(Error), (err) => err)
+        .otherwise((err) => new Error(String(err))),
+    }),
+} as const;
+
+/**
+ * VRChatログ操作関連のエラーマッピング
+ */
+export const vrchatLogErrorMappings = {
+  LOG_FILE_NOT_FOUND: (originalError: unknown) =>
+    UserFacingError.withStructuredInfo({
+      code: ERROR_CODES.FILE_NOT_FOUND,
+      category: ERROR_CATEGORIES.FILE_NOT_FOUND,
+      message: 'VRChat log file not found',
+      userMessage: 'VRChatのログファイルが見つかりません。',
+      cause: match(originalError)
+        .with(P.instanceOf(Error), (err) => err)
+        .otherwise((err) => new Error(String(err))),
+    }),
+  LOG_FILE_DIR_NOT_FOUND: (originalError: unknown) =>
+    UserFacingError.withStructuredInfo({
+      code: ERROR_CODES.VRCHAT_DIRECTORY_SETUP_REQUIRED,
+      category: ERROR_CATEGORIES.SETUP_REQUIRED,
+      message: 'VRChat log directory not found',
+      userMessage:
+        'VRChatのログディレクトリが見つかりません。VRChatがインストールされているか確認してください。',
+      cause: match(originalError)
+        .with(P.instanceOf(Error), (err) => err)
+        .otherwise((err) => new Error(String(err))),
+    }),
+  LOG_FILES_NOT_FOUND: (originalError: unknown) =>
+    UserFacingError.withStructuredInfo({
+      code: ERROR_CODES.FILE_NOT_FOUND,
+      category: ERROR_CATEGORIES.FILE_NOT_FOUND,
+      message: 'No VRChat log files found',
+      userMessage:
+        'VRChatのログファイルが見つかりません。VRChatを一度起動してから再度お試しください。',
+      cause: match(originalError)
+        .with(P.instanceOf(Error), (err) => err)
+        .otherwise((err) => new Error(String(err))),
+    }),
+  LOG_STORE_DIR_CREATE_FAILED: (originalError: unknown) =>
+    UserFacingError.withStructuredInfo({
+      code: ERROR_CODES.PERMISSION_DENIED,
+      category: ERROR_CATEGORIES.PERMISSION_DENIED,
+      message: 'Failed to create log storage directory',
+      userMessage:
+        'ログ保存用ディレクトリの作成に失敗しました。ファイルシステムの権限を確認してください。',
+      cause: match(originalError)
+        .with(P.instanceOf(Error), (err) => err)
+        .otherwise((err) => new Error(String(err))),
+    }),
+  LOG_MONTH_DIR_CREATE_FAILED: (originalError: unknown) =>
+    UserFacingError.withStructuredInfo({
+      code: ERROR_CODES.PERMISSION_DENIED,
+      category: ERROR_CATEGORIES.PERMISSION_DENIED,
+      message: 'Failed to create monthly log directory',
+      userMessage:
+        '月別ログディレクトリの作成に失敗しました。ファイルシステムの権限を確認してください。',
+      cause: match(originalError)
+        .with(P.instanceOf(Error), (err) => err)
+        .otherwise((err) => new Error(String(err))),
+    }),
+  LOG_FILE_WRITE_FAILED: (originalError: unknown) =>
+    UserFacingError.withStructuredInfo({
+      code: ERROR_CODES.PERMISSION_DENIED,
+      category: ERROR_CATEGORIES.PERMISSION_DENIED,
+      message: 'Failed to write log file',
+      userMessage:
+        'ログファイルの書き込みに失敗しました。ディスクの空き容量とファイルシステムの権限を確認してください。',
+      cause: match(originalError)
+        .with(P.instanceOf(Error), (err) => err)
+        .otherwise((err) => new Error(String(err))),
+    }),
+  LOG_PARSE_ERROR: (originalError: unknown) =>
+    UserFacingError.withStructuredInfo({
+      code: ERROR_CODES.VALIDATION_ERROR,
+      category: ERROR_CATEGORIES.VALIDATION_ERROR,
+      message: 'Failed to parse VRChat log file',
+      userMessage:
+        'VRChatログファイルの解析に失敗しました。ログファイルが破損している可能性があります。',
+      cause: match(originalError)
+        .with(P.instanceOf(Error), (err) => err)
+        .otherwise((err) => new Error(String(err))),
+    }),
+  UNKNOWN: (originalError: unknown) =>
+    UserFacingError.withStructuredInfo({
+      code: ERROR_CODES.UNKNOWN,
+      category: ERROR_CATEGORIES.UNKNOWN_ERROR,
+      message: 'Unknown VRChat log operation error',
+      userMessage: 'VRChatログ操作中に不明なエラーが発生しました。',
+      cause: match(originalError)
+        .with(P.instanceOf(Error), (err) => err)
+        .otherwise((err) => new Error(String(err))),
+    }),
+  default: (originalError: unknown) =>
+    UserFacingError.withStructuredInfo({
+      code: ERROR_CODES.UNKNOWN,
+      category: ERROR_CATEGORIES.UNKNOWN_ERROR,
+      message: 'VRChat log operation error',
+      userMessage: 'VRChatログ操作中にエラーが発生しました。',
       cause: match(originalError)
         .with(P.instanceOf(Error), (err) => err)
         .otherwise((err) => new Error(String(err))),
@@ -256,6 +345,15 @@ export type LogOperationError =
   | 'LOG_PARSE_ERROR'
   | 'LOG_ACCESS_DENIED';
 
+// VRChatログファイル操作のエラー型定義
+export type VRChatLogFileErrorCode =
+  | 'LOG_FILE_NOT_FOUND'
+  | 'LOG_FILE_DIR_NOT_FOUND'
+  | 'LOG_FILES_NOT_FOUND'
+  | 'LOG_STORE_DIR_CREATE_FAILED'
+  | 'LOG_MONTH_DIR_CREATE_FAILED'
+  | 'LOG_FILE_WRITE_FAILED';
+
 // データベース操作関連のエラー型定義
 export type DatabaseOperationError =
   | 'CONNECTION_FAILED'
@@ -313,25 +411,6 @@ export function handleTypedResultError<T, E extends string>(
         message: 'Photo file not found, removed from database',
         userMessage:
           '写真ファイルが見つからないため、データベースから削除されました。',
-        cause: isErrorObject(error) ? error : new Error(String(error)),
-      }),
-    )
-    // ログ操作エラー（将来の拡張用）
-    .with('LOG_FILE_NOT_FOUND', () =>
-      UserFacingError.withStructuredInfo({
-        code: ERROR_CODES.FILE_NOT_FOUND,
-        category: ERROR_CATEGORIES.FILE_NOT_FOUND,
-        message: 'Log file not found',
-        userMessage: 'ログファイルが見つかりません。',
-        cause: isErrorObject(error) ? error : new Error(String(error)),
-      }),
-    )
-    .with('LOG_PARSE_ERROR', () =>
-      UserFacingError.withStructuredInfo({
-        code: ERROR_CODES.VALIDATION_ERROR,
-        category: ERROR_CATEGORIES.VALIDATION_ERROR,
-        message: 'Log file parse error',
-        userMessage: 'ログファイルの解析中にエラーが発生しました。',
         cause: isErrorObject(error) ? error : new Error(String(error)),
       }),
     )
@@ -421,4 +500,35 @@ export function handleDatabaseOperationError<T>(
     operationName: 'Database operation',
     defaultUserMessage: 'データベース操作中にエラーが発生しました。',
   });
+}
+
+/**
+ * VRChatログ操作専用のエラーハンドラー
+ * VRChatLogFileErrorオブジェクトを適切なUserFacingErrorに変換
+ */
+export function handleVRChatLogError<T>(
+  result: Result<T, { code: VRChatLogFileErrorCode | string }>,
+): T {
+  if (result.isOk()) {
+    return result.value;
+  }
+
+  const error = result.error;
+  const errorCode = error.code;
+
+  // エラーコードに基づいてマッピングを取得
+  const mapping =
+    vrchatLogErrorMappings[errorCode as keyof typeof vrchatLogErrorMappings];
+
+  if (mapping) {
+    throw mapping(error);
+  }
+
+  // デフォルトマッピングを使用
+  if (vrchatLogErrorMappings.default) {
+    throw vrchatLogErrorMappings.default(error);
+  }
+
+  // マッピングがない場合は元のエラーをthrow
+  throw error instanceof Error ? error : new Error(String(error));
 }

@@ -1,0 +1,125 @@
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    # Optional: Only run on specific file changes
+    # paths:
+    #   - "src/**/*.ts"
+    #   - "src/**/*.tsx"
+    #   - "src/**/*.js"
+    #   - "src/**/*.jsx"
+
+jobs:
+  claude-review:
+    # Optional: Filter by PR author
+    # if: |
+    #   github.event.pull_request.user.login == 'external-contributor' ||
+    #   github.event.pull_request.user.login == 'new-developer' ||
+    #   github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
+    
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write  # Required for Claude to post review comments
+      issues: read
+      id-token: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run Claude Code Review
+        id: claude-review
+        uses: anthropics/claude-code-action@beta
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+
+          # Optional: Specify model (defaults to Claude Sonnet 4, uncomment for Claude Opus 4)
+          model: "claude-opus-4-20250514"
+          
+          # Direct prompt for automated review (no @claude mention needed)
+          direct_prompt: |
+            Please review this pull request and provide feedback on:
+            - Code quality and best practices
+            - Potential bugs or issues
+            - Performance considerations
+            - Security concerns
+            - Test coverage
+            
+            Be constructive and helpful in your feedback.
+
+          # Use sticky comments to make Claude reuse the same comment on subsequent pushes to the same PR
+          use_sticky_comment: false
+          
+          # Optional: Customize review based on file types
+          # direct_prompt: |
+          #   Review this PR focusing on:
+          #   - For TypeScript files: Type safety and proper interface usage
+          #   - For API endpoints: Security, input validation, and error handling
+          #   - For React components: Performance, accessibility, and best practices
+          #   - For tests: Coverage, edge cases, and test quality
+          
+          # Optional: Different prompts for different authors
+          # direct_prompt: |
+          #   ${{ github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR' && 
+          #   'Welcome! Please review this PR from a first-time contributor. Be encouraging and provide detailed explanations for any suggestions.' ||
+          #   'Please provide a thorough code review focusing on our coding standards and best practices.' }}
+          
+          # Optional: Add specific tools for running tests or linting
+          allowed_tools: |
+            Bash,Glob,Grep,LS,Read,Edit,MultiEdit,Write,
+            NotebookRead,NotebookEdit,TodoRead,TodoWrite,
+            RipgrepSearch,SearchReplace,
+            mcp__github_file_ops__commit_files,
+            mcp__github_file_ops__delete_files,
+            mcp__github_file_ops__apply_patch,
+            mcp__github__add_issue_comment,
+            mcp__github__add_pull_request_review_comment,
+            mcp__github__create_branch,
+            mcp__github__create_issue,
+            mcp__github__create_or_update_file,
+            mcp__github__create_pull_request,
+            mcp__github__create_pull_request_review,
+            mcp__github__create_repository,
+            mcp__github__delete_file,
+            mcp__github__fork_repository,
+            mcp__github__get_code_scanning_alert,
+            mcp__github__get_commit,
+            mcp__github__get_file_contents,
+            mcp__github__get_issue,
+            mcp__github__get_issue_comments,
+            mcp__github__get_me,
+            mcp__github__get_pull_request,
+            mcp__github__get_pull_request_comments,
+            mcp__github__get_pull_request_files,
+            mcp__github__get_pull_request_reviews,
+            mcp__github__get_pull_request_status,
+            mcp__github__get_secret_scanning_alert,
+            mcp__github__get_tag,
+            mcp__github__list_branches,
+            mcp__github__list_code_scanning_alerts,
+            mcp__github__list_commits,
+            mcp__github__list_issues,
+            mcp__github__list_pull_requests,
+            mcp__github__list_secret_scanning_alerts,
+            mcp__github__list_tags,
+            mcp__github__merge_pull_request,
+            mcp__github__push_files,
+            mcp__github__search_code,
+            mcp__github__search_issues,
+            mcp__github__search_repositories,
+            mcp__github__search_users,
+            mcp__github__update_issue,
+            mcp__github__update_issue_comment,
+            mcp__github__update_pull_request,
+            mcp__github__update_pull_request_branch,
+            mcp__github__update_pull_request_comment
+          
+          # Optional: Skip review for certain conditions
+          # if: |
+          #   !contains(github.event.pull_request.title, '[skip-review]') &&
+          #   !contains(github.event.pull_request.title, '[WIP]')
+

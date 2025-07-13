@@ -112,7 +112,70 @@ export const isValidVRChatWorldInstanceId = (value: string): boolean => {
 class VRChatWorldInstanceId extends BaseValueObject<
   'VRChatWorldInstanceId',
   string
-> {}
+> {
+  /**
+   * インスタンスタイプを取得する
+   * @returns インスタンスタイプ、または取得できない場合はnull
+   */
+  public getInstanceType(): string | null {
+    // インスタンスIDに~が含まれていない場合はPublicインスタンス
+    if (!this.value.includes('~')) {
+      return 'public';
+    }
+
+    // ~以降の部分を取得
+    const parts = this.value.split('~');
+    if (parts.length < 2) {
+      return null;
+    }
+
+    const typePart = parts[1];
+
+    // 空のtypePartの場合はnullを返す
+    if (typePart === '') {
+      return null;
+    }
+
+    // インスタンスタイプを判定
+    if (typePart.startsWith('friends(')) return 'friends';
+    if (typePart.startsWith('hidden(')) return 'friends+';
+    if (typePart.startsWith('private(')) return 'invite';
+    if (typePart.startsWith('group(')) return 'group';
+    if (typePart.startsWith('groupPublic(')) return 'group-public';
+
+    // リージョン情報のみの場合はPublic
+    if (typePart.match(/^[a-z]{2,3}(\([a-z0-9]+\))?$/)) return 'public';
+
+    // その他の場合
+    return 'unknown';
+  }
+
+  /**
+   * インスタンスタイプのラベルを取得する
+   * @returns インスタンスタイプのラベル
+   */
+  public getInstanceTypeLabel(): string {
+    const type = this.getInstanceType();
+    switch (type) {
+      case 'public':
+        return 'Public';
+      case 'friends':
+        return 'Friends';
+      case 'friends+':
+        return 'Friends+';
+      case 'invite':
+        return 'Invite';
+      case 'group':
+        return 'Group';
+      case 'group-public':
+        return 'Group Public';
+      case 'unknown':
+        return 'Unknown';
+      default:
+        return '';
+    }
+  }
+}
 
 /**
  * VRChatプレイヤー名の検証関数
@@ -210,8 +273,17 @@ export const OptionalVRChatPlayerIdSchema = z
   .nullable()
   .transform((value) => {
     if (!value) return null;
-    if (!isValidVRChatPlayerId(value)) {
-      throw new Error('Invalid VRChat Player ID format');
-    }
     return new VRChatPlayerId(value);
-  });
+  })
+  .pipe(
+    z.custom<VRChatPlayerId | null>(
+      (val) => {
+        if (val === null) return true;
+        return isValidVRChatPlayerId(val.value);
+      },
+      {
+        message:
+          'Invalid VRChat Player ID format. Expected: usr_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
+      },
+    ),
+  );

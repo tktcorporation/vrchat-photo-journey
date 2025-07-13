@@ -201,12 +201,11 @@ function createWindow(): BrowserWindow {
 }
 
 let mainWindow: BrowserWindow | null = null;
-// FIXME: このexport はやめたい
 /**
  * 既存の BrowserWindow を取得する。
  * 存在しない場合は null を返す。
  */
-export const getWindow = (): BrowserWindow | null => {
+const getWindow = (): BrowserWindow | null => {
   if (mainWindow && !mainWindow.isDestroyed()) {
     return mainWindow;
   }
@@ -276,13 +275,6 @@ const setTray = () => {
       },
       { type: 'separator' },
       {
-        label: '設定',
-        click: () => {
-          /* 設定画面を開く */
-        },
-      },
-      { type: 'separator' },
-      {
         label: 'エラーログを開く',
         click: () => {
           const logPath = app.getPath('logs');
@@ -301,6 +293,14 @@ const setTray = () => {
     if (tray) {
       tray.setToolTip(app.name);
       tray.setContextMenu(contextMenu);
+
+      // トレイアイコンクリック時にウィンドウを表示
+      tray.on('click', () => {
+        const window = createOrGetWindow();
+        if (window.isMinimized()) window.restore();
+        window.show();
+        window.focus();
+      });
     }
   };
 
@@ -391,6 +391,17 @@ const setTimeEventEmitter = (
       body: `${photoCount}枚の新しい写真を記録しました\n${worldJoinCount}件のワールド参加を記録しました\n${playerJoinCount}件のプレイヤー参加を記録しました`,
     }).show();
   });
+};
+
+/**
+ * メインウィンドウをリロードする。
+ * ウィンドウが存在しない場合は何もしない。
+ */
+export const reloadMainWindow = (): void => {
+  const window = getWindow();
+  if (window) {
+    window.reload();
+  }
 };
 
 export { setTray, createOrGetWindow, setTimeEventEmitter };

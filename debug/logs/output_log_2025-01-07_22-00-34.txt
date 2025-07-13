@@ -19,7 +19,7 @@
 2025.01.07 23:18:26 Log        -  [Behaviour] Entering Room: 今週の一枚2024
 
 
-2025.01.07 23:18:26 Log        -  [Behaviour] Joining wrld_37a2ecff-201e-4ed0-b937-f58c196e1b2f:55139~hidden(usr_bd19401f-163d-464b-b8db-1a32daebc2f0)~region(jp)
+2025.01.07 23:18:26 Log        -  [Behaviour] Joining wrld_37a2ecff-201e-4ed0-b937-f58c196e1b2f:55139~hidden(usr_00000000-5210-6bc4-70de-b5c43d86df2e)~region(jp)
 
 
 2025.01.07 23:18:26 Log        -  [Behaviour] Joining or Creating Room: 今週の一枚2024
@@ -28,325 +28,325 @@
 2025.01.07 23:18:26 Log        -  [Behaviour] Successfully joined room
 
 
-2025.01.07 23:18:45 Log        -  [Behaviour] OnPlayerJoined BareBow (usr_9af7ff7e-bab2-4bb2-9072-afc9121599f0)
+2025.01.07 23:18:45 Log        -  [Behaviour] OnPlayerJoined Zara_JP0215 (usr_00000000-ae69-1e36-86cd-f64cfc01d09f)
 
 
-2025.01.07 23:18:45 Log        -  [Behaviour] OnPlayerJoined sousすー (usr_e6334b4a-6e40-4a41-9d46-b3c251d362dc)
+2025.01.07 23:18:45 Log        -  [Behaviour] OnPlayerJoined xXParkerXx27 (usr_00000000-ffda-e167-1ea9-9493ea3f1973)
 
 
-2025.01.07 23:18:45 Log        -  [Behaviour] OnPlayerJoinComplete sousすー
+2025.01.07 23:18:45 Log        -  [Behaviour] OnPlayerJoinComplete xXParkerXx27
 
 
 2025.01.07 23:18:45 Log        -  [Behaviour] OnPlayerJoined tkt_ (usr_3ba2a992-724c-4463-bc75-7e9f6674e8e0)
 
 
-2025.01.07 23:18:45 Log        -  [Behaviour] Initialized PlayerAPI "BareBow" is remote
+2025.01.07 23:18:45 Log        -  [Behaviour] Initialized PlayerAPI "Zara_JP0215" is remote
 
 
-2025.01.07 23:18:45 Log        -  [Behaviour] Initialized PlayerAPI "sousすー" is remote
+2025.01.07 23:18:45 Log        -  [Behaviour] Initialized PlayerAPI "xXParkerXx27" is remote
 
 
 2025.01.07 23:18:45 Log        -  [Behaviour] Initialized PlayerAPI "tkt_" is local
 
 
-2025.01.07 23:18:46 Log        -  [Behaviour] OnPlayerJoinComplete あの子゜
+2025.01.07 23:18:46 Log        -  [Behaviour] OnPlayerJoinComplete Rowan Smith
 
 
-2025.01.07 23:18:46 Log        -  [Behaviour] OnPlayerJoined あの子゜ (usr_4e74fa09-798d-4e5b-a865-7a7c2df73235)
+2025.01.07 23:18:46 Log        -  [Behaviour] OnPlayerJoined Rowan Smith (usr_00000000-3440-96f4-2fc6-6e6938c93460)
 
 
-2025.01.07 23:18:46 Log        -  [Behaviour] Initialized PlayerAPI "あの子゜" is remote
+2025.01.07 23:18:46 Log        -  [Behaviour] Initialized PlayerAPI "Rowan Smith" is remote
 
 
-2025.01.07 23:18:51 Log        -  [Behaviour] OnPlayerJoinComplete サトシ☆
+2025.01.07 23:18:51 Log        -  [Behaviour] OnPlayerJoinComplete Parker Young
 
 
-2025.01.07 23:18:51 Log        -  [Behaviour] OnPlayerJoined サトシ☆ (usr_7ad4fb3e-f028-4fc5-a3d9-96a4ba082356)
+2025.01.07 23:18:51 Log        -  [Behaviour] OnPlayerJoined Parker Young (usr_00000000-d018-3230-c26c-7bb394ecbe00)
 
 
-2025.01.07 23:18:51 Log        -  [Behaviour] Initialized PlayerAPI "サトシ☆" is remote
+2025.01.07 23:18:51 Log        -  [Behaviour] Initialized PlayerAPI "Parker Young" is remote
 
 
-2025.01.07 23:18:53 Log        -  [Behaviour] OnPlayerJoinComplete ta-ga
+2025.01.07 23:18:53 Log        -  [Behaviour] OnPlayerJoinComplete CoolPhoenix
 
 
-2025.01.07 23:18:53 Log        -  [Behaviour] OnPlayerJoined ta-ga (usr_350aef77-33a1-4546-80de-238b937bcab5)
+2025.01.07 23:18:53 Log        -  [Behaviour] OnPlayerJoined CoolPhoenix (usr_00000000-e9e7-a349-3e0c-63accdd51ada)
 
 
-2025.01.07 23:18:53 Log        -  [Behaviour] Initialized PlayerAPI "ta-ga" is remote
+2025.01.07 23:18:53 Log        -  [Behaviour] Initialized PlayerAPI "CoolPhoenix" is remote
 
 
-2025.01.07 23:18:54 Log        -  [Behaviour] OnPlayerJoinComplete ponsa
+2025.01.07 23:18:54 Log        -  [Behaviour] OnPlayerJoinComplete SunHawk
 
 
-2025.01.07 23:18:54 Log        -  [Behaviour] OnPlayerJoined ponsa (usr_3042bf8d-836f-4d11-b11a-ad4ba5980b48)
+2025.01.07 23:18:54 Log        -  [Behaviour] OnPlayerJoined SunHawk (usr_00000000-6d83-a77d-fde7-09dd58488485)
 
 
 2025.01.07 23:19:05 Log        -  [Behaviour] OnPlayerEnteredRoom
 
 
-2025.01.07 23:19:07 Log        -  [Behaviour] OnPlayerJoinComplete のり
+2025.01.07 23:19:07 Log        -  [Behaviour] OnPlayerJoinComplete Zara Jackson
 
 
-2025.01.07 23:19:07 Log        -  [Behaviour] OnPlayerJoined のり (usr_bd19401f-163d-464b-b8db-1a32daebc2f0)
+2025.01.07 23:19:07 Log        -  [Behaviour] OnPlayerJoined Zara Jackson (usr_00000000-5210-6bc4-70de-b5c43d86df2e)
 
 
-2025.01.07 23:19:07 Log        -  [Behaviour] Initialized PlayerAPI "のり" is remote
+2025.01.07 23:19:07 Log        -  [Behaviour] Initialized PlayerAPI "Zara Jackson" is remote
 
 
-2025.01.07 23:19:12 Log        -  [Behaviour] OnPlayerJoinComplete Nitorin_1911
+2025.01.07 23:19:12 Log        -  [Behaviour] OnPlayerJoinComplete IcePlayer
 
 
-2025.01.07 23:19:12 Log        -  [Behaviour] OnPlayerJoined Nitorin_1911 (usr_3486757a-9e21-43a0-84c5-e8c56087b2e9)
+2025.01.07 23:19:12 Log        -  [Behaviour] OnPlayerJoined IcePlayer (usr_00000000-5f97-926d-468c-53b038ce7b47)
 
 
-2025.01.07 23:19:12 Log        -  [Behaviour] Initialized PlayerAPI "Nitorin_1911" is remote
+2025.01.07 23:19:12 Log        -  [Behaviour] Initialized PlayerAPI "IcePlayer" is remote
 
 
-2025.01.07 23:25:59 Log        -  [Behaviour] OnPlayerLeft ta-ga (usr_350aef77-33a1-4546-80de-238b937bcab5)
+2025.01.07 23:25:59 Log        -  [Behaviour] OnPlayerLeft CoolPhoenix (usr_00000000-e9e7-a349-3e0c-63accdd51ada)
 
 
-2025.01.07 23:25:59 Log        -  [Always] Removed player ta-ga
+2025.01.07 23:25:59 Log        -  [Always] Removed player CoolPhoenix
 
 
-2025.01.07 23:25:25 Log        -  [Behaviour] OnPlayerJoined Mosco_あしもす (usr_bcea45e2-5d90-4af5-a5a4-c939c096340f)
+2025.01.07 23:25:25 Log        -  [Behaviour] OnPlayerJoined StellarMage (usr_00000000-0cad-8c65-7e03-06cae798d600)
 
 
-2025.01.07 23:25:25 Log        -  [Behaviour] OnPlayerJoinComplete Mosco_あしもす
+2025.01.07 23:25:25 Log        -  [Behaviour] OnPlayerJoinComplete StellarMage
 
 
-2025.01.07 23:25:26 Log        -  [Behaviour] OnPlayerJoined BareBow (usr_9af7ff7e-bab2-4bb2-9072-afc9121599f0)
+2025.01.07 23:25:26 Log        -  [Behaviour] OnPlayerJoined Zara_JP0215 (usr_00000000-ae69-1e36-86cd-f64cfc01d09f)
 
 
-2025.01.07 23:25:26 Log        -  [Behaviour] OnPlayerJoinComplete BareBow
+2025.01.07 23:25:26 Log        -  [Behaviour] OnPlayerJoinComplete Zara_JP0215
 
 
-2025.01.07 23:25:27 Log        -  [Behaviour] OnPlayerJoined KAY［けい］ (usr_d394a4b6-8437-4145-aaf5-1c52e628066f)
+2025.01.07 23:25:27 Log        -  [Behaviour] OnPlayerJoined Cameron_JP7792 (usr_00000000-a55b-857e-2bf3-40fd58c24da1)
 
 
-2025.01.07 23:25:27 Log        -  [Behaviour] OnPlayerJoinComplete KAY［けい］
+2025.01.07 23:25:27 Log        -  [Behaviour] OnPlayerJoinComplete Cameron_JP7792
 
 
-2025.01.07 23:25:28 Log        -  [Behaviour] OnPlayerJoined 森猫（Morineko） (usr_4bf0172c-1f2c-4cd3-83a2-6c087c90d5dd)
+2025.01.07 23:25:28 Log        -  [Behaviour] OnPlayerJoined Jordan_JP6347 (usr_00000000-1f51-0e3a-61c1-688af6405cad)
 
 
-2025.01.07 23:25:28 Log        -  [Behaviour] OnPlayerJoinComplete 森猫（Morineko）
+2025.01.07 23:25:28 Log        -  [Behaviour] OnPlayerJoinComplete Jordan_JP6347
 
 
-2025.01.07 23:25:30 Log        -  [Behaviour] OnPlayerJoined sivajean／しばジェアン (usr_d12f1ca0-e998-412a-bda4-c3cc7c030904)
+2025.01.07 23:25:30 Log        -  [Behaviour] OnPlayerJoined Alex Moore (usr_00000000-274c-6a5c-395c-aa882ff5c635)
 
 
-2025.01.07 23:25:30 Log        -  [Behaviour] OnPlayerJoinComplete sivajean／しばジェアン
+2025.01.07 23:25:30 Log        -  [Behaviour] OnPlayerJoinComplete Alex Moore
 
 
-2025.01.07 23:25:31 Log        -  [Behaviour] OnPlayerJoined suzukiriri (usr_6c797889-7803-45e2-beca-7e1633bdee50)
+2025.01.07 23:25:31 Log        -  [Behaviour] OnPlayerJoined Luna Mitchell (usr_00000000-ce93-d494-a7cd-e62acf1ab8f0)
 
 
-2025.01.07 23:25:31 Log        -  [Behaviour] OnPlayerJoinComplete suzukiriri
+2025.01.07 23:25:31 Log        -  [Behaviour] OnPlayerJoinComplete Luna Mitchell
 
 
-2025.01.07 23:25:32 Log        -  [Behaviour] OnPlayerJoined サックー (usr_9bd8c322-d5de-4908-944d-ea7929f0870a)
+2025.01.07 23:25:32 Log        -  [Behaviour] OnPlayerJoined CosmicGamer (usr_00000000-4129-8ca9-a89d-550182b94862)
 
 
-2025.01.07 23:25:32 Log        -  [Behaviour] OnPlayerJoinComplete サックー
+2025.01.07 23:25:32 Log        -  [Behaviour] OnPlayerJoinComplete CosmicGamer
 
 
-2025.01.07 23:25:33 Log        -  [Behaviour] OnPlayerJoined おいもいも (usr_a293562b-d5ab-4e54-b118-ec44fbc2a250)
+2025.01.07 23:25:33 Log        -  [Behaviour] OnPlayerJoined SolarPrincess (usr_00000000-15f1-7fd9-0e12-428866cfdbf9)
 
 
-2025.01.07 23:25:33 Log        -  [Behaviour] OnPlayerJoinComplete おいもいも
+2025.01.07 23:25:33 Log        -  [Behaviour] OnPlayerJoinComplete SolarPrincess
 
 
-2025.01.07 23:25:44 Log        -  [Behaviour] OnPlayerLeft おいもいも
+2025.01.07 23:25:44 Log        -  [Behaviour] OnPlayerLeft SolarPrincess
 
 
-2025.01.07 23:25:34 Log        -  [Behaviour] OnPlayerJoined kurotu (usr_8862b082-dbc8-4b6d-8803-e834f833b498)
+2025.01.07 23:25:34 Log        -  [Behaviour] OnPlayerJoined Morgan Davis (usr_00000000-f008-d83c-fcbf-220c77f0f887)
 
 
-2025.01.07 23:25:34 Log        -  [Behaviour] OnPlayerJoinComplete kurotu
+2025.01.07 23:25:34 Log        -  [Behaviour] OnPlayerJoinComplete Morgan Davis
 
 
-2025.01.07 23:25:35 Log        -  [Behaviour] OnPlayerJoined どびすてん＝DOBISUTEN (usr_0e26a418-a543-4967-ad09-1f8ffe7a8e59)
+2025.01.07 23:25:35 Log        -  [Behaviour] OnPlayerJoined NeonGuardian (usr_00000000-eda0-b9b1-bb6c-0c3a603fd235)
 
 
-2025.01.07 23:25:35 Log        -  [Behaviour] OnPlayerJoinComplete どびすてん＝DOBISUTEN
+2025.01.07 23:25:35 Log        -  [Behaviour] OnPlayerJoinComplete NeonGuardian
 
 
-2025.01.07 23:25:36 Log        -  [Behaviour] OnPlayerJoined Keterlin｜けてるりん (usr_e5df70fd-0808-489e-b5cc-6fe675514196)
+2025.01.07 23:25:36 Log        -  [Behaviour] OnPlayerJoined xXAlexXx71 (usr_00000000-cd91-c21f-5c0d-3ef89d2c3827)
 
 
-2025.01.07 23:25:36 Log        -  [Behaviour] OnPlayerJoinComplete Keterlin｜けてるりん
+2025.01.07 23:25:36 Log        -  [Behaviour] OnPlayerJoinComplete xXAlexXx71
 
 
-2025.01.07 23:25:37 Log        -  [Behaviour] OnPlayerJoined りーふで ⁄ Liefde (usr_34a27988-a7e4-4d5e-a49a-ae5975422779)
+2025.01.07 23:25:37 Log        -  [Behaviour] OnPlayerJoined Casey Martinez (usr_00000000-79c6-4ff8-4ef4-a4bde7a5cd99)
 
 
-2025.01.07 23:25:37 Log        -  [Behaviour] OnPlayerJoinComplete りーふで ⁄ Liefde
+2025.01.07 23:25:37 Log        -  [Behaviour] OnPlayerJoinComplete Casey Martinez
 
 
 2025.01.07 23:36:22 Log        -  [Behaviour] OnPlayerLeftRoom
 
 
-2025.01.07 23:36:22 Log        -  [Behaviour] OnPlayerLeft ponsa (usr_3042bf8d-836f-4d11-b11a-ad4ba5980b48)
+2025.01.07 23:36:22 Log        -  [Behaviour] OnPlayerLeft SunHawk (usr_00000000-6d83-a77d-fde7-09dd58488485)
 
 
-2025.01.07 23:36:22 Log        -  [Always] Removed player ponsa
+2025.01.07 23:36:22 Log        -  [Always] Removed player SunHawk
 
 
 2025.01.07 23:39:24 Log        -  [Behaviour] OnPlayerLeftRoom
 
 
-2025.01.07 23:39:24 Log        -  [Behaviour] OnPlayerLeft サトシ☆ (usr_7ad4fb3e-f028-4fc5-a3d9-96a4ba082356)
+2025.01.07 23:39:24 Log        -  [Behaviour] OnPlayerLeft Parker Young (usr_00000000-d018-3230-c26c-7bb394ecbe00)
 
 
-2025.01.07 23:39:24 Log        -  [Always] Removed player サトシ☆
+2025.01.07 23:39:24 Log        -  [Always] Removed player Parker Young
 
 
 2025.01.07 23:50:08 Log        -  [Behaviour] OnPlayerLeftRoom
 
 
-2025.01.07 23:50:08 Log        -  [Behaviour] OnPlayerLeft Mosco_あしもす (usr_bcea45e2-5d90-4af5-a5a4-c939c096340f)
+2025.01.07 23:50:08 Log        -  [Behaviour] OnPlayerLeft StellarMage (usr_00000000-0cad-8c65-7e03-06cae798d600)
 
 
-2025.01.07 23:50:08 Log        -  [Always] Removed player Mosco_あしもす
+2025.01.07 23:50:08 Log        -  [Always] Removed player StellarMage
 
 
 2025.01.07 23:50:50 Log        -  [Behaviour] OnPlayerLeftRoom
 
 
-2025.01.07 23:50:50 Log        -  [Behaviour] OnPlayerLeft BareBow (usr_9af7ff7e-bab2-4bb2-9072-afc9121599f0)
+2025.01.07 23:50:50 Log        -  [Behaviour] OnPlayerLeft Zara_JP0215 (usr_00000000-ae69-1e36-86cd-f64cfc01d09f)
 
 
-2025.01.07 23:50:50 Log        -  [Always] Removed player BareBow
+2025.01.07 23:50:50 Log        -  [Always] Removed player Zara_JP0215
 
 
 2025.01.07 23:57:50 Log        -  [Behaviour] OnPlayerEnteredRoom
 
 
-2025.01.07 23:57:52 Log        -  [Behaviour] OnPlayerJoinComplete 芋けんぴ
+2025.01.07 23:57:52 Log        -  [Behaviour] OnPlayerJoinComplete Hayden_JP4194
 
 
-2025.01.07 23:57:52 Log        -  [Behaviour] OnPlayerJoined 芋けんぴ (usr_581a4254-909d-4676-bba6-b3c2cb1c394e)
+2025.01.07 23:57:52 Log        -  [Behaviour] OnPlayerJoined Hayden_JP4194 (usr_00000000-6b4a-90b6-d143-8c51db38daec)
 
 
-2025.01.07 23:57:52 Log        -  [Behaviour] Initialized PlayerAPI "芋けんぴ" is remote
+2025.01.07 23:57:52 Log        -  [Behaviour] Initialized PlayerAPI "Hayden_JP4194" is remote
 
 
 2025.01.08 00:21:25 Log        -  [Behaviour] OnPlayerLeftRoom
 
 
-2025.01.08 00:21:25 Log        -  [Behaviour] OnPlayerLeft KAY［けい］ (usr_d394a4b6-8437-4145-aaf5-1c52e628066f)
+2025.01.08 00:21:25 Log        -  [Behaviour] OnPlayerLeft Cameron_JP7792 (usr_00000000-a55b-857e-2bf3-40fd58c24da1)
 
 
-2025.01.08 00:21:25 Log        -  [Always] Removed player KAY［けい］
+2025.01.08 00:21:25 Log        -  [Always] Removed player Cameron_JP7792
 
 
 2025.01.08 00:21:44 Log        -  [Behaviour] OnPlayerLeftRoom
 
 
-2025.01.08 00:21:44 Log        -  [Behaviour] OnPlayerLeft 森猫（Morineko） (usr_4bf0172c-1f2c-4cd3-83a2-6c087c90d5dd)
+2025.01.08 00:21:44 Log        -  [Behaviour] OnPlayerLeft Jordan_JP6347 (usr_00000000-1f51-0e3a-61c1-688af6405cad)
 
 
-2025.01.08 00:21:44 Log        -  [Always] Removed player 森猫（Morineko）
+2025.01.08 00:21:44 Log        -  [Always] Removed player Jordan_JP6347
 
 
 2025.01.08 00:21:47 Log        -  [Behaviour] OnPlayerLeftRoom
 
 
-2025.01.08 00:21:47 Log        -  [Behaviour] OnPlayerLeft のり (usr_bd19401f-163d-464b-b8db-1a32daebc2f0)
+2025.01.08 00:21:47 Log        -  [Behaviour] OnPlayerLeft Zara Jackson (usr_00000000-5210-6bc4-70de-b5c43d86df2e)
 
 
-2025.01.08 00:21:47 Log        -  [Always] Removed player のり
+2025.01.08 00:21:47 Log        -  [Always] Removed player Zara Jackson
 
 
 2025.01.08 00:21:51 Log        -  [Behaviour] OnPlayerLeftRoom
 
 
-2025.01.08 00:21:51 Log        -  [Behaviour] OnPlayerLeft sivajean／しばジェアン (usr_d12f1ca0-e998-412a-bda4-c3cc7c030904)
+2025.01.08 00:21:51 Log        -  [Behaviour] OnPlayerLeft Alex Moore (usr_00000000-274c-6a5c-395c-aa882ff5c635)
 
 
-2025.01.08 00:21:51 Log        -  [Always] Removed player sivajean／しばジェアン
+2025.01.08 00:21:51 Log        -  [Always] Removed player Alex Moore
 
 
 2025.01.08 00:21:53 Log        -  [Behaviour] OnPlayerLeftRoom
 
 
-2025.01.08 00:21:53 Log        -  [Behaviour] OnPlayerLeft sousすー (usr_e6334b4a-6e40-4a41-9d46-b3c251d362dc)
+2025.01.08 00:21:53 Log        -  [Behaviour] OnPlayerLeft xXParkerXx27 (usr_00000000-ffda-e167-1ea9-9493ea3f1973)
 
 
-2025.01.08 00:21:53 Log        -  [Always] Removed player sousすー
+2025.01.08 00:21:53 Log        -  [Always] Removed player xXParkerXx27
 
 
-2025.01.08 00:21:54 Log        -  [Behaviour] OnPlayerLeft Mosco_あしもす (usr_bcea45e2-5d90-4af5-a5a4-c939c096340f)
+2025.01.08 00:21:54 Log        -  [Behaviour] OnPlayerLeft StellarMage (usr_00000000-0cad-8c65-7e03-06cae798d600)
 
 
-2025.01.08 00:21:54 Log        -  [Always] Removed player Mosco_あしもす
+2025.01.08 00:21:54 Log        -  [Always] Removed player StellarMage
 
 
-2025.01.08 00:21:55 Log        -  [Behaviour] OnPlayerLeft BareBow (usr_9af7ff7e-bab2-4bb2-9072-afc9121599f0)
+2025.01.08 00:21:55 Log        -  [Behaviour] OnPlayerLeft Zara_JP0215 (usr_00000000-ae69-1e36-86cd-f64cfc01d09f)
 
 
-2025.01.08 00:21:55 Log        -  [Always] Removed player BareBow
+2025.01.08 00:21:55 Log        -  [Always] Removed player Zara_JP0215
 
 
-2025.01.08 00:21:55 Log        -  [Behaviour] OnPlayerLeft KAY［けい］ (usr_d394a4b6-8437-4145-aaf5-1c52e628066f)
+2025.01.08 00:21:55 Log        -  [Behaviour] OnPlayerLeft Cameron_JP7792 (usr_00000000-a55b-857e-2bf3-40fd58c24da1)
 
 
-2025.01.08 00:21:55 Log        -  [Always] Removed player KAY［けい］
+2025.01.08 00:21:55 Log        -  [Always] Removed player Cameron_JP7792
 
 
-2025.01.08 00:21:56 Log        -  [Behaviour] OnPlayerLeft 森猫（Morineko） (usr_4bf0172c-1f2c-4cd3-83a2-6c087c90d5dd)
+2025.01.08 00:21:56 Log        -  [Behaviour] OnPlayerLeft Jordan_JP6347 (usr_00000000-1f51-0e3a-61c1-688af6405cad)
 
 
-2025.01.08 00:21:56 Log        -  [Always] Removed player 森猫（Morineko）
+2025.01.08 00:21:56 Log        -  [Always] Removed player Jordan_JP6347
 
 
-2025.01.08 00:21:57 Log        -  [Behaviour] OnPlayerLeft sivajean／しばジェアン (usr_d12f1ca0-e998-412a-bda4-c3cc7c030904)
+2025.01.08 00:21:57 Log        -  [Behaviour] OnPlayerLeft Alex Moore (usr_00000000-274c-6a5c-395c-aa882ff5c635)
 
 
-2025.01.08 00:21:57 Log        -  [Always] Removed player sivajean／しばジェアン
+2025.01.08 00:21:57 Log        -  [Always] Removed player Alex Moore
 
 
-2025.01.08 00:21:58 Log        -  [Behaviour] OnPlayerLeft suzukiriri (usr_6c797889-7803-45e2-beca-7e1633bdee50)
+2025.01.08 00:21:58 Log        -  [Behaviour] OnPlayerLeft Luna Mitchell (usr_00000000-ce93-d494-a7cd-e62acf1ab8f0)
 
 
-2025.01.08 00:21:58 Log        -  [Always] Removed player suzukiriri
+2025.01.08 00:21:58 Log        -  [Always] Removed player Luna Mitchell
 
 
-2025.01.08 00:21:59 Log        -  [Behaviour] OnPlayerLeft サックー (usr_9bd8c322-d5de-4908-944d-ea7929f0870a)
+2025.01.08 00:21:59 Log        -  [Behaviour] OnPlayerLeft CosmicGamer (usr_00000000-4129-8ca9-a89d-550182b94862)
 
 
-2025.01.08 00:21:59 Log        -  [Always] Removed player サックー
+2025.01.08 00:21:59 Log        -  [Always] Removed player CosmicGamer
 
 
-2025.01.08 00:22:00 Log        -  [Behaviour] OnPlayerLeft おいもいも (usr_a293562b-d5ab-4e54-b118-ec44fbc2a250)
+2025.01.08 00:22:00 Log        -  [Behaviour] OnPlayerLeft SolarPrincess (usr_00000000-15f1-7fd9-0e12-428866cfdbf9)
 
 
-2025.01.08 00:22:00 Log        -  [Always] Removed player おいもいも
+2025.01.08 00:22:00 Log        -  [Always] Removed player SolarPrincess
 
 
-2025.01.08 00:22:01 Log        -  [Behaviour] OnPlayerLeft kurotu (usr_8862b082-dbc8-4b6d-8803-e834f833b498)
+2025.01.08 00:22:01 Log        -  [Behaviour] OnPlayerLeft Morgan Davis (usr_00000000-f008-d83c-fcbf-220c77f0f887)
 
 
-2025.01.08 00:22:01 Log        -  [Always] Removed player kurotu
+2025.01.08 00:22:01 Log        -  [Always] Removed player Morgan Davis
 
 
-2025.01.08 00:22:02 Log        -  [Behaviour] OnPlayerLeft どびすてん＝DOBISUTEN (usr_0e26a418-a543-4967-ad09-1f8ffe7a8e59)
+2025.01.08 00:22:02 Log        -  [Behaviour] OnPlayerLeft NeonGuardian (usr_00000000-eda0-b9b1-bb6c-0c3a603fd235)
 
 
-2025.01.08 00:22:02 Log        -  [Always] Removed player どびすてん＝DOBISUTEN
+2025.01.08 00:22:02 Log        -  [Always] Removed player NeonGuardian
 
 
-2025.01.08 00:22:03 Log        -  [Behaviour] OnPlayerLeft Keterlin｜けてるりん (usr_e5df70fd-0808-489e-b5cc-6fe675514196)
+2025.01.08 00:22:03 Log        -  [Behaviour] OnPlayerLeft xXAlexXx71 (usr_00000000-cd91-c21f-5c0d-3ef89d2c3827)
 
 
-2025.01.08 00:22:03 Log        -  [Always] Removed player Keterlin｜けてるりん
+2025.01.08 00:22:03 Log        -  [Always] Removed player xXAlexXx71
 
 
-2025.01.08 00:22:04 Log        -  [Behaviour] OnPlayerLeft りーふで ⁄ Liefde (usr_34a27988-a7e4-4d5e-a49a-ae5975422779)
+2025.01.08 00:22:04 Log        -  [Behaviour] OnPlayerLeft Casey Martinez (usr_00000000-79c6-4ff8-4ef4-a4bde7a5cd99)
 
 
-2025.01.08 00:22:04 Log        -  [Always] Removed player りーふで ⁄ Liefde
+2025.01.08 00:22:04 Log        -  [Always] Removed player Casey Martinez
 
 
 2025.01.08 00:25:03 Warning    -  [Player] OnApplicationQuit

@@ -1,5 +1,7 @@
 import { trpcReact } from '@/trpc';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { P, match } from 'ts-pattern';
+import type { TypedTRPCError } from '../types/trpcErrors';
 
 import { invalidatePhotoGalleryQueries } from '@/queryClient';
 
@@ -57,20 +59,23 @@ export const useStartupStage = (callbacks?: ProcessStageCallbacks) => {
     ) => {
       setStages((prev) => ({ ...prev, [stage]: status }));
 
-      console.log({
-        event: 'updateStage',
-        stage,
-        status,
-        errorMessage: errorMsg,
-      });
-
-      if (status === 'error' && errorMsg) {
-        const processError = { stage, message: errorMsg, originalError };
-        setError(processError);
-        callbacks?.onError?.(processError);
-      } else if (status === 'success' || status === 'skipped') {
-        setError(null);
-      }
+      match(status)
+        .when(
+          (s) => s === 'error' && !!errorMsg,
+          () => {
+            const processError = {
+              stage,
+              message: errorMsg || '',
+              originalError,
+            };
+            setError(processError);
+            callbacks?.onError?.(processError);
+          },
+        )
+        .with(P.union('success', 'skipped'), () => {
+          setError(null);
+        })
+        .otherwise(() => {});
     },
     [callbacks],
   );
@@ -80,11 +85,9 @@ export const useStartupStage = (callbacks?: ProcessStageCallbacks) => {
     trpcReact.settings.initializeAppData.useMutation({
       retry: false, // 重複実行を避けるため、リトライは無効
       onMutate: () => {
-        console.log('Starting application initialization');
         updateStage('initialization', 'inProgress');
       },
       onSuccess: async () => {
-        console.log('Application initialization completed successfully');
         updateStage('initialization', 'success');
 
         // ログ同期完了後、ログ関連のクエリキャッシュを無効化
@@ -94,22 +97,22 @@ export const useStartupStage = (callbacks?: ProcessStageCallbacks) => {
           console.warn('Failed to invalidate query cache:', error);
         }
       },
-      onError: (error) => {
-        console.error('Application initialization failed:', error);
-
+      onError: (error: TypedTRPCError | Error | unknown) => {
         // 重複実行エラーの場合は無視
-        if (
-          error instanceof Error &&
-          error.message.includes('初期化処理が既に実行中')
-        ) {
-          console.log('Ignoring duplicate initialization request');
-          return;
-        }
+        const shouldIgnore = match(error)
+          .when(
+            (e) =>
+              e instanceof Error &&
+              e.message.includes('初期化処理が既に実行中'),
+            () => true,
+          )
+          .otherwise(() => false);
 
-        const errorMessage =
-          error instanceof Error
-            ? error.message
-            : 'アプリケーション初期化に失敗しました';
+        if (shouldIgnore) return;
+
+        const errorMessage = match(error)
+          .with(P.instanceOf(Error), (e) => e.message)
+          .otherwise(() => 'アプリケーション初期化に失敗しました');
 
         // tRPCエラーオブジェクト全体を保持
         updateStage('initialization', 'error', errorMessage, error);
@@ -118,16 +121,25 @@ export const useStartupStage = (callbacks?: ProcessStageCallbacks) => {
 
   // 初期化処理を開始
   const startInitialization = useCallback(() => {
-    if (
-      stages.initialization === 'pending' &&
-      !initializeAppDataMutation.isLoading &&
-      !initializeAppDataMutation.isSuccess &&
-      !hasTriggeredInitialization
-    ) {
-      console.log('Starting initialization...');
-      setHasTriggeredInitialization(true);
-      initializeAppDataMutation.mutate();
-    }
+    match({
+      stage: stages.initialization,
+      isLoading: initializeAppDataMutation.isLoading,
+      isSuccess: initializeAppDataMutation.isSuccess,
+      hasTriggered: hasTriggeredInitialization,
+    })
+      .with(
+        {
+          stage: 'pending',
+          isLoading: false,
+          isSuccess: false,
+          hasTriggered: false,
+        },
+        () => {
+          setHasTriggeredInitialization(true);
+          initializeAppDataMutation.mutate();
+        },
+      )
+      .otherwise(() => {});
   }, [
     stages.initialization,
     initializeAppDataMutation,
@@ -166,14 +178,11 @@ export const useStartupStage = (callbacks?: ProcessStageCallbacks) => {
   // 終了判定（成功またはエラー）
   const finished = useMemo(
     () =>
-      stages.initialization === 'success' || stages.initialization === 'error',
+      match(stages.initialization)
+        .with(P.union('success', 'error'), () => true)
+        .otherwise(() => false),
     [stages],
   );
-
-  // デバッグ用
-  useEffect(() => {
-    console.log('Current stages:', JSON.stringify(stages, null, 2));
-  }, [stages]);
 
   return {
     stages,
