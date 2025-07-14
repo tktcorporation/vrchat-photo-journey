@@ -1,21 +1,21 @@
 const screenshots = [
   {
-    src: '/VRChatAlbums-logs-loaded.png',
+    src: './VRChatAlbums-logs-loaded.png',
     alt: 'ワールド別表示',
     caption: 'ワールドごとに写真を整理',
   },
   {
-    src: '/VRChatAlbums-initial.png',
+    src: './VRChatAlbums-initial.png',
     alt: 'ワールドリスト',
     caption: '訪れたワールドの一覧',
   },
   {
-    src: '/VRChatAlbums-finalized.png',
+    src: './VRChatAlbums-finalized.png',
     alt: 'ギャラリービュー',
     caption: 'Google Photosライクな表示',
   },
   {
-    src: '/VRChatAlbums-setup.png',
+    src: './VRChatAlbums-setup.png',
     alt: 'エクスプローラー統合',
     caption: 'ファイルエクスプローラーから直接開く',
   },

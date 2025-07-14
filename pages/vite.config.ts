@@ -5,7 +5,10 @@ import { defineConfig } from 'vite';
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  base: '/vrchat-albums/',
+  base: './',
+  server: {
+    host: true,
+  },
   build: {
     outDir: 'dist',
     emptyOutDir: true,
