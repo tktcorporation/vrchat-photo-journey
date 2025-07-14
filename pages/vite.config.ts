@@ -6,6 +6,7 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   base: '/vrchat-albums/',
+  publicDir: '../public',
   build: {
     outDir: 'dist',
     emptyOutDir: true,
